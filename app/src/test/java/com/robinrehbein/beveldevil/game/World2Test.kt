@@ -562,4 +562,108 @@ class World2Test {
         .leftJump(0.55f).rightTo(30.75f)
         .expect(WorldState.WON)
 
+    @Test
+    fun level081() = bot(81)
+        .rightJump(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
+        .right(0.03f).jump(0.25f).right(0.25f).rightJump(0.40f).rightJump(0.40f).rightJump(0.12f)
+        .right(0.03f).right(0.03f).left(0.03f).leftJump(0.12f).jump(0.25f).rightJump(0.40f)
+        .rightJump(0.25f).wait(0.20f).right(0.60f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level082() = bot(82)
+        .right(0.25f).rightJump(0.55f).leftJump(0.55f).rightJump(0.55f).leftJump(0.55f).right(1.20f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level083() = bot(83)
+        .right(1.20f).rightJump(0.55f).rightJump(0.40f).right(0.03f).left(0.03f).jump(0.25f)
+        .right(0.25f).rightJump(0.40f).rightJump(0.40f).rightJump(0.40f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level084() = bot(84)
+        .rightTo(9.0f).jump(0.3f).wait(0.3f).leftTo(7.0f).rightJump(0.4f).wait(0.3f)
+        .rightTo(9.9f).wait(0.25f).jump(0.3f).wait(0.4f).leftTo(9.3f).wait(0.2f)
+        .jump(0.2f).rightJump(0.3f).wait(0.3f).rightTo(11.9f).wait(0.25f).jump(0.3f)
+        .wait(0.4f).leftTo(11.3f).wait(0.2f).jump(0.2f).rightJump(0.3f).wait(0.3f)
+        .leftTo(12.6f).wait(0.2f).rightJump(0.4f).right(2f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level085() = bot(85)
+        .right(0.60f).right(1.20f).left(0.60f).leftJump(0.40f).leftJump(0.40f).leftJump(0.40f)
+        .leftJump(0.55f).leftJump(0.40f).leftJump(0.40f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level086() = bot(86)
+        .right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).right(1.20f).left(0.25f)
+        .left(0.60f).leftJump(0.55f).right(0.03f).rightJump(0.12f).right(0.03f).right(0.03f)
+        .right(0.03f).right(0.03f).right(0.03f).left(0.03f).leftJump(0.12f).left(0.03f)
+        .left(0.03f).right(0.03f).left(0.10f).left(0.03f).leftJump(0.55f).leftJump(0.40f)
+        .right(0.60f).rightJump(0.55f).right(0.25f).rightJump(0.40f).rightJump(0.25f).right(0.10f)
+        .left(0.03f).leftJump(0.12f).left(0.03f).rightJump(0.40f).left(0.03f).leftJump(0.12f)
+        .rightJump(0.55f).rightJump(0.40f).left(0.25f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level087() = bot(87)
+        .left(0.60f).leftJump(0.55f).left(0.25f).leftJump(0.55f).leftJump(0.55f).left(1.20f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level088() = bot(88)
+        .rightJump(0.55f).rightJump(0.40f).right(1.20f).right(0.60f).rightJump(0.40f).right(0.03f)
+        .leftJump(0.12f).left(0.03f).rightJump(0.40f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level089() = bot(89)
+        .right(1.20f).right(0.60f).rightJump(0.12f).right(0.03f).right(0.03f).left(0.03f)
+        .left(0.03f).jump(0.16f).left(0.03f).left(0.03f).rightJump(0.55f).right(0.10f)
+        .rightJump(0.12f).rightJump(0.40f).rightJump(0.55f).right(0.03f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level090() = bot(90)
+        .right(1.20f).rightJump(0.12f).jump(0.16f).left(0.03f).left(0.03f).left(0.03f)
+        .rightJump(0.55f).right(1.20f).right(0.60f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level091() = bot(91)
+        .leftJump(0.55f).leftJump(0.55f).leftJump(0.55f).leftJump(0.55f).left(0.25f).leftJump(0.55f)
+        .right(0.03f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level092() = bot(92)
+        .right(1.20f).rightJump(0.55f).rightJump(0.55f).right(0.60f).leftJump(0.12f).right(0.25f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level093() = bot(93)
+        .right(1.20f).rightJump(0.55f).right(0.25f).right(0.60f).right(0.03f).right(0.03f)
+        .rightJump(0.12f).left(0.10f).rightJump(0.12f).right(0.03f).leftJump(0.12f).jump(0.16f)
+        .left(0.03f).right(0.03f).left(0.03f).rightJump(0.55f).right(0.25f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level094() = bot(94)
+        .rightJump(0.40f).right(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f).right(1.20f)
+        .jump(0.16f).rightJump(0.55f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level095() = bot(95)
+        .rightTo(26.5f).wait(3f).wait(3f).wait(1.5f).right(1.5f)
+        .expect(WorldState.WON)
+
+    @Test
+    fun level096() = bot(96)
+        .rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f)
+        .right(1.20f)
+        .expect(WorldState.WON)
+
 }
