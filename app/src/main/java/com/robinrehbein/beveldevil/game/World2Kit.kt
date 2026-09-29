@@ -52,6 +52,16 @@ internal fun doorTrail(
     }
 }
 
+/** The opposite of [blink]: a hidden group that shows at [firstShow] for [on] seconds, every [period] seconds. */
+internal fun blinkOn(g: Char, firstShow: Float, on: Float, period: Float, count: Int, first: List<Action> = emptyList()): List<Trap> =
+    (0 until count).flatMap { i ->
+        val t = firstShow + i * period
+        listOf(
+            Trap(Trigger.After(t), (if (i == 0) first else emptyList()) + Action.Show(g)),
+            Trap(Trigger.After(t + on), listOf(Action.Hide(g))),
+        )
+    }
+
 /** A group that disappears at [firstHide] for [off] seconds, every [period] seconds, [count] times. */
 internal fun blink(g: Char, firstHide: Float, off: Float, period: Float, count: Int, first: List<Action> = emptyList()): List<Trap> =
     (0 until count).flatMap { i ->
