@@ -75,6 +75,15 @@ class Bot(private val level: Level) {
         return hold(0f)
     }
 
+    /** Keep running right until a saw ahead of the player is within [d] tiles. */
+    fun rightUntilSaw(d: Float): Bot {
+        input.left = false; input.right = true; input.jump = false
+        while (world.state == WorldState.PLAYING && world.time < 60f &&
+            world.saws.none { it.x > world.player.box.cx && it.x - world.player.box.cx <= d }
+        ) world.step(DT, input)
+        return hold(0f, right = true)
+    }
+
     fun rightTo(x: Float) = until(x, left = false, goingRight = true)
     fun leftTo(x: Float) = until(x, left = true, goingRight = false)
     /** For swapped controls: press left, move right. */

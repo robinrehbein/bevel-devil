@@ -45,6 +45,13 @@ class World1Test {
             38 to { b -> b.right(8f) }, 39 to { b -> b.right(8f) }, 40 to { b -> b.right(8f) }, 42 to { b -> b.right(8f) },
             43 to { b -> b.hopR(11.0f).right(2f) }, 44 to { b -> b.right(8f) }, 45 to { b -> b.right(8f) },
             46 to { b -> b.right(8f) }, 48 to { b -> b.right(8f) },
+            49 to { b -> b.left(8f) }, 50 to { b -> b.right(8f) }, 51 to { b -> b.right(8f) }, 52 to { b -> b.right(8f) },
+            54 to { b -> b.right(8f) }, 57 to { b -> b.right(8f) }, 58 to { b -> b.right(8f) },
+            59 to { b -> b.rightTo(12.5f).wait(8f) }, 60 to { b -> b.right(8f) }, 61 to { b -> b.right(8f) },
+            62 to { b -> b.right(8f) }, 64 to { b -> b.right(8f) },
+            65 to { b -> b.right(8f) }, 66 to { b -> b.right(8f) }, 67 to { b -> b.right(8f) }, 70 to { b -> b.hopR(11.7f).right(2f) },
+            72 to { b -> b.right(8f) }, 73 to { b -> b.right(8f) }, 74 to { b -> b.right(8f) }, 76 to { b -> b.right(8f) },
+            79 to { b -> b.right(8f) }, 80 to { b -> b.right(8f) },
         )
         val winners = naive.filter { (n, play) -> val bot = Bot(World1.levels[n - 1]); play(bot); bot.world.state != WorldState.DEAD }
         assertTrue("naive play survives or wins in levels ${winners.keys}", winners.isEmpty())
@@ -130,4 +137,40 @@ class World1Test {
     @Test fun level46() = b(46).rightTo(5f).jump(0.3f).wait(0.6f).hopR(13f).right(4f).expect(WorldState.WON)
     @Test fun level47() = b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).right(4f).expect(WorldState.WON)
     @Test fun level48() = b(48).hopR(10.9f).rightTo(16.1f).wait(1.2f).hopR(23.5f).right(2f).expect(WorldState.WON)
+
+    // ---- 49-64 ----
+    @Test fun level49() = b(49).hopL(21.3f).hopL(13.3f).left(1f).wait(3.5f).hopR(10.7f).hopR(18.7f).right(3f).expect(WorldState.WON)
+    @Test fun level50() = b(50).waitUntil(5.5f).hopR(10.4f).right(3f).expect(WorldState.WON)
+    @Test fun level51() = b(51).rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level52() = b(52).rightTo(6f).waitUntil(1.85f).right(3.5f).expect(WorldState.WON)
+    @Test fun level53() = b(53).rightTo(12.0f).rightJump(0.06f).wait(0.6f).hopS(12.5f).hopS(19.6f).left(2f).expect(WorldState.WON)
+    @Test fun level54() = b(54).rightJump(0.35f).landRight().hopR(18.2f).right(2f).expect(WorldState.WON)
+    @Test fun level55() = b(55).hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f).expect(WorldState.WON)
+    @Test fun level56() = b(56).rightTo(4.6f).wait(1.0f).hopS(17.7f).left(3f).expect(WorldState.WON)
+    @Test fun level57() = b(57).rightTo(6.1f).hopS(16.7f).left(3f).expect(WorldState.WON)
+    @Test fun level58() = b(58).rightTo(15.6f).hopR(17.5f).right(2f).expect(WorldState.WON)
+    @Test fun level59() = b(59).rightTo(12.5f).wait(1.75f).hopR(15.7f).right(2f).expect(WorldState.WON)
+    @Test fun level60() = b(60).untilSaw(2.0f).jump(0.35f).wait(0.4f).hopR(5.7f).hopR(10.7f).hopR(15.7f).hopR(20.7f).hopR(25.7f).right(1f).expect(WorldState.WON)
+    @Test fun level61() = b(61).rightTo(4.6f).wait(1.0f).hopR(7.5f).rightTo(13.1f).wait(1.0f).hopR(14.4f).rightTo(20.1f).wait(1.0f).hopR(23.5f).right(2f).expect(WorldState.WON)
+    @Test fun level62() = b(62).rightTo(8.3f).rightJump(0.35f).landRight().waitUntil(4.9f).hopR(17.6f).waitUntil(7.2f).right(3f).expect(WorldState.WON)
+    @Test fun level63() = b(63).rightTo(20.5f).wait(2.6f).hopL(15.3f).hopL(8.5f).left(3f).expect(WorldState.WON)
+    @Test fun level64() = b(64).hopR(3.0f).hopR(7.7f).hopR(12.7f).hopR(19.7f).right(2f).expect(WorldState.WON)
+
+    // ---- 65-80 ----
+    @Test fun level65() = b(65).waitUntil(5.2f).hopR(15.7f).hopR(23.7f).right(2f).expect(WorldState.WON)
+    @Test fun level66() = b(66).rightTo(9.6f).wait(3.6f).hopR(21.5f).right(2f).expect(WorldState.WON)
+    @Test fun level67() = b(67).rightTo(16.6f).landRight().rightJump(0.35f).right(3f).expect(WorldState.WON)
+    @Test fun level68() = b(68).hopL(13.8f).leftTo(9.5f).leftJump(0.35f).landLeft().leftTo(6.5f).leftJump(0.35f).landLeft().left(2f).expect(WorldState.WON)
+    @Test fun level69() = b(69).rightTo(8.5f).rightJump(0.35f).landRight().wait(1.9f).hopS(15.7f).left(3f).expect(WorldState.WON)
+    @Test fun level70() = b(70).rightTo(9.1f).waitUntil(5.6f).hopR(11.7f).right(2f).expect(WorldState.WON)
+    @Test fun level71() = b(71).hopR(2.4f).hopR(6.4f).hopR(10.4f).hopR(14.4f).hopR(18.4f).hopR(22.4f).right(2f).expect(WorldState.WON)
+    @Test fun level72() = b(72).hopR(5.7f).hopR(10.7f).hopR(16.7f).hopR(21.7f).hopR(25.2f).right(1f).expect(WorldState.WON)
+    @Test fun level73() = b(73).rightTo(12.5f).waitUntil(2.8f).rightTo(20.6f).waitUntil(5.2f).right(3f).expect(WorldState.WON)
+    @Test fun level74() = b(74).rightTo(9.6f).rightJump(0.35f).landRight().hopR(14.5f).hopR(21.5f).right(2f).expect(WorldState.WON)
+    @Test fun level75() = b(75).hopR(8.7f).hopR(13.5f).hopR(19.7f).right(3f).expect(WorldState.WON)
+    @Test fun level76() = b(76).rightTo(5.6f).waitUntil(4.85f).rightJump(0.35f).landRight().waitUntil(7.7f).hopR(21.5f).right(3f).expect(WorldState.WON)
+    @Test fun level77() = b(77).waitUntil(5.2f).hopS(15.7f).hopS(21.5f).left(3f).expect(WorldState.WON)
+    @Test fun level78() = b(78).rightTo(20.2f).rightJump(0.35f).landRight().hopR(26.5f).right(2f).expect(WorldState.WON)
+    @Test fun level79() = b(79).hopR(5.0f).hopR(9.7f).hopR(15.7f).hopR(21.7f).hopR(27.7f).right(1f).expect(WorldState.WON)
+    @Test fun level80() = b(80).hopR(12.5f).hopR(18.5f).hopR(25.7f).right(2f).expect(WorldState.WON)
 }
