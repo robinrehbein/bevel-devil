@@ -12,6 +12,8 @@ interface Progress {
     var buttonSize: Int
     var haptics: Boolean
     var leftHanded: Boolean
+    /** The story intro has been shown once. */
+    var introSeen: Boolean
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
     fun cardFound(card: Card): Boolean
@@ -26,7 +28,7 @@ interface Audio {
     fun play(sound: Sound)
 }
 
-enum class Screen { TITLE, SELECT, PLAY, PAUSE, CLEAR, ALBUM, END, SETTINGS }
+enum class Screen { TITLE, SELECT, PLAY, PAUSE, CLEAR, ALBUM, END, SETTINGS, INTRO, WORLD_INTRO }
 
 enum class Mood { GRIN, LAUGH, SULK, SHOCK }
 
@@ -61,6 +63,8 @@ object Ui {
     fun albumCard(i: Int) = Hit(18 + (i % 6) * 38, 28 + (i / 6) * 54, 30, 44)
     val endTitle = Hit(88, 112, 80, 16)
     val devilFrame = Hit(212, 4, 38, 38)
+    val titleStory = Hit(160, 6, 32, 12)
+    val introSkip = Hit(194, 4, 56, 12)
 }
 
 /** [size] in pixels; dust drifts and slows down instead of falling. */
@@ -124,10 +128,32 @@ class Game(private val progress: Progress, private val audio: Audio) {
     val leftHanded get() = progress.leftHanded
     private var settingsFrom = Screen.TITLE
 
+    /** Intro page and seconds on it. */
+    var introPage = 0
+        private set
+    var introAge = 0f
+        private set
+    private var introFirst = false
+    /** World shown on the transition screen, and seconds on it. */
+    var worldInfo: WorldInfo = Worlds.get(1)
+        private set
+    var worldAge = 0f
+        private set
+    /** Seconds of CRT glitch left after Mephi played a card. */
+    var glitch = 0f
+        private set
+
+    init {
+        if (!progress.introSeen) startIntro(first = true)
+    }
+
     fun update(dt: Float) {
         time += dt
         shake = (shake - dt * 3f).coerceAtLeast(0f)
         heat = (heat - dt * 0.8f).coerceAtLeast(0f)
+        glitch = (glitch - dt).coerceAtLeast(0f)
+        introAge += dt
+        worldAge += dt
         bubbleAge += dt
         if (bubble != null && bubbleAge > bubbleLife) bubble = null
         if (moodTimer > 0f) {
@@ -174,6 +200,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 card = e.card
                 cardAge = 0f
                 heat = 1f
+                glitch = GLITCH_TIME
                 progress.findCard(e.card)
                 audio.play(Sound.CARD)
                 setMood(Mood.LAUGH, 1.2f)
@@ -290,6 +317,28 @@ class Game(private val progress: Progress, private val audio: Audio) {
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
     }
 
+    /** Starts the story. [first] is the automatic run on first start: it leads on to world 1. */
+    fun startIntro(first: Boolean = false) {
+        introPage = 0
+        introAge = 0f
+        introFirst = first
+        setMood(Mood.GRIN, 0f)
+        screen = Screen.INTRO
+    }
+
+    private fun finishIntro() {
+        progress.introSeen = true
+        if (introFirst) { introFirst = false; showWorldIntro(1) } else go(Screen.TITLE)
+    }
+
+    /** Shows the transition screen of world [n]; a tap continues into its first level. */
+    fun showWorldIntro(n: Int) {
+        worldInfo = Worlds.get(n)
+        worldAge = 0f
+        setMood(Mood.GRIN, 0f)
+        screen = Screen.WORLD_INTRO
+    }
+
     fun totalBestDeaths() = Levels.all.indices.sumOf { progress.bestDeaths(it) ?: 0 }
 
     /** Handles a tap in logical coordinates. */
@@ -299,6 +348,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.TITLE -> when {
                 p in Ui.sound -> { progress.sound = !progress.sound; click() }
                 p in Ui.gear -> openSettings()
+                p in Ui.titleStory -> { click(); startIntro() }
                 p in Ui.titleAlbum -> go(Screen.ALBUM)
                 else -> go(Screen.SELECT)
             }
@@ -318,6 +368,13 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.SETTINGS -> if (p in Ui.back) go(settingsFrom) else {
                 for (row in 0 until Ui.SET_ROWS) for (i in 0 until Ui.setCounts[row]) if (p in Ui.setOpt(row, i, Ui.setCounts[row])) { setOption(row, i); click() }
             }
+            Screen.INTRO -> when {
+                p in Ui.introSkip -> finishIntro()
+                introAge < Intro.duration(introPage) -> introAge = Intro.duration(introPage)
+                introPage >= Intro.pages.lastIndex -> { click(); finishIntro() }
+                else -> { click(); introPage++; introAge = 0f }
+            }
+            Screen.WORLD_INTRO -> if (worldAge > 0.4f) { click(); startLevel(worldInfo.firstLevel.coerceIn(0, Levels.all.lastIndex)) }
             Screen.CLEAR -> if (p in Ui.clearNext) { click(); startLevel(levelIndex + 1) }
             Screen.ALBUM -> {
                 if (p in Ui.back) go(Screen.TITLE)
@@ -367,6 +424,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.SELECT, Screen.ALBUM, Screen.END -> go(Screen.TITLE)
             Screen.PLAY -> go(Screen.PAUSE)
             Screen.SETTINGS -> go(settingsFrom)
+            Screen.INTRO -> finishIntro()
+            Screen.WORLD_INTRO -> go(Screen.SELECT)
             Screen.PAUSE, Screen.CLEAR -> go(Screen.SELECT)
         }
         return true
@@ -380,23 +439,29 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     companion object {
         const val CARD_LIFE = 2.4f
+        /** Length of the CRT glitch when Mephi plays a card. */
+        const val GLITCH_TIME = 0.32f
         /** Seconds between touching the door and the clear screen, for the win animation. */
         const val WIN_DELAY = 0.8f
 
         val TAUNTS = listOf(
-            T("Ouch.", "Autsch."),
-            T("That was on purpose. Mine.", "Das war Absicht. Meine."),
-            T("Again!", "Nochmal!"),
-            T("Saw that coming.", "Hab ich kommen sehen."),
-            T("Almost! No, not really.", "Fast! Nein, eigentlich nicht."),
-            T("Death number %d. Nice.", "Tod Nummer %d. Nicht schlecht."),
-            T("The floor says hi.", "Der Boden lässt grüßen."),
-            T("Keep going, I'm having fun.", "Weiter so, ich amüsier mich."),
+            T("Segmentation fault. Yours.", "Segmentation Fault. Deiner."),
+            T("Have you tried turning it off and on again? Oh, you just did.", "Schon mal neu gestartet? Ach, machst du ja gerade."),
+            T("Death number %d. Logged.", "Tod Nummer %d. Steht im Log."),
+            T("Error 404: survival not found.", "Fehler 404: Überleben nicht gefunden."),
+            T("That's not a bug. That's a feature.", "Das ist kein Bug. Das ist ein Feature."),
+            T("Ticket closed. Reason: user error.", "Ticket geschlossen. Grund: Benutzerfehler."),
+            T("Uptime: 3 seconds. Impressive.", "Laufzeit: 3 Sekunden. Beeindruckend."),
+            T("Undo? Not in this system.", "Rückgängig? Gibt's hier nicht."),
+            T("Permission denied.", "Zugriff verweigert."),
+            T("Did you save? Oh. Right.", "Hast du gespeichert? Ach nein."),
         )
         val WIN_LINES = listOf(
-            T("That... was not the plan.", "Das... war so nicht geplant."),
-            T("Pure luck.", "Pures Glück."),
-            T("Just wait for the next one.", "Na warte, nächstes Level."),
+            T("Access granted. Ugh.", "Zugriff gewährt. Widerwillig."),
+            T("Who gave you the password?!", "Wer hat dir das Passwort gegeben?!"),
+            T("A security hole. I'll patch that.", "Eine Sicherheitslücke. Die patche ich noch."),
+            T("Must be a caching issue.", "Muss ein Cache-Problem sein."),
+            T("Wait for the next level. I'm deploying a patch.", "Na warte. Ich spiele gleich ein Update ein."),
         )
     }
 }

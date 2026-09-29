@@ -6,6 +6,7 @@ import org.robolectric.RuntimeEnvironment
 import com.robinrehbein.beveldevil.game.Audio
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
+import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
@@ -25,6 +26,7 @@ class MemoryProgress : Progress {
     override var buttonSize = 1
     override var haptics = true
     override var leftHanded = false
+    override var introSeen = true
     private val best = mutableMapOf(0 to 3, 1 to 7, 2 to 12, 3 to 5, 4 to 21, 5 to 9)
     private val found = mutableSetOf(Card.COLLAPSE, Card.SPIKE_SEED, Card.SHY_DOOR, Card.HEADBUTT, Card.UPSIDE_DOWN, Card.TWISTED)
     private val deaths = mutableMapOf<Card, Int>(Card.COLLAPSE to 12, Card.SPIKE_SEED to 8, Card.SHY_DOOR to 3)
@@ -161,6 +163,43 @@ class ScreenshotTest {
         shoot("13-level4", phone)
         shootAt("14-level4-cutout", phone, Size("cutout", 2400, 1080, 2.75f, cutL = 110))
         g.back(); g.startLevel(1); run(g, 1.0f, right = true); g.pause(); shoot("15-pause", g)
+    }
+
+    @Test
+    fun story() {
+        Lang.german = true
+        val two = sizes.take(2)
+        for (de in listOf(true, false)) {
+            Lang.german = de
+            val sfx = if (de) "" else "-en"
+            val fresh = MemoryProgress().apply { introSeen = false }
+            val g = Game(fresh, silent)
+            for (page in 0 until 4) {
+                // type it out fully, then show
+                run(g, Intro.duration(page) + 0.1f)
+                shoot("30-intro-${page + 1}$sfx", g, two)
+                g.tap(100f, 100f)
+            }
+            run(g, 1.5f); shoot("34-world1$sfx", g, two)
+        }
+        Lang.german = true
+        val g = Game(MemoryProgress(), silent)
+        g.showWorldIntro(2); run(g, 2f); shoot("35-world2", g, two)
+        g.showWorldIntro(3); run(g, 2f); shoot("36-world3", g, two)
+        g.showWorldIntro(1); run(g, 0.25f); shoot("37-world1-typing", g, two)
+        // mid-intro moments: terminal scrolling, the packet mid-flight
+        val h = Game(MemoryProgress().apply { introSeen = false }, silent)
+        run(h, 1.4f); shoot("38-terminal-mid", h, two)
+        h.tap(100f, 100f); h.tap(100f, 100f); h.tap(100f, 100f); h.tap(100f, 100f); run(h, 1.6f); shoot("39-intro-packet-mid", h, two)
+        // gameplay frame in the middle of a glitch
+        for (s in two) {
+            val f = Film(Game(MemoryProgress(), silent), s)
+            f.game.startLevel(0)
+            f.game.input.right = true
+            f.play(5f) { f.game.card != null }
+            f.play(0.07f); f.save("40-glitch-${s.tag}")
+            f.play(0.1f); f.save("41-glitch-late-${s.tag}")
+        }
     }
 
     @Test

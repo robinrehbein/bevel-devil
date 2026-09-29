@@ -32,6 +32,10 @@ class PrefsProgress(context: Context) : Progress {
         get() = prefs.getBoolean("left_handed", false)
         set(v) = prefs.edit().putBoolean("left_handed", v).apply()
 
+    override var introSeen: Boolean
+        get() = prefs.getBoolean("intro_seen", false)
+        set(v) = prefs.edit().putBoolean("intro_seen", v).apply()
+
     override fun bestDeaths(level: Int): Int? = prefs.getInt("best_$level", -1).takeIf { it >= 0 }
     override fun saveBest(level: Int, deaths: Int) = prefs.edit().putInt("best_$level", deaths).apply()
     override fun cardFound(card: Card) = prefs.getBoolean("card_${card.name}", false)
