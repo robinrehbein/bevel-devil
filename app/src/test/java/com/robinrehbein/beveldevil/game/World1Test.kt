@@ -20,6 +20,15 @@ class World1Test {
     }
 
     @Test
+    fun namesAreUniqueAndShortEnoughForTheHud() {
+        val names = World1.levels.map { it.name.en }
+        assertEquals(names.size, names.toSet().size)
+        World1.levels.forEachIndexed { i, l ->
+            assertTrue("level ${i + 1} name too long", l.name.en.length <= 26 && l.name.de.length <= 26)
+        }
+    }
+
+    @Test
     fun namesAndIntrosAreFilledInBothLanguages() {
         World1.levels.forEach { l ->
             assertTrue(l.name.en.isNotBlank() && l.name.de.isNotBlank() && l.intro.en.isNotBlank() && l.intro.de.isNotBlank())
@@ -29,7 +38,10 @@ class World1Test {
     @Test
     fun everyTrapLevelPlaysACard() {
         World1.levels.forEachIndexed { i, l ->
-            if (l.traps.isNotEmpty()) assertTrue("level ${i + 1} plays no card", l.traps.any { t -> t.actions.any { it is Action.Play } })
+            if (l.traps.isNotEmpty()) {
+                val plays = l.traps.sumOf { t -> t.actions.count { it is Action.Play } }
+                assertEquals("level ${i + 1} should play exactly one card", 1, plays)
+            }
         }
     }
 

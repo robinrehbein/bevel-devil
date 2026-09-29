@@ -26,7 +26,7 @@ object World1Part6 {
 
     val levels: List<Level> = listOf(
         // 81 — the platforms are unsorted; Mephi sorts them (swapping positions) and you climb the result
-        // EASTER EGG: bubble sort, O(n^2)
+        // NOD: bubble sort, O(n^2)
         Level(
             name = T("Bubble Sort", "Bubblesort"),
             intro = T("Unsorted platforms. Give me a second to sort them.", "Unsortierte Plattformen. Gib mir kurz Zeit zum Sortieren."),
@@ -42,7 +42,7 @@ object World1Part6 {
         },
 
         // 82 — gaps of 1, 1, 2, 3 and then 5: the next Fibonacci number comes closer if you wait
-        // EASTER EGG: Fibonacci sequence
+        // NOD: Fibonacci sequence
         Level(
             name = T("Fibonacci", "Fibonacci"),
             intro = T("Gaps: 1, 1, 2, 3, and next comes... 5.", "Lücken: 1, 1, 2, 3, und als Nächstes... 5."),
@@ -57,7 +57,7 @@ object World1Part6 {
         },
 
         // 83 — the duck explains each trap, and is wrong every time
-        // EASTER EGG: rubber duck debugging
+        // NOD: rubber duck debugging
         Level(
             name = T("Rubber Duck", "Quietscheente"),
             intro = T("Explain your plan to the duck. Quack.", "Erkläre der Ente deinen Plan. Quak."),
@@ -110,7 +110,7 @@ object World1Part6 {
         },
 
         // 86 — the floor collapses right behind you, faster than you would like
-        // EASTER EGG: speedrun "Any%"
+        // NOD: speedrun "Any%"
         Level(
             name = T("Any%", "Any%"),
             intro = T("Speedrun time! Frame-perfect, no glitches. (Glitches allowed.)", "Speedrun-Zeit! Frame-perfekt, keine Glitches. (Glitches erlaubt.)"),
@@ -173,7 +173,7 @@ object World1Part6 {
         },
 
         // 89 — the pit is the pipe: the door zips down into it as you approach
-        // EASTER EGG: Super Mario warp zone
+        // NOD: Super Mario warp zone
         Level(
             name = T("Warp Zone", "Warpzone"),
             intro = T("Everything to the right is a distraction. Trust me.", "Alles rechts ist Ablenkung. Vertrau mir."),
@@ -239,7 +239,7 @@ object World1Part6 {
         },
 
         // 93 — two of these floor segments are bad sectors: they vanish when touched
-        // EASTER EGG: bad sector
+        // NOD: bad sector
         Level(
             name = T("Bad Sector", "Defekter Sektor"),
             intro = T("Reading floor... Read error, retrying.", "Lese Boden... Lesefehler, neuer Versuch."),
@@ -255,7 +255,7 @@ object World1Part6 {
         },
 
         // 94 — a gap that is too wide for one jump: a short hop reveals a platform to jump from again
-        // EASTER EGG: double jump (DLC)
+        // NOD: double jump (DLC)
         Level(
             name = T("Double Jump", "Doppelsprung"),
             intro = T("Seven tiles. Double jump is a separate DLC.", "Sieben Felder. Doppelsprung ist ein separates DLC."),
@@ -270,7 +270,7 @@ object World1Part6 {
         },
 
         // 95 — the floor is lava; the islands are furniture, one of them wobbles
-        // EASTER EGG: "The floor is lava"
+        // NOD: "The floor is lava"
         Level(
             name = T("The Floor Is Lava", "Der Boden ist Lava"),
             intro = T("Don't touch the floor! Couch, table, chair. Go!", "Nicht den Boden berühren! Sofa, Tisch, Stuhl. Los!"),

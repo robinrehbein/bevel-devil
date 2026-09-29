@@ -93,7 +93,7 @@ object World1Part5 {
         },
 
         // 68 — a confident, wrong door on the right. The real one is up on the left.
-        // EASTER EGG: AI hallucination (confidently wrong)
+        // NOD: AI hallucination (confidently wrong)
         Level(
             name = T("Hallucination", "Halluzination"),
             intro = T("Certainly! The door is on the right. (It is not.)", "Sicher! Die Tür ist rechts. (Ist sie nicht.)"),
@@ -250,7 +250,7 @@ object World1Part5 {
         },
 
         // 78 — climb the cake; the far side of it is not what it seems
-        // EASTER EGG: Portal, "the cake is a lie"
+        // NOD: Portal, "the cake is a lie"
         Level(
             name = T("The Cake Is A Lie", "Der Kuchen ist eine Lüge"),
             intro = T("Reach the cake for a reward. Definitely a cake.", "Erreiche den Kuchen für eine Belohnung. Ganz sicher ein Kuchen."),
@@ -286,7 +286,7 @@ object World1Part5 {
         // 80 — the chapter finale: the screen turns blue and everything goes wrong in order
         // EASTER EGG: Blue Screen of Death
         Level(
-            name = T("Blue Screen of Death", "Blauer Bildschirm des Todes"),
+            name = T("Blue Screen of Death", "Bluescreen des Todes"),
             intro = T("Your level ran into a problem and needs to restart.", "Dein Level hat ein Problem und muss neu gestartet werden."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(

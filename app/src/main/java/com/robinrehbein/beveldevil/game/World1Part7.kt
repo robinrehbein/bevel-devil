@@ -119,7 +119,7 @@ object World1Part7 {
         },
 
         // 101 — controls swap on, off, on again, with a pit after each swap
-        // EASTER EGG: hall of mirrors
+        // NOD: hall of mirrors
         Level(
             name = T("Hall of Mirrors", "Spiegelkabinett"),
             intro = T("Which one is the real you? The one falling into the pit.", "Welcher ist der echte du? Der, der in die Grube fällt."),
@@ -134,7 +134,7 @@ object World1Part7 {
         },
 
         // 102 — three gaps of four tiles between two-tile islands; the middle island is not made for standing
-        // EASTER EGG: Coyote Ugly / coyote time
+        // NOD: Coyote Ugly / coyote time
         Level(
             name = T("Coyote Ugly", "Coyote Ugly"),
             intro = T("Four tiles of nothing. Coyote time is your friend.", "Vier Felder Nichts. Koyotenzeit ist dein Freund."),
@@ -148,7 +148,7 @@ object World1Part7 {
         },
 
         // 103 — touch the switch on the far left; the gate opens for four seconds
-        // EASTER EGG: expired session token
+        // NOD: expired session token
         Level(
             name = T("Session Expired", "Sitzung abgelaufen"),
             intro = T("Please log in. Your token is valid for four seconds.", "Bitte einloggen. Dein Token ist vier Sekunden gültig."),
@@ -199,7 +199,7 @@ object World1Part7 {
         },
 
         // 106 — three floor segments are deleted and restored one after another; the trick is patience
-        // EASTER EGG: undo history
+        // NOD: undo history
         Level(
             name = T("Undo History", "Änderungsverlauf"),
             intro = T("Oops. I deleted the floor. Three times. Ctrl+Z, Ctrl+Z, Ctrl+Z.", "Ups. Ich habe den Boden gelöscht. Dreimal. Strg+Z, Strg+Z, Strg+Z."),
@@ -218,7 +218,7 @@ object World1Part7 {
         },
 
         // 107 — three branches enter, one player leaves: walls from both sides
-        // EASTER EGG: git rebase
+        // NOD: git rebase
         Level(
             name = T("Rebase", "Rebase"),
             intro = T("Three branches, one you. Let's rebase.", "Drei Branches, ein Du. Wir rebasen das."),
@@ -306,7 +306,7 @@ object World1Part7 {
         },
 
         // 112 — a saw chases you while pit, spikes and swapped controls are all still unpatched
-        // EASTER EGG: zero-day exploit
+        // NOD: zero-day exploit
         Level(
             name = T("Zero Day", "Zero Day"),
             intro = T("No patch available. No plan either.", "Kein Patch verfügbar. Kein Plan auch nicht."),

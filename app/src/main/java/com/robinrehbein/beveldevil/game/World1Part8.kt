@@ -98,7 +98,7 @@ object World1Part8 {
         },
 
         // 117 — the door keeps half the remaining distance to itself
-        // EASTER EGG: Zeno's paradox
+        // NOD: Zeno's paradox
         Level(
             name = T("Zeno's Door", "Zenons Tür"),
             intro = T("Reach the door by covering half the distance. Repeatedly.", "Erreiche die Tür, indem du die halbe Strecke zurücklegst. Immer wieder."),
@@ -116,7 +116,7 @@ object World1Part8 {
         },
 
         // 118 — four crushers in a wave: run with it, not against it
-        // EASTER EGG: deadlock
+        // NOD: deadlock
         Level(
             name = T("Deadlock", "Deadlock"),
             intro = T("Each thread waits for the next one. Nobody moves. Except the ceiling.", "Jeder Thread wartet auf den nächsten. Keiner bewegt sich. Außer der Decke."),
@@ -162,7 +162,7 @@ object World1Part8 {
         },
 
         // 121 — the deleted floor comes back; the next pit gets its bridge only after a while
-        // EASTER EGG: Ctrl+Shift+Z (redo)
+        // NOD: Ctrl+Shift+Z (redo)
         Level(
             name = T("Redo", "Wiederholen"),
             intro = T("Ctrl+Z gave you the floor back. Ctrl+Shift+Z gives you the bridge.", "Strg+Z gab dir den Boden zurück. Strg+Umschalt+Z gibt dir die Brücke."),
@@ -265,7 +265,7 @@ object World1Part8 {
         // 127 — the door runs away and comes back home, to the spot next to where you started
         // EASTER EGG: "There's no place like 127.0.0.1" (localhost)
         Level(
-            name = T("There's No Place Like 127.0.0.1", "Es gibt keinen Ort wie 127.0.0.1"),
+            name = T("No Place Like 127.0.0.1", "Kein Ort wie 127.0.0.1"),
             intro = T("Ping the door. Round trip time: your whole life.", "Ping die Tür. Round-Trip-Zeit: dein ganzes Leben."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(

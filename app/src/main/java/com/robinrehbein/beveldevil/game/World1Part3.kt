@@ -125,7 +125,7 @@ object World1Part3 {
         },
 
         // 39 — the bridge is built plank by plank, on a timer
-        // EASTER EGG: 90s web "under construction"
+        // NOD: 90s web "under construction"
         Level(
             name = T("Under Construction", "Baustelle"),
             intro = T("This page is under construction. Please hold.", "Diese Seite befindet sich im Aufbau. Bitte warten."),
@@ -226,7 +226,7 @@ object World1Part3 {
         },
 
         // 45 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.
-        // EASTER EGG: video buffering
+        // NOD: video buffering
         Level(
             name = T("Buffering...", "Lädt..."),
             intro = T("Your door is loading. Please stand by.", "Deine Tür wird geladen. Bitte warten."),
@@ -245,7 +245,7 @@ object World1Part3 {
         },
 
         // 46 — any jump flips gravity: the spiked floor becomes a harmless ceiling walk
-        // EASTER EGG: flip-flop (toggle)
+        // NOD: flip-flop (toggle)
         Level(
             name = T("Flip-Flop", "Kippschalter"),
             intro = T("Please don't jump. You will regret jumping.", "Bitte nicht springen. Du würdest es bereuen."),
@@ -278,7 +278,7 @@ object World1Part3 {
         },
 
         // 48 — three doors, three traps, one real exit
-        // EASTER EGG: Monty Hall / Let's Make a Deal
+        // NOD: Monty Hall / Let's Make a Deal
         Level(
             name = T("Behind Door Number Three", "Hinter Tür Nummer Drei"),
             intro = T("Pick a door. Any door. Would you like to switch?", "Such dir eine Tür aus. Irgendeine. Willst du wechseln?"),

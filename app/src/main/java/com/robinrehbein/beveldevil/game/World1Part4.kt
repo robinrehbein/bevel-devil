@@ -215,7 +215,7 @@ object World1Part4 {
         // 61 — gravity flips off, on, and off again. Mind where you land.
         // EASTER EGG: "Have you tried turning it off and on again?"
         Level(
-            name = T("Off And On Again", "Aus- und wieder Einschalten"),
+            name = T("Off And On Again", "Aus und wieder an"),
             intro = T("Have you tried turning it off and on again?", "Hast du schon versucht, es aus- und wieder einzuschalten?"),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Turning it off...", "Ausschalten..."))),
