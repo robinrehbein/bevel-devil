@@ -176,15 +176,16 @@ internal val world2Part4: List<Level> = listOf(
         intro = T("Seeking... seeking... seeking...", "Suche... suche... suche..."),
         traps = listOf(
             trap(After(2.0f), Play(Card.SINKING), Move('g', 0f, -6f, 6f), say("Rewinding.", "Spule zurück.")),
-            trap(After(3.6f), Move('g', 0f, 6f, 9f)),
-            trap(After(2.8f), Move('h', 0f, -6f, 6f)),
-            trap(After(4.4f), Move('h', 0f, 6f, 9f)),
-            trap(After(3.6f), Move('i', 0f, -6f, 6f)),
-            trap(After(5.2f), Move('i', 0f, 6f, 9f)),
+            trap(After(3.1f), Move('g', 0f, 6f, 9f)),
+            trap(After(2.6f), Move('h', 0f, -6f, 6f)),
+            trap(After(3.8f), Move('h', 0f, 6f, 9f)),
+            trap(After(3.4f), Move('i', 0f, -6f, 6f)),
+            trap(After(4.7f), Move('i', 0f, 6f, 9f)),
         ),
     ) {
         border(); floor()
         fill(12..12, 9..14, 'g'); fill(19..19, 9..14, 'h'); fill(26..26, 9..14, 'i')
+        put(16, 14, '^'); put(23, 14, '^')
         spawn(); door(); bits(58)
     },
 

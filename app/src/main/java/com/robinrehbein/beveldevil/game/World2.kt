@@ -7,5 +7,5 @@ package com.robinrehbein.beveldevil.game
 object World2 {
     val name = T("Hell's Data Center", "Höllen-Rechenzentrum")
 
-    val levels: List<Level> = world2Part1 + world2Part2 + world2Part3 + world2Part4 + world2Part5 + world2Part6 + world2Part7
+    val levels: List<Level> = world2Part1 + world2Part2 + world2Part3 + world2Part4 + world2Part5 + world2Part6 + world2Part7 + world2Part8
 }

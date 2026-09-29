@@ -292,7 +292,7 @@ internal val world2Part7: List<Level> = listOf(
     // 112 — EASTER EGG: root access (sudo su; act finale)
     Level(
         name = T("Root Access", "Root-Zugriff"),
-        intro = T("root@hell:~# whoami\nMephi", "root@hoelle:~# whoami\nMephi"),
+        intro = T("root@hell:~# whoami  ->  Mephi", "root@hoelle:~# whoami  ->  Mephi"),
         legend = mapOf('A' to hidden),
         traps = listOf(
             trap(PastX(3f), Play(Card.GRAND_FINALE), Saw(-1.5f, 14.4f, 6.5f, 0f), say("sudo su. Password accepted (it was 'password').", "sudo su. Passwort akzeptiert (es war 'passwort').")),
