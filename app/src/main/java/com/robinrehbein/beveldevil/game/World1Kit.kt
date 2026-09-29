@@ -11,8 +11,8 @@ fun MapBuilder.art(x: Int, y: Int, vararg rows: String, c: Char = '#') {
 fun MapBuilder.pit(xs: IntRange, top: Int = 15) = fill(xs, top until rows, '.')
 
 /** Player start and door on the walking row (or another row). */
-fun MapBuilder.spawn(x: Int, y: Int = 14) = put(x, y, 'P')
-fun MapBuilder.door(x: Int, y: Int = 14) = put(x, y, 'D')
+fun MapBuilder.spawn(x: Int = 2, y: Int = 14) = put(x, y, 'P')
+fun MapBuilder.door(x: Int = 29, y: Int = 14) = put(x, y, 'D')
 
 /** Ceiling spikes (static, decorative or deadly) over [xs] on row 1. */
 fun MapBuilder.ceilingSpikes(xs: IntRange, y: Int = 1) { for (x in xs) put(x, y, 'v') }

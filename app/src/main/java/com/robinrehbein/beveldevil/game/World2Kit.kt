@@ -6,12 +6,6 @@ import com.robinrehbein.beveldevil.game.Action.Say
 
 internal fun say(en: String, de: String): Say = Say(T(en, de))
 
-internal fun MapBuilder.spawn(x: Int = 2, y: Int = 14) = put(x, y, 'P')
-internal fun MapBuilder.door(x: Int = 29, y: Int = 14) = put(x, y, 'D')
-
-/** Cut a pit into the floor. */
-internal fun MapBuilder.pit(xs: IntRange, top: Int = 15) = fill(xs, top..17, '.')
-
 /** Server rack: a block column [w] wide and [h] tall standing on row [base]. */
 internal fun MapBuilder.rack(x: Int, w: Int, h: Int, base: Int = 14, c: Char = '#') = fill(x until x + w, base - h + 1..base, c)
 
