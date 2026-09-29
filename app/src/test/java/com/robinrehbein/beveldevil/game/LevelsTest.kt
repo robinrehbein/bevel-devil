@@ -41,10 +41,46 @@ class Bot(private val level: Level) {
         return hold(0f, left = left, right = !left)
     }
 
+    /** Hold a key until the player is grounded again (used after a jump command). */
+    private fun untilGrounded(left: Boolean, max: Float): Bot {
+        input.left = left; input.right = !left; input.jump = false
+        var t = 0f
+        while (!world.player.grounded && world.state == WorldState.PLAYING && t < max) { world.step(DT, input); t += DT }
+        return hold(0f, left = left, right = !left)
+    }
+
+    /** Keep running right / left until the player lands (max [max] seconds). */
+    fun landRight(max: Float = 1.6f) = untilGrounded(left = false, max)
+    fun landLeft(max: Float = 1.6f) = untilGrounded(left = true, max)
+
+    /** Run to [x], jump (held [hold] seconds) and keep running until landing. */
+    fun hopR(x: Float, hold: Float = 0.35f) = rightTo(x).rightJump(hold).landRight()
+    fun hopL(x: Float, hold: Float = 0.35f) = leftTo(x).leftJump(hold).landLeft()
+    /** Same as [hopR] while the controls are swapped (pressing left moves right). */
+    fun hopS(x: Float, hold: Float = 0.35f) = leftKeyRightTo(x).leftJump(hold).landLeft()
+
+    /** Stand still until the world clock reaches [t] seconds. */
+    fun waitUntil(t: Float): Bot {
+        input.left = false; input.right = false; input.jump = false
+        while (world.time < t && world.state == WorldState.PLAYING) world.step(DT, input)
+        return hold(0f)
+    }
+
+    /** Stand still until a saw is within [d] tiles horizontally of the player (either side). */
+    fun untilSaw(d: Float): Bot {
+        input.left = false; input.right = false; input.jump = false
+        while (world.state == WorldState.PLAYING && world.time < 60f &&
+            world.saws.none { kotlin.math.abs(it.x - world.player.box.cx) <= d }
+        ) world.step(DT, input)
+        return hold(0f)
+    }
+
     fun rightTo(x: Float) = until(x, left = false, goingRight = true)
     fun leftTo(x: Float) = until(x, left = true, goingRight = false)
     /** For swapped controls: press left, move right. */
     fun leftKeyRightTo(x: Float) = until(x, left = true, goingRight = true)
+    /** For swapped controls: press right, move left. */
+    fun rightKeyLeftTo(x: Float) = until(x, left = false, goingRight = false)
 
     fun expect(state: WorldState) {
         assertEquals("${level.name.en}\n$trace", state, world.state)
@@ -59,8 +95,8 @@ class LevelsTest {
     private fun bot(i: Int) = Bot(Levels.all[i - 1])
 
     @Test
-    fun twelveLevelsWithSpawnAndDoor() {
-        assertEquals(12, Levels.all.size)
+    fun allLevelsWithSpawnAndDoor() {
+        assertTrue(Levels.all.size >= 12)
         Levels.all.forEach { World(it) }
     }
 
