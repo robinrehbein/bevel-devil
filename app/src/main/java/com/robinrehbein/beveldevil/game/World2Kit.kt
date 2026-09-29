@@ -51,3 +51,13 @@ internal fun doorTrail(
         trap
     }
 }
+
+/** A group that disappears at [firstHide] for [off] seconds, every [period] seconds, [count] times. */
+internal fun blink(g: Char, firstHide: Float, off: Float, period: Float, count: Int, first: List<Action> = emptyList()): List<Trap> =
+    (0 until count).flatMap { i ->
+        val t = firstHide + i * period
+        listOf(
+            Trap(Trigger.After(t), (if (i == 0) first else emptyList()) + Action.Hide(g)),
+            Trap(Trigger.After(t + off), listOf(Action.Show(g))),
+        )
+    }
