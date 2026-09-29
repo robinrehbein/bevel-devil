@@ -10,6 +10,7 @@ import com.robinrehbein.beveldevil.game.Lang
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
+import com.robinrehbein.beveldevil.game.WorldState
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -62,6 +63,72 @@ class ScreenshotTest {
         r.draw(Canvas(bmp), game, layout)
         val dir = File("build/screenshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** Plays the game frame by frame through one renderer, so transitions see the frames before them. */
+    private class Film(val game: Game, val s: Size) {
+        val r = Renderer(RuntimeEnvironment.getApplication())
+        val layout = Layout().apply { update(s.w, s.h, s.dp) }
+        val bmp: Bitmap = Bitmap.createBitmap(s.w, s.h, Bitmap.Config.ARGB_8888)
+        fun frame() = r.draw(Canvas(bmp), game, layout)
+        /** Advances [seconds] at 120 Hz, rendering at 60 fps, or until [until] holds. */
+        fun play(seconds: Float, until: () -> Boolean = { false }) {
+            var t = 0f
+            var n = 0
+            while (t < seconds && !until()) {
+                game.update(1f / 120f)
+                if (n++ % 2 == 0) frame()
+                t += 1f / 120f
+            }
+        }
+        fun save(name: String) {
+            frame()
+            val dir = File("build/screenshots").apply { mkdirs() }
+            File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
+    @Test
+    fun animations() {
+        Lang.german = true
+        val big = sizes[0]
+        // spawn pop-in and landing dust
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.startLevel(0)
+            play(0.14f); save("16-spawn-pop")
+            game.input.right = true
+            play(0.5f)
+            game.input.jumpPressed = true; game.input.jump = true
+            play(0.1f)
+            game.input.jump = false
+            play(2f) { game.world!!.player.grounded }
+            play(0.06f); save("17-land-dust")
+        }
+        // death shatter, then the iris wipe into the next attempt
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.startLevel(1)
+            game.input.right = true
+            play(5f) { game.world!!.state == WorldState.DEAD }
+            play(0.1f); save("18-death-shatter")
+            val dead = game.world
+            play(2f) { game.world !== dead }
+            play(0.22f); save("19-restart-iris")
+        }
+        // sucked into the door with a light burst
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.startLevel(0)
+            game.input.right = true
+            play(1.75f); game.input.jumpPressed = true; game.input.jump = true
+            play(3f) { game.world!!.state == WorldState.WON }
+            play(0.2f); save("20-win-suck")
+            play(0.2f); save("21-win-burst")
+        }
+        // screen change: dither wipe from the title to the level select
+        Film(Game(MemoryProgress(), silent), big).apply {
+            play(0.5f)
+            game.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f)
+            play(0.16f); save("22-wipe")
+        }
     }
 
     private fun run(game: Game, seconds: Float, right: Boolean = false, jumpAt: Float = -1f) {

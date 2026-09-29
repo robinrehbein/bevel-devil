@@ -63,7 +63,10 @@ object Ui {
     val devilFrame = Hit(212, 4, 38, 38)
 }
 
-class Particle(var x: Float, var y: Float, var vx: Float, var vy: Float, var life: Float, val color: Int)
+/** [size] in pixels; dust drifts and slows down instead of falling. */
+class Particle(var x: Float, var y: Float, var vx: Float, var vy: Float, var life: Float, val color: Int, val size: Int = 2, val dust: Boolean = false) {
+    val life0 = life
+}
 
 /** Everything above a single attempt: screens, Mephi, cards, progress. */
 class Game(private val progress: Progress, private val audio: Audio) {
@@ -106,6 +109,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
     private var selectedAlbum = -1
     val input = Controls()
     private val rng = Random(7)
+    private val fx = Random(11)
     private var lastTaunt = -1
 
     val soundOn get() = progress.sound
@@ -151,7 +155,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             }
             WorldState.WON -> {
                 deadTimer += dt
-                if (deadTimer > 0.5f) finishLevel()
+                if (deadTimer > WIN_DELAY) finishLevel()
             }
             WorldState.PLAYING -> {}
         }
@@ -159,8 +163,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     private fun handleEvents(w: World) {
         for (e in w.events) when (e) {
-            Event.Jump -> audio.play(Sound.JUMP)
-            Event.Land -> audio.play(Sound.LAND)
+            Event.Jump -> { audio.play(Sound.JUMP); dust(w, 3, 2.5f) }
+            Event.Land -> { audio.play(Sound.LAND); dust(w, 5, 4f) }
             Event.Bonk -> { audio.play(Sound.BONK); shake = maxOf(shake, 0.4f) }
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
@@ -197,11 +201,31 @@ class Game(private val progress: Progress, private val audio: Audio) {
         w.events.clear()
     }
 
+    /** The cube shatters: a 3×3 grid of chunks flies apart, plus fine sparks. */
     private fun burst(x: Float, y: Float) {
-        repeat(18) {
-            val a = rng.nextFloat() * 6.283f
-            val s = 4f + rng.nextFloat() * 9f
-            particles += Particle(x, y, cos(a) * s, sin(a) * s - 6f, 0.6f + rng.nextFloat() * 0.5f, if (it % 3 == 0) 0xFFB8FFE6.toInt() else 0xFF6CF2C2.toInt())
+        val up = -6f * (world?.gravity ?: 1f)
+        for (i in 0 until 9) {
+            val gx = i % 3 - 1
+            val gy = i / 3 - 1
+            val s = 5f + fx.nextFloat() * 5f
+            val color = when (gy) { -1 -> 0xFFB8FFE6.toInt(); 0 -> 0xFF6CF2C2.toInt(); else -> 0xFF2AA97F.toInt() }
+            particles += Particle(x + gx * 0.25f, y + gy * 0.25f, gx * s + fx.nextFloat() * 2f - 1f, gy * s * 0.6f + up, 0.7f + fx.nextFloat() * 0.4f, color, size = 3)
+        }
+        repeat(14) {
+            val a = fx.nextFloat() * 6.283f
+            val s = 8f + fx.nextFloat() * 12f
+            particles += Particle(x, y, cos(a) * s, sin(a) * s + up, 0.3f + fx.nextFloat() * 0.35f, if (it % 2 == 0) 0xFFFFFFFF.toInt() else 0xFFB8FFE6.toInt(), size = 1)
+        }
+    }
+
+    /** Puffs at the player's feet (their head, when gravity is flipped). */
+    private fun dust(w: World, n: Int, spread: Float) {
+        val b = w.player.box
+        val feet = if (w.gravity < 0) b.y else b.b
+        repeat(n) {
+            val side = if (it % 2 == 0) 1f else -1f
+            val s = spread * (0.4f + fx.nextFloat() * 0.6f)
+            particles += Particle(b.cx + side * (0.3f + fx.nextFloat() * 0.2f), feet - 0.1f * w.gravity, side * s, -w.gravity * (0.4f + fx.nextFloat() * 0.8f), 0.3f + fx.nextFloat() * 0.2f, 0xFFEADCCB.toInt(), size = 4, dust = true)
         }
     }
 
@@ -212,7 +236,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             val p = it.next()
             p.life -= dt
             if (p.life <= 0f) { it.remove(); continue }
-            p.vy += g * dt
+            if (p.dust) { p.vx *= 1f - dt * 6f; p.vy *= 1f - dt * 4f } else p.vy += g * dt
             p.x += p.vx * dt
             p.y += p.vy * dt
         }
@@ -356,6 +380,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     companion object {
         const val CARD_LIFE = 2.4f
+        /** Seconds between touching the door and the clear screen, for the win animation. */
+        const val WIN_DELAY = 0.8f
 
         val TAUNTS = listOf(
             T("Ouch.", "Autsch."),
