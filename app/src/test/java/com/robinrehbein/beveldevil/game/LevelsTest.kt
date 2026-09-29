@@ -58,6 +58,8 @@ class Bot(private val level: Level) {
     fun hopL(x: Float, hold: Float = 0.35f) = leftTo(x).leftJump(hold).landLeft()
     /** Same as [hopR] while the controls are swapped (pressing left moves right). */
     fun hopS(x: Float, hold: Float = 0.35f) = leftKeyRightTo(x).leftJump(hold).landLeft()
+    /** Swapped controls, moving left (pressing right). */
+    fun hopSL(x: Float, hold: Float = 0.35f) = rightKeyLeftTo(x).rightJump(hold).landRight()
 
     /** Stand still until the world clock reaches [t] seconds. */
     fun waitUntil(t: Float): Bot {
