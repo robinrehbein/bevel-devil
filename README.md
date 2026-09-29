@@ -2,9 +2,11 @@
 
 Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würfel **Bevel** will zur Tür, und **Mephi**, der Croupier der Hölle, spielt ihm dabei Fallenkarten aus.
 
-| Titel | Level | Teufelskarte |
+| Titel | Level 1 | Teufelskarte |
 |---|---|---|
-| ![Titel](docs/screenshots/01-title.png) | ![Level 5](docs/screenshots/07-level5-flip.png) | ![Album](docs/screenshots/12-album-card.png) |
+| ![Titel](docs/screenshots/01-title.png) | ![Level 1](docs/screenshots/04-level1-trap.png) | ![Level 5](docs/screenshots/07-level5-flip.png) |
+| **Levelwahl** | **Ab durch die Tür** | **Album** |
+| ![Levelwahl](docs/screenshots/02-select.png) | ![Sieg](docs/screenshots/21-win-burst.png) | ![Album](docs/screenshots/11-album.png) |
 
 ## Was drin ist
 
@@ -12,6 +14,8 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
+- **Mauerwerk statt Kacheln:** Berührende Blöcke verschmelzen per Autotiling zu Massen aus unregelmäßigen Goldsteinen, mit Bevel nur an freien Kanten. Fallen sind bis zum Auslösen pixelgleich mit normalem Boden (`TrapInvisibilityTest`).
+- **Leben im Bild:** aufsteigende Glut, eine Parallax-Skyline der Hölle, glühende Risse im Fels, Türlicht, blitzende Spikes, Staubwolken, zersplitternder Würfel, Sog in die Tür und Dither-/Iris-Blenden zwischen Screens.
 - Coyote-Time, Sprungpuffer, variable Sprunghöhe, Touch-Steuerung (Multitouch) sowie Tastatur und Gamepad.
 - Synthetisierte Sounds, keine Audiodateien. Der Fortschritt wird lokal gespeichert. Release-APK rund 80 KB.
 

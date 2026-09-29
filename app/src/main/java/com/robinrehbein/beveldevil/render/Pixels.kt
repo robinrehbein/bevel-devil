@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import com.robinrehbein.beveldevil.R
-import com.robinrehbein.beveldevil.game.Dir
 import com.robinrehbein.beveldevil.game.Hit
 import com.robinrehbein.beveldevil.game.Ui
 import kotlin.math.roundToInt
@@ -73,10 +72,14 @@ class Pixels(context: Context) {
     private val measure = Paint().apply { typeface = text.typeface }
     val dst = RectF()
 
-    class TextCmd(val s: String, val x: Float, val y: Float, val size: Float, val color: Int, val align: Paint.Align, val shadow: Int)
+    class TextCmd {
+        var s = ""; var x = 0f; var y = 0f; var size = 0f; var color = 0; var align = Paint.Align.LEFT; var shadow = 0
+    }
+    private val pool = ArrayList<TextCmd>()
+    /** Text queued this frame; the commands are pooled, so a frame queues without allocating. */
     val texts = ArrayList<TextCmd>()
-    private var ox = 0
-    private var oy = 0
+    @PublishedApi internal var ox = 0
+    @PublishedApi internal var oy = 0
 
     fun resize(w: Int, h: Int) {
         if (lo.width == w && lo.height == h) return
@@ -85,7 +88,7 @@ class Pixels(context: Context) {
     }
 
     /** Runs [block] with pixels and text shifted by ([x], [y]). */
-    fun at(x: Int, y: Int, block: () -> Unit) {
+    inline fun at(x: Int, y: Int, block: () -> Unit) {
         lc.save(); lc.translate(x.toFloat(), y.toFloat())
         ox += x; oy += y
         try { block() } finally { lc.restore(); ox -= x; oy -= y }
@@ -99,9 +102,15 @@ class Pixels(context: Context) {
     }
 
     fun rect(x: Number, y: Number, w: Number, h: Number, color: Int) = rect(lc, x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color)
+    // unboxed overloads for the common argument types, so per-frame drawing does not allocate
+    fun rect(x: Float, y: Float, w: Float, h: Float, color: Int) = rect(lc, x, y, w, h, color)
+    fun rect(x: Float, y: Float, w: Int, h: Int, color: Int) = rect(lc, x, y, w.toFloat(), h.toFloat(), color)
+    fun rect(x: Int, y: Int, w: Int, h: Int, color: Int) = rect(lc, x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color)
 
     fun say(s: String, x: Float, y: Float, size: Float, color: Int = CREAM, align: Paint.Align = Paint.Align.LEFT, shadow: Int = SHADOW) {
-        texts += TextCmd(s, x + ox, y + oy, size, color, align, shadow)
+        val t = if (pool.size > texts.size) pool[texts.size] else TextCmd().also { pool += it }
+        t.s = s; t.x = x + ox; t.y = y + oy; t.size = size; t.color = color; t.align = align; t.shadow = shadow
+        texts += t
     }
 
     fun textWidth(s: String, size: Float): Float {
@@ -118,40 +127,6 @@ class Pixels(context: Context) {
         }
         if (line.isNotEmpty()) out += line
         return out
-    }
-
-    fun tile(c: Canvas, x: Float, y: Float) {
-        rect(c, x, y, 8f, 8f, GOLD); rect(c, x, y, 8f, 1f, GOLD_HI); rect(c, x, y, 1f, 8f, GOLD_HI)
-        rect(c, x + 1, y + 1, 6f, 1f, GOLD_MID)
-        rect(c, x, y + 7, 8f, 1f, GOLD_LO); rect(c, x + 7, y, 1f, 8f, GOLD_LO); rect(c, x + 1, y + 6, 6f, 1f, GOLD_LO2)
-        rect(c, x, y, 1f, 1f, GOLD_SPARK)
-    }
-
-    /** Dark "hell rock" version of [tile] for everything around the playfield; [seed] varies the cracks. */
-    fun rockTile(c: Canvas, x: Float, y: Float, seed: Int) {
-        rect(c, x, y, 8f, 8f, ROCK); rect(c, x, y, 8f, 1f, ROCK_HI); rect(c, x, y, 1f, 8f, ROCK_HI)
-        rect(c, x + 1, y + 1, 6f, 1f, ROCK_MID)
-        rect(c, x, y + 7, 8f, 1f, ROCK_LO); rect(c, x + 7, y, 1f, 8f, ROCK_LO); rect(c, x + 1, y + 6, 6f, 1f, ROCK_LO2)
-        when (seed % 9) {
-            0 -> { rect(c, x + 3, y + 2, 1f, 2f, ROCK_LO); rect(c, x + 4, y + 4, 1f, 1f, ROCK_LO) }
-            4 -> rect(c, x + 2 + seed % 3, y + 3 + seed % 2, 1f, 1f, EMBER)
-        }
-    }
-
-    fun spike(c: Canvas, x: Float, y: Float, dir: Dir) {
-        for (row in 1..7) {
-            val half = (row + 1) / 2
-            for (col in 4 - half until 4 + half) {
-                val color = if (col < 4) BONE else BONE_LO
-                val (px, py) = when (dir) {
-                    Dir.UP -> col to row
-                    Dir.DOWN -> col to 7 - row
-                    Dir.LEFT -> row to col
-                    Dir.RIGHT -> 7 - row to col
-                }
-                rect(c, x + px, y + py, 1f, 1f, color)
-            }
-        }
     }
 
     fun box(h: Hit, fillColor: Int, hi: Int, shadow: Boolean = true) = box(h.x.toFloat(), h.y.toFloat(), h.w.toFloat(), h.h.toFloat(), fillColor, hi, shadow)
@@ -175,12 +150,13 @@ abstract class Painter(protected val px: Pixels) {
     protected val blit get() = px.blit
     protected fun rect(c: Canvas, x: Float, y: Float, w: Float, h: Float, color: Int) = px.rect(c, x, y, w, h, color)
     protected fun rect(x: Number, y: Number, w: Number, h: Number, color: Int) = px.rect(x, y, w, h, color)
+    protected fun rect(x: Float, y: Float, w: Float, h: Float, color: Int) = px.rect(x, y, w, h, color)
+    protected fun rect(x: Float, y: Float, w: Int, h: Int, color: Int) = px.rect(x, y, w, h, color)
+    protected fun rect(x: Int, y: Int, w: Int, h: Int, color: Int) = px.rect(x, y, w, h, color)
     protected fun say(s: String, x: Float, y: Float, size: Float, color: Int = CREAM, align: Paint.Align = Paint.Align.LEFT, shadow: Int = SHADOW) =
         px.say(s, x, y, size, color, align, shadow)
     protected fun textWidth(s: String, size: Float) = px.textWidth(s, size)
     protected fun wrap(text: String, size: Float, maxW: Float) = px.wrap(text, size, maxW)
-    protected fun tile(c: Canvas, x: Float, y: Float) = px.tile(c, x, y)
-    protected fun spike(c: Canvas, x: Float, y: Float, dir: Dir) = px.spike(c, x, y, dir)
     protected fun box(h: Hit, fillColor: Int, hi: Int, shadow: Boolean = true) = px.box(h, fillColor, hi, shadow)
     protected fun box(x: Float, y: Float, w: Float, h: Float, fillColor: Int, hi: Int, shadow: Boolean = true) = px.box(x, y, w, h, fillColor, hi, shadow)
     protected fun button(h: Hit, label: String, primary: Boolean) = px.button(h, label, primary)

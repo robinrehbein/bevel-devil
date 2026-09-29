@@ -11,10 +11,12 @@ import android.graphics.Shader
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Screen
+import com.robinrehbein.beveldevil.game.World
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.hypot
+import kotlin.math.max
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -35,6 +37,20 @@ class Renderer(context: Context) {
     private val scanPaint = Paint()
     private var vignetteFor = ""
     private val vignettePaint = Paint()
+
+    // screen transitions: the last frame before a change, dissolved away with a dither pattern
+    private var lastScreen: Screen? = null
+    private var lastWorld: World? = null
+    private var wipeT = -1f
+    private var wipeP = 1f
+    private var wipeIris = false
+    private var wipeCx = 0f
+    private var wipeCy = 0f
+    private var wipeMax = 1f
+    private var wipeW = 0
+    private var wipeH = 0
+    private var snapPx = IntArray(0)
+    private var curPx = IntArray(0)
 
     // ---------- background ----------
 
@@ -73,9 +89,12 @@ class Renderer(context: Context) {
 
     fun draw(canvas: Canvas, game: Game, l: Layout) {
         if (l.w == 0) return
+        val sameSize = px.lo.width == l.lw && px.lo.height == l.lh
         px.resize(l.lw, l.lh)
+        transition(game, l, sameSize)
         px.texts.clear()
         swirl(game.time, game.heat, l)
+        if (!l.overWorld(game.screen) && game.screen != Screen.PLAY) Fx.embers(px, l.lw, l.lh, game.time, 0f)
         when (game.screen) {
             Screen.TITLE -> ui.title(game, l)
             Screen.SELECT -> ui.select(game, l)
@@ -85,6 +104,7 @@ class Renderer(context: Context) {
             Screen.CLEAR -> { world.draw(game, l); ui.clear(game, l) }
             Screen.END -> { world.draw(game, l); ui.end(game, l) }
         }
+        wipe(game, l)
 
         val sc = l.sc.toFloat()
         val jx = game.shake * sc * 2f * sin(game.time * 90f)
@@ -96,7 +116,9 @@ class Renderer(context: Context) {
         canvas.translate(jx, jy)
         canvas.drawBitmap(px.lo, null, px.dst, px.blit)
         val text = px.text
-        for (t in px.texts) {
+        for (i in 0 until px.texts.size) {
+            val t = px.texts[i]
+            if (wipeT >= 0f && !revealed(t.x.toInt(), t.y.toInt())) continue
             text.textSize = t.size * sc
             text.textAlign = t.align
             val baseline = t.y * sc + t.size * sc * 0.36f
@@ -112,6 +134,58 @@ class Renderer(context: Context) {
         canvas.restore()
         crt(canvas, l)
         if (game.screen == Screen.PLAY) controls.draw(canvas, l.controls)
+    }
+
+    // ---------- transitions ----------
+
+    /** Notices a screen change or a new attempt and keeps the previous frame to dissolve from. */
+    private fun transition(game: Game, l: Layout, sameSize: Boolean) {
+        val s = game.screen
+        val w = game.world
+        val newWorld = s == Screen.PLAY && w !== lastWorld
+        if (lastScreen != null && sameSize && (s != lastScreen || newWorld)) {
+            val n = l.lw * l.lh
+            if (snapPx.size != n) { snapPx = IntArray(n); curPx = IntArray(n) }
+            px.lo.getPixels(snapPx, 0, l.lw, 0, 0, l.lw, l.lh)
+            wipeT = game.time
+            wipeW = l.lw; wipeH = l.lh
+            wipeIris = newWorld && w != null
+            if (wipeIris && w != null) {
+                // a new attempt opens out of the dark, like a camera iris
+                for (i in 0 until n) {
+                    val c = snapPx[i]
+                    snapPx[i] = Color.rgb((c shr 16 and 0xFF) / 5 + 6, (c shr 8 and 0xFF) / 6 + 2, (c and 0xFF) / 5 + 10)
+                }
+                wipeCx = l.fx + w.player.box.cx * TS
+                wipeCy = l.fy + w.player.box.cy * TS
+                wipeMax = hypot(max(wipeCx, l.lw - wipeCx), max(wipeCy, l.lh - wipeCy))
+            }
+        }
+        lastScreen = s
+        lastWorld = w
+    }
+
+    /** 0..1: where pixel ([x], [y]) sits in the wipe order, dithered in 2×2 blocks. */
+    private fun order(x: Int, y: Int): Float {
+        val v = if (wipeIris) hypot(x - wipeCx, y - wipeCy) / wipeMax else (x + (wipeH - y) * 0.7f) / (wipeW + wipeH * 0.7f)
+        return v + bayer(x shr 1, y shr 1) * BAND
+    }
+
+    private fun revealed(x: Int, y: Int) = order(x, y) < wipeP * (1f + BAND)
+
+    private fun wipe(game: Game, l: Layout) {
+        if (wipeT < 0f) return
+        wipeP = (game.time - wipeT) / (if (wipeIris) 0.5f else 0.36f)
+        if (wipeP >= 1f || wipeW != l.lw || wipeH != l.lh) { wipeT = -1f; return }
+        val w = l.lw
+        val h = l.lh
+        px.lo.getPixels(curPx, 0, w, 0, 0, w, h)
+        val edge = wipeP * (1f + BAND)
+        for (y in 0 until h) for (x in 0 until w) {
+            val o = order(x, y)
+            if (o >= edge) curPx[y * w + x] = snapPx[y * w + x]
+        }
+        px.lo.setPixels(curPx, 0, w, 0, 0, w, h)
     }
 
     private fun crt(canvas: Canvas, l: Layout) {
@@ -138,7 +212,7 @@ class Renderer(context: Context) {
     companion object {
         private const val BW = 128
         private const val BH = 72
-        private val BAYER = intArrayOf(0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5)
+        private const val BAND = 0.12f
         private val COOL = intArrayOf(0xFF160A22.toInt(), 0xFF240E30.toInt(), 0xFF34123E.toInt(), 0xFF22244E.toInt(), 0xFF1E405C.toInt(), 0xFF2C5C6E.toInt())
         private val HOT = intArrayOf(0xFF1E0818.toInt(), 0xFF380C22.toInt(), 0xFF5C1028.toInt(), 0xFF841A2C.toInt(), 0xFFAA3232.toInt(), 0xFFCC5A40.toInt())
     }

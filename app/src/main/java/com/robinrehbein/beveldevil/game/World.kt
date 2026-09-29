@@ -137,6 +137,9 @@ class World(val level: Level) {
         private set
     var state = WorldState.PLAYING
         private set
+    /** [time] when [state] last changed (death or win), for the renderer's animations. */
+    var stateTime = 0f
+        private set
     /** The last trap card Mephi played in this attempt; collected if the player dies. */
     var lastCard: Card? = null
         private set
@@ -190,6 +193,7 @@ class World(val level: Level) {
         checkHazards()
         if (state == WorldState.PLAYING && doorReached()) {
             state = WorldState.WON
+            stateTime = time
             events += Event.Won
         }
     }
@@ -460,6 +464,7 @@ class World(val level: Level) {
     private fun die() {
         if (state != WorldState.PLAYING) return
         state = WorldState.DEAD
+        stateTime = time
         events += Event.Died(player.box.cx, player.box.cy)
         events += Event.Shake(1f)
     }
