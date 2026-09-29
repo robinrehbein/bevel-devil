@@ -1,0 +1,27 @@
+package com.robinrehbein.beveldevil.game
+
+/** UI strings. */
+object Txt {
+    val play = T("PLAY", "SPIELEN")
+    val album = T("ALBUM", "ALBUM")
+    val soundOn = T("SOUND ON", "TON AN")
+    val soundOff = T("SOUND OFF", "TON AUS")
+    val tap = T("Tap to start", "Tippen zum Starten")
+    val world = T("WORLD 1 · HELL'S CELLAR", "WELT 1 · HÖLLENKELLER")
+    val new = T("new", "neu")
+    val pause = T("PAUSE", "PAUSE")
+    val resume = T("RESUME", "WEITER")
+    val levels = T("LEVELS", "LEVELS")
+    val cleared = T("CLEARED!", "GESCHAFFT!")
+    val next = T("NEXT", "WEITER")
+    val deaths = T("DEATHS", "TODE")
+    val best = T("BEST", "BESTWERT")
+    val trap = T("TRAP", "FALLE")
+    val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
+    val caught = T("caught you %d×", "%d× erwischt")
+    val tapCard = T("Tap a card to see it.", "Tippe auf eine Karte.")
+    val endTitle = T("MEPHI GIVES UP.", "MEPHI GIBT AUF.")
+    val endSub = T("For now.", "Vorerst.")
+    val endDeaths = T("Total deaths: %d", "Tode insgesamt: %d")
+    val toTitle = T("TITLE", "ZUM TITEL")
+}
