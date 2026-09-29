@@ -1,6 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
-/** Level registry. World 1 is the only world for now. */
+/** Level registry: the worlds' levels back to back, so world 1 keeps indices 0..127 (saved progress uses them). */
 object Levels {
-    val all: List<Level> = World1.levels
+    val all: List<Level> = Worlds.all.flatMap { it.levels }
 }

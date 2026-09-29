@@ -36,7 +36,8 @@ Die Screenshot-Tests rendern echte Screens mit Robolectric nach `app/build/scree
 app/src/main/java/com/robinrehbein/beveldevil/
 ├── game/            Reine Spiellogik, ohne Android-Abhängigkeiten
 │   ├── Level.kt     Level-DSL: Karte, Glyphen, Trigger, Aktionen
-│   ├── Levels.kt    Level-Register (Welt 1)
+│   ├── Levels.kt    Level-Register (alle Welten hintereinander)
+│   ├── Worlds.kt    Welten: Name, Übergangsscreen, Index-Mapping ("2-17")
 │   ├── World1*.kt   Die 128 Level von Welt 1 (Part1–Part8, je 16 Level) und Bau-Helfer
 │   ├── World.kt     Physik, Kollision, Fallen (ein Versuch)
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt

@@ -166,6 +166,26 @@ class ScreenshotTest {
     }
 
     @Test
+    fun levelSelect() {
+        Lang.german = true
+        val two = sizes.take(2)
+        fun cleared(n: Int) = MemoryProgress().apply { unlocked = n + 1; for (i in 0 until n) saveBest(i, (i * 7) % 23) }
+        fun open(p: Progress) = Game(p, silent).also { run(it, 0.5f); it.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(it, 0.6f) }
+        shoot("50-select-w1-p1", open(MemoryProgress()), two)
+        shoot("51-select-w1-mid", open(cleared(69)), two)
+        val w2 = open(cleared(128 + 20))
+        shoot("52-select-w2", w2, two)
+        w2.page(-1); run(w2, 0.6f)
+        w2.tap(Ui.worldTab(0, 3).x + 2f, Ui.worldTab(0, 3).y + 2f); run(w2, 0.6f)
+        shoot("53-select-w1-last", w2, two)
+        Lang.german = false
+        shoot("54-select-w1-last-en", w2, two.take(1))
+        Lang.german = true
+        w2.startLevel(128 + 16); run(w2, 1.2f)
+        shoot("55-hud-w2", w2, sizes)
+    }
+
+    @Test
     fun story() {
         Lang.german = true
         val two = sizes.take(2)

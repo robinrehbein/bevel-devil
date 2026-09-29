@@ -55,7 +55,20 @@ object Ui {
     }
     val back = Hit(6, 6, 20, 12)
     val selectAlbum = Hit(196, 122, 54, 14)
-    fun levelTile(i: Int) = Hit(18 + (i % 6) * 38, 32 + (i / 6) * 42, 30, 32)
+    /** Levels per page of the level select: one act, 8×2 tiles. */
+    const val PAGE = 16
+    /** Tile [slot] (0 until [PAGE]) of the current page. */
+    fun levelTile(slot: Int) = Hit(18 + (slot % 8) * 28, 40 + (slot / 8) * 38, 24, 32)
+    /** Tab of world [k] of [n], centered and clear of the back button. */
+    fun worldTab(k: Int, n: Int): Hit {
+        val w = minOf(58, (192 - (n - 1) * 4) / n)
+        return Hit(128 - (n * w + (n - 1) * 4) / 2 + k * (w + 4), 6, w, 13)
+    }
+    /** Page arrows: the whole strip beside the tiles is tappable. */
+    val pagePrev = Hit(0, 38, 17, 72)
+    val pageNext = Hit(239, 38, 17, 72)
+    /** Page pip [p] of [n], centered under the tiles. */
+    fun pageDot(p: Int, n: Int) = Hit(128 - n * 5 + p * 10, 116, 10, 10)
     val hudPause = Hit(4, 3, 14, 12)
     val pauseResume = Hit(88, 58, 80, 16)
     val pauseLevels = Hit(88, 80, 80, 16)
@@ -143,8 +156,52 @@ class Game(private val progress: Progress, private val audio: Audio) {
     var glitch = 0f
         private set
 
+    /** World and page shown on the level select. */
+    var selWorld: WorldInfo = Worlds.all.first()
+        private set
+    var selPage = 0
+        private set
+
     init {
+        // saves from before a world was added: a cleared last level unlocks the next world
+        while (progress.unlocked in 1 until Levels.all.size && progress.bestDeaths(progress.unlocked - 1) != null) progress.unlocked++
         if (!progress.introSeen) startIntro(first = true)
+    }
+
+    /** "2-17" for the current level. */
+    val levelLabel get() = Worlds.label(levelIndex)
+    fun worldOpen(w: WorldInfo) = w.size > 0 && w.firstLevel < progress.unlocked
+    fun pages(w: WorldInfo = selWorld) = (w.size + Ui.PAGE - 1) / Ui.PAGE
+    /** Global index of the level on tile [slot] of the shown page, or -1 past the world's end. */
+    fun selLevel(slot: Int): Int {
+        val local = selPage * Ui.PAGE + slot
+        return if (slot in 0 until Ui.PAGE && local < selWorld.size) selWorld.firstLevel + local else -1
+    }
+
+    /** Turns the level select [d] pages, clamped to the world. */
+    fun page(d: Int) {
+        val p = (selPage + d).coerceIn(0, maxOf(0, pages() - 1))
+        if (p != selPage) { selPage = p; click() }
+    }
+
+    /** Shows world [w] on the level select, on the page with its highest unlocked level. */
+    private fun selectWorld(w: WorldInfo) {
+        selWorld = w
+        val hi = (progress.unlocked - 1).coerceIn(w.firstLevel, w.firstLevel + maxOf(0, w.size - 1))
+        selPage = (hi - w.firstLevel) / Ui.PAGE
+    }
+
+    /** Opens the level select on the world of global level [i]. */
+    private fun openSelect(i: Int) {
+        selectWorld(Worlds.of(i))
+        go(Screen.SELECT)
+    }
+
+    /** Keyboard/gamepad confirm on the level select: the highest unlocked level of the shown world. */
+    fun selectConfirm() {
+        if (screen != Screen.SELECT || !worldOpen(selWorld)) return
+        click()
+        startLevel((progress.unlocked - 1).coerceIn(selWorld.firstLevel, selWorld.firstLevel + selWorld.size - 1))
     }
 
     fun update(dt: Float) {
@@ -317,6 +374,13 @@ class Game(private val progress: Progress, private val audio: Audio) {
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
     }
 
+    /** From the clear screen: the next level, or first the transition screen when it opens a new world. */
+    private fun next() {
+        val n = levelIndex + 1
+        val w = Worlds.of(n)
+        if (n == w.firstLevel) showWorldIntro(w.number) else startLevel(n)
+    }
+
     /** Starts the story. [first] is the automatic run on first start: it leads on to world 1. */
     fun startIntro(first: Boolean = false) {
         introPage = 0
@@ -350,18 +414,12 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 p in Ui.gear -> openSettings()
                 p in Ui.titleStory -> { click(); startIntro() }
                 p in Ui.titleAlbum -> go(Screen.ALBUM)
-                else -> go(Screen.SELECT)
+                else -> openSelect(progress.unlocked - 1)
             }
-            Screen.SELECT -> {
-                when {
-                    p in Ui.back -> go(Screen.TITLE)
-                    p in Ui.selectAlbum -> go(Screen.ALBUM)
-                    else -> Levels.all.indices.firstOrNull { p in Ui.levelTile(it) && it < progress.unlocked }?.let { click(); startLevel(it) }
-                }
-            }
+            Screen.SELECT -> tapSelect(p)
             Screen.PLAY -> if (p in Ui.hudPause) go(Screen.PAUSE)
             Screen.PAUSE -> when {
-                p in Ui.pauseLevels -> go(Screen.SELECT)
+                p in Ui.pauseLevels -> openSelect(levelIndex)
                 p in Ui.pauseSettings -> openSettings()
                 else -> go(Screen.PLAY)
             }
@@ -374,13 +432,38 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 introPage >= Intro.pages.lastIndex -> { click(); finishIntro() }
                 else -> { click(); introPage++; introAge = 0f }
             }
-            Screen.WORLD_INTRO -> if (worldAge > 0.4f) { click(); startLevel(worldInfo.firstLevel.coerceIn(0, Levels.all.lastIndex)) }
-            Screen.CLEAR -> if (p in Ui.clearNext) { click(); startLevel(levelIndex + 1) }
+            Screen.WORLD_INTRO -> if (worldAge > 0.4f) {
+                if (worldInfo.size > 0) { click(); startLevel(worldInfo.firstLevel) } else openSelect(progress.unlocked - 1)
+            }
+            Screen.CLEAR -> if (p in Ui.clearNext) { click(); next() }
             Screen.ALBUM -> {
                 if (p in Ui.back) go(Screen.TITLE)
                 else selectedAlbum = Card.entries.indices.firstOrNull { p in Ui.albumCard(it) && progress.cardFound(Card.entries[it]) } ?: -1
             }
             Screen.END -> if (p in Ui.endTitle) go(Screen.TITLE)
+        }
+    }
+
+    private fun tapSelect(p: Pair<Float, Float>) {
+        val n = Worlds.all.size
+        val pages = pages()
+        when {
+            p in Ui.back -> go(Screen.TITLE)
+            p in Ui.selectAlbum -> go(Screen.ALBUM)
+            p in Ui.pagePrev -> page(-1)
+            p in Ui.pageNext -> page(1)
+            else -> {
+                val tab = (0 until n).firstOrNull { p in Ui.worldTab(it, n) }
+                if (tab != null) {
+                    val w = Worlds.all[tab]
+                    if (worldOpen(w) && w !== selWorld) { selectWorld(w); click() }
+                    return
+                }
+                val dot = (0 until pages).firstOrNull { p in Ui.pageDot(it, pages) }
+                if (dot != null) { page(dot - selPage); return }
+                val i = (0 until Ui.PAGE).firstOrNull { p in Ui.levelTile(it) }?.let { selLevel(it) } ?: -1
+                if (i >= 0 && i < progress.unlocked) { click(); startLevel(i) }
+            }
         }
     }
 
@@ -425,8 +508,10 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.PLAY -> go(Screen.PAUSE)
             Screen.SETTINGS -> go(settingsFrom)
             Screen.INTRO -> finishIntro()
-            Screen.WORLD_INTRO -> go(Screen.SELECT)
-            Screen.PAUSE, Screen.CLEAR -> go(Screen.SELECT)
+            Screen.WORLD_INTRO -> openSelect(if (worldInfo.size > 0) worldInfo.firstLevel else progress.unlocked - 1)
+            Screen.PAUSE -> openSelect(levelIndex)
+            // after a world's last level, back shows the world just opened
+            Screen.CLEAR -> openSelect(levelIndex + 1)
         }
         return true
     }

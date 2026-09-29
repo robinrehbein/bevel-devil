@@ -7,12 +7,13 @@ import android.graphics.Paint
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Hit
-import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.Mood
 import com.robinrehbein.beveldevil.game.Rarity
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Txt
 import com.robinrehbein.beveldevil.game.Ui
+import com.robinrehbein.beveldevil.game.WorldInfo
+import com.robinrehbein.beveldevil.game.Worlds
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -135,7 +136,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     }
 
     private fun pillRow(game: Game, x: Float, y: Float) {
-        val name = "${game.levelIndex + 1} · ${game.level.name.toString().uppercase()}"
+        val name = "${game.levelLabel} · ${game.level.name.toString().uppercase()}"
         val nw = textWidth(name, 5f) + 10
         box(x, y, nw, 12f, PLUM, PLUM_HI)
         say(name, x + 5, y + 6.3f, 5f)
@@ -155,7 +156,8 @@ class UiPainter(px: Pixels) : Painter(px) {
         val name = game.level.name.toString().uppercase()
         var size = 4f
         while (size > 3f && name.split(' ').any { textWidth(it, size) > w - 6 }) size -= 0.5f
-        val lines = wrap(name, size, w - 6)
+        // a word too long even at the smallest size breaks with a hyphen
+        val lines = wrap(name, size, w - 6).flatMap { line -> if (textWidth(line, size) <= w - 6) listOf(line) else hyphenate(line, size, w - 6) }
         val lh = size * 1.3f
         val bh = (17f + lines.size * lh + 3).roundToInt().toFloat()
         var y = col.y.toFloat()
@@ -164,7 +166,10 @@ class UiPainter(px: Pixels) : Painter(px) {
         val hx = cx.roundToInt().toFloat()
         rect(hx - 6, y - 3, 2f, 3f, INK); rect(hx - 5, y - 4, 1f, 2f, INK); rect(hx - 5, y - 2, 1f, 2f, BONE)
         rect(hx + 4, y - 3, 2f, 3f, INK); rect(hx + 4, y - 4, 1f, 2f, INK); rect(hx + 4, y - 2, 1f, 2f, BONE)
-        say("${game.levelIndex + 1}", cx, y + 8.5f, 9f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+        val label = game.levelLabel
+        var ls = 9f
+        while (ls > 6f && textWidth(label, ls) > w - 6) ls -= 0.5f
+        say(label, cx, y + 8.5f, ls, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
         rect(x + 5, y + 15, w - 10, 1f, GOLD_LO2)
         lines.forEachIndexed { i, s -> say(s, cx, y + 17.5f + lh / 2 + i * lh, size, CREAM, Paint.Align.CENTER) }
         y += bh + 6
@@ -175,6 +180,19 @@ class UiPainter(px: Pixels) : Painter(px) {
         rect(x, y + 11, w, 1f, DEVIL_RED_LO)
         lc.drawBitmap(Icons.skull, dx, y + 3.5f, null)
         say(dLabel, dx + 9, y + 6.3f, 5f)
+    }
+
+    private fun hyphenate(word: String, size: Float, maxW: Float): List<String> {
+        val out = ArrayList<String>()
+        var rest = word
+        while (textWidth(rest, size) > maxW && rest.length > 2) {
+            var n = rest.length - 1
+            while (n > 1 && textWidth(rest.take(n) + "-", size) > maxW) n--
+            out += rest.take(n) + "-"
+            rest = rest.drop(n)
+        }
+        out += rest
+        return out
     }
 
     /** Velvet panel in a beveled gold frame. */
@@ -363,54 +381,155 @@ class UiPainter(px: Pixels) : Painter(px) {
     fun select(game: Game, l: Layout) {
         floorStrip(l)
         stage(l, Screen.SELECT) {
+            val t = game.time
             button(Ui.back, "<", false)
-            say(Txt.world.toString(), 128f, 14f, 7f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
-            for (i in Levels.all.indices) {
-                val h = Ui.levelTile(i)
-                val open = i < game.unlocked()
-                val x = h.x.toFloat()
-                val y = h.y.toFloat()
-                val w = h.w.toFloat()
-                val hh = h.h.toFloat()
-                rect(x + 2, y + 2, w, hh, SHADOW)
-                rect(x - 1, y, w + 2, hh, INK); rect(x, y - 1, w, hh + 2, INK)
-                if (open) {
-                    rect(x, y, w, hh, GOLD)
-                    rect(x, y, w, 1f, GOLD_HI); rect(x, y, 1f, hh, GOLD_HI); rect(x + 1, y + 1, w - 2, 1f, GOLD_MID); rect(x + 1, y + 1, 1f, hh - 2, GOLD_MID)
-                    rect(x, y + hh - 1, w, 1f, GOLD_LO); rect(x + w - 1, y, 1f, hh, GOLD_LO); rect(x + 1, y + hh - 2, w - 2, 1f, GOLD_LO2); rect(x + w - 2, y + 1, 1f, hh - 2, GOLD_LO2)
-                    // engraved number plate
-                    rect(x + 4, y + 4, w - 8, 15f, 0xFFD9963F.toInt())
-                    rect(x + 4, y + 4, w - 8, 1f, GOLD_LO2); rect(x + 4, y + 4, 1f, 15f, GOLD_LO2)
-                    rect(x + 4, y + 18, w - 8, 1f, GOLD_MID); rect(x + w - 5, y + 4, 1f, 15f, GOLD_MID)
-                    rect(x + 1, y + 1, 1f, 1f, GOLD_SPARK)
-                    say((i + 1).toString(), x + w / 2f, y + 12f, 11f, INK_TEXT, Paint.Align.CENTER, GOLD_HI)
-                    val best = game.bestDeaths(i)
-                    if (best == null) say(Txt.new.toString(), x + w / 2f, y + 25f, 4f, INK_TEXT, Paint.Align.CENTER, 0)
-                    else {
-                        lc.drawBitmap(Icons.skull, x + 6f, y + 23f, null)
-                        say(best.toString(), x + 20f, y + 25.5f, 4.5f, INK_TEXT, Paint.Align.CENTER, 0)
-                    }
-                    if (i == game.unlocked() - 1 && best == null) {
-                        val a = ((sin(game.time * 5f) + 1) * 0.5f * 255).toInt()
-                        val c = Color.argb(a, 108, 242, 194)
-                        rect(x - 3, y - 3, w + 6, 1f, c); rect(x - 3, y + hh + 2, w + 6, 1f, c)
-                        rect(x - 3, y - 3, 1f, hh + 6, c); rect(x + w + 2, y - 3, 1f, hh + 6, c)
-                        // a sparkle hops around the next level
-                        val k = ((game.time * 3f).toInt() % 4)
-                        rect(if (k % 2 == 0) x - 3 else x + w + 2, if (k < 2) y - 3 else y + hh + 2, 1f, 1f, WHITE)
-                    }
-                } else {
-                    rect(x, y, w, hh, ROCK)
-                    rect(x, y, w, 1f, ROCK_HI); rect(x, y, 1f, hh, ROCK_HI)
-                    rect(x, y + hh - 1, w, 1f, ROCK_LO); rect(x + w - 1, y, 1f, hh, ROCK_LO)
-                    rect(x + 3, y + hh - 6, 1f, 2f, ROCK_LO); rect(x + 4, y + hh - 4, 1f, 2f, ROCK_LO)
-                    say((i + 1).toString(), x + w / 2f, y + 12f, 11f, LOCKED_HI, Paint.Align.CENTER, ROCK_LO)
-                    rect(x + 10, y + 19, 10f, 10f, INK); rect(x + 11, y + 20, 8f, 8f, LOCKED_HI); rect(x + 11, y + 27, 8f, 1f, LOCKED)
-                    lc.drawBitmap(Icons.lock, x + 12f, y + 21f, null)
-                }
+            val n = Worlds.all.size
+            Worlds.all.forEachIndexed { k, w -> worldTab(game, w, Ui.worldTab(k, n), t) }
+            val sw = game.selWorld
+            val name = sw.name.toString().uppercase()
+            var size = 7f
+            while (size > 5f && textWidth(name, size) > 200f) size -= 0.5f
+            say(name, 128f, 29f, size, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+            for (slot in 0 until Ui.PAGE) {
+                val i = game.selLevel(slot)
+                if (i >= 0) levelTile(game, i, Ui.levelTile(slot), t)
+            }
+            val pages = game.pages()
+            if (pages > 1) {
+                pageArrow(Ui.pagePrev, -1, game.selPage > 0, t)
+                pageArrow(Ui.pageNext, 1, game.selPage < pages - 1, t)
+                for (p in 0 until pages) pip(game, sw, p, Ui.pageDot(p, pages))
             }
             button(Ui.selectAlbum, "${Txt.album} ${Card.entries.count { game.cardFound(it) }}/${Card.entries.size}", false)
         }
+    }
+
+    /** World tab: gold when shown, plum when open, rock with a lock until its first level unlocks. */
+    private fun worldTab(game: Game, w: WorldInfo, h: Hit, t: Float) {
+        val x = h.x.toFloat()
+        val y = h.y.toFloat()
+        val cx = x + h.w / 2f
+        val label = Txt.worldNo.toString().replace("%d", w.number.toString())
+        when {
+            w === game.selWorld -> {
+                bevelGold(x, y, h.w.toFloat(), h.h.toFloat())
+                say(label, cx, y + 7f, 5.5f, INK_TEXT, Paint.Align.CENTER, GOLD_HI)
+                // a notch points down at the page
+                val bob = if ((t * 2f).toInt() % 2 == 0) 0f else 1f
+                rect(cx - 3, y + h.h + 1 + bob, 7f, 1f, GOLD); rect(cx - 2, y + h.h + 2 + bob, 5f, 1f, GOLD); rect(cx - 1, y + h.h + 3 + bob, 3f, 1f, GOLD_LO)
+            }
+            game.worldOpen(w) -> {
+                box(h, PLUM, PLUM_HI)
+                say(label, cx, y + 7f, 5.5f, CREAM, Paint.Align.CENTER)
+            }
+            else -> {
+                box(h, ROCK, ROCK_HI)
+                rect(x, y + h.h - 1, h.w.toFloat(), 1f, ROCK_LO)
+                val s = if (w.size == 0) Txt.soon.toString() else label
+                val tw = textWidth(s, 5f)
+                val lx = (cx - (tw + 11) / 2 + 2).roundToInt().toFloat()
+                rect(lx - 2, y + 2, 10f, 10f, INK); rect(lx - 1, y + 3, 8f, 8f, LOCKED_HI); rect(lx - 1, y + 10, 8f, 1f, LOCKED)
+                lc.drawBitmap(Icons.lock, lx, y + 4, null)
+                say(s, lx + 11, y + 7f, 5f, LOCKED_HI, Paint.Align.LEFT, ROCK_LO)
+            }
+        }
+    }
+
+    /** Beveled gold slab, the face of open level tiles and the shown world's tab. */
+    private fun bevelGold(x: Float, y: Float, w: Float, hh: Float) {
+        rect(x + 2, y + 2, w, hh, SHADOW)
+        rect(x - 1, y, w + 2, hh, INK); rect(x, y - 1, w, hh + 2, INK)
+        rect(x, y, w, hh, GOLD)
+        rect(x, y, w, 1f, GOLD_HI); rect(x, y, 1f, hh, GOLD_HI); rect(x + 1, y + 1, w - 2, 1f, GOLD_MID); rect(x + 1, y + 1, 1f, hh - 2, GOLD_MID)
+        rect(x, y + hh - 1, w, 1f, GOLD_LO); rect(x + w - 1, y, 1f, hh, GOLD_LO); rect(x + 1, y + hh - 2, w - 2, 1f, GOLD_LO2); rect(x + w - 2, y + 1, 1f, hh - 2, GOLD_LO2)
+        rect(x + 1, y + 1, 1f, 1f, GOLD_SPARK)
+    }
+
+    /** Tile of global level [i]: its number within the world, best deaths, locked or open. */
+    private fun levelTile(game: Game, i: Int, h: Hit, t: Float) {
+        val open = i < game.unlocked()
+        val x = h.x.toFloat()
+        val y = h.y.toFloat()
+        val w = h.w.toFloat()
+        val hh = h.h.toFloat()
+        val num = Worlds.local(i).toString()
+        var ns = 11f
+        while (ns > 7f && textWidth(num, ns) > w - 10) ns -= 0.5f
+        if (open) {
+            bevelGold(x, y, w, hh)
+            // engraved number plate
+            rect(x + 3, y + 4, w - 6, 15f, 0xFFD9963F.toInt())
+            rect(x + 3, y + 4, w - 6, 1f, GOLD_LO2); rect(x + 3, y + 4, 1f, 15f, GOLD_LO2)
+            rect(x + 3, y + 18, w - 6, 1f, GOLD_MID); rect(x + w - 4, y + 4, 1f, 15f, GOLD_MID)
+            say(num, x + w / 2f, y + 12f, ns, INK_TEXT, Paint.Align.CENTER, GOLD_HI)
+            val best = game.bestDeaths(i)
+            if (best == null) say(Txt.new.toString(), x + w / 2f, y + 25f, 4f, INK_TEXT, Paint.Align.CENTER, 0)
+            else {
+                lc.drawBitmap(Icons.skull, x + 3f, y + 23f, null)
+                say(best.toString(), x + 16f, y + 25.5f, 4.5f, INK_TEXT, Paint.Align.CENTER, 0)
+            }
+            if (i == game.unlocked() - 1 && best == null) {
+                val a = ((sin(t * 5f) + 1) * 0.5f * 255).toInt()
+                val c = Color.argb(a, 108, 242, 194)
+                rect(x - 3, y - 3, w + 6, 1f, c); rect(x - 3, y + hh + 2, w + 6, 1f, c)
+                rect(x - 3, y - 3, 1f, hh + 6, c); rect(x + w + 2, y - 3, 1f, hh + 6, c)
+                // a sparkle hops around the next level
+                val k = ((t * 3f).toInt() % 4)
+                rect(if (k % 2 == 0) x - 3 else x + w + 2, if (k < 2) y - 3 else y + hh + 2, 1f, 1f, WHITE)
+            }
+        } else {
+            rect(x + 2, y + 2, w, hh, SHADOW)
+            rect(x - 1, y, w + 2, hh, INK); rect(x, y - 1, w, hh + 2, INK)
+            rect(x, y, w, hh, ROCK)
+            rect(x, y, w, 1f, ROCK_HI); rect(x, y, 1f, hh, ROCK_HI)
+            rect(x, y + hh - 1, w, 1f, ROCK_LO); rect(x + w - 1, y, 1f, hh, ROCK_LO)
+            rect(x + 3, y + hh - 6, 1f, 2f, ROCK_LO); rect(x + 4, y + hh - 4, 1f, 2f, ROCK_LO)
+            say(num, x + w / 2f, y + 12f, ns, LOCKED_HI, Paint.Align.CENTER, ROCK_LO)
+            val lx = x + (w - 10) / 2
+            rect(lx, y + 19, 10f, 10f, INK); rect(lx + 1, y + 20, 8f, 8f, LOCKED_HI); rect(lx + 1, y + 27, 8f, 1f, LOCKED)
+            lc.drawBitmap(Icons.lock, lx + 2, y + 21f, null)
+        }
+    }
+
+    /** Slim page button centered in the tappable strip [h]; [dir] -1 = back. Dimmed at the first/last page. */
+    private fun pageArrow(h: Hit, dir: Int, enabled: Boolean, t: Float) {
+        val bw = 12f
+        val bh = 30f
+        val x = (h.x + (h.w - bw) / 2).roundToInt().toFloat()
+        val y = (h.y + (h.h - bh) / 2).roundToInt().toFloat()
+        if (enabled) box(x, y, bw, bh, PLUM, PLUM_HI) else { box(x, y, bw, bh, ROCK_LO2, ROCK_MID); rect(x, y + bh - 1, bw, 1f, ROCK_LO) }
+        val nudge = if (enabled && (t % 1.6f) < 0.2f) dir.toFloat() else 0f
+        val c = if (enabled) CREAM else ROCK_HI
+        val cx = x + 4 + nudge
+        val cy = y + bh / 2 - 4
+        // a chunky 4×7 chevron
+        for (r in 0 until 7) {
+            val len = 4 - abs(r - 3)
+            rect(if (dir < 0) cx + 4 - len else cx, cy + r, len.toFloat(), 1f, c)
+        }
+        if (!enabled) return
+        rect(if (dir < 0) cx + 3 else cx, cy, 1f, 1f, WHITE)
+    }
+
+    /** Page pip: gold for the shown page, mint when all its levels are cleared, plum when playable, rock when locked. */
+    private fun pip(game: Game, w: WorldInfo, p: Int, h: Hit) {
+        val first = w.firstLevel + p * Ui.PAGE
+        val last = minOf(w.firstLevel + w.size, first + Ui.PAGE) - 1
+        val cur = p == game.selPage
+        val c = when {
+            cur -> GOLD
+            (first..last).all { game.bestDeaths(it) != null } -> MINT_LO
+            first < game.unlocked() -> PLUM_HI
+            else -> ROCK
+        }
+        val pw = if (cur) 8f else 6f
+        val ph = if (cur) 6f else 4f
+        val x = h.x + (h.w - pw) / 2
+        val y = h.y + (h.h - ph) / 2
+        rect(x + 1, y + 1, pw, ph, SHADOW)
+        rect(x - 1, y, pw + 2, ph, INK); rect(x, y - 1, pw, ph + 2, INK)
+        rect(x, y, pw, ph, c)
+        rect(x, y, pw, 1f, if (cur) GOLD_HI else if (c == MINT_LO) MINT else if (c == PLUM_HI) 0xFF6A4A88.toInt() else ROCK_HI)
     }
 
     fun album(game: Game, l: Layout) {
@@ -480,7 +599,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         stage(l, Screen.CLEAR) {
             say(Txt.cleared.toString(), 128f, 22f, 16f, MINT, Paint.Align.CENTER, MINT_LO)
             val best = game.bestDeaths(game.levelIndex)
-            say("${Txt.deaths} ${game.deaths}   ${Txt.best} ${best ?: game.deaths}", 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
+            say("${game.levelLabel}   ${Txt.deaths} ${game.deaths}   ${Txt.best} ${best ?: game.deaths}", 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
             devilFrame(70f, 52f, 44f, Mood.SHOCK, game.time)
             game.bubble?.let { bubble(it, game.bubbleAge + 10f, 232f, 64f, 110f) }
             button(Ui.clearNext, Txt.next.toString(), true)

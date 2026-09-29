@@ -17,6 +17,7 @@ import com.robinrehbein.beveldevil.game.TouchInput
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.render.Layout
 import com.robinrehbein.beveldevil.render.Renderer
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -38,6 +39,10 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     private var keyLeft = false
     private var keyRight = false
     private var keyJump = false
+    /** Level select: taps fire on release, so a horizontal swipe can turn the page instead. */
+    private var swipeId = -1
+    private var swipeX = 0f
+    private var swipeY = 0f
 
     init {
         holder.addCallback(this)
@@ -161,7 +166,9 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                     val lx = layout.lx(e.getX(i))
                     val ly = layout.ly(e.getY(i))
-                    if (game.screen != Screen.PLAY) {
+                    if (game.screen == Screen.SELECT) {
+                        if (swipeId < 0) { swipeId = id; swipeX = lx; swipeY = ly }
+                    } else if (game.screen != Screen.PLAY) {
                         game.tap(lx - layout.stageX(game.screen), ly - layout.stageY(game.screen))
                     } else if ((lx to ly) in layout.pause) {
                         game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
@@ -170,8 +177,17 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                     }
                 }
                 MotionEvent.ACTION_MOVE -> for (p in 0 until e.pointerCount) touch.move(e.getPointerId(p), e.getX(p))
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> touch.up(id)
-                MotionEvent.ACTION_CANCEL -> touch.cancel()
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                    touch.up(id)
+                    if (id == swipeId && game.screen == Screen.SELECT) {
+                        val dx = layout.lx(e.getX(i)) - swipeX
+                        val dy = layout.ly(e.getY(i)) - swipeY
+                        if (abs(dx) > SWIPE && abs(dx) > abs(dy) * 1.5f) game.page(if (dx < 0) 1 else -1)
+                        else game.tap(swipeX - layout.stageX(game.screen), swipeY - layout.stageY(game.screen))
+                    }
+                    if (id == swipeId) swipeId = -1
+                }
+                MotionEvent.ACTION_CANCEL -> { touch.cancel(); swipeId = -1 }
             }
             applyInput()
         }
@@ -206,8 +222,8 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
 
     private fun key(code: Int, down: Boolean, first: Boolean): Boolean = synchronized(lock) {
         when (code) {
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_A -> keyLeft = down
-            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_D -> keyRight = down
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_A -> { keyLeft = down; if (down && first && game.screen == Screen.SELECT) game.page(-1) }
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_D -> { keyRight = down; if (down && first && game.screen == Screen.SELECT) game.page(1) }
             KeyEvent.KEYCODE_SPACE, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_W, KeyEvent.KEYCODE_BUTTON_A -> {
                 keyJump = down
                 if (down && first) {
@@ -215,7 +231,7 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                 }
             }
             KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> if (down && first && game.screen != Screen.PLAY) {
-                game.tap(Ui.titlePlay.x + 1f, Ui.titlePlay.y + 1f)
+                if (game.screen == Screen.SELECT) game.selectConfirm() else game.tap(Ui.titlePlay.x + 1f, Ui.titlePlay.y + 1f)
             }
             else -> return false
         }
@@ -225,5 +241,7 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
 
     private companion object {
         val SIZES = floatArrayOf(0.8f, 1f, 1.25f)
+        /** Logical px a finger must travel sideways to turn a level-select page. */
+        const val SWIPE = 24f
     }
 }

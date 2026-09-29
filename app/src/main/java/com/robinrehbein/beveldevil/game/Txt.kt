@@ -7,7 +7,7 @@ object Txt {
     val soundOn = T("SOUND ON", "TON AN")
     val soundOff = T("SOUND OFF", "TON AUS")
     val tap = T("Tap to boot", "Tippen zum Booten")
-    val world = T("WORLD 1 · HELL'S CELLAR", "WELT 1 · HÖLLENKELLER")
+    val soon = T("SOON", "BALD")
     val new = T("new", "neu")
     val pause = T("PAUSE", "PAUSE")
     val resume = T("RESUME", "WEITER")
