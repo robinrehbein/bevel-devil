@@ -28,7 +28,7 @@ class UiPainter(px: Pixels) : Painter(px) {
 
     // ---------- Mephi ----------
 
-    private fun devilFrame(x: Float, y: Float, size: Float, mood: Mood, t: Float, spriteScale: Int = 1) {
+    fun devilFrame(x: Float, y: Float, size: Float, mood: Mood, t: Float, spriteScale: Int = 1) {
         rect(x + 2, y + 2, size, size, SHADOW)
         val inner = size - 6
         for (yy in 0 until inner.toInt()) {

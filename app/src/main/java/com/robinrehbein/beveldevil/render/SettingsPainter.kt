@@ -23,6 +23,8 @@ class SettingsPainter(px: Pixels) : Painter(px) {
         if (s != Screen.TITLE && s != Screen.PAUSE) return
         px.at(l.stageX(s), l.stageY(s)) {
             if (s == Screen.TITLE) {
+                box(Ui.titleStory, PLUM, PLUM_HI)
+                say(Txt.story.toString(), Ui.titleStory.x + Ui.titleStory.w / 2f, Ui.titleStory.y + 6.3f, 4f, CREAM, Paint.Align.CENTER)
                 box(Ui.gear, PLUM, PLUM_HI)
                 gearIcon(Ui.gear.x + (Ui.gear.w - 9) / 2f, Ui.gear.y + 1.5f)
             } else button(Ui.pauseSettings, Txt.settings.toString(), false)

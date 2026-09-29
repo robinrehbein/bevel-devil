@@ -30,6 +30,8 @@ class Renderer(context: Context) {
     private val world = WorldPainter(px)
     private val ui = UiPainter(px)
     private val settings = SettingsPainter(px)
+    private val intro = IntroPainter(px, ui)
+    private val glitch = Glitch(px)
     private val controls = ControlsPainter()
 
     private var swirlPx = IntArray(0)
@@ -105,7 +107,10 @@ class Renderer(context: Context) {
             Screen.PAUSE -> { world.draw(game, l); ui.pause(l); settings.extras(game, l) }
             Screen.CLEAR -> { world.draw(game, l); ui.clear(game, l) }
             Screen.END -> { world.draw(game, l); ui.end(game, l) }
+            Screen.INTRO -> intro.intro(game, l)
+            Screen.WORLD_INTRO -> intro.worldIntro(game, l)
         }
+        if (game.glitch > 0f && game.screen == Screen.PLAY) glitch.apply(game.glitch / Game.GLITCH_TIME, game.time, l.lw, l.lh)
         wipe(game, l)
 
         val sc = l.sc.toFloat()
