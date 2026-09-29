@@ -30,10 +30,6 @@ class SettingsPainter(px: Pixels) : Painter(px) {
     }
 
     fun screen(game: Game, l: Layout) {
-        val y = l.sy + 136
-        val x0 = l.sx % TS - TS
-        for (x in x0 until l.lw step TS) tile(lc, x.toFloat(), y.toFloat())
-        for (ry in y + TS until l.lh step TS) for (x in x0 until l.lw step TS) px.rockTile(lc, x.toFloat(), ry.toFloat(), (x * 31 + ry * 17) and 0xFFFF)
         rect(0, 0, l.lw, l.lh, 0x70100818)
         px.at(l.sx, l.sy) {
             button(Ui.back, "<", false)

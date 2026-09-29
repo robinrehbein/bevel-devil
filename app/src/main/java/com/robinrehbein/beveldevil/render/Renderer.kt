@@ -98,7 +98,7 @@ class Renderer(context: Context) {
         if (!l.overWorld(game.screen) && game.screen != Screen.PLAY) Fx.embers(px, l.lw, l.lh, game.time, 0f)
         when (game.screen) {
             Screen.TITLE -> { ui.title(game, l); settings.extras(game, l) }
-            Screen.SETTINGS -> settings.screen(game, l)
+            Screen.SETTINGS -> { ui.floorStrip(l); settings.screen(game, l) }
             Screen.SELECT -> ui.select(game, l)
             Screen.ALBUM -> ui.album(game, l)
             Screen.PLAY -> { world.draw(game, l); ui.hud(game, l) }

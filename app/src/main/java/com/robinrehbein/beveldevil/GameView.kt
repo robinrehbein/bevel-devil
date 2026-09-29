@@ -54,9 +54,11 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
-        val c = if (Build.VERSION.SDK_INT >= 28) insets.displayCutout else null
-        cut[0] = c?.safeInsetLeft ?: 0; cut[1] = c?.safeInsetTop ?: 0
-        cut[2] = c?.safeInsetRight ?: 0; cut[3] = c?.safeInsetBottom ?: 0
+        cut.fill(0)
+        if (Build.VERSION.SDK_INT >= 28) insets.displayCutout?.let { c ->
+            cut[0] = c.safeInsetLeft; cut[1] = c.safeInsetTop
+            cut[2] = c.safeInsetRight; cut[3] = c.safeInsetBottom
+        }
         relayout()
         return super.onApplyWindowInsets(insets)
     }

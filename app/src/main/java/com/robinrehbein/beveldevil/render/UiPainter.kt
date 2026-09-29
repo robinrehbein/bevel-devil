@@ -308,7 +308,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     private val stripFor = IntArray(4)
 
     /** Gold floor strip at the stage bottom, stretched across the canvas, with rock below it. */
-    private fun floorStrip(l: Layout) {
+    fun floorStrip(l: Layout) {
         if (stripBmp == null || stripFor[0] != l.lw || stripFor[1] != l.lh || stripFor[2] != l.sx || stripFor[3] != l.sy) {
             val c0 = -((l.sx + TS - 1) / TS) - 1
             val gw = (l.lw - l.sx) / TS + 2 - c0
