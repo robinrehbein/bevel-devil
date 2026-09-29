@@ -2,15 +2,17 @@ package com.robinrehbein.beveldevil
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.view.WindowInsets
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Ui
-import com.robinrehbein.beveldevil.render.ControlLayout
+import com.robinrehbein.beveldevil.render.Layout
 import com.robinrehbein.beveldevil.render.Renderer
 import kotlin.math.min
 
@@ -18,7 +20,11 @@ import kotlin.math.min
 @SuppressLint("ViewConstructor")
 class GameView(context: Context, private val game: Game) : SurfaceView(context), SurfaceHolder.Callback {
     private val renderer = Renderer(context)
-    private val controls = ControlLayout()
+    private val layout = Layout()
+    private val controls get() = layout.controls
+    private var surfaceW = 0
+    private var surfaceH = 0
+    private val cut = IntArray(4)
     private val lock = Any()
     @Volatile private var running = false
     private var thread: Thread? = null
@@ -39,17 +45,20 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     override fun surfaceDestroyed(holder: SurfaceHolder) = stop()
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        synchronized(lock) {
-            renderer.layout(width, height)
-            val dp = resources.displayMetrics.density
-            val r = min(34f * dp, height * 0.11f)
-            val margin = 18f * dp
-            controls.r = r
-            controls.y = height - margin - r
-            controls.leftX = margin + r
-            controls.rightX = margin + 3.3f * r
-            controls.jumpX = width - margin - r
-        }
+        surfaceW = width; surfaceH = height
+        relayout()
+    }
+
+    override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
+        val c = if (Build.VERSION.SDK_INT >= 28) insets.displayCutout else null
+        cut[0] = c?.safeInsetLeft ?: 0; cut[1] = c?.safeInsetTop ?: 0
+        cut[2] = c?.safeInsetRight ?: 0; cut[3] = c?.safeInsetBottom ?: 0
+        relayout()
+        return super.onApplyWindowInsets(insets)
+    }
+
+    private fun relayout() = synchronized(lock) {
+        if (surfaceW > 0) layout.update(surfaceW, surfaceH, resources.displayMetrics.density, cut[0], cut[1], cut[2], cut[3])
     }
 
     private fun start() {
@@ -91,7 +100,7 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
             if (haptic) post { performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
             val canvas = try { holder.lockHardwareCanvas() } catch (_: Exception) { null } ?: continue
             try {
-                synchronized(lock) { renderer.draw(canvas, game, controls) }
+                synchronized(lock) { renderer.draw(canvas, game, layout) }
             } finally {
                 holder.unlockCanvasAndPost(canvas)
             }
@@ -99,8 +108,6 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     }
 
     // ---------- touch ----------
-
-    private fun toLogical(x: Float, y: Float) = ((x - renderer.originX) / renderer.scale) to ((y - renderer.originY) / renderer.scale)
 
     private fun zoneAt(x: Float): Zone = when {
         x >= width / 2f -> Zone.JUMP
@@ -115,9 +122,12 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
             val id = e.getPointerId(i)
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                    val (lx, ly) = toLogical(e.getX(i), e.getY(i))
-                    if (game.screen != Screen.PLAY || (lx to ly) in Ui.hudPause) {
-                        game.tap(lx, ly)
+                    val lx = layout.lx(e.getX(i))
+                    val ly = layout.ly(e.getY(i))
+                    if (game.screen != Screen.PLAY) {
+                        game.tap(lx - layout.stageX(game.screen), ly - layout.stageY(game.screen))
+                    } else if ((lx to ly) in layout.pause) {
+                        game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
                     } else {
                         val z = zoneAt(e.getX(i))
                         pointers[id] = z

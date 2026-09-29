@@ -11,7 +11,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 - **12 Level** in Welt 1, jedes mit einem eigenen Trick: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden und ein Finale.
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
-- **Höllen-CRT-Look:** 256×144-Pixelpuffer (8 px pro Tile), Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
+- **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
 - Coyote-Time, Sprungpuffer, variable Sprunghöhe, Touch-Steuerung (Multitouch) sowie Tastatur und Gamepad.
 - Synthetisierte Sounds, keine Audiodateien. Der Fortschritt wird lokal gespeichert. Release-APK rund 80 KB.
 

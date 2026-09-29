@@ -38,12 +38,24 @@ class MemoryProgress : Progress {
 class ScreenshotTest {
     private val silent = object : Audio { override fun play(sound: Sound) {} }
 
-    private fun shoot(name: String, game: Game, w: Int = 2400, h: Int = 1080) {
+    private class Size(val tag: String, val w: Int, val h: Int, val dp: Float, val cutL: Int = 0)
+    private val sizes = listOf(
+        Size("20x9", 2400, 1080, 2.75f),
+        Size("16x9", 1920, 1080, 2.75f),
+        Size("4x3", 2048, 1536, 2f),
+        Size("19.5x9", 2340, 1080, 2.625f),
+        Size("20x9-720p", 1600, 720, 2f),
+    )
+
+    private fun shoot(name: String, game: Game, only: List<Size> = sizes) {
+        for (s in only) shootAt(if (s === sizes[0]) name else "$name-${s.tag}", game, s)
+    }
+
+    private fun shootAt(name: String, game: Game, s: Size) {
         val r = Renderer(RuntimeEnvironment.getApplication())
-        r.layout(w, h)
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val c = ControlLayout().apply { this.r = 90f; y = h - 140f; leftX = 140f; rightX = 140f + 3.3f * 90f; jumpX = w - 140f }
-        r.draw(Canvas(bmp), game, c)
+        val layout = Layout().apply { update(s.w, s.h, s.dp, cutL = s.cutL) }
+        val bmp = Bitmap.createBitmap(s.w, s.h, Bitmap.Config.ARGB_8888)
+        r.draw(Canvas(bmp), game, layout)
         val dir = File("build/screenshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
@@ -74,7 +86,9 @@ class ScreenshotTest {
         g.startLevel(0); run(g, 2.0f, right = true, jumpAt = 1.75f); run(g, 2.5f, right = true); shoot("10-clear", g)
         g.back(); g.back(); g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.3f); shoot("11-album", g)
         g.tap(Ui.albumCard(0).x + 2f, Ui.albumCard(0).y + 2f); run(g, 0.1f); shoot("12-album-card", g)
-        val phone16x9 = Game(MemoryProgress(), silent); phone16x9.startLevel(3); run(phone16x9, 1.2f, right = true)
-        shoot("13-level4-16x9", phone16x9, 1920, 1080)
+        val phone = Game(MemoryProgress(), silent); phone.startLevel(3); run(phone, 1.2f, right = true)
+        shoot("13-level4", phone)
+        shootAt("14-level4-cutout", phone, Size("cutout", 2400, 1080, 2.75f, cutL = 110))
+        g.back(); g.startLevel(1); run(g, 1.0f, right = true); g.pause(); shoot("15-pause", g)
     }
 }
