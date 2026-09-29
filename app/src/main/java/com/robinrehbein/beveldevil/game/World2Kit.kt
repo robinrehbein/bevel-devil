@@ -62,6 +62,13 @@ internal fun blinkOn(g: Char, firstShow: Float, on: Float, period: Float, count:
         )
     }
 
+/** A group that moves back and forth on a timer: out at [t0], back at [t0 + period / 2]... */
+internal fun shuttle(g: Char, t0: Float, period: Float, dy: Float, speed: Float, count: Int, dx: Float = 0f): List<Trap> =
+    (0 until count).map { i ->
+        val s = if (i % 2 == 0) 1f else -1f
+        Trap(Trigger.After(t0 + i * period), listOf(Action.Move(g, dx * s, dy * s, speed)))
+    }
+
 /** A group that disappears at [firstHide] for [off] seconds, every [period] seconds, [count] times. */
 internal fun blink(g: Char, firstHide: Float, off: Float, period: Float, count: Int, first: List<Action> = emptyList()): List<Trap> =
     (0 until count).flatMap { i ->
