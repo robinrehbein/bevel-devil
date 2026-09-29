@@ -10,7 +10,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 
 ## Was drin ist
 
-- **12 Level** in Welt 1, jedes mit einem eigenen Trick: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden und ein Finale.
+- **128 Level** in Welt 1 „Höllenkeller“ (acht Kapitel à 16): erst ein Trick pro Level (Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden), dann Doppel-Trolle, Warten, Rückwärtslaufen und Kombis mit vielen Nerd-Anspielungen bis zum Finale „Integer Overflow“.
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
@@ -36,7 +36,8 @@ Die Screenshot-Tests rendern echte Screens mit Robolectric nach `app/build/scree
 app/src/main/java/com/robinrehbein/beveldevil/
 ├── game/            Reine Spiellogik, ohne Android-Abhängigkeiten
 │   ├── Level.kt     Level-DSL: Karte, Glyphen, Trigger, Aktionen
-│   ├── Levels.kt    Die 12 Level von Welt 1
+│   ├── Levels.kt    Level-Register (Welt 1)
+│   ├── World1*.kt   Die 128 Level von Welt 1 (Part1–Part8, je 16 Level) und Bau-Helfer
 │   ├── World.kt     Physik, Kollision, Fallen (ein Versuch)
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt
 │   ├── Cards.kt     Die Teufelskarten
@@ -70,7 +71,7 @@ Level(
 - Trigger: `PastX`, `BeforeX`, `Zone`, `Touch`, `After`.
 - Aktionen: `Fall`, `Show`, `Hide`, `Move`, `DoorTo`, `Gravity`, `Swap`, `Saw`, `Say`, `Shake`, `Play`.
 
-Jedes Level hat in `LevelsTest` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
+Jedes Level hat in `World1Test` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
 
 ## Lizenzen
 
