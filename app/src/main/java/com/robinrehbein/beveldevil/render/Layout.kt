@@ -16,6 +16,17 @@ class ControlLayout {
     var left = false
     var right = false
     var jump = false
+    /** Settings, set by the view before [Layout.update]. */
+    var stick = false
+    var mirror = false
+    var sizeScale = 1f
+    var sc = 1
+    /** Floating stick being touched (screen px). */
+    var stickActive = false
+    var stickX = 0f
+    var stickY = 0f
+    var knobX = 0f
+    var stickR = 0f
 }
 
 /** Where the HUD goes: over the playfield, in the side columns (wide phones) or in a band above it (tablets). */
@@ -97,22 +108,33 @@ class Layout {
 
     private fun placeControls(dp: Float, cutL: Int, cutR: Int, cutB: Int) {
         val c = controls
-        var r = min(34f * dp, h * 0.11f)
         val margin = 18f * dp
+        val pad = 3f * sc
+        var r = min(34f * dp * c.sizeScale, h * 0.14f)
+        val pair = 2.3f
+        val mv: Float // x of the left arrow
+        val jx: Float
         if (hud == HudMode.SIDE) {
-            val l0 = cutL.toFloat(); val l1 = fx * sc.toFloat()
-            val r0 = (fx + Ui.W) * sc.toFloat(); val r1 = (w - cutR).toFloat()
-            val pad = 3f * sc
-            r = min(r, min((l1 - l0 - 2 * pad) / 4.3f, (r1 - r0 - 2 * pad) / 2f))
-            c.leftX = (l0 + l1) / 2 - 1.15f * r
-            c.jumpX = (r0 + r1) / 2
+            val colL0 = cutL.toFloat(); val colL1 = fx * sc.toFloat()
+            val colR0 = (fx + Ui.W) * sc.toFloat(); val colR1 = (w - cutR).toFloat()
+            val (m0, m1) = if (c.mirror) colR0 to colR1 else colL0 to colL1
+            val (j0, j1) = if (c.mirror) colL0 to colL1 else colR0 to colR1
+            r = max(min(r, min((m1 - m0 - 2 * pad) / 4.3f, (j1 - j0 - 2 * pad) / 2f)), 26f * dp)
+            // too narrow a column: the buttons may reach into the playfield, but stay on screen
+            mv = if (c.mirror) min((m0 + m1) / 2 + 1.15f * r, m1 - r - pad) - pair * r else max((m0 + m1) / 2 - 1.15f * r, m0 + r + pad)
+            jx = if (c.mirror) max((j0 + j1) / 2, j0 + r + pad) else min((j0 + j1) / 2, j1 - r - pad)
         } else {
-            c.leftX = cutL + margin + r
-            c.jumpX = w - cutR - margin - r
+            r = max(r, 26f * dp)
+            mv = if (c.mirror) w - cutR - margin - r - pair * r else cutL + margin + r
+            jx = if (c.mirror) cutL + margin + r else w - cutR - margin - r
         }
         c.r = r
-        c.rightX = c.leftX + 2.3f * r
+        c.leftX = mv
+        c.rightX = mv + pair * r
+        c.jumpX = jx
         c.y = h - cutB - margin - r
+        c.sc = sc
+        c.stickR = 44f * dp
     }
 
     /** Menus shown over a level (pause, clear, end) sit on the playfield, the rest on the centered stage. */

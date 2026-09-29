@@ -20,6 +20,10 @@ import java.io.File
 class MemoryProgress : Progress {
     override var unlocked = 7
     override var sound = true
+    override var stickScheme = false
+    override var buttonSize = 1
+    override var haptics = true
+    override var leftHanded = false
     private val best = mutableMapOf(0 to 3, 1 to 7, 2 to 12, 3 to 5, 4 to 21, 5 to 9)
     private val found = mutableSetOf(Card.COLLAPSE, Card.SPIKE_SEED, Card.SHY_DOOR, Card.HEADBUTT, Card.UPSIDE_DOWN, Card.TWISTED)
     private val deaths = mutableMapOf<Card, Int>(Card.COLLAPSE to 12, Card.SPIKE_SEED to 8, Card.SHY_DOOR to 3)
@@ -47,13 +51,13 @@ class ScreenshotTest {
         Size("20x9-720p", 1600, 720, 2f),
     )
 
-    private fun shoot(name: String, game: Game, only: List<Size> = sizes) {
-        for (s in only) shootAt(if (s === sizes[0]) name else "$name-${s.tag}", game, s)
+    private fun shoot(name: String, game: Game, only: List<Size> = sizes, ctl: ControlLayout.() -> Unit = {}) {
+        for (s in only) shootAt(if (s === sizes[0]) name else "$name-${s.tag}", game, s, ctl)
     }
 
-    private fun shootAt(name: String, game: Game, s: Size) {
+    private fun shootAt(name: String, game: Game, s: Size, ctl: ControlLayout.() -> Unit = {}) {
         val r = Renderer(RuntimeEnvironment.getApplication())
-        val layout = Layout().apply { update(s.w, s.h, s.dp, cutL = s.cutL) }
+        val layout = Layout().apply { controls.ctl(); update(s.w, s.h, s.dp, cutL = s.cutL); controls.ctl() }
         val bmp = Bitmap.createBitmap(s.w, s.h, Bitmap.Config.ARGB_8888)
         r.draw(Canvas(bmp), game, layout)
         val dir = File("build/screenshots").apply { mkdirs() }
@@ -90,5 +94,27 @@ class ScreenshotTest {
         shoot("13-level4", phone)
         shootAt("14-level4-cutout", phone, Size("cutout", 2400, 1080, 2.75f, cutL = 110))
         g.back(); g.startLevel(1); run(g, 1.0f, right = true); g.pause(); shoot("15-pause", g)
+    }
+
+    @Test
+    fun controls() {
+        Lang.german = false
+        val two = sizes.take(2)
+        val g = Game(MemoryProgress(), silent)
+        g.startLevel(1); run(g, 1.0f, right = true)
+        shoot("20-controls-pressed", g, two) { right = true; jump = true }
+        shoot("21-controls-idle", g, two)
+        shoot("22-controls-lefty-large", g, two) { mirror = true; sizeScale = 1.25f; left = true }
+        shoot("23-controls-small", g, two) { sizeScale = 0.8f }
+        shoot("24-stick-touched", g, two) {
+            stick = true; stickActive = true; stickX = 420f; stickY = 760f; knobX = 420f + 90f; stickR = 121f
+        }
+        shoot("25-stick-idle", g, two) { stick = true; stickR = 121f }
+        val s = Game(MemoryProgress(), silent)
+        run(s, 0.5f); s.tap(Ui.gear.x + 2f, Ui.gear.y + 2f); run(s, 0.3f)
+        shoot("26-settings", s, two)
+        s.setOption(0, 1); s.setOption(1, 2); s.setOption(4, 0); s.setOption(2, 1)
+        Lang.german = true
+        shoot("27-settings-de", s, two)
     }
 }

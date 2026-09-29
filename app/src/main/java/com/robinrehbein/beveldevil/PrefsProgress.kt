@@ -16,6 +16,22 @@ class PrefsProgress(context: Context) : Progress {
         get() = prefs.getBoolean("sound", true)
         set(v) = prefs.edit().putBoolean("sound", v).apply()
 
+    override var stickScheme: Boolean
+        get() = prefs.getBoolean("stick", false)
+        set(v) = prefs.edit().putBoolean("stick", v).apply()
+
+    override var buttonSize: Int
+        get() = prefs.getInt("button_size", 1).coerceIn(0, 2)
+        set(v) = prefs.edit().putInt("button_size", v).apply()
+
+    override var haptics: Boolean
+        get() = prefs.getBoolean("haptics", true)
+        set(v) = prefs.edit().putBoolean("haptics", v).apply()
+
+    override var leftHanded: Boolean
+        get() = prefs.getBoolean("left_handed", false)
+        set(v) = prefs.edit().putBoolean("left_handed", v).apply()
+
     override fun bestDeaths(level: Int): Int? = prefs.getInt("best_$level", -1).takeIf { it >= 0 }
     override fun saveBest(level: Int, deaths: Int) = prefs.edit().putInt("best_$level", deaths).apply()
     override fun cardFound(card: Card) = prefs.getBoolean("card_${card.name}", false)

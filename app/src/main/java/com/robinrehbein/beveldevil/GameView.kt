@@ -2,6 +2,7 @@ package com.robinrehbein.beveldevil
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
@@ -10,10 +11,13 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.WindowInsets
 import com.robinrehbein.beveldevil.game.Game
+import com.robinrehbein.beveldevil.game.Scheme
 import com.robinrehbein.beveldevil.game.Screen
+import com.robinrehbein.beveldevil.game.TouchInput
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.render.Layout
 import com.robinrehbein.beveldevil.render.Renderer
+import kotlin.math.max
 import kotlin.math.min
 
 /** Hosts the game loop on its own thread: fixed 120 Hz simulation, render every vsync-ish frame. */
@@ -29,8 +33,8 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     @Volatile private var running = false
     private var thread: Thread? = null
 
-    private enum class Zone { LEFT, RIGHT, JUMP, NONE }
-    private val pointers = HashMap<Int, Zone>()
+    private val touch = TouchInput()
+    private var cfg = -1
     private var keyLeft = false
     private var keyRight = false
     private var keyJump = false
@@ -58,7 +62,42 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     }
 
     private fun relayout() = synchronized(lock) {
-        if (surfaceW > 0) layout.update(surfaceW, surfaceH, resources.displayMetrics.density, cut[0], cut[1], cut[2], cut[3])
+        val c = controls
+        c.stick = game.scheme == Scheme.STICK
+        c.mirror = game.leftHanded
+        c.sizeScale = SIZES[game.buttonSize.coerceIn(0, 2)]
+        cfg = config()
+        if (surfaceW == 0) return@synchronized
+        val d = resources.displayMetrics.density
+        layout.update(surfaceW, surfaceH, d, cut[0], cut[1], cut[2], cut[3])
+        touch.width = surfaceW.toFloat(); touch.density = d
+        touch.splitX = (c.leftX + c.rightX) / 2
+        touch.scheme = game.scheme; touch.leftHanded = game.leftHanded
+        touch.cancel()
+        applyInput()
+        val rects = exclusionRects(d)
+        if (Build.VERSION.SDK_INT >= 29) post { systemGestureExclusionRects = rects }
+    }
+
+    private fun config() = (if (game.scheme == Scheme.STICK) 1 else 0) + game.buttonSize * 2 + (if (game.leftHanded) 8 else 0)
+
+    /** Control areas at the bottom of each edge (Android caps exclusion at 200dp per edge). */
+    private fun exclusionRects(d: Float): List<Rect> {
+        val c = controls
+        val top = max(0, surfaceH - (200 * d).toInt())
+        val pad = (6 * d).toInt()
+        val jumpFromEdge = if (c.mirror) 0 else (c.jumpX - c.r).toInt() - pad
+        val mvEdge = if (c.stick) (150 * d).toInt() else (if (c.mirror) 0 else (c.rightX + c.r).toInt() + pad)
+        val list = ArrayList<Rect>(2)
+        val w = surfaceW
+        if (c.mirror) {
+            list += Rect(if (c.stick) w - mvEdge else (c.leftX - c.r).toInt() - pad, top, w, surfaceH)
+            list += Rect(0, top, (c.jumpX + c.r).toInt() + pad, surfaceH)
+        } else {
+            list += Rect(0, top, mvEdge, surfaceH)
+            list += Rect(jumpFromEdge, top, w, surfaceH)
+        }
+        return list
     }
 
     private fun start() {
@@ -75,7 +114,8 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
 
     fun onPauseApp() = synchronized(lock) {
         game.pause()
-        pointers.clear()
+        touch.cancel()
+        applyInput()
         keyLeft = false; keyRight = false; keyJump = false
     }
 
@@ -91,13 +131,14 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
             last = now
             var haptic = false
             synchronized(lock) {
+                if (config() != cfg) relayout()
                 while (acc >= step) {
                     game.update(step)
                     acc -= step
                 }
                 if (game.hapticPulse) { haptic = true; game.hapticPulse = false }
             }
-            if (haptic) post { performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
+            if (haptic && game.haptics) post { performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
             val canvas = try { holder.lockHardwareCanvas() } catch (_: Exception) { null } ?: continue
             try {
                 synchronized(lock) { renderer.draw(canvas, game, layout) }
@@ -108,12 +149,6 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     }
 
     // ---------- touch ----------
-
-    private fun zoneAt(x: Float): Zone = when {
-        x >= width / 2f -> Zone.JUMP
-        x < (controls.leftX + controls.rightX) / 2f -> Zone.LEFT
-        else -> Zone.RIGHT
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(e: MotionEvent): Boolean {
@@ -129,21 +164,12 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                     } else if ((lx to ly) in layout.pause) {
                         game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
                     } else {
-                        val z = zoneAt(e.getX(i))
-                        pointers[id] = z
-                        if (z == Zone.JUMP) game.input.jumpPressed = true
+                        touch.down(id, e.getX(i), e.getY(i))
                     }
                 }
-                MotionEvent.ACTION_MOVE -> for (p in 0 until e.pointerCount) {
-                    val pid = e.getPointerId(p)
-                    val z = pointers[pid] ?: continue
-                    if (z != Zone.JUMP) {
-                        val nz = zoneAt(e.getX(p))
-                        pointers[pid] = if (nz == Zone.JUMP) z else nz
-                    }
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> pointers.remove(id)
-                MotionEvent.ACTION_CANCEL -> pointers.clear()
+                MotionEvent.ACTION_MOVE -> for (p in 0 until e.pointerCount) touch.move(e.getPointerId(p), e.getX(p))
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> touch.up(id)
+                MotionEvent.ACTION_CANCEL -> touch.cancel()
             }
             applyInput()
         }
@@ -151,14 +177,17 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     }
 
     private fun applyInput() {
-        val zones = pointers.values
-        val left = Zone.LEFT in zones
-        val right = Zone.RIGHT in zones
-        val jump = Zone.JUMP in zones
-        controls.left = left; controls.right = right; controls.jump = jump
-        game.input.left = left || keyLeft
-        game.input.right = right || keyRight
-        game.input.jump = jump || keyJump
+        if (touch.jumpPressed) {
+            touch.jumpPressed = false
+            game.input.jumpPressed = true
+            if (game.haptics) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        }
+        val c = controls
+        c.left = touch.left; c.right = touch.right; c.jump = touch.jump
+        c.stickActive = touch.stickActive; c.stickX = touch.stickX; c.stickY = touch.stickY; c.knobX = touch.knobX
+        game.input.left = touch.left || keyLeft
+        game.input.right = touch.right || keyRight
+        game.input.jump = touch.jump || keyJump
     }
 
     // ---------- keyboard / gamepad ----------
@@ -190,5 +219,9 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
         }
         applyInput()
         true
+    }
+
+    private companion object {
+        val SIZES = floatArrayOf(0.8f, 1f, 1.25f)
     }
 }

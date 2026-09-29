@@ -7,6 +7,11 @@ import kotlin.random.Random
 interface Progress {
     var unlocked: Int
     var sound: Boolean
+    var stickScheme: Boolean
+    /** 0 = S, 1 = M, 2 = L. */
+    var buttonSize: Int
+    var haptics: Boolean
+    var leftHanded: Boolean
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
     fun cardFound(card: Card): Boolean
@@ -21,7 +26,7 @@ interface Audio {
     fun play(sound: Sound)
 }
 
-enum class Screen { TITLE, SELECT, PLAY, PAUSE, CLEAR, ALBUM, END }
+enum class Screen { TITLE, SELECT, PLAY, PAUSE, CLEAR, ALBUM, END, SETTINGS }
 
 enum class Mood { GRIN, LAUGH, SULK, SHOCK }
 
@@ -37,6 +42,15 @@ object Ui {
     val titlePlay = Hit(88, 90, 80, 18)
     val titleAlbum = Hit(88, 112, 80, 14)
     val sound = Hit(224, 6, 26, 12)
+    val gear = Hit(196, 6, 24, 12)
+    val pauseSettings = Hit(88, 102, 80, 16)
+    const val SET_ROWS = 5
+    val setCounts = intArrayOf(2, 3, 2, 2, 2)
+    /** Option [i] of [n] in settings row [row]. */
+    fun setOpt(row: Int, i: Int, n: Int): Hit {
+        val w = (114 - (n - 1) * 4) / n
+        return Hit(132 + i * (w + 4), 26 + row * 22, w, 16)
+    }
     val back = Hit(6, 6, 20, 12)
     val selectAlbum = Hit(196, 122, 54, 14)
     fun levelTile(i: Int) = Hit(18 + (i % 6) * 38, 32 + (i / 6) * 42, 30, 32)
@@ -100,6 +114,11 @@ class Game(private val progress: Progress, private val audio: Audio) {
     fun cardFound(c: Card) = progress.cardFound(c)
     fun cardDeaths(c: Card) = progress.cardDeaths(c)
     val albumSelection get() = selectedAlbum
+    val scheme get() = if (progress.stickScheme) Scheme.STICK else Scheme.BUTTONS
+    val buttonSize get() = progress.buttonSize
+    val haptics get() = progress.haptics
+    val leftHanded get() = progress.leftHanded
+    private var settingsFrom = Screen.TITLE
 
     fun update(dt: Float) {
         time += dt
@@ -255,6 +274,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
         when (screen) {
             Screen.TITLE -> when {
                 p in Ui.sound -> { progress.sound = !progress.sound; click() }
+                p in Ui.gear -> openSettings()
                 p in Ui.titleAlbum -> go(Screen.ALBUM)
                 else -> go(Screen.SELECT)
             }
@@ -268,7 +288,11 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.PLAY -> if (p in Ui.hudPause) go(Screen.PAUSE)
             Screen.PAUSE -> when {
                 p in Ui.pauseLevels -> go(Screen.SELECT)
+                p in Ui.pauseSettings -> openSettings()
                 else -> go(Screen.PLAY)
+            }
+            Screen.SETTINGS -> if (p in Ui.back) go(settingsFrom) else {
+                for (row in 0 until Ui.SET_ROWS) for (i in 0 until Ui.setCounts[row]) if (p in Ui.setOpt(row, i, Ui.setCounts[row])) { setOption(row, i); click() }
             }
             Screen.CLEAR -> if (p in Ui.clearNext) { click(); startLevel(levelIndex + 1) }
             Screen.ALBUM -> {
@@ -277,6 +301,30 @@ class Game(private val progress: Progress, private val audio: Audio) {
             }
             Screen.END -> if (p in Ui.endTitle) go(Screen.TITLE)
         }
+    }
+
+    private fun openSettings() {
+        settingsFrom = screen
+        go(Screen.SETTINGS)
+    }
+
+    fun setOption(row: Int, i: Int) {
+        when (row) {
+            0 -> progress.stickScheme = i == 1
+            1 -> progress.buttonSize = i
+            2 -> progress.haptics = i == 0
+            3 -> progress.sound = i == 0
+            4 -> progress.leftHanded = i == 0
+        }
+    }
+
+    /** Which option of settings [row] is active. */
+    fun optionOf(row: Int) = when (row) {
+        0 -> if (progress.stickScheme) 1 else 0
+        1 -> progress.buttonSize
+        2 -> if (progress.haptics) 0 else 1
+        3 -> if (progress.sound) 0 else 1
+        else -> if (progress.leftHanded) 0 else 1
     }
 
     private fun click() = audio.play(Sound.CLICK)
@@ -294,6 +342,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.TITLE -> return false
             Screen.SELECT, Screen.ALBUM, Screen.END -> go(Screen.TITLE)
             Screen.PLAY -> go(Screen.PAUSE)
+            Screen.SETTINGS -> go(settingsFrom)
             Screen.PAUSE, Screen.CLEAR -> go(Screen.SELECT)
         }
         return true

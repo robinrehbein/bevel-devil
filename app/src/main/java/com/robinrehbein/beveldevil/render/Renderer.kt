@@ -27,6 +27,7 @@ class Renderer(context: Context) {
     private val px = Pixels(context)
     private val world = WorldPainter(px)
     private val ui = UiPainter(px)
+    private val settings = SettingsPainter(px)
     private val controls = ControlsPainter()
 
     private var swirlPx = IntArray(0)
@@ -77,11 +78,12 @@ class Renderer(context: Context) {
         px.texts.clear()
         swirl(game.time, game.heat, l)
         when (game.screen) {
-            Screen.TITLE -> ui.title(game, l)
+            Screen.TITLE -> { ui.title(game, l); settings.extras(game, l) }
+            Screen.SETTINGS -> settings.screen(game, l)
             Screen.SELECT -> ui.select(game, l)
             Screen.ALBUM -> ui.album(game, l)
             Screen.PLAY -> { world.draw(game, l); ui.hud(game, l) }
-            Screen.PAUSE -> { world.draw(game, l); ui.pause(l) }
+            Screen.PAUSE -> { world.draw(game, l); ui.pause(l); settings.extras(game, l) }
             Screen.CLEAR -> { world.draw(game, l); ui.clear(game, l) }
             Screen.END -> { world.draw(game, l); ui.end(game, l) }
         }
