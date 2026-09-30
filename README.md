@@ -12,6 +12,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 
 - **48 Level** in Welt 1 „Höllenkeller“, drei Akte à 16: **Die Karten** (die zwölf klassischen Tricks: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden, Finale), **Neue Regeln** (blinkende Plattformen, Pfad-Sägen, der Idle-Trigger, erst einzeln, dann mit den Klassikern) und **Mephi schummelt** (Meta-Twists wie Fake-Abspann, ausweichender Pause-Knopf, Rahmenbruch, Kopfstand, Geister-Versuch; nur zwei Level nutzen Handy-Neigung und Schütteln; Finale „Abspann“). Dazu Nerd-Anspielungen von Segfault bis sudo.
 - **48 Level** in Welt 2 „Höllen-Rechenzentrum“ (Schicht 2: Netzwerk und Server), wieder drei Akte à 16: **Handshake** (die besten Nerd-Witze von Hello World bis 404, erste Portale, der DNS-Trick), **Traffic** (Förderbänder als Datenbus und Laser als Firewall, erst einzeln, dann mit Portalen und Klassikern) und **Root** (Kombinationen, drei Meta-Twists in neuer Verkleidung: Replay-Angriff, Pause als Lösung, Lag-Spitze; ein Level mit Schütteln; Finale „shutdown -h now“, bei dem Mephi nach Schicht 3 flieht).
+- **48 Level** in Welt 3 „Platine“ (Schicht 3: Hardware, grünes Board in Akt 1 und 2, blaues in Akt 3), drei Akte à 16: **Stromkreise** (Kupferbahnen, Schaltknöpfe, Takte, Leiterbahnen unter Strom, Mephi kappt den Strom unter dir, Bit-Flip), **Überhitzung** (Herdplatten, Chips unter Last, Kühlkörper, übertakteter Boden, Schmelzplatten, dann mit den Stromkreisen kombiniert) und **Lüfter** (Aufwind, Seitenwind, Gegenwind im Takt, Schubumkehr, Kombinationen; Finale in drei Stufen: Selbsttest, Boot-Reihenfolge, BIOS-Setup). Meta-Twists: falsche Tür, verkehrter Monitor, Bildrollen. Nach 3-48 folgt ein echtes Ende: `kill -9` auf Mephi, das Netz läuft wieder.
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
@@ -57,6 +58,7 @@ app/src/main/java/com/robinrehbein/beveldevil/
 │   ├── Worlds.kt    Welten: Name, Übergangsscreen, Index-Mapping ("2-17")
 │   ├── World1*.kt   Die 48 Level von Welt 1 (Part1–Part3, ein Akt je 16 Level) und Bau-Helfer
 │   ├── World2*.kt   Die 48 Level von Welt 2 (Part1–Part3: Handshake, Traffic, Root) und Bau-Helfer (Racks, LEDs)
+│   ├── World3*.kt   Die 48 Level von Welt 3 (Part1–Part3: Stromkreise, Überhitzung, Lüfter) und Bau-Helfer (Brücken, Leiterbahnen)
 │   ├── World.kt     Physik, Kollision, Fallen (ein Versuch)
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt
 │   ├── Cards.kt     Die Teufelskarten

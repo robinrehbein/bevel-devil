@@ -22,12 +22,11 @@ object Worlds {
             T("99.9% uptime. The 0.1% is you.", "99,9 % Verfügbarkeit. Die 0,1 % sind du."),
             World2.levels,
         ),
-        // no levels yet: a locked "coming soon" tab on the level select
         WorldInfo(
-            3, T("Circuit Board", "Platine"),
+            3, World3.name,
             T("Layer 3: Hardware", "Schicht 3: Hardware"),
             T("Hardware. You can't patch this one.", "Hardware. Das fixt du nicht per Update."),
-            emptyList(),
+            World3.levels,
         ),
     )
 

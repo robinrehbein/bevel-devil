@@ -46,13 +46,21 @@ class IntroPainter(px: Pixels, private val ui: UiPainter) : Painter(px) {
         }
     }
 
-    private fun terminal(age: Float, t: Float) {
-        val lines = Intro.boot
-        val shown = min(lines.size, (age / Intro.LINE_T).toInt() + 1)
-        val total = shown + if (age >= lines.size * Intro.LINE_T) 1 else 0
+    /** The ending: the kill typed into a terminal; a tap skips ahead to the final card. */
+    fun ending(game: Game, l: Layout) {
+        rect(0, 0, l.lw, l.lh, TERM_BG)
+        px.at(l.sx, l.sy) {
+            terminal(game.endAge, game.time, Intro.ending, "root@hell: ~", Intro.END_LINE_T)
+            if (game.endAge >= Intro.endDuration - 0.4f && (game.time * 2).toInt() % 2 == 0) say(Txt.tapContinue.toString(), 244f, 139f, 4f, CREAM, Paint.Align.RIGHT)
+        }
+    }
+
+    private fun terminal(age: Float, t: Float, lines: List<Intro.Line> = Intro.boot, title: String = "root@hell: /var/log/boot.log", lineT: Float = Intro.LINE_T) {
+        val shown = min(lines.size, (age / lineT).toInt() + 1)
+        val total = shown + if (age >= lines.size * lineT) 1 else 0
         val rows = 12
         val first = max(0, total - rows)
-        say("root@hell: /var/log/boot.log", 8f, 10f, 4f, TERM_DIM, shadow = 0)
+        say(title, 8f, 10f, 4f, TERM_DIM, shadow = 0)
         rect(4, 17, 186, 1, TERM_DIM2)
         val tagW = textWidth("[WARN]", 5f) + 5f
         for (row in first until total) {

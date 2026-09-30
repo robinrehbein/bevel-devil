@@ -10,6 +10,7 @@ import android.graphics.RadialGradient
 import android.graphics.Shader
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
+import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.World
 import kotlin.math.atan2
@@ -114,7 +115,7 @@ class Renderer(context: Context) {
             Screen.PLAY -> { level(game, l); if (!twist.fake(game, l)) { ui.hud(game, l); motion.hud(game, l) } }
             Screen.PAUSE -> { level(game, l); ui.pause(game, l); settings.extras(game, l) }
             Screen.CLEAR -> { level(game, l); ui.clear(game, l) }
-            Screen.END -> { level(game, l); ui.end(game, l) }
+            Screen.END -> if (game.endAge < Intro.endDuration) intro.ending(game, l) else { level(game, l); ui.end(game, l) }
             Screen.INTRO -> intro.intro(game, l)
             Screen.WORLD_INTRO -> intro.worldIntro(game, l)
         }

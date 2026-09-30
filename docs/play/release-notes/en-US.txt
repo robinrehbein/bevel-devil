@@ -1,5 +1,5 @@
 Version 0.6.0
-• World 3 is in the works: Mephi flees one layer deeper
+• World 3 "Circuit Board": 48 new levels with copper rails, hot plates and fans, plus a BIOS finale and a real ending
 • Music and sound reworked
 • Polish for controls, traps and visuals
 • Small bugs fixed, Mephi is offended

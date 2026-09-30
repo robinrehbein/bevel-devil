@@ -6,7 +6,7 @@ Mephi is a daemon in two senses: a background process that has dug itself deep i
 
 The game
 • Troll platformer built on trial and error: dying is part of it, and you are back in a second
-• 96 levels in two worlds: Hell's Cellar and the Hell Data Center
+• 144 levels in three worlds: Hell's Cellar, the Hell Data Center and the Circuit Board
 • Traps that look exactly like normal floor until they go off
 • Mephi cheats: a fake ending, a pause button that runs away from you, a picture that turns upside down
 • Nerd humor from segfault to sudo that works even without a computer science degree
@@ -14,10 +14,10 @@ The game
 Devil cards
 Every trap is a card that flies out of Mephi's golden frame. Fall for it and the card goes into your album, along with a counter of how often it has caught you. From Collapse and Spike Seed to Shy Door and the Grand Finale: collect them all.
 
-Two worlds, further layers in development
+Three worlds, one way down
 • Hell's Cellar: gold masonry, embers and the classics among traps
 • Hell Data Center: server racks, lasers as a firewall, conveyor belts as a data bus and portals with minds of their own
-• More layers of hell are in development, the next one is the Circuit Board
+• Circuit Board: copper rails and pressure pads, hot plates and heatsinks, fans with a mind of their own, and a BIOS finale
 
 Tilt and shake
 A few levels ask for more than thumbs: tilt your phone and the world tilts with it, shake it and something unexpected falls. If you would rather not use the sensor, switch it off in the settings and get buttons instead.

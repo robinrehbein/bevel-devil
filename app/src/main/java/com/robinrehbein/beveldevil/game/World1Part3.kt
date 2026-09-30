@@ -36,8 +36,8 @@ object World1Part3 {
         // 33 — the door is a fake: clear screen, then the floor is gone and the door went home
         // TWIST: FakeWin (clear)
         Level(
-            name = T("Too Easy", "Zu einfach"),
-            intro = T("Just walk. Honestly.", "Einfach laufen. Ehrlich."),
+            name = T("Clear Road", "Freie Fahrt"),
+            intro = T("No traps today. I'm on vacation.", "Heute keine Fallen. Ich habe Urlaub."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14)))),
         ) {
@@ -50,8 +50,8 @@ object World1Part3 {
         // 34 — the pause button dodges; only a real pause (back button) opens the wall
         // TWIST: PauseTrap dodge + Resumed
         Level(
-            name = T("Coffee Break", "Kaffeepause"),
-            intro = T("You look tired. Take a break.", "Du wirkst müde. Mach mal Pause."),
+            name = T("Monday Morning", "Montagmorgen"),
+            intro = T("Everything is a bit slow today. Coffee is brewing.", "Heute ist alles etwas langsam. Der Kaffee läuft."),
             traps = listOf(
                 trap(After(0.3f), Play(Card.SHY_DOOR), PauseTrap(PauseTrick.DODGE)),
                 trap(Resumed(), Hide('w'), Hide('a'), Say(T("Refreshed? The floor took a break too.", "Erholt? Der Boden macht jetzt auch Pause."))),
@@ -66,8 +66,8 @@ object World1Part3 {
         // 35 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.
         // NOD: video buffering
         Level(
-            name = T("Buffering...", "Lädt..."),
-            intro = T("Your door is loading. Please stand by.", "Deine Tür wird geladen. Bitte warten."),
+            name = T("Home Network", "Heimnetz"),
+            intro = T("My internet is slow today. Don't mind me.", "Mein Internet ist heute lahm. Lass dich nicht stören."),
             traps = listOf(
                 trap(After(2.6f), Play(Card.SHY_DOOR), DoorTo(23, 10, speed = 5f), Say(T("Buffering... 23%", "Lädt... 23 %"))),
                 trap(After(4.4f), DoorTo(16, 11, speed = 5f), Say(T("Buffering... 67%", "Lädt... 67 %"))),
@@ -85,8 +85,8 @@ object World1Part3 {
         // 36 — a piece of the golden frame breaks off the ceiling and lands on the path
         // TWIST: FrameCrack
         Level(
-            name = T("Load-Bearing Frame", "Tragender Rahmen"),
-            intro = T("Nice frame, isn't it?", "Schöner Rahmen, oder?"),
+            name = T("Gallery", "Galerie"),
+            intro = T("All real gold. Almost. Don't touch.", "Alles echtes Gold. Fast. Nicht anfassen."),
             traps = listOf(trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack.")))),
         ) {
             border(); floor()
@@ -97,7 +97,7 @@ object World1Part3 {
         // EASTER EGG: git push --force
         Level(
             name = T("git push --force", "git push --force"),
-            intro = T("The door is at the remote. Or so you thought.", "Die Tür liegt im Remote. Dachtest du."),
+            intro = T("Mephi already pushed. You just need to pull.", "Mephi hat schon gepusht. Du musst nur noch pullen."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(29, 0, speed = 25f), Show('A'), Say(T("History rewritten. You're welcome.", "Historie umgeschrieben. Gern geschehen."))),
@@ -113,8 +113,8 @@ object World1Part3 {
         // 38 — the picture turns upside down over a spike pit; left and right follow the screen
         // TWIST: Flip
         Level(
-            name = T("Headstand", "Kopfstand"),
-            intro = T("Hold your phone properly.", "Halt dein Handy mal richtig."),
+            name = T("Clear View", "Durchblick"),
+            intro = T("Nice picture today. Sharper than ever.", "Schönes Bild heute. Schärfer als je zuvor."),
             traps = listOf(
                 trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
             ),
@@ -127,8 +127,8 @@ object World1Part3 {
         // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt
         // MOTION: Tilt
         Level(
-            name = T("Spirit Level", "Wasserwaage"),
-            intro = T("Hold it level, please.", "Bitte gerade halten."),
+            name = T("Hardware Store", "Baumarkt"),
+            intro = T("I built something wide. No instructions.", "Ich habe was Breites gebaut. Ohne Anleitung."),
             start = listOf(Tilt('a', left = 0f, right = 13f, speed = 6f)),
         ) {
             border(); floor(); pit(8..23)
@@ -139,7 +139,7 @@ object World1Part3 {
         // 40 — at the first step everything flips: gravity and controls. Walk the ceiling.
         // EASTER EGG: Kernel panic
         Level(
-            name = T("Kernel Panic", "Kernel Panic"),
+            name = T("Boot Sequence", "Systemstart"),
             intro = T("Everything is fine. Really.", "Alles in Ordnung. Wirklich."),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
@@ -154,8 +154,8 @@ object World1Part3 {
         // 41 — stalactites fall in two waves while the picture rolls; you cannot see them land
         // TWIST: Roll
         Level(
-            name = T("V-Sync", "Bildfang"),
-            intro = T("Enjoy the show. Keep your eyes on the level.", "Viel Spaß beim Zuschauen. Bleib mit den Augen im Level."),
+            name = T("TV Night", "Fernsehabend"),
+            intro = T("Reception is great today. No static.", "Der Empfang ist heute super. Kein Rauschen."),
             legend = mapOf('S' to ceilingSpike, 'T' to ceilingSpike),
             traps = listOf(
                 trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Technical difficulties.", "Bildstörung."))),
@@ -172,8 +172,8 @@ object World1Part3 {
         // 42 — the old wall of teeth chases you and Mephi offers a pause; the pause button is a spike
         // TWIST: PauseTrap spike
         Level(
-            name = T("Panic Button", "Notbremse"),
-            intro = T("Don't look back. Seriously.", "Schau nicht zurück. Ernsthaft."),
+            name = T("Tailwind", "Rückenwind"),
+            intro = T("Look ahead. There's nothing behind you.", "Schau nach vorne. Hinter dir ist nichts."),
             legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
             traps = listOf(
                 trap(PastX(7f), Play(Card.SPIKE_SEED), Move('W', 30f, 0f, 7.4f), PauseTrap(PauseTrick.SPIKE),
@@ -191,7 +191,7 @@ object World1Part3 {
         // TWIST: Ghost
         Level(
             name = T("git blame", "git blame"),
-            intro = T("Replaying your last attempt.", "Ich spiele deinen letzten Versuch ab."),
+            intro = T("I keep a log. Of everything you do.", "Ich führe Buch. Über alles, was du tust."),
             traps = listOf(trap(After(0f), Play(Card.DEVIL_SAW), Ghost(1f))),
         ) {
             border(); floor(); pit(22..24)
@@ -202,8 +202,8 @@ object World1Part3 {
         // 44 — a wall to the ceiling that only comes down when you shake the phone
         // MOTION: Shaken
         Level(
-            name = T("Shake It", "Schüttel dich"),
-            intro = T("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?"),
+            name = T("Wallflower", "Mauerblümchen"),
+            intro = T("The wall won't budge. Neither will I.", "Die Wand bewegt sich nicht. Ich auch nicht."),
             traps = listOf(trap(Shaken, Play(Card.COLLAPSE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!")))),
         ) {
             border(); floor()
@@ -215,7 +215,7 @@ object World1Part3 {
         // EASTER EGG: sudo rm -rf /
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
-            intro = T("Are you sure? [y/N]", "Bist du sicher? [j/N]"),
+            intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
             traps = listOf(
                 trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
             ),
@@ -229,8 +229,8 @@ object World1Part3 {
 
         // 46 — the wall is unclimbable; the way out is behind you
         Level(
-            name = T("Wrong Way", "Falsche Richtung"),
-            intro = T("That wall is huge. Maybe stop staring at it.", "Die Wand ist riesig. Vielleicht guck woanders hin."),
+            name = T("Home Stretch", "Zielgerade"),
+            intro = T("That's the goal ahead. You can do it.", "Da vorne ist das Ziel. Du schaffst das."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(Touch('k'), Play(Card.DECOY), Hide('w'), Say(T("Oh, you found the button. Boo.", "Oh, du hast den Knopf gefunden. Buh."))),
@@ -248,7 +248,7 @@ object World1Part3 {
         // EASTER EGG: xkcd "sudo make me a sandwich"
         Level(
             name = T("sudo make me a sandwich", "sudo mach mir ein Sandwich"),
-            intro = T("\"Make me a sandwich.\" \"What? Make it yourself.\"", "\"Mach mir ein Sandwich.\" \"Was? Mach's dir doch selbst.\""),
+            intro = T("I'm hungry. Make me a sandwich.", "Ich habe Hunger. Mach mir ein Sandwich."),
             legend = mapOf('k' to ghost),
             traps = listOf(
                 trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Say(T("Okay.", "Okay."))),
@@ -265,7 +265,7 @@ object World1Part3 {
         // 48 — finale: a blinking bridge, then the door ends the game. The credits roll, become stairs, the door went home.
         // TWIST: FakeWin (credits) + Roll
         Level(
-            name = T("Roll Credits", "Abspann"),
+            name = T("Exit", "Ausgang"),
             intro = T("Last level. Promise.", "Letztes Level. Versprochen."),
             legend = mapOf('c' to hiddenSolid),
             traps = listOf(

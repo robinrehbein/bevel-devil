@@ -699,7 +699,8 @@ class UiPainter(px: Pixels) : Painter(px) {
             say(Txt.endTitle.toString(), 128f, 26f, 12f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
             say(Txt.endSub.toString(), 128f, 42f, 7f, DEVIL_RED, Paint.Align.CENTER)
             devilFrame(109f, 52f, 38f, Mood.SULK, game.time)
-            say(Txt.endDeaths.toString().replace("%d", game.totalBestDeaths().toString()), 128f, 100f, 5.5f, CREAM, Paint.Align.CENTER)
+            say(Txt.endQuote.toString(), 128f, 96f, 5f, DEVIL_RED, Paint.Align.CENTER)
+            say(Txt.endDeaths.toString().replace("%d", game.totalBestDeaths().toString()), 128f, 105f, 5.5f, CREAM, Paint.Align.CENTER)
             button(Ui.endTitle, Txt.toTitle.toString(), true)
         }
     }
