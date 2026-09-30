@@ -43,8 +43,8 @@ class WorldSelectTest {
 
     @Test fun worldsAreLaidOutBackToBack() {
         assertEquals(48, World1.levels.size)
-        assertEquals(listOf(0, 48, 176), Worlds.all.map { it.firstLevel })
-        assertEquals(176, Levels.all.size)
+        assertEquals(listOf(0, 48, 96), Worlds.all.map { it.firstLevel })
+        assertEquals(96, Levels.all.size)
         assertSame(World1.levels[0], Levels.all[0])
         assertSame(World1.levels[47], Levels.all[47])
         assertSame(World2.levels[0], Levels.all[48])
@@ -124,10 +124,19 @@ class WorldSelectTest {
         val early = Prog(30, saveVersion = 1)
         Game(early, silent)
         assertEquals(30, early.unlocked)
-        // current saves are left alone
-        val current = Prog(100)
+        // version 2 saves came from the 128-level World 2: clamped the same way, then marked current
+        val big = Prog(150, saveVersion = 2)
+        Game(big, silent)
+        assertEquals(49, big.unlocked)
+        assertEquals(SAVE_VERSION, big.saveVersion)
+        val w1 = Prog(40, saveVersion = 2)
+        Game(w1, silent)
+        assertEquals(40, w1.unlocked)
+        // current saves are left alone and never point past the last level
+        val current = Prog(Levels.all.size)
         Game(current, silent)
-        assertEquals(100, current.unlocked)
+        assertEquals(Levels.all.size, current.unlocked)
+        assertEquals(96, Levels.all.size)
     }
 
     @Test fun selectOpensOnPageOfHighestUnlockedLevel() {
@@ -138,7 +147,7 @@ class WorldSelectTest {
         assertEquals(2, h.selWorld.number)
         assertEquals(1, h.selPage)
         assertEquals(3, g.pages())
-        assertEquals(8, h.pages())
+        assertEquals(3, h.pages())
     }
 
     @Test fun tileOnPageThreeStartsTheRightLevel() {

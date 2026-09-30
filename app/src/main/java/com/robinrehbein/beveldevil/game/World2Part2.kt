@@ -1,298 +1,287 @@
 package com.robinrehbein.beveldevil.game
 
-import com.robinrehbein.beveldevil.game.Action.DoorTo
+import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
-import com.robinrehbein.beveldevil.game.Action.Gravity
-import com.robinrehbein.beveldevil.game.Action.Hide
-import com.robinrehbein.beveldevil.game.Action.Move
+import com.robinrehbein.beveldevil.game.Action.Laser
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Play
+import com.robinrehbein.beveldevil.game.Action.Portal
+import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Show
-import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.After
-import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.Idle
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Touch
-import com.robinrehbein.beveldevil.game.Trigger.Zone
 
-private val hidden = Glyph(spike = true, hidden = true)
-private val ghost = Glyph(spike = false, hidden = true, bonk = true)
-private val hiddenSolid = Glyph(spike = false, hidden = true)
+/** World 2, levels 17-32. Act 2, "Traffic": conveyor belts (the data bus) and lasers (the firewall), first alone, then with portals and the classics. */
+object World2Part2 {
+    private val hidden = Glyph(spike = true, hidden = true)
+    private val ghost = Glyph(spike = false, hidden = true, bonk = true)
+    private val hiddenSolid = Glyph(spike = false, hidden = true)
 
-/** Shared map of levels 27 and 28 (Recursion: see Recursion). */
-private fun MapBuilder.bigO() {
-    border(); floor()
-    put(6, 14, '^')
-    leds(10..11); leds(13..14)
-    leds(17..19); leds(21..23); leds(25..27)
+    val levels: List<Level> = listOf(
+
+        // 17 — the first conveyor belt: standing still rides you into the spikes
+        Level(
+            name = T("Data Bus", "Datenbus"),
+            intro = T("All aboard the data bus. Do not stand still.", "Alles einsteigen in den Datenbus. Nicht stehen bleiben."),
+            start = listOf(Belt('b', 3.5f)),
+        ) {
+            border(); floor()
+            fill(5..26, 15..15, 'b')
+            put(13, 14, '^'); put(20, 14, '^'); put(21, 14, '^')
+            spawn(); door(); bits(17)
+        },
+
+        // 18 — the first laser: a firewall gate that opens now and then
+        Level(
+            name = T("Firewall", "Firewall"),
+            intro = T("Port closed. Port open. Port closed. Wait for it.", "Port zu. Port auf. Port zu. Warte auf den richtigen Moment."),
+            start = listOf(Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f, phase = 1.4f)),
+        ) {
+            border(); floor()
+            rack(9, 1, 2)
+            spawn(); door(); bits(18)
+        },
+
+        // 19 — the belt carries you along, then reverses faster than you run
+        Level(
+            name = T("Out of Order", "Paketsalat"),
+            intro = T("Packets arrive in order. Usually.", "Pakete kommen der Reihe nach an. Meistens."),
+            start = listOf(Belt('b', 2f)),
+            traps = listOf(
+                trap(PastX(10f), Play(Card.TWISTED), Belt('b', -10f), say("Packet reordering! Everything arrives backwards.", "Paket-Umsortierung! Alles kommt rückwärts an.")),
+            ),
+        ) {
+            border(); floor()
+            fill(1..25, 15..15, 'b')
+            put(1, 13, '>'); put(1, 14, '>')
+            spawn(5); door()
+        },
+
+        // 20 — two gates that are never open together: wait on the island between them
+        Level(
+            name = T("Stateful Inspection", "Zustandsprüfung"),
+            intro = T("The second gate remembers what the first one let through.", "Das zweite Tor weiß, was das erste durchgelassen hat."),
+            start = listOf(
+                Laser('L', 10 to 1, 10 to 14, on = 1f, off = 2f, phase = 2f),
+                Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
+            ),
+        ) {
+            border(); floor()
+            put(15, 14, '^')
+            spawn(); door(); bits(20)
+        },
+
+        // 21 — EASTER EGG: bandwidth (a beam as a low ceiling: only short hops fit through)
+        Level(
+            name = T("Bandwidth Limit", "Bandbreiten-Limit"),
+            intro = T("Your plan allows 1.5 tiles of height.", "Dein Tarif erlaubt 1,5 Kacheln Höhe."),
+            legend = mapOf('A' to hidden),
+            start = listOf(Laser('H', 5 to 12, 26 to 12)),
+            traps = listOf(
+                trap(PastX(22.4f), Play(Card.SPIKE_SEED), Show('A'), say("Throttled to 56k. Also: spikes.", "Auf 56k gedrosselt. Und: Spikes.")),
+            ),
+        ) {
+            border(); floor()
+            put(9, 14, '^'); put(10, 14, '^'); put(14, 14, '^'); put(15, 14, '^'); put(19, 14, '^'); put(20, 14, '^')
+            put(24, 14, 'A'); put(25, 14, 'A')
+            spawn(); door(); bits(21)
+        },
+
+        // 22 — a hidden block is the switch for the firewall: knock by jumping
+        Level(
+            name = T("Port Knocking", "Anklopfen"),
+            intro = T("Knock, knock. Who's there? Try jumping.", "Klopf, klopf. Wer ist da? Spring mal."),
+            legend = mapOf('k' to ghost),
+            start = listOf(
+                Laser('L', 15 to 1, 15 to 14),
+                Laser('M', 23 to 1, 23 to 14, on = 0.9f, off = 1.6f, phase = 0.5f),
+            ),
+            traps = listOf(
+                trap(Touch('k'), Play(Card.GHOST_BLOCK), Power('L', false), say("Knock-knock-knock. Port 22 is open. (It was hidden.)", "Klopf-klopf-klopf. Port 22 ist offen. (Er war versteckt.)")),
+            ),
+        ) {
+            border(); floor()
+            put(8, 11, 'k')
+            spawn(); door(); bits(22)
+        },
+
+        // 23 — a ride through three belts and two one-way portals: only the spikes need you
+        Level(
+            name = T("Information Superhighway", "Datenautobahn"),
+            intro = T("Surf the net. Mind the spikes on the on-ramp.", "Surf im Netz. Vorsicht vor den Spikes auf der Auffahrt."),
+            start = listOf(
+                Belt('a', 4.5f), Belt('b', 4.5f), Belt('c', 4.5f),
+                Portal('1', 15 to 14, 4 to 8, twoWay = false),
+                Portal('2', 15 to 8, 20 to 14, twoWay = false),
+            ),
+        ) {
+            border(); floor()
+            fill(3..13, 15..15, 'a'); fill(19..27, 15..15, 'c')
+            fill(16..17, 1..14)
+            fill(3..14, 9..9, 'b'); put(15, 9, '#')
+            put(8, 14, '^'); put(9, 8, '^'); put(12, 8, '^'); put(23, 14, '^'); put(24, 14, '^')
+            spawn(); door()
+        },
+
+        // 24 — climb the racks: every jump crosses a timed beam, and the last rack crumbles
+        Level(
+            name = T("Uplink", "Uplink"),
+            intro = T("The uplink is on the top shelf. Mind the lasers.", "Der Uplink steht im obersten Fach. Vorsicht, Laser."),
+            start = listOf(
+                Laser('1', 8 to 1, 8 to 12, on = 1f, off = 1.8f, phase = 1.4f),
+                Laser('2', 14 to 1, 14 to 10, on = 1f, off = 1.8f, phase = 0.4f),
+                Laser('3', 20 to 1, 20 to 8, on = 1f, off = 1.8f, phase = 2.2f),
+            ),
+            traps = listOf(
+                trap(Touch('c'), Play(Card.CRUMBLE), Fall('c'), say("Thermal throttling: this rack is going down.", "Thermische Drosselung: Dieses Rack fährt herunter."), delay = 1.2f),
+            ),
+        ) {
+            border(); floor()
+            pit(16..19)
+            fill(4..7, 13..14); fill(10..13, 11..14); fill(16..19, 9..13, 'c'); fill(22..29, 7..14)
+            for (x in listOf(8, 9, 14, 15, 16, 17, 18, 19, 20, 21)) put(x, 14, '^')
+            spawn(); put(28, 6, 'D')
+        },
+
+        // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it
+        Level(
+            name = T("Load Balancer", "Lastverteiler"),
+            intro = T("Traffic is distributed evenly. Left, right, left, right.", "Der Verkehr wird gleichmäßig verteilt. Links, rechts, links, rechts."),
+            start = listOf(Belt('a', 4f), Belt('b', -4f), Belt('c', 4f), Belt('d', -4f)),
+            traps = listOf(
+                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 0.9f),
+                trap(Touch('b'), Fall('b'), delay = 0.9f),
+                trap(Touch('c'), Fall('c'), delay = 0.9f),
+                trap(Touch('d'), Fall('d'), delay = 0.9f),
+            ),
+        ) {
+            border()
+            fill(0..4, 15..17); fill(28..31, 15..17)
+            fill(5..9, 15..15, 'a'); fill(11..15, 15..15, 'b'); fill(17..21, 15..15, 'c'); fill(23..27, 15..15, 'd')
+            fill(5..27, 17..17, '^')
+            spawn(); door(); bits(25)
+        },
+
+        // 26 — the gate stays shut for seconds, but idle connections are dropped: keep hopping while you wait
+        Level(
+            name = T("Keep-Alive", "Keep-Alive"),
+            intro = T("Idle connections are closed after 1.5 seconds.", "Untätige Verbindungen werden nach 1,5 Sekunden getrennt."),
+            start = listOf(Laser('L', 15 to 1, 15 to 14, on = 3.5f, off = 1.6f)),
+            traps = listOf(
+                trap(Idle(1.5f), Play(Card.CRUMBLE), Fall('a'), say("Connection closed: idle timeout.", "Verbindung beendet: Leerlauf-Timeout.")),
+            ),
+        ) {
+            border(); floor()
+            fill(9..13, 15..17, 'a')
+            spawn(); door(); bits(26)
+        },
+
+        // 27 — EASTER EGG: DDoS (Distributed Denial of Stairs, on a belt that runs against you)
+        Level(
+            name = T("DDoS", "DDoS"),
+            intro = T("Distributed Denial of Stairs. The belt is against you too.", "Distributed Denial of Stairs. Das Band ist auch gegen dich."),
+            start = listOf(Belt('b', -3f)),
+            traps = listOf(
+                trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("10,000 blocks per second.", "10.000 Blöcke pro Sekunde.")),
+                trap(PastX(4f), Fall('d'), delay = 0.35f),
+                trap(PastX(4f), Fall('e'), delay = 0.7f),
+                trap(PastX(4f), Fall('f'), delay = 1.05f),
+                trap(PastX(4f), Fall('g'), delay = 1.4f),
+                trap(PastX(4f), Fall('h'), delay = 1.75f),
+            ),
+        ) {
+            border(); floor()
+            fill(5..26, 15..15, 'b')
+            fill(8..9, 3..4, 'c'); fill(12..13, 3..4, 'd'); fill(15..16, 3..4, 'e')
+            fill(19..20, 3..4, 'f'); fill(22..23, 3..4, 'g'); fill(26..27, 3..4, 'h')
+            spawn(); door(); bits(27, x0 = 24, y = 1)
+        },
+
+        // 28 — a VPN tunnel goes under the firewall; the intrusion prevention system lays a beam on the floor behind it
+        Level(
+            name = T("Split Tunnel", "Split Tunnel"),
+            intro = T("The firewall blocks everything. Everything except the tunnel.", "Die Firewall blockt alles. Alles außer dem Tunnel."),
+            start = listOf(Laser('L', 15 to 1, 15 to 14), Portal('1', 11 to 14, 19 to 14)),
+            traps = listOf(
+                trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 23 to 14, 26 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
+            ),
+        ) {
+            border(); floor()
+            spawn(); door(); bits(28)
+        },
+
+        // 29 — a pendulum saw over a belt that hurries you, and another saw that is right behind you
+        Level(
+            name = T("Race Condition", "Wettlaufsituation"),
+            intro = T("Two threads race to the door. Guess who's not winning.", "Zwei Threads rennen zur Tür. Rate, wer nicht gewinnt."),
+            start = listOf(
+                Belt('b', 5f),
+                PathSaw(5f, 16f to 14.4f, 16f to 11.6f),
+                PathSaw(5f, 21f to 14.4f, 21f to 11.6f, delay = 0.56f),
+            ),
+            traps = listOf(
+                trap(PastX(6f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6f, 0f), say("Thread 3 joins the race.", "Thread 3 steigt ins Rennen ein.")),
+            ),
+        ) {
+            border(); floor()
+            fill(6..27, 15..15, 'b')
+            put(11, 14, '^'); put(25, 14, '^')
+            spawn(); door()
+        },
+
+        // 30 — three one-way portals, each one lands higher up in the air
+        Level(
+            name = T("Hop Limit", "Hop-Limit"),
+            intro = T("Every hop costs 1 TTL. You have three.", "Jeder Hop kostet 1 TTL. Du hast drei."),
+            start = listOf(
+                Portal('1', 7 to 14, 12 to 8, twoWay = false),
+                Portal('2', 18 to 9, 23 to 4, twoWay = false),
+                Portal('3', 29 to 5, 25 to 12, twoWay = false),
+            ),
+        ) {
+            border(); floor()
+            fill(19..20, 1..14)
+            fill(11..18, 10..10); fill(22..29, 6..6)
+            put(16, 9, '^'); put(27, 5, '^')
+            spawn(); door()
+        },
+
+        // 31 — EASTER EGG: HTTP 408 Request Timeout (a treadmill against you and a gate that closes for good at 5.2 s)
+        Level(
+            name = T("408 Request Timeout", "408 Zeitüberschreitung"),
+            intro = T("Connection closes in 5 seconds. The belt is slow. So are you.", "Die Verbindung schließt in 5 Sekunden. Das Band ist langsam. Du auch."),
+            start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
+            traps = listOf(
+                trap(After(0.2f), Play(Card.SINKING), say("408: the server waited for you. Not anymore.", "408: Der Server hat auf dich gewartet. Nicht mehr.")),
+            ),
+        ) {
+            border(); floor()
+            fill(3..26, 15..15, 'b')
+            spawn(); door()
+        },
+
+        // 32 — act finale: belt, tunnel, timed gate and a belt that turns around in front of it
+        Level(
+            name = T("Core Switch", "Core-Switch"),
+            intro = T("Belt, tunnel, gate. The core switch does all of it at once.", "Band, Tunnel, Tor. Der Core-Switch macht alles auf einmal."),
+            start = listOf(
+                Belt('a', 4f), Belt('b', 3f),
+                Portal('1', 13 to 14, 17 to 14, twoWay = false),
+                Portal('2', 24 to 14, 28 to 14, twoWay = false),
+                Laser('G', 21 to 1, 21 to 14, on = 0.9f, off = 1.8f, phase = 1.0f),
+            ),
+            traps = listOf(
+                trap(PastX(18.5f), Play(Card.GRAND_FINALE), Belt('b', -9f), say("Spanning tree recalculated. Your belt now runs the other way.", "Spanning Tree neu berechnet. Dein Band läuft jetzt andersrum.")),
+            ),
+        ) {
+            border(); floor()
+            fill(3..12, 15..15, 'a'); fill(17..24, 15..15, 'b')
+            fill(14..15, 1..14); fill(25..26, 1..14)
+            put(8, 14, '^'); put(16, 14, '^')
+            spawn(); door()
+        },
+    )
 }
-
-/** World 2, levels 17-32: "Kernel Space". */
-internal val world2Part2: List<Level> = listOf(
-    // 17 — EASTER EGG: Segmentation fault (core dumped)
-    Level(
-        name = T("Segmentation Fault", "Speicherzugriffsfehler"),
-        intro = T("Memory is divided into segments. Some are not yours.", "Der Speicher ist in Segmente geteilt. Manche gehören nicht dir."),
-        legend = mapOf('A' to hidden),
-        traps = listOf(
-            trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Segmentation fault (core dumped)", "Speicherzugriffsfehler (Speicherabbild geschrieben)"), delay = 0.28f),
-            trap(PastX(21f), Show('A')),
-        ) + ('b'..'f').map { g -> trap(Touch(g), Fall(g), delay = 0.28f) },
-    ) {
-        border()
-        fill(0..4, 15..17); fill(23..30, 15..17)
-        for (i in 0..5) {
-            val x = 5 + i * 3
-            fill(x..x + 2, (if (i % 2 == 0) 15 else 14)..(if (i % 2 == 0) 15 else 14), 'a' + i)
-        }
-        put(25, 14, 'A'); put(26, 14, 'A')
-        spawn(); door(); bits(17)
-    },
-
-    // 18 — EASTER EGG: Stack Overflow (the stack of blocks grows until nothing fits)
-    Level(
-        name = T("Stack Overflow", "Stapelüberlauf"),
-        intro = T("Please wait while the stack grows.", "Bitte warten, der Stapel wächst."),
-        traps = listOf(
-            trap(PastX(9f), Play(Card.HEADBUTT), Fall('c'), say("Stack Overflow: the answer was already marked as duplicate.", "Stack Overflow: Die Antwort wurde als Duplikat markiert.")),
-            trap(PastX(9f), Fall('d'), delay = 0.3f),
-            trap(PastX(9f), Fall('e'), delay = 0.6f),
-            trap(PastX(9f), Fall('f'), delay = 0.9f),
-            trap(PastX(9f), Fall('g'), delay = 1.2f),
-        ),
-    ) {
-        border(); floor()
-        put(14, 7, 'c'); put(14, 6, 'd'); put(14, 5, 'e'); put(14, 4, 'f'); put(14, 3, 'g')
-        rack(22, 2, 1); rack(26, 1, 2)
-        spawn(); door(); bits(18)
-    },
-
-    // 19 — EASTER EGG: Buffer Overflow (the spikes write past the end of the array)
-    Level(
-        name = T("Buffer Overflow", "Pufferüberlauf"),
-        intro = T("char buf[8]; strcpy(buf, \"AAAAAAAAAAAAAAAA\");", "char buf[8]; strcpy(buf, \"AAAAAAAAAAAAAAAA\");"),
-        legend = mapOf('A' to hidden, 'B' to hidden, 'C' to hidden),
-        traps = listOf(
-            trap(PastX(9f), Play(Card.SPIKE_SEED), Show('A'), say("Writing 16 bytes into 8. What could go wrong?", "16 Bytes in 8 schreiben. Was soll schon passieren?")),
-            trap(PastX(14.5f), Show('B')),
-            trap(PastX(19f), Show('C'), say("AAAAAAAA... 0x41414141", "AAAAAAAA... 0x41414141")),
-        ),
-    ) {
-        border(); floor()
-        rack(10, 1, 2); rack(18, 1, 2)
-        put(13, 14, 'A'); put(17, 14, 'B'); put(21, 14, 'C'); put(22, 14, 'C')
-        spawn(); door(); bits(19)
-    },
-
-    // 20 — EASTER EGG: Deadlock (two threads, each waiting for the other)
-    Level(
-        name = T("Deadlock", "Deadlock"),
-        intro = T("Thread A waits for B. Thread B waits for A. You wait for nobody.", "Thread A wartet auf B. Thread B wartet auf A. Du wartest auf niemanden."),
-        traps = listOf(
-            trap(PastX(8f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6f, 0f), say("Thread A acquired lock 1.", "Thread A hat Lock 1.")),
-            trap(PastX(8f), Saw(33.5f, 14.4f, -6f, 0f), say("Thread B acquired lock 2.", "Thread B hat Lock 2."), delay = 0.4f),
-            trap(Touch('a'), Fall('a'), delay = 0.2f),
-        ),
-    ) {
-        border(); floor()
-        rack(13, 2, 2); fill(18..19, 13..14, 'a'); rack(24, 2, 2)
-        spawn(); door(); bits(20)
-    },
-
-    // 21 — EASTER EGG: Race condition (whoever gets to the top first)
-    Level(
-        name = T("Race Condition", "Wettlaufsituation"),
-        intro = T("Two threads race to the door. Guess who's not winning.", "Zwei Threads rennen zur Tür. Rate, wer nicht gewinnt."),
-        legend = mapOf('A' to hidden),
-        traps = listOf(
-            trap(Touch('m'), Play(Card.SINKING), Move('m', 0f, -8f, 4f), say("Race condition: the lift and the spikes both won.", "Race Condition: Aufzug und Spikes haben beide gewonnen."), delay = 0.2f),
-            trap(Zone(11f, 4f, 15f, 9f), Show('A')),
-            trap(Touch('m'), Fall('f'), delay = 0.3f),
-        ),
-    ) {
-        border(); floor()
-        fill(12..14, 14..14, 'm')
-        fill(3..8, 15..15, 'f')
-        fill(16..30, 6..7)
-        put(21, 5, 'A')
-        spawn(); put(28, 5, 'D')
-    },
-
-    // 22 — EASTER EGG: rubber duck debugging (explain your code to the duck)
-    Level(
-        name = T("Rubber Duck", "Quietscheente"),
-        intro = T("Explain the level to the duck. Out loud.", "Erklär der Ente das Level. Laut."),
-        legend = mapOf('b' to ghost, 'd' to hiddenSolid),
-        traps = listOf(
-            trap(Touch('b'), Play(Card.GHOST_BLOCK), Show('d'), say("Quack. Have you tried explaining it to the duck?", "Quak. Schon der Ente erklärt?")),
-        ),
-    ) {
-        border(); floor()
-        put(11, 12, 'b')
-        put(14, 14, 'd'); fill(15..15, 13..14, 'd'); fill(16..24, 12..14, 'd')
-        fill(21..22, 10..11, 'd'); fill(23..26, 8..9, 'd'); fill(27..28, 9..9, 'd')
-        spawn(); put(25, 7, 'D')
-    },
-
-    // 23 — EASTER EGG: Konami code (up up down down left right left right B A)
-    Level(
-        name = T("Konami Code", "Konami-Code"),
-        intro = T("↑ ↑ ↓ ↓ ← → ← → B A", "↑ ↑ ↓ ↓ ← → ← → B A"),
-        legend = mapOf('A' to hidden),
-        traps = listOf(
-            trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("+30 lives. Kidding. 0 lives.", "+30 Leben. Scherz. 0 Leben."), delay = 0.45f),
-            trap(PastX(22f), Show('A')),
-        ) + ('b'..'i').map { g -> trap(Touch(g), Fall(g), delay = 0.45f) },
-    ) {
-        border(); floor()
-        fill(27..30, 13..14)
-        for (i in 0..8) fill(1 + 3 * i..minOf(3 + 3 * i, 25), 11..11, 'a' + i)
-        fill(1..3, 9..10)
-        fill(6..30, 8..8)
-        put(26, 7, 'A'); put(27, 7, 'A')
-        spawn(); put(29, 7, 'D')
-    },
-
-    // 24 — EASTER EGG: merge conflict markers <<<<<<< ======= >>>>>>>
-    Level(
-        name = T("Merge Conflict", "Merge-Konflikt"),
-        intro = T("<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature", "<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature"),
-        traps = listOf(
-            trap(PastX(16f), Play(Card.SINKING), Move('w', -7f, 0f, 6f), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen.")),
-            trap(PastX(24f), Fall('c'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig.")),
-        ),
-    ) {
-        border(); floor()
-        put(9, 14, '<'); put(9, 13, '<')
-        rack(12, 2, 2)
-        put(16, 14, '>'); put(16, 13, '>')
-        fill(24..26, 13..14, 'w')
-        fill(21..22, 4..5, 'c')
-        spawn(); door(); bits(24)
-    },
-
-    // 25 — EASTER EGG: Y2K (at 19.99 turns 20.00, everything flips)
-    Level(
-        name = T("Y2K", "Jahr-2000-Problem"),
-        intro = T("It is 19.99. Nothing bad will happen at 20.00.", "Es ist 19.99. Bei 20.00 passiert nichts Schlimmes."),
-        traps = listOf(
-            trap(PastX(19.99f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Happy New Year! 1900!", "Frohes neues Jahr! 1900!")),
-            trap(PastX(20.0f), Swap(true), say("Two-digit years were a mistake.", "Zweistellige Jahreszahlen waren ein Fehler.")),
-            trap(PastX(27f), Swap(false), Gravity(false)),
-        ),
-    ) {
-        border(); floor()
-        leds(21..25)
-        put(23, 1, 'v'); put(25, 1, 'v')
-        spawn(); door()
-    },
-
-    // 26 — EASTER EGG: Unix epoch (1970 -> After(1.97 s)) and the year-2038 overflow
-    Level(
-        name = T("Unix Epoch", "Unix-Epoche"),
-        intro = T("00:00:00 UTC, January 1st, 1970. Time starts now.", "00:00:00 UTC, 1. Januar 1970. Die Zeit beginnt jetzt."),
-        traps = listOf(
-            trap(After(1.97f), Play(Card.COLLAPSE), Fall('a'), say("Epoch reached. Everything before it is deleted.", "Epoche erreicht. Alles davor wird gelöscht.")),
-            trap(After(2.6f), Fall('b')),
-            trap(After(3.1f), Fall('c')),
-        ),
-    ) {
-        border()
-        fill(0..5, 15..17, 'a'); fill(6..15, 15..17, 'b'); fill(16..21, 15..17, 'c'); fill(22..30, 15..17)
-        pit(12..13); pit(19..20)
-        rack(9, 1, 2)
-        spawn(); door(); bits(26)
-    },
-
-    // 27 — EASTER EGG: Big O(n²): 1, 4, 9 spikes
-    Level(
-        name = T("Big O(n²)", "Groß-O von n²"),
-        intro = T("Section n has n² spikes. Nested loops are fun.", "Abschnitt n hat n² Spikes. Verschachtelte Schleifen machen Spaß."),
-    ) {
-        bigO()
-        spawn(2); door(30)
-    },
-
-    // 28 — EASTER EGG: recursion (looks like the previous level; to understand it, see level 28)
-    Level(
-        name = T("Recursion", "Rekursion"),
-        intro = T("See: Recursion. (Wait, this looks familiar.)", "Siehe: Rekursion. (Moment, das kenne ich doch.)"),
-        traps = listOf(
-            trap(BeforeX(9f), Play(Card.HEADBUTT), Fall('c'), say("To understand recursion, you must first understand recursion.", "Um Rekursion zu verstehen, musst du zuerst Rekursion verstehen.")),
-        ),
-    ) {
-        bigO()
-        fill(3..4, 4..5, 'c')
-        spawn(30); door(2)
-    },
-
-    // 29 — EASTER EGG: Turing test (prove you are human, one step at a time)
-    Level(
-        name = T("Turing Test", "Turing-Test"),
-        intro = T("Are you a human? Then walk like one.", "Bist du ein Mensch? Dann lauf wie einer."),
-        legend = mapOf('B' to hiddenSolid, 'C' to hiddenSolid, 'E' to hidden),
-        traps = listOf(
-            trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Question 1: Are you human?", "Frage 1: Bist du ein Mensch?")),
-            trap(Touch('B'), Show('C'), say("Question 2: Select all traffic lights.", "Frage 2: Wähle alle Ampeln aus.")),
-            trap(Touch('C'), Show('E'), say("Wrong. Robots do not hesitate.", "Falsch. Roboter zögern nicht.")),
-        ),
-    ) {
-        border()
-        fill(0..8, 15..17); fill(24..31, 15..17)
-        fill(10..11, 15..15, 'a'); fill(15..16, 15..15, 'B'); fill(20..21, 15..15, 'C')
-        put(25, 14, 'E'); put(26, 14, 'E')
-        spawn(); door(); bits(29)
-    },
-
-    // 30 — EASTER EGG: fork bomb  :(){ :|:& };:
-    Level(
-        name = T("Fork Bomb", "Fork-Bombe"),
-        intro = T(":(){ :|:& };:", ":(){ :|:& };:"),
-        traps = listOf(
-            trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(33f, 14.4f, -6f, 0f), say("One process. Then two. Then four...", "Ein Prozess. Dann zwei. Dann vier...")),
-            trap(PastX(5f), Saw(17f, -0.5f, 0f, 9f), delay = 0.7f),
-            trap(PastX(5f), Saw(33f, 14.4f, -6f, 0f), delay = 1.4f),
-            trap(PastX(5f), Saw(23f, -0.5f, 0f, 9f), delay = 1.4f),
-            trap(PastX(5f), Saw(33f, 14.4f, -6f, 0f), delay = 2.1f),
-            trap(PastX(5f), Saw(28f, -0.5f, 0f, 9f), delay = 2.1f),
-        ),
-    ) {
-        border(); floor()
-        fill(14..19, 1..2); fill(21..25, 1..2); fill(26..29, 1..2)
-        spawn(); door(); bits(30, x0 = 4)
-    },
-
-    // 31 — EASTER EGG: sudo !! (repeat the last command, but as root)
-    Level(
-        name = T("sudo !!", "sudo !!"),
-        intro = T("Permission denied. Try: sudo !!", "Zugriff verweigert. Versuch: sudo !!"),
-        legend = mapOf('A' to hidden, 'B' to hidden),
-        traps = listOf(
-            trap(PastX(9f), Play(Card.SPIKE_SEED), Show('A'), say("Command 1: one spike.", "Befehl 1: ein Spike.")),
-            trap(PastX(17.5f), Show('B'), say("sudo !!  (three spikes, this time as root)", "sudo !!  (drei Spikes, diesmal als root)")),
-            trap(PastX(24f), Fall('a'), say("sudo !!  (and the floor)", "sudo !!  (und der Boden)")),
-        ),
-    ) {
-        border(); floor()
-        put(12, 14, 'A')
-        put(20, 14, 'B'); put(21, 14, 'B'); put(22, 14, 'B')
-        fill(26..27, 15..17, 'a')
-        spawn(); door(); bits(31)
-    },
-
-    // 32 — EASTER EGG: chmod 777 (read, write, execute for everyone)
-    Level(
-        name = T("chmod 777", "chmod 777"),
-        intro = T("Everyone may read, write and execute. Especially me.", "Alle dürfen lesen, schreiben und ausführen. Vor allem ich."),
-        legend = mapOf('A' to hidden),
-        traps = listOf(
-            trap(PastX(7.77f), Play(Card.COLLAPSE), Show('A'), Fall('a'), Saw(-1.5f, 14.4f, 6f, 0f, 0.62f), say("chmod 777: r, w and x. All at once.", "chmod 777: r, w und x. Alles gleichzeitig.")),
-        ),
-    ) {
-        border(); floor()
-        put(13, 14, 'A'); put(14, 14, 'A'); put(15, 14, 'A')
-        fill(20..22, 15..17, 'a')
-        rack(17, 1, 2)
-        spawn(); door(); bits(32)
-    },
-)
