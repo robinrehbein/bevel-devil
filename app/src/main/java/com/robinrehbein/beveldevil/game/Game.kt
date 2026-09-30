@@ -61,6 +61,7 @@ object Ui {
     val sound = Hit(224, 6, 26, 12)
     val gear = Hit(196, 6, 24, 12)
     val pauseSettings = Hit(88, 102, 80, 16)
+    val privacy = Hit(78, 128, 100, 11)
     const val SET_ROWS = 7
     const val SET_STEP = 15
     const val SET_TOP = 22
