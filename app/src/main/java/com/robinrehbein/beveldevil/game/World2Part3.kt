@@ -19,6 +19,7 @@ import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.After
+import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
 import com.robinrehbein.beveldevil.game.Trigger.Shaken
@@ -55,11 +56,13 @@ object World2Part3 {
         Level(
             name = T("Reverse Proxy", "Reverse Proxy"),
             intro = T("Everything goes through me here. Everything.", "Hier läuft alles über mich. Alles."),
+            legend = mapOf('A' to hidden),
             start = listOf(
                 Portal('1', 9 to 14, 16 to 1, twoWay = false),
                 Portal('2', 26 to 1, 27 to 14, twoWay = false),
             ),
             traps = listOf(
+                trap(Trigger.PastX(3.5f), Show('A'), say("Proxy cache: one spike, freshly served.", "Proxy-Cache: ein Spike, frisch serviert.")),
                 trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Proxying your gravity.", "Deine Schwerkraft wird weitergeleitet.")),
                 trap(Zone(26.5f, 12f, 29f, 15f), Gravity(false), say("Reverse, reverse.", "Rückwärts, rückwärts.")),
             ),
@@ -67,6 +70,7 @@ object World2Part3 {
             border(); floor()
             fill(12..13, 1..14)
             fill(19..20, 1..2); put(23, 1, 'v')
+            put(6, 14, 'A')
             spawn(); door()
         },
 
@@ -74,6 +78,7 @@ object World2Part3 {
         Level(
             name = T("Pipeline", "Datenleitung"),
             intro = T("Line is clear. I checked.", "Leitung frei. Ich habe nachgesehen."),
+            legend = mapOf('A' to hidden),
             start = listOf(
                 Belt('b', 5f),
                 Laser('A', 9 to 1, 9 to 14, on = 1.2f, off = 1f),
@@ -82,10 +87,13 @@ object World2Part3 {
             ),
             traps = listOf(
                 trap(After(0.1f), Play(Card.CRUMBLE), say("Keep the packets moving.", "Halte die Pakete in Bewegung.")),
+                trap(Trigger.PastX(15.8f), Belt('b', -6f), say("Backpressure: the line pushes back.", "Gegendruck: Die Leitung drückt zurück.")),
+                trap(Trigger.PastX(21.8f), Show('A'), say("Last packet: a spike.", "Letztes Paket: ein Spike.")),
             ),
         ) {
             border(); floor()
             fill(1..27, 15..15, 'b')
+            put(24, 14, 'A'); put(25, 14, 'A')
             spawn(); door()
         },
 
@@ -139,6 +147,7 @@ object World2Part3 {
             traps = listOf(
                 trap(PastX(5.5f), Play(Card.COLLAPSE), Fall('a'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?")),
                 trap(PastX(24.6f), Show('A')),
+                trap(Landed(23f, 26f), Portal('4', 28 to 14, 5 to 14, twoWay = false), say("301: Bobby Tables moved. The door is behind a redirect.", "301: Bobby Tables ist umgezogen. Die Tür liegt hinter einer Weiterleitung.")),
             ),
         ) {
             border(); floor()
@@ -167,6 +176,7 @@ object World2Part3 {
         Level(
             name = T("Ping Pong", "Ping-Pong"),
             intro = T("Your ping is excellent. Truly.", "Dein Ping ist hervorragend. Wirklich."),
+            legend = mapOf('A' to hidden),
             start = listOf(
                 Laser('A', 9 to 1, 9 to 14, on = 1.2f, off = 1.2f),
                 Laser('B', 15 to 1, 15 to 14, on = 1.2f, off = 1.2f, phase = 1.6f),
@@ -174,9 +184,11 @@ object World2Part3 {
             ),
             traps = listOf(
                 trap(PastX(6f), Play(Card.GHOST_BLOCK), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
+                trap(PastX(22f), Show('A'), say("Pong: two spikes.", "Pong: zwei Spikes.")),
             ),
         ) {
             border(); floor()
+            put(26, 14, 'A'); put(27, 14, 'A')
             spawn(); door(); bits(40, x0 = 24, y = 1)
         },
 
@@ -223,15 +235,18 @@ object World2Part3 {
         Level(
             name = T("Workshop", "Werkstatt"),
             intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
+            legend = mapOf('A' to hidden),
             start = listOf(
                 Portal('1', 10 to 14, 17 to 13, twoWay = false),
                 Laser('G', 25 to 1, 25 to 14, on = 1f, off = 1.8f, phase = 1f),
             ),
             traps = listOf(
                 trap(Shaken, Play(Card.HEADBUTT), Reroute('1', 21 to 14), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
+                trap(Trigger.PastX(22f), Show('A'), say("Now it is screwed on properly.", "Jetzt ist es ordentlich festgeschraubt.")),
             ),
         ) {
             border(); floor()
+            put(26, 14, 'A'); put(27, 14, 'A')
             fill(12..13, 1..14)
             fill(16..19, 14..14, '^')
             spawn(); door(29)
