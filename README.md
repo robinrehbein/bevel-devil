@@ -21,7 +21,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 
 ## Bauen
 
-Voraussetzungen: JDK 17+ und ein Android-SDK (compileSdk 35). Mit Android Studio einfach das Projekt öffnen, oder:
+Voraussetzungen: JDK 17+ und ein Android-SDK (compileSdk 36). Mit Android Studio einfach das Projekt öffnen, oder:
 
 ```bash
 ./gradlew assembleDebug          # APK unter app/build/outputs/apk/debug/

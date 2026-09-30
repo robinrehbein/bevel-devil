@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.robinrehbein.beveldevil"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.robinrehbein.beveldevil"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 4
         versionName = providers.gradleProperty("releaseVersionName").orNull ?: "0.4.0"
     }
