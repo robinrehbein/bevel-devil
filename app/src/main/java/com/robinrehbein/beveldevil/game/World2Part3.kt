@@ -12,6 +12,7 @@ import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
+import com.robinrehbein.beveldevil.game.Action.Reroute
 import com.robinrehbein.beveldevil.game.Action.Roll
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Shake
@@ -217,18 +218,23 @@ object World2Part3 {
             spawn(); door(); bits(42)
         },
 
-        // 43 — EASTER EGG: percussive maintenance (shake the phone: a rack falls off the ceiling and becomes a step)
+        // 43 — EASTER EGG: percussive maintenance (shake the phone: the loose patch cable re-seats, the portal exit jumps
+        // from the spike pit to the far side of the wall, and a laser guards the way to the door)
         Level(
             name = T("Percussive Maintenance", "Schlagartige Wartung"),
             intro = T("Have you tried hitting it? (Shake your phone.)", "Schon mal draufgehauen? (Schüttel dein Handy.)"),
+            start = listOf(
+                Portal('1', 10 to 14, 17 to 13, twoWay = false),
+                Laser('G', 25 to 1, 25 to 14, on = 1f, off = 1.8f, phase = 1f),
+            ),
             traps = listOf(
-                trap(Shaken, Play(Card.HEADBUTT), Fall('a'), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
+                trap(Shaken, Play(Card.HEADBUTT), Reroute('1', 21 to 14), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
             ),
         ) {
             border(); floor()
-            fill(24..30, 11..14)
-            fill(21..22, 1..2, 'a')
-            spawn(); put(28, 10, 'D')
+            fill(12..13, 1..14)
+            fill(16..19, 14..14, '^')
+            spawn(); door(29)
         },
 
         // 44 — EASTER EGG: merge conflict markers <<<<<<< ======= >>>>>>>
