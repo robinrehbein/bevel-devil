@@ -35,7 +35,7 @@ object Fx {
     }
 
     /** Source-over of ARGB [src] onto [dst], both straight alpha. */
-    private fun blend(dst: Int, src: Int): Int {
+    fun blend(dst: Int, src: Int): Int {
         val sa = src ushr 24
         val da = dst ushr 24
         val oa = sa + da * (255 - sa) / 255

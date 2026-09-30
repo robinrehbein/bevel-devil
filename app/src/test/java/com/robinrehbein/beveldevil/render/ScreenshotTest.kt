@@ -21,6 +21,7 @@ import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.game.WorldState
+import com.robinrehbein.beveldevil.game.Worlds
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -406,6 +407,38 @@ class ScreenshotTest {
                 play(1.5f); save("88-l48-stairs$tag")
             }
         }
+    }
+
+    @Test
+    fun dataCenter() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(2).firstLevel + n - 1) }, s)
+            film(1).apply { play(1.2f); save("110-w2-l1$tag") }
+            film(5).apply { play(1.2f); save("111-w2-l5$tag") }
+            film(13).apply { play(1.2f); save("112-w2-l13-long-name$tag") }
+            film(10).apply {
+                game.input.right = true
+                play(4f) { game.world!!.player.box.cx > 6.6f }
+                game.input.right = false
+                play(0.45f); save("113-w2-l10-trap$tag")
+            }
+        }
+        Film(Game(MemoryProgress(), silent).apply { startLevel(14) }, sizes[0]).apply { play(1.2f); save("114-w1-l15-compare") }
+        // long names must fit the plate in every HUD mode
+        val names = com.robinrehbein.beveldevil.game.Levels.all.withIndex()
+        val sandwich = names.first { it.value.name.de.startsWith("sudo mach") }.index
+        val w2 = Worlds.get(2)
+        val longest = (w2.firstLevel until w2.firstLevel + w2.size).maxByOrNull { com.robinrehbein.beveldevil.game.Levels.all[it].name.de.length }!!
+        for (s in sizes) {
+            val sfx = if (s === sizes[0]) "" else "-${s.tag}"
+            Film(Game(MemoryProgress(), silent).apply { startLevel(sandwich) }, s).apply { play(0.8f); save("115-hud-sandwich$sfx") }
+            Film(Game(MemoryProgress(), silent).apply { startLevel(longest) }, s).apply { play(0.8f); save("117-hud-longest-w2$sfx") }
+        }
+        val g = Game(MemoryProgress().apply { unlocked = 60 }, silent)
+        run(g, 0.5f); g.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(g, 0.6f)
+        shoot("116-select", g, sizes.take(2))
     }
 
     @Test

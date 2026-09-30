@@ -126,7 +126,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val t = game.time
         if (l.hud == HudMode.TOP) header(l)
         pauseButton(game, l)
-        if (l.hud == HudMode.SIDE) sidePills(game, l.pills) else pillRow(game, l.pills.x.toFloat(), l.pills.y.toFloat())
+        if (l.hud == HudMode.SIDE) sidePills(game, l.pills) else pillRow(game, l)
         val f = l.frame
         devilFrame(f.x.toFloat(), f.y.toFloat(), f.w.toFloat(), game.mood, t)
         game.bubble?.let {
@@ -166,14 +166,20 @@ class UiPainter(px: Pixels) : Painter(px) {
         rect(x + 4, y + 3, 2, 6, CREAM); rect(x + 8, y + 3, 2, 6, CREAM)
     }
 
-    private fun pillRow(game: Game, x: Float, y: Float) {
+    /** TOP/OVERLAY: level plate and death counter in one row; the name shrinks to fit left of the devil frame. */
+    private fun pillRow(game: Game, l: Layout) {
+        val x = l.pills.x.toFloat()
+        val y = l.pills.y.toFloat()
         val name = "${game.levelLabel} · ${game.level.name.toString().uppercase()}"
-        val nw = textWidth(name, 5f) + 10
-        box(x, y, nw, 12f, PLUM, PLUM_HI)
-        say(name, x + 5, y + 6.3f, 5f)
-        val dx = x + nw + 6
         val dLabel = game.deaths.toString()
         val dw = textWidth(dLabel, 5f) + 18
+        val maxW = l.frame.x - 4 - x - 6 - dw
+        var size = 5f
+        while (size > 2.5f && px.fineWidth(name, size) + 10 > maxW) size -= 0.5f
+        val nw = px.fineWidth(name, size) + 10
+        box(x, y, nw, 12f, PLUM, PLUM_HI)
+        say(name, x + 5, y + 6.3f, size)
+        val dx = x + nw + 6
         box(dx, y, dw, 12f, RED_BTN, RED_BTN_HI)
         lc.drawBitmap(Icons.skull, dx + 4, y + 3.5f, null)
         say(dLabel, dx + 13, y + 6.3f, 5f)
@@ -185,10 +191,11 @@ class UiPainter(px: Pixels) : Painter(px) {
         val w = col.w.toFloat()
         val cx = x + w / 2
         val name = game.level.name.toString().uppercase()
+        val maxW = w - 8
         var size = 4f
-        while (size > 3f && name.split(' ').any { textWidth(it, size) > w - 6 }) size -= 0.5f
+        while (size > 2.5f && name.split(' ').any { px.fineWidth(it, size) > maxW }) size -= 0.5f
         // a word too long even at the smallest size breaks with a hyphen
-        val lines = wrap(name, size, w - 6).flatMap { line -> if (textWidth(line, size) <= w - 6) listOf(line) else hyphenate(line, size, w - 6) }
+        val lines = wrapFine(name, size, maxW).flatMap { line -> if (px.fineWidth(line, size) <= maxW) listOf(line) else hyphenate(line, size, maxW) }
         val lh = size * 1.3f
         val bh = (17f + lines.size * lh + 3).roundToInt().toFloat()
         var y = col.y.toFloat()
@@ -213,12 +220,23 @@ class UiPainter(px: Pixels) : Painter(px) {
         say(dLabel, dx + 9, y + 6.3f, 5f)
     }
 
+    private fun wrapFine(text: String, size: Float, maxW: Float): List<String> {
+        val out = ArrayList<String>()
+        var line = ""
+        for (word in text.split(' ')) {
+            val candidate = if (line.isEmpty()) word else "$line $word"
+            if (px.fineWidth(candidate, size) > maxW && line.isNotEmpty()) { out += line; line = word } else line = candidate
+        }
+        if (line.isNotEmpty()) out += line
+        return out
+    }
+
     private fun hyphenate(word: String, size: Float, maxW: Float): List<String> {
         val out = ArrayList<String>()
         var rest = word
-        while (textWidth(rest, size) > maxW && rest.length > 2) {
+        while (px.fineWidth(rest, size) > maxW && rest.length > 2) {
             var n = rest.length - 1
-            while (n > 1 && textWidth(rest.take(n) + "-", size) > maxW) n--
+            while (n > 1 && px.fineWidth(rest.take(n) + "-", size) > maxW) n--
             out += rest.take(n) + "-"
             rest = rest.drop(n)
         }

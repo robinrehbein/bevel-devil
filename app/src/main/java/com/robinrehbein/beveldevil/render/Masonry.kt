@@ -8,6 +8,8 @@ class Stone(
     val hi: Int, val mid: Int, val lo: Int, val lo2: Int,
     val jointHi: Int, val jointLo: Int, val spark: Int,
     val details: Boolean,
+    /** Steel panels instead of stones: vent slots and rivets as the details. */
+    val metal: Boolean = false,
 )
 
 val GOLD_STONE = Stone(
@@ -21,6 +23,11 @@ val ROCK_STONE = Stone(
     ROCK_HI, ROCK_MID, ROCK_LO, ROCK_LO2,
     0xFF3D1C31.toInt(), ROCK_LO2, ROCK_HI, false,
 )
+
+/** Colors of a spike; [tip] (0 for none) tints its top two rows, [tipLo] being the shaded side. */
+class Spike(val lit: Int, val dark: Int, val left: Int, val right: Int, val baseL: Int, val baseR: Int, val tip: Int = 0, val tipLo: Int = 0)
+
+val BONE_SPIKE = Spike(WHITE, 0xFF8C789E.toInt(), BONE, BONE_LO, BONE_LO, 0xFF9E8AB0.toInt())
 
 /**
  * Autotiled masonry as pure pixel functions into ARGB arrays, used to bake the static layers.
@@ -83,7 +90,7 @@ object Masonry {
         val jl = w && joint(col - 1, row)
         val face = when (Math.floorMod(hash(stoneStart(col, row), row), 5)) { 0, 1 -> s.face; 2 -> s.faceLi; 3 -> s.faceDk; else -> s.face }
         val h = hash(col * 3 + 1, row * 5 + 2)
-        val detail = if (s.details) Math.floorMod(h, 19) else -1
+        val detail = if (s.details) Math.floorMod(h, if (s.metal) 12 else 19) else -1
         val gx = 2 + (h ushr 8 and 3)
         val gy = 2 + (h ushr 10 and 3)
         for (y in 0 until TS) {
@@ -94,7 +101,10 @@ object Masonry {
                 if (px < 0 || px >= stride) continue
                 var c = face
                 if (hash(col * TS + x, row * TS + y) and 31 == 0) c = s.speck
-                when (detail) {
+                if (s.metal) when (detail) {
+                    0, 1 -> if (x in 2..5) { if (y == 3 || y == 5) c = s.lo2 else if (y == 4) c = s.jointHi }
+                    2, 3 -> if (x == gx && y == gy) c = s.mid else if (x == gx + 1 && y == gy + 1) c = s.lo2
+                } else when (detail) {
                     0 -> if ((x == 2 && y == 2) || (x == 3 && (y == 3 || y == 4)) || (x == 4 && y == 5) || (x == 5 && y == 5)) c = s.jointLo
                     1 -> if (x == 3 && y == 3) c = s.spark else if (x == 4 && y == 4) c = s.lo2 else if ((x == 4 && y == 3) || (x == 3 && y == 4)) c = s.mid
                     2 -> if (x == gx && y == gy) c = s.spark else if ((x - gx) * (x - gx) + (y - gy) * (y - gy) == 1) c = s.faceLi
@@ -125,11 +135,8 @@ object Masonry {
 
     // ---------- spikes ----------
 
-    private const val SPIKE_DK = 0xFF8C789E.toInt()
-    private const val SPIKE_BASE = 0xFF9E8AB0.toInt()
-
     /** Color of pixel ([x], [y]) of an upward spike, 0 for none. Rows 1..7, widening every other row. */
-    fun spikeColor(x: Int, y: Int): Int {
+    fun spikeColor(x: Int, y: Int, s: Spike = BONE_SPIKE): Int {
         if (y < 1) return if (x == 3 || x == 4) INK else 0
         val half = (y + 1) / 2
         val l = 4 - half
@@ -137,11 +144,12 @@ object Masonry {
         return when {
             x == l - 1 || x == r + 1 -> if (y < TS - 1) INK else 0
             x < l || x > r -> 0
-            y == TS - 1 -> if (x < 4) BONE_LO else SPIKE_BASE
-            x == l -> WHITE
-            x == r -> SPIKE_DK
-            x < 4 -> BONE
-            else -> BONE_LO
+            y == TS - 1 -> if (x < 4) s.baseL else s.baseR
+            s.tip != 0 && y <= 2 -> if (x < 4) s.tip else s.tipLo
+            x == l -> s.lit
+            x == r -> s.dark
+            x < 4 -> s.left
+            else -> s.right
         }
     }
 
@@ -149,9 +157,9 @@ object Masonry {
     fun spikeX(x: Int, y: Int, dir: Dir) = when (dir) { Dir.UP, Dir.DOWN -> x; Dir.LEFT -> y; Dir.RIGHT -> TS - 1 - y }
     fun spikeY(x: Int, y: Int, dir: Dir) = when (dir) { Dir.UP -> y; Dir.DOWN -> TS - 1 - y; Dir.LEFT, Dir.RIGHT -> x }
 
-    fun spike(out: IntArray, stride: Int, outH: Int, x0: Int, y0: Int, dir: Dir) {
+    fun spike(out: IntArray, stride: Int, outH: Int, x0: Int, y0: Int, dir: Dir, st: Spike = BONE_SPIKE) {
         for (y in 0 until TS) for (x in 0 until TS) {
-            val c = spikeColor(x, y)
+            val c = spikeColor(x, y, st)
             if (c == 0) continue
             val px = x0 + spikeX(x, y, dir)
             val py = y0 + spikeY(x, y, dir)

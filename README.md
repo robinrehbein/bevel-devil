@@ -43,7 +43,7 @@ app/src/main/java/com/robinrehbein/beveldevil/
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt
 │   ├── Cards.kt     Die Teufelskarten
 │   └── Txt.kt       UI-Texte (DE/EN)
-├── render/          Renderer, prozedurales Mephi-Sprite, Karten-Icons
+├── render/          Renderer, prozedurales Mephi-Sprite, Karten-Icons; `Theme.kt`: Look pro Welt (Welt 1 Höllenkeller, Welt 2 Rechenzentrum mit Stahl-Racks, LED-Hintergrund in `DataCenter.kt`; neue Welt = ein `Theme`)
 ├── audio/Sfx.kt     Chiptune-Synth
 ├── GameView.kt      Game-Loop (feste 120 Hz), Touch, Tastatur
 └── MainActivity.kt
