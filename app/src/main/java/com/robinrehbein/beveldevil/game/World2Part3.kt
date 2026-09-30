@@ -36,7 +36,7 @@ object World2Part3 {
         // 33 — EASTER EGG: sudo !! (repeat the last command, but as root)
         Level(
             name = T("sudo !!", "sudo !!"),
-            intro = T("Permission denied. Try: sudo !!", "Zugriff verweigert. Versuch: sudo !!"),
+            intro = T("Not my day. Try again later.", "Nicht mein Tag. Versuch es später nochmal."),
             legend = mapOf('A' to hidden, 'B' to hidden),
             traps = listOf(
                 trap(PastX(9f), Play(Card.SPIKE_SEED), Show('A'), say("Command 1: one spike.", "Befehl 1: ein Spike.")),
@@ -54,7 +54,7 @@ object World2Part3 {
         // 34 — a floor portal drops you onto the ceiling, where gravity is now yours to flip
         Level(
             name = T("Reverse Proxy", "Reverse Proxy"),
-            intro = T("All traffic is routed via the ceiling. Including you.", "Aller Verkehr läuft über die Decke. Du auch."),
+            intro = T("Everything goes through me here. Everything.", "Hier läuft alles über mich. Alles."),
             start = listOf(
                 Portal('1', 9 to 14, 16 to 1, twoWay = false),
                 Portal('2', 26 to 1, 27 to 14, twoWay = false),
@@ -73,7 +73,7 @@ object World2Part3 {
         // 35 — a belt carries you through gates that open in a rhythm: you cannot stand and wait, only lean back against it
         Level(
             name = T("Pipeline", "Datenleitung"),
-            intro = T("Packets flow in one direction. Gates open in another rhythm.", "Pakete fließen nach rechts. Die Tore haben ihren eigenen Takt."),
+            intro = T("Line is clear. I checked.", "Leitung frei. Ich habe nachgesehen."),
             start = listOf(
                 Belt('b', 5f),
                 Laser('A', 9 to 1, 9 to 14, on = 1.2f, off = 1f),
@@ -91,8 +91,8 @@ object World2Part3 {
 
         // 36 — EASTER EGG: replay attack (your previous attempt is replayed: do not repeat yourself)
         Level(
-            name = T("Replay Attack", "Replay-Angriff"),
-            intro = T("Nothing new here. Your old packets are just sent again.", "Nichts Neues. Deine alten Pakete werden einfach nochmal gesendet."),
+            name = T("Access Log", "Zugriffsprotokoll"),
+            intro = T("Nothing new here. Honestly.", "Nichts Neues hier. Ehrlich."),
             legend = mapOf('A' to hidden),
             start = listOf(
                 Laser('A', 10 to 1, 10 to 14, on = 2f, off = 2f),
@@ -111,7 +111,7 @@ object World2Part3 {
         // 37 — EASTER EGG: two-factor authentication
         Level(
             name = T("Two-Factor Auth", "Zwei-Faktor-Login"),
-            intro = T("Please enter the code we just sent to your other door.", "Gib den Code ein, den wir an deine andere Tür geschickt haben."),
+            intro = T("Your code was sent by post. Arrival: soon.", "Dein Code wurde per Post verschickt. Ankunft: bald."),
             legend = mapOf('B' to hiddenSolid, 'A' to hidden),
             traps = listOf(
                 trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Factor 1 accepted. Now factor 2.", "Faktor 1 akzeptiert. Jetzt Faktor 2.")),
@@ -129,7 +129,7 @@ object World2Part3 {
         // 38 — EASTER EGG: Bobby Tables (DROP TABLE floor: the hole has a wormhole at the bottom)
         Level(
             name = T("Bobby Tables", "Klein Bobby Tables"),
-            intro = T("Name: Robert'); DROP TABLE floor;--", "Name: Robert'); DROP TABLE floor;--"),
+            intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
             legend = mapOf('A' to hidden),
             start = listOf(
                 Portal('1', 7 to 17, 24 to 3, twoWay = false),
@@ -150,8 +150,8 @@ object World2Part3 {
 
         // 39 — EASTER EGG: "Have you tried turning it off and on again?" (the firewall only goes down when you pause and resume)
         Level(
-            name = T("Off and On Again", "Aus- und wieder an"),
-            intro = T("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?"),
+            name = T("Contingency Plan", "Notfallplan"),
+            intro = T("The firewall is stuck. It'll open by itself any second now.", "Die Firewall klemmt. Die geht gleich von selbst auf."),
             start = listOf(Laser('L', 15 to 1, 15 to 14)),
             traps = listOf(
                 trap(After(0.3f), Play(Card.DECOY), PauseTrap(PauseTrick.DODGE)),
@@ -165,8 +165,8 @@ object World2Part3 {
 
         // 40 — EASTER EGG: lag spike (the picture rolls while three gates run in a rhythm: a green wave, if you started on time)
         Level(
-            name = T("Lag Spike", "Lag-Spitze"),
-            intro = T("Ping: 12 ms. Ping: 12 ms. Ping: 999 ms.", "Ping: 12 ms. Ping: 12 ms. Ping: 999 ms."),
+            name = T("Ping Pong", "Ping-Pong"),
+            intro = T("Your ping is excellent. Truly.", "Dein Ping ist hervorragend. Wirklich."),
             start = listOf(
                 Laser('A', 9 to 1, 9 to 14, on = 1.2f, off = 1.2f),
                 Laser('B', 15 to 1, 15 to 14, on = 1.2f, off = 1.2f, phase = 1.6f),
@@ -182,8 +182,8 @@ object World2Part3 {
 
         // 41 — EASTER EGG: zero trust (never trust, always verify: every stone is a different lie)
         Level(
-            name = T("Zero Trust", "Zero Trust"),
-            intro = T("Never trust, always verify. Especially floors.", "Niemals vertrauen, immer prüfen. Vor allem Böden."),
+            name = T("Security Audit", "Sicherheitsaudit"),
+            intro = T("Everything looks solid. I personally checked it all.", "Alles sieht solide aus. Ich habe persönlich nachgeprüft."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Stone 1: verified. Revoked.", "Stein 1: verifiziert. Widerrufen."), delay = 0.25f),
@@ -202,8 +202,8 @@ object World2Part3 {
 
         // 42 — EASTER EGG: honeypot (the easy path is the trap)
         Level(
-            name = T("Honeypot", "Honeypot"),
-            intro = T("Look, a shiny block! Step on it. Please.", "Schau, ein glänzender Block! Tritt drauf. Bitte."),
+            name = T("Gold Mine", "Goldgrube"),
+            intro = T("Take the easy way. You've earned it.", "Nimm den leichten Weg. Du hast ihn dir verdient."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(Touch('h'), Play(Card.SPIKE_SEED), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
@@ -221,8 +221,8 @@ object World2Part3 {
         // 43 — EASTER EGG: percussive maintenance (shake the phone: the loose patch cable re-seats, the portal exit jumps
         // from the spike pit to the far side of the wall, and a laser guards the way to the door)
         Level(
-            name = T("Percussive Maintenance", "Schlagartige Wartung"),
-            intro = T("Have you tried hitting it? (Shake your phone.)", "Schon mal draufgehauen? (Schüttel dein Handy.)"),
+            name = T("Workshop", "Werkstatt"),
+            intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
             start = listOf(
                 Portal('1', 10 to 14, 17 to 13, twoWay = false),
                 Laser('G', 25 to 1, 25 to 14, on = 1f, off = 1.8f, phase = 1f),
@@ -239,7 +239,7 @@ object World2Part3 {
 
         // 44 — EASTER EGG: merge conflict markers <<<<<<< ======= >>>>>>>
         Level(
-            name = T("Merge Conflict", "Merge-Konflikt"),
+            name = T("Rebase", "Rebase"),
             intro = T("<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature", "<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature"),
             traps = listOf(
                 trap(PastX(16f), Play(Card.SINKING), Move('w', -7f, 0f, 6f), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen.")),
@@ -257,8 +257,8 @@ object World2Part3 {
 
         // 45 — EASTER EGG: sandbox escape (the walls close in)
         Level(
-            name = T("Sandbox Escape", "Sandbox-Ausbruch"),
-            intro = T("You are safely isolated in a sandbox. Forever.", "Du bist sicher in einer Sandbox isoliert. Für immer."),
+            name = T("Playground", "Spielplatz"),
+            intro = T("Nothing can happen to you in here, says the docs.", "Hier drin kann dir nichts passieren, sagt die Doku."),
             legend = mapOf('b' to ghost),
             traps = listOf(
                 trap(After(2.2f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
@@ -274,7 +274,7 @@ object World2Part3 {
         // 46 — EASTER EGG: privilege escalation (user, admin, root: a staircase of belts, each one faster and against you)
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
-            intro = T("Escalation, literally. The escalators run the wrong way.", "Ausweitung im wahrsten Sinn. Die Rolltreppen laufen falsch herum."),
+            intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
             start = listOf(Belt('a', -3f), Belt('b', -5f), Belt('c', -7f)),
             traps = listOf(
                 trap(Touch('a'), Play(Card.CRUMBLE), say("user: permission denied.", "user: Zugriff verweigert.")),
@@ -293,8 +293,8 @@ object World2Part3 {
 
         // 47 — EASTER EGG: integer overflow 127 + 1 (the LEDs wrap to 0000000) and kernel panic
         Level(
-            name = T("Integer Overflow: 127+1", "Integer-Überlauf: 127+1"),
-            intro = T("KERNEL PANIC — not syncing: 127 + 1 = -128", "KERNEL PANIC — not syncing: 127 + 1 = -128"),
+            name = T("Math Problem", "Rechenaufgabe"),
+            intro = T("What's 127 plus 1? Take your time.", "Was ist 127 plus 1? Lass dir Zeit."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(PastX(3f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.2f, 0f), say("Kernel panic! Attempted to kill init!", "Kernel Panic! Versuch, init zu beenden!")),
@@ -315,7 +315,7 @@ object World2Part3 {
         // 48 — act and world finale: belt, tunnel, gate, swapped controls, and a door that moves down to layer 3
         Level(
             name = T("shutdown -h now", "shutdown -h now"),
-            intro = T("Broadcast from mephi@hell: the system is going down for halt NOW.", "Rundruf von mephi@hoelle: Das System wird JETZT heruntergefahren."),
+            intro = T("Broadcast from mephi@hell: maintenance. Do not disturb.", "Rundruf von mephi@hoelle: Wartungsarbeiten. Bitte nicht stören."),
             start = listOf(
                 Belt('a', -3f),
                 Portal('1', 11 to 14, 15 to 14, twoWay = false),

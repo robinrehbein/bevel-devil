@@ -25,7 +25,7 @@ object World2Part1 {
         // 1 — EASTER EGG: Hello, World!
         Level(
             name = T("Hello, World!", "Hallo, Welt!"),
-            intro = T("Print it, then walk to the door. What could go wrong?", "Gib es aus und lauf zur Tür. Was soll schon schiefgehen?"),
+            intro = T("Print it, then walk to the door.", "Gib es aus, dann lauf zur Tür."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(PastX(3.5f), say("Hello, World!", "Hallo, Welt!")),
@@ -42,7 +42,7 @@ object World2Part1 {
         // 2 — first portal: the wall is a firewall, port 80 is open (the spikes teach the hop)
         Level(
             name = T("Open Port", "Offener Port"),
-            intro = T("Port 80 is open. Walk right in.", "Port 80 ist offen. Geh einfach rein."),
+            intro = T("The firewall is in a bad mood today. Like me.", "Die Firewall hat heute schlechte Laune. Wie ich."),
             start = listOf(Portal('1', 10 to 14, 19 to 14)),
         ) {
             border(); floor()
@@ -53,8 +53,8 @@ object World2Part1 {
 
         // 3 — EASTER EGG: HTTP 404, the door is gone (it runs back to the start)
         Level(
-            name = T("404 Door Not Found", "404 Tür nicht gefunden"),
-            intro = T("The door is right there. Probably.", "Die Tür ist gleich da. Wahrscheinlich."),
+            name = T("Reception", "Empfang"),
+            intro = T("One moment please. Connecting you.", "Einen Moment bitte. Wir verbinden."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(BeforeX(4.6f), Show('A'), say("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?")),
@@ -72,8 +72,8 @@ object World2Part1 {
 
         // 4 — EASTER EGG: off-by-one (the safe gap in the LED row is index 14, and it moves)
         Level(
-            name = T("Off-by-one", "Um-eins-daneben"),
-            intro = T("See the gap? Index 14. Trust me.", "Siehst du die Lücke? Index 14. Vertrau mir."),
+            name = T("String Lights", "Lichterkette"),
+            intro = T("Nice lighting. I laid the cables myself.", "Schönes Licht hier. Ich habe die Kabel selbst verlegt."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(PastX(11.6f), Play(Card.SPIKE_SEED), Show('A'), say("Off by one. Classic.", "Um eins daneben. Klassiker.")),
@@ -104,8 +104,8 @@ object World2Part1 {
 
         // 6 — EASTER EGG: "It's always DNS" (Reroute: the portal's exit moves onto spikes, the floating block flushes the cache)
         Level(
-            name = T("It's Always DNS", "Es ist immer DNS"),
-            intro = T("nslookup portal: non-authoritative answer. Trust it anyway.", "nslookup portal: Antwort ohne Gewähr. Vertrau ihr trotzdem."),
+            name = T("Address Book", "Adressbuch"),
+            intro = T("I looked up the door. It's in the phone book.", "Ich habe die Tür nachgeschlagen. Steht im Telefonbuch."),
             start = listOf(Portal('1', 8 to 14, 17 to 14)),
             traps = listOf(
                 trap(PastX(6f), Play(Card.DECOY), Reroute('1', 5 to 3), say("DNS changed. The portal leads somewhere nicer now.", "DNS geändert. Das Portal führt jetzt an einen schöneren Ort.")),
@@ -121,7 +121,7 @@ object World2Part1 {
 
         // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device)
         Level(
-            name = T("Blue Screen", "Blauer Bildschirm"),
+            name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
             traps = listOf(
                 trap(PastX(7.4f), Play(Card.HEADBUTT), Fall('c'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt.")),
@@ -152,8 +152,8 @@ object World2Part1 {
 
         // 9 — EASTER EGG: hot swap (unplug the controls, plug them back in wrong)
         Level(
-            name = T("Hot Swap", "Hot Swap"),
-            intro = T("Please don't unplug the controller.", "Bitte den Controller nicht abziehen."),
+            name = T("Cable Mess", "Kabelsalat"),
+            intro = T("Everything is plugged in tight. I checked.", "Alles steckt fest. Ich habe nachgesehen."),
             traps = listOf(
                 trap(PastX(6.5f), Play(Card.TWISTED), Swap(true), say("Hot swap: left and right exchanged.", "Hot Swap: links und rechts getauscht.")),
                 trap(PastX(23f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
@@ -168,7 +168,7 @@ object World2Part1 {
         // 10 — a portal hangs in mid-air above an LED field; hidden spikes wait where you land
         Level(
             name = T("VPN Tunnel", "VPN-Tunnel"),
-            intro = T("Your connection is secure. Nobody can see you die.", "Deine Verbindung ist sicher. Niemand sieht dich sterben."),
+            intro = T("Your connection is secure. Really secure.", "Deine Verbindung ist sicher. Wirklich sicher."),
             legend = mapOf('A' to hidden),
             start = listOf(Portal('1', 10 to 12, 21 to 12)),
             traps = listOf(
@@ -183,8 +183,8 @@ object World2Part1 {
 
         // 11 — EASTER EGG: fan #3 failed (cooling is a saw problem)
         Level(
-            name = T("Fan Failure", "Lüfterausfall"),
-            intro = T("Cooling nominal. Fans: three.", "Kühlung normal. Lüfter: drei."),
+            name = T("Server Room", "Serverraum"),
+            intro = T("Nice and cool in here. Three fans, all fit.", "Schön kühl hier. Drei Lüfter, alle fit."),
             traps = listOf(
                 trap(PastX(9.5f), Play(Card.DEVIL_SAW), Saw(15.5f, 2f, 0f, 9f), say("Fan 1 of 3 spinning. Rather fast.", "Lüfter 1 von 3 dreht. Ziemlich schnell.")),
                 trap(PastX(15.2f), Saw(20.5f, 19f, 0f, -9f), say("Fan 2 spins from below. It's a feature.", "Lüfter 2 dreht von unten. Ist ein Feature.")),
@@ -198,8 +198,8 @@ object World2Part1 {
 
         // 12 — EASTER EGG: Segmentation fault (core dumped)
         Level(
-            name = T("Segmentation Fault", "Speicherzugriffsfehler"),
-            intro = T("Memory is divided into segments. Some are not yours.", "Der Speicher ist in Segmente geteilt. Manche gehören nicht dir."),
+            name = T("Address Space", "Adressraum"),
+            intro = T("Everyone gets their own space. You too.", "Jeder bekommt seinen eigenen Platz. Du auch."),
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Segmentation fault (core dumped)", "Speicherzugriffsfehler (Speicherabbild geschrieben)"), delay = 0.28f),
@@ -235,7 +235,7 @@ object World2Part1 {
         // 14 — EASTER EGG: 127.0.0.1 (loopback: the portal sends you home; jumping over it is the `break`)
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
-            intro = T("There's no place like 127.0.0.1. Walk in if you like.", "Es gibt keinen Ort wie 127.0.0.1. Geh ruhig rein."),
+            intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
             start = listOf(Portal('1', 15 to 14, 4 to 14, twoWay = false)),
             traps = listOf(
                 trap(PastX(17.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 14.4f, -6f, 0f), say("ping 127.0.0.1: reply from 127.0.0.1. That was me.", "ping 127.0.0.1: Antwort von 127.0.0.1. Das war ich.")),
@@ -248,8 +248,8 @@ object World2Part1 {
 
         // 15 — EASTER EGG: TCP three-way handshake (SYN, SYN-ACK, ACK)
         Level(
-            name = T("Three-Way Handshake", "Dreifach-Handschlag"),
-            intro = T("SYN. Now go back and say SYN-ACK.", "SYN. Jetzt geh zurück und sag SYN-ACK."),
+            name = T("Greeting", "Begrüßung"),
+            intro = T("Politeness is free, they say.", "Höflichkeit kostet nichts, sagt man."),
             legend = mapOf('q' to hiddenSolid, 'B' to hiddenSolid, 'A' to hidden),
             traps = listOf(
                 trap(Touch('p'), Play(Card.GHOST_BLOCK), Show('q'), say("SYN. (Go back.)", "SYN. (Geh zurück.)")),
@@ -266,7 +266,7 @@ object World2Part1 {
 
         // 16 — EASTER EGG: man in the middle (you end up in a cell)
         Level(
-            name = T("Man in the Middle", "Mann in der Mitte"),
+            name = T("Through Traffic", "Durchgangsverkehr"),
             intro = T("Your connection is encrypted. Mostly by me.", "Deine Verbindung ist verschlüsselt. Größtenteils von mir."),
             legend = mapOf('b' to ghost),
             traps = listOf(
