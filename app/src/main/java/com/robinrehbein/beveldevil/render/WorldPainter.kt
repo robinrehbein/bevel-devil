@@ -16,7 +16,6 @@ import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Particle
 import com.robinrehbein.beveldevil.game.World
 import com.robinrehbein.beveldevil.game.WorldState
-import com.robinrehbein.beveldevil.game.Worlds
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -64,10 +63,16 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private var resting = BooleanArray(0)
     private var cells = IntArray(0)
 
+    /** Forces a theme regardless of the level (screenshot tests, previews). */
+    var themeOverride: Theme? = null
     private var theme = Themes.HELL
     private val doorHalo by lazy { Fx.halo(26, 0xFFFF9A48.toInt(), 0x58, 0x30) }
+    private val doorHaloCool by lazy { Fx.halo(26, 0xFF48E8C8.toInt(), 0x50, 0x2A) }
     private val door by lazy { buildDoor() }
-    private val doorFlipped by lazy { Bitmap.createBitmap(door, 0, 0, door.width, door.height, Matrix().apply { setScale(1f, -1f) }, false) }
+    private val doorFlipped by lazy { flipped(door) }
+    private val usbDoor by lazy { buildUsbDoor() }
+    private val usbDoorFlipped by lazy { flipped(usbDoor) }
+    private fun flipped(b: Bitmap) = Bitmap.createBitmap(b, 0, 0, b.width, b.height, Matrix().apply { setScale(1f, -1f) }, false)
 
     private var rockBmp: Bitmap? = null
     private var rockFor = IntArray(4)
@@ -79,7 +84,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     fun draw(game: Game, l: Layout) {
         val w = game.world ?: return
-        draw(w, game.time, game.heat, game.particles, l, Themes.of(Worlds.of(game.levelIndex).number))
+        draw(w, game.time, game.heat, game.particles, l, themeOverride ?: Themes.forLevel(game.levelIndex))
     }
 
     fun draw(w: World, t: Float, heat: Float, particles: List<Particle>, l: Layout, theme: Theme = Themes.HELL) {
@@ -428,6 +433,44 @@ class WorldPainter(px: Pixels) : Painter(px) {
         return Bitmap.createBitmap(out, w + 2, h + 2, Bitmap.Config.ARGB_8888)
     }
 
+    /** World 3's door: a USB-C socket set upright in the board, silver shell, dark mouth, a contact tongue inside. */
+    private fun buildUsbDoor(): Bitmap {
+        val w = 10
+        val h = 13
+        fun shape(x: Int, y: Int): Boolean {
+            if (x !in 0 until w || y !in 0 until h) return false
+            return !((y == 0 && (x <= 1 || x >= w - 2)) || (y == 1 && (x == 0 || x == w - 1)))
+        }
+        fun inside(x: Int, y: Int) = x in 2..7 && y in 3 until h && !(y == 3 && (x == 2 || x == 7))
+        val hi = 0xFFEEF3FA.toInt()
+        val mid = 0xFFB4BFD0.toInt()
+        val shell = 0xFF8C98AE.toInt()
+        val lo = 0xFF596479.toInt()
+        val out = IntArray((w + 2) * (h + 2))
+        for (y in -1..h) for (x in -1..w) {
+            val c = when {
+                !shape(x, y) -> if (shape(x - 1, y) || shape(x + 1, y) || shape(x, y - 1) || shape(x, y + 1)) INK else 0
+                inside(x, y) -> when {
+                    y == 3 || (y == 4 && (x == 2 || x == 7)) -> 0xFF03060C.toInt()
+                    // the tongue down the middle, with gold contacts on both sides of it
+                    x == 4 || x == 5 -> if (y >= 5) 0xFF2C3650.toInt() else 0xFF0A0E18.toInt()
+                    (x == 3 || x == 6) && y in 5 until h - 1 && y % 2 == 1 -> 0xFFE0A84A.toInt()
+                    else -> 0xFF0A0E18.toInt()
+                }
+                x == 4 && y == 1 -> WHITE
+                x == 5 && y == 1 -> hi
+                !shape(x - 1, y) || !shape(x, y - 1) -> hi
+                !shape(x + 1, y) -> lo
+                inside(x + 1, y) || inside(x, y + 1) -> lo
+                inside(x - 1, y) -> mid
+                y == h - 1 -> lo
+                else -> shell
+            }
+            out[(y + 1) * (w + 2) + x + 1] = c
+        }
+        return Bitmap.createBitmap(out, w + 2, h + 2, Bitmap.Config.ARGB_8888)
+    }
+
     private fun doorX(w: World) = (w.door.box.x * TS).roundToInt() + 1
     private fun doorTop(w: World) = if (w.door.hanging) (w.door.box.y * TS).roundToInt() else (w.door.box.b * TS).roundToInt() - 13
     /** Seconds since Bevel reached the door, for a real win or a fake one alike; -1 otherwise. */
@@ -443,7 +486,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
         glowPaint.alpha = (a * 255).toInt()
         val cx = doorX(w) + 5
         val cy = doorTop(w) + 7
-        lc.drawBitmap(doorHalo, (cx - doorHalo.width / 2).toFloat(), (cy - doorHalo.height / 2).toFloat(), glowPaint)
+        val halo = if (theme.usbDoor) doorHaloCool else doorHalo
+        lc.drawBitmap(halo, (cx - halo.width / 2).toFloat(), (cy - halo.height / 2).toFloat(), glowPaint)
     }
 
     private fun drawDoor(w: World, t: Float) {
@@ -451,17 +495,18 @@ class WorldPainter(px: Pixels) : Painter(px) {
         val x = doorX(w)
         val top = doorTop(w)
         rect(x + 2, top + 2, 10, 13, SHADOW)
-        lc.drawBitmap(if (flip) doorFlipped else door, x - 1f, top - 1f, null)
+        val usb = theme.usbDoor
+        lc.drawBitmap(if (usb) (if (flip) usbDoorFlipped else usbDoor) else if (flip) doorFlipped else door, x - 1f, top - 1f, null)
         val won = winAge(w)
         val glow = if (won >= 0f) min(1f, 0.5f + won * 3f) else 0.62f + 0.22f * sin(t * 5f)
-        val warm = Color.argb((glow * 170).toInt(), 255, 150, 60)
-        val hot = Color.argb((glow * 220).toInt(), 255, 214, 130)
+        val warm = if (usb) Color.argb((glow * 170).toInt(), 60, 220, 190) else Color.argb((glow * 170).toInt(), 255, 150, 60)
+        val hot = if (usb) Color.argb((glow * 220).toInt(), 190, 255, 236) else Color.argb((glow * 220).toInt(), 255, 214, 130)
         // light pools at the threshold and fades toward the arch
         val y0 = if (flip) top else top + 4
-        rect(x + 2, y0, 6, 9, Color.argb((glow * 90).toInt(), 220, 80, 50))
+        rect(x + 2, y0, 6, 9, if (usb) Color.argb((glow * 90).toInt(), 40, 170, 150) else Color.argb((glow * 90).toInt(), 220, 80, 50))
         rect(x + 2, if (flip) top else top + 9, 6, 4, warm)
         rect(x + 3, if (flip) top else top + 11, 4, 2, hot)
-        if (won < 0f) rect(x + 6, if (flip) top + 4 else top + 8, 1, 1, GOLD_HI)
+        if (won < 0f && !usb) rect(x + 6, if (flip) top + 4 else top + 8, 1, 1, GOLD_HI)
     }
 
     /** A spirit level set into the top of a tilt group; its bead rolls with the tilt. */

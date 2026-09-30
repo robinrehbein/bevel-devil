@@ -36,6 +36,11 @@ class Renderer(context: Context) {
     private val motion = MotionPainter(px)
     private val twist = TwistPainter(px, ui)
 
+    /** Forces a world theme on the level view (screenshot tests, previews). */
+    var themeOverride: Theme?
+        get() = world.themeOverride
+        set(v) { world.themeOverride = v }
+
     private var swirlPx = IntArray(0)
     private var swirlBmp: Bitmap? = null
     private var scanStep = -1
