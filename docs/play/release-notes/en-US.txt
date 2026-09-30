@@ -1,0 +1,5 @@
+Version 0.6.0
+• World 3 is in the works: Mephi flees one layer deeper
+• Music and sound reworked
+• Polish for controls, traps and visuals
+• Small bugs fixed, Mephi is offended
