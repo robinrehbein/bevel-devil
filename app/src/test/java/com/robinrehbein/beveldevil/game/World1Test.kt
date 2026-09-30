@@ -69,7 +69,7 @@ class World1Test {
     @Test
     fun actOneShowsAllTwelveCards() {
         val cards = World1Part1.levels.flatMap { l -> actions(l).filterIsInstance<Action.Play>().map { it.card } }.toSet()
-        assertEquals(Card.entries.toSet(), cards)
+        assertEquals(Card.entries.take(12).toSet(), cards)
     }
 
     /** The obvious thing to do, running right and never letting go, must not win any level. */

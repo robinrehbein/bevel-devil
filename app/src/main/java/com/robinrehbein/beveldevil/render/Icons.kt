@@ -46,6 +46,10 @@ object Icons {
         }
         fun spike(x: Int, y: Int) { p(BONE, x + 1, y, 1, 1); p(BONE, x + 1, y + 1, 2, 1); p(BONE, x, y + 2, 4, 2) }
         fun door(x: Int, y: Int) { p(GOLD, x, y, 7, 11); p(DARK, x + 1, y + 2, 5, 9); p(GOLD, x + 1, y, 5, 2); p(GOLD_HI, x + 4, y + 6) }
+        /** Draws [rows] (16 wide at most) with one color per letter; '.' is empty. */
+        fun art(rows: List<String>, colors: Map<Char, Int>, x0: Int = 0, y0: Int = 0) {
+            rows.forEachIndexed { y, r -> r.forEachIndexed { x, ch -> colors[ch]?.let { p(it, x0 + x, y0 + y) } } }
+        }
         fun horns() { p(GOLD, 3, 2, 2, 2); p(GOLD, 4, 4, 2, 2); p(GOLD, 5, 6, 2, 3); p(GOLD, 11, 2, 2, 2); p(GOLD, 10, 4, 2, 2); p(GOLD, 9, 6, 2, 3); p(GOLD, 6, 9, 4, 3); p(GOLD, 7, 12, 2, 2) }
 
         fun draw(c: Card) = when (c) {
@@ -60,6 +64,33 @@ object Icons {
             Card.SINKING -> { tile(0, 3); tile(5, 3); tile(10, 3); p(INK, 7, 9, 2, 4); p(INK, 5, 11, 6, 1); p(INK, 6, 12, 4, 1); p(INK, 7, 13, 2, 1) }
             Card.DECOY -> { door(4, 2); p(RED, 2, 4, 2, 2); p(RED, 4, 6, 2, 2); p(RED, 6, 8, 2, 2); p(RED, 8, 10, 2, 2); p(RED, 10, 12, 2, 2); p(RED, 10, 4, 2, 2); p(RED, 4, 12, 2, 2) }
             Card.CRUMBLE -> { tile(0, 6); tile(5, 8); tile(10, 11); p(INK, 2, 7, 1, 3); p(INK, 7, 9, 1, 2); p(INK, 12, 12, 1, 2) }
+            Card.SHORT_CIRCUIT -> {
+                art(listOf("..........##....", ".........###....", "........###.....", ".......###......", "......#####.....", ".......#####....", ".........###....", "........###.....", ".......###......", ".......##......."), mapOf('#' to GOLD_HI), 0, 0)
+                p(INK, 0, 14, 5, 1); p(INK, 11, 14, 5, 1); p(RED, 5, 13, 1, 2); p(RED, 10, 13, 1, 2); p(GOLD_HI, 7, 12, 2, 1); p(GOLD_HI, 6, 11); p(GOLD_HI, 9, 11)
+            }
+            Card.OVERCLOCKED -> {
+                for (i in listOf(4, 7, 10)) { p(STEEL, i, 2, 2, 2); p(STEEL, i, 12, 2, 2); p(STEEL, 2, i, 2, 2); p(STEEL, 12, i, 2, 2) }
+                p(INK, 3, 3, 10, 10); p(RED, 4, 4, 8, 8); p(GOLD, 5, 5, 6, 6); p(GOLD_HI, 6, 6, 4, 4); p(BONE, 7, 7, 2, 2)
+            }
+            Card.BIT_FLIP -> {
+                art(listOf("###", "#.#", "#.#", "#.#", "###"), mapOf('#' to MINT), 1, 5)
+                art(listOf(".#.", "##.", ".#.", ".#.", "###"), mapOf('#' to RED), 11, 5)
+                p(INK, 6, 4, 4, 1); p(INK, 9, 3); p(INK, 9, 5); p(INK, 6, 11, 4, 1); p(INK, 6, 10); p(INK, 6, 12)
+            }
+            Card.BACKDRAFT -> {
+                hero(1, 5)
+                for (y in listOf(2, 7, 12)) { p(STEEL, 9, y, 7, 1); p(STEEL, 8, y - 1); p(STEEL, 8, y + 1); p(STEEL, 7, y) ; p(STEEL, 8, y) }
+                p(INK, 8, 4, 1, 2); p(INK, 9, 9, 1, 2)
+            }
+            Card.THROTTLE -> {
+                p(INK, 5, 1, 6, 10); p(BONE, 6, 2, 4, 9); p(INK, 3, 9, 10, 6); p(RED, 4, 10, 8, 4); p(RED, 7, 4, 2, 6); p(GOLD_HI, 4, 10, 2, 1)
+                for (y in listOf(3, 5, 7)) p(INK, 11, y, 3, 1)
+            }
+            Card.BIOS -> {
+                p(GOLD, 0, 1, 16, 11); p(GOLD_HI, 0, 1, 16, 1); p(DARK, 1, 2, 14, 9)
+                p(MINT, 3, 4, 6, 1); p(MINT, 3, 6, 9, 1); p(MINT, 3, 8, 4, 1); p(MINT_HI, 8, 8, 2, 2)
+                p(GOLD_LO, 6, 12, 4, 2); p(GOLD, 3, 14, 10, 1)
+            }
             Card.GRAND_FINALE -> { horns(); p(RED, 6, 9, 4, 3); p(GOLD_HI, 7, 10, 2, 1) }
         }
     }

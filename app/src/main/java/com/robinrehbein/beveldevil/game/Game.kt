@@ -93,7 +93,10 @@ object Ui {
     val pauseRestart = Hit(88, 70, 80, 16)
     val pauseLevels = Hit(88, 90, 80, 16)
     val clearNext = Hit(88, 110, 80, 16)
-    fun albumCard(i: Int) = Hit(18 + (i % 6) * 38, 28 + (i / 6) * 54, 30, 44)
+    /** Cards per album page. */
+    const val ALBUM_PAGE = 12
+    /** Card [i] of the album; its slot on its page (12 per page, two rows of six). */
+    fun albumCard(i: Int) = Hit(18 + (i % 6) * 38, 28 + ((i % ALBUM_PAGE) / 6) * 54, 30, 44)
     val endTitle = Hit(88, 112, 80, 16)
     val devilFrame = Hit(212, 4, 38, 38)
     val titleStory = Hit(160, 6, 32, 12)
@@ -146,6 +149,10 @@ class Game(private val progress: Progress, private val audio: Audio) {
     var hapticPulse = false
     private var deadTimer = 0f
     private var selectedAlbum = -1
+    /** The album page shown (12 cards each). */
+    var albumPage = 0
+        private set
+    fun albumPages() = (Card.entries.size + Ui.ALBUM_PAGE - 1) / Ui.ALBUM_PAGE
     val input = Controls()
     private val rng = Random(7)
     private val fx = Random(11)
@@ -528,8 +535,14 @@ class Game(private val progress: Progress, private val audio: Audio) {
             }
             Screen.CLEAR -> if (p in Ui.clearNext) { click(); next() }
             Screen.ALBUM -> {
-                if (p in Ui.back) go(Screen.TITLE)
-                else selectedAlbum = Card.entries.indices.firstOrNull { p in Ui.albumCard(it) && progress.cardFound(Card.entries[it]) } ?: -1
+                val first = albumPage * Ui.ALBUM_PAGE
+                when {
+                    p in Ui.back -> go(Screen.TITLE)
+                    p in Ui.pagePrev && albumPages() > 1 -> albumTo(albumPage - 1)
+                    p in Ui.pageNext && albumPages() > 1 -> albumTo(albumPage + 1)
+                    else -> selectedAlbum = (first until minOf(Card.entries.size, first + Ui.ALBUM_PAGE))
+                        .firstOrNull { p in Ui.albumCard(it) && progress.cardFound(Card.entries[it]) } ?: -1
+                }
             }
             Screen.END -> when {
                 endAge < Intro.endDuration -> endAge = Intro.endDuration
@@ -591,9 +604,14 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     private fun click() = audio.play(Sound.CLICK)
 
+    private fun albumTo(page: Int) {
+        val p = page.coerceIn(0, albumPages() - 1)
+        if (p != albumPage) { albumPage = p; selectedAlbum = -1; click() }
+    }
+
     private fun go(s: Screen) {
         click()
-        if (s == Screen.ALBUM) selectedAlbum = -1
+        if (s == Screen.ALBUM) { selectedAlbum = -1; albumPage = 0 }
         if (s == Screen.TITLE || s == Screen.SELECT) setMood(Mood.GRIN, 0f)
         if (s == Screen.PAUSE && screen == Screen.PLAY) pausedAt = time
         screen = s
