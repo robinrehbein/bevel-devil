@@ -57,7 +57,7 @@ object Twists {
     val dodgeLines = listOf(T("Missed.", "Daneben."), T("Too slow.", "Zu langsam."), T("Fine. Pause, then.", "Na gut. Pausier halt."))
     val credits = listOf(
         T("THANKS FOR PLAYING", "DANKE FÜRS SPIELEN"),
-        T("BEVEL DEVIL", "BEVEL DEVIL"),
+        T("MEPHI THE DAEMON", "MEPHI THE DAEMON"),
         T("GAME DESIGN: MEPHI", "SPIELDESIGN: MEPHI"),
         T("TRAPS: MEPHI", "FALLEN: MEPHI"),
         T("QA: YOU (%d DEATHS)", "TESTER: DU (%d TODE)"),

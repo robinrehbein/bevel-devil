@@ -1,4 +1,4 @@
-# Melphi the Daemon
+# Mephi the Daemon
 
 Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würfel **Bevel** will zur Tür, und **Mephi**, der Croupier der Hölle, spielt ihm dabei Fallenkarten aus.
 

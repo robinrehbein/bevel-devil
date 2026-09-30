@@ -1,4 +1,4 @@
-# Bevel Devil – Story
+# Mephi the Daemon – Story
 
 ## Prämisse
 

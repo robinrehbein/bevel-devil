@@ -394,8 +394,8 @@ class UiPainter(px: Pixels) : Painter(px) {
     private inline fun stage(l: Layout, s: Screen, block: () -> Unit) = px.at(l.stageX(s), l.stageY(s), block)
 
     private var backdrop: Bitmap? = null
-    private val bevelLogo by lazy { Logo(px, "BEVEL", GOLD, GOLD_MID, GOLD_HI, GOLD_LO2, GOLD_LO, 0xFF5A2A10.toInt()) }
-    private val devilLogo by lazy { Logo(px, "DEVIL", DEVIL_RED, 0xFFFF5E74.toInt(), 0xFFFF9DAA.toInt(), 0xFFA8203A.toInt(), DEVIL_RED_LO, 0xFF420814.toInt()) }
+    private val mephiLogo by lazy { Logo(px, "MEPHI", GOLD, GOLD_MID, GOLD_HI, GOLD_LO2, GOLD_LO, 0xFF5A2A10.toInt()) }
+    private val daemonLogo by lazy { Logo(px, "DAEMON", DEVIL_RED, 0xFFFF5E74.toInt(), 0xFFFF9DAA.toInt(), 0xFFA8203A.toInt(), DEVIL_RED_LO, 0xFF420814.toInt()) }
 
     fun title(game: Game, l: Layout) {
         val t = game.time
@@ -404,8 +404,9 @@ class UiPainter(px: Pixels) : Painter(px) {
         lc.drawBitmap(bd, (-WorldPainter.PARALLAX + sin(t * 0.21f) * 12f).roundToInt().toFloat(), l.sy.toFloat(), null)
         floorStrip(l)
         stage(l, Screen.TITLE) {
-            bevelLogo.draw(lc, 16f, 23f + (sin(t * 1.7f) * 0.7f).roundToInt(), t)
-            devilLogo.draw(lc, 16f, 50f + (sin(t * 1.7f + 1.4f) * 0.7f).roundToInt(), t - 0.6f)
+            mephiLogo.draw(lc, 16f, 23f + (sin(t * 1.7f) * 0.7f).roundToInt(), t)
+            say("THE", 18f, 49f, 4f, CREAM)
+            daemonLogo.draw(lc, 16f, 50f + (sin(t * 1.7f + 1.4f) * 0.7f).roundToInt(), t - 0.6f)
             say(Txt.tap.toString(), 20f, 82f, 5.5f, if ((t * 2).toInt() % 2 == 0) CREAM else 0xFFB9A6CF.toInt())
             devilFrame(172f, 22f, 68f, if ((t % 6f) < 1.2f) Mood.LAUGH else Mood.GRIN, t, spriteScale = 2)
             button(Ui.titlePlay, Txt.play.toString(), true)
