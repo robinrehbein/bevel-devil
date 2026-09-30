@@ -1,0 +1,5 @@
+Version 0.6.0
+• Welt 3 ist in Arbeit: Mephi flieht eine Schicht tiefer
+• Musik und Sound überarbeitet
+• Feinschliff an Steuerung, Fallen und Darstellung
+• Kleine Fehler behoben, Mephi ist beleidigt

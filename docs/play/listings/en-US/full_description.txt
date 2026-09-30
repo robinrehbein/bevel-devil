@@ -1,0 +1,40 @@
+The floor was only borrowed. The door has better plans. And the ceiling is coming to you.
+
+In Mephi the Daemon the problem is not an enemy, it is the level itself. You guide Bevel, a small, tough cube who wants one thing: the door. Mephi, the croupier of hell, disagrees. He deals you traps like playing cards, and you only find out which one it was after you crash.
+
+Mephi is a daemon in two senses: a background process that has dug itself deep into your network, and a full-blown devil. He comments on every death, every trap and every failed attempt. Quick-witted, vain and never truly evil, just offended when things go wrong.
+
+The game
+• Troll platformer built on trial and error: dying is part of it, and you are back in a second
+• 96 levels in two worlds: Hell's Cellar and the Hell Data Center
+• Traps that look exactly like normal floor until they go off
+• Mephi cheats: a fake ending, a pause button that runs away from you, a picture that turns upside down
+• Nerd humor from segfault to sudo that works even without a computer science degree
+
+Devil cards
+Every trap is a card that flies out of Mephi's golden frame. Fall for it and the card goes into your album, along with a counter of how often it has caught you. From Collapse and Spike Seed to Shy Door and the Grand Finale: collect them all.
+
+Two worlds, further layers in development
+• Hell's Cellar: gold masonry, embers and the classics among traps
+• Hell Data Center: server racks, lasers as a firewall, conveyor belts as a data bus and portals with minds of their own
+• More layers of hell are in development, the next one is the Circuit Board
+
+Tilt and shake
+A few levels ask for more than thumbs: tilt your phone and the world tilts with it, shake it and something unexpected falls. If you would rather not use the sensor, switch it off in the settings and get buttons instead.
+
+Look and controls
+• Hell CRT in pixel art: color swirls, scanlines, vignette, and glitches whenever Mephi tampers with the system
+• Razor-sharp pixels at any aspect ratio, no letterboxing
+• Touch controls with buttons or a stick, adjustable button size, left-handed mode
+• Also playable with a keyboard or gamepad
+• Synthesized chiptune sound you can switch off, optional vibration
+• English and German, following your device language
+
+Fair and light
+• No ads
+• No in-app purchases
+• No accounts, no sign-up, no trackers
+• Your progress stays on your device
+• A tiny app that installs fast
+
+Bevel says nothing. He dies a lot and keeps going anyway. Are you in?
