@@ -44,25 +44,30 @@ class WorldSelectTest {
     @Test fun worldsAreLaidOutBackToBack() {
         assertEquals(48, World1.levels.size)
         assertEquals(listOf(0, 48, 96), Worlds.all.map { it.firstLevel })
-        assertEquals(96, Levels.all.size)
+        assertEquals(144, Levels.all.size)
         assertSame(World1.levels[0], Levels.all[0])
         assertSame(World1.levels[47], Levels.all[47])
         assertSame(World2.levels[0], Levels.all[48])
-        assertEquals(0, Worlds.get(3).size)
+        assertSame(World3.levels[0], Levels.all[96])
+        assertEquals(48, Worlds.get(3).size)
     }
 
     @Test fun indexMapping() {
         assertEquals(1, Worlds.of(0).number)
         assertEquals(1, Worlds.of(47).number)
         assertEquals(2, Worlds.of(48).number)
-        assertEquals(2, Worlds.of(175).number)
+        assertEquals(2, Worlds.of(95).number)
+        assertEquals(3, Worlds.of(96).number)
+        assertEquals(3, Worlds.of(143).number)
         assertEquals("1-1", Worlds.label(0))
         assertEquals("1-48", Worlds.label(47))
         assertEquals("2-1", Worlds.label(48))
         assertEquals("2-17", Worlds.label(64))
         assertEquals(17, Worlds.local(64))
-        // out of range: nearest world that has levels, never the empty one
-        assertEquals(2, Worlds.of(176).number)
+        assertEquals("3-1", Worlds.label(96))
+        assertEquals("3-48", Worlds.label(143))
+        // out of range: the nearest world that has levels
+        assertEquals(3, Worlds.of(144).number)
         assertEquals(1, Worlds.of(-1).number)
         for (i in Levels.all.indices) assertTrue(i in Worlds.of(i))
     }
@@ -83,6 +88,24 @@ class WorldSelectTest {
         assertEquals(Screen.PLAY, g.screen)
         assertEquals(48, g.levelIndex)
         assertEquals("2-1", g.levelLabel)
+    }
+
+    @Test fun clearingWorldTwoRoutesThroughWorldThreeIntro() {
+        val p = Prog(96)
+        val g = Game(p, silent)
+        g.startLevel(95)
+        assertEquals("2-48", g.levelLabel)
+        g.win()
+        assertEquals(Screen.CLEAR, g.screen)
+        assertEquals(97, p.unlocked)
+        g.tapOn(Ui.clearNext)
+        assertEquals(Screen.WORLD_INTRO, g.screen)
+        assertEquals(3, g.worldInfo.number)
+        g.update(0.5f)
+        g.tap(100f, 100f)
+        assertEquals(Screen.PLAY, g.screen)
+        assertEquals(96, g.levelIndex)
+        assertEquals("3-1", g.levelLabel)
     }
 
     @Test fun clearInsideAWorldGoesStraightOn() {
@@ -114,6 +137,63 @@ class WorldSelectTest {
         assertEquals(7, q.unlocked)
     }
 
+    @Test fun saveThatFinishedWorldTwoBeforeWorldThreeExistedUnlocksIt() {
+        // version 3 saves end at 96 (World 2 was the last world, so "unlocked" was capped there)
+        val p = Prog(96).apply { best[95] = 6 }
+        Game(p, silent)
+        assertEquals(97, p.unlocked)
+        assertEquals(SAVE_VERSION, p.saveVersion)
+        val g = select(p)
+        assertEquals(3, g.selWorld.number)
+        assertTrue(g.worldOpen(Worlds.get(3)))
+        // a save that has not cleared 2-48 stays closed to World 3, even with the unlock count at the cap
+        val q = Prog(96)
+        Game(q, silent)
+        assertEquals(96, q.unlocked)
+        assertFalse(Game(q, silent).worldOpen(Worlds.get(3)))
+    }
+
+    @Test fun worldThreeTabOpensAndPlaysTheFirstLevel() {
+        val n = Worlds.all.size
+        val g = select(Prog(97))
+        assertEquals(3, g.selWorld.number)
+        g.tapOn(Ui.worldTab(1, n))
+        assertEquals(2, g.selWorld.number)
+        g.tapOn(Ui.worldTab(2, n))
+        assertEquals(3, g.selWorld.number)
+        assertEquals(96, g.selLevel(0))
+        g.tapOn(Ui.levelTile(0))
+        assertEquals(Screen.PLAY, g.screen)
+        assertEquals("3-1", g.levelLabel)
+    }
+
+    @Test fun lastLevelOfWorldThreeEndsTheGame() {
+        val p = Prog(144)
+        val g = Game(p, silent)
+        g.startLevel(143)
+        assertEquals("3-48", g.levelLabel)
+        g.win()
+        assertEquals(Screen.END, g.screen)
+        // the ending types its kill -9 into a terminal first: a tap skips ahead, a second one leaves
+        assertTrue(g.endAge < Intro.endDuration)
+        g.tapOn(Ui.endTitle)
+        assertEquals(Screen.END, g.screen)
+        assertTrue(g.endAge >= Intro.endDuration)
+        g.tapOn(Ui.endTitle)
+        assertEquals(Screen.TITLE, g.screen)
+    }
+
+    @Test fun endingTerminalRunsByItself() {
+        val g = Game(Prog(144), silent)
+        g.startLevel(143)
+        g.win()
+        repeat((Intro.endDuration * 120f).toInt() + 5) { g.update(1f / 120f) }
+        assertTrue(g.endAge >= Intro.endDuration)
+        assertEquals(Screen.END, g.screen)
+        assertTrue(Intro.ending.any { it.text.en.contains("kill -9") })
+        assertTrue(Intro.ending.all { it.text.en.length <= 40 && it.text.de.length <= 44 })
+    }
+
     @Test fun oldSaveFromTheBigWorldOneIsClamped() {
         // version 1 saves counted 128 levels in world 1: unlocked=100 would now sit deep inside world 2
         val old = Prog(100, saveVersion = 1).apply { best[99] = 3 }
@@ -136,7 +216,7 @@ class WorldSelectTest {
         val current = Prog(Levels.all.size)
         Game(current, silent)
         assertEquals(Levels.all.size, current.unlocked)
-        assertEquals(96, Levels.all.size)
+        assertEquals(144, Levels.all.size)
     }
 
     @Test fun selectOpensOnPageOfHighestUnlockedLevel() {

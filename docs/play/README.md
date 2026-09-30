@@ -122,4 +122,4 @@ Wenn du bewusst auch Kinder erreichen willst, die Altersgruppen „6 bis 8“ us
 | Speicherung | lokale SharedPreferences (Fortschritt, Einstellungen) |
 | Ausrichtung | Querformat (`sensorLandscape`) |
 | Sprachen | Deutsch und Englisch, nach Gerätesprache |
-| Inhalt | 96 Level in zwei Welten, Welt 3 („Platine“) als gesperrter „Bald“-Reiter |
+| Inhalt | 144 Level in drei Welten (Höllenkeller, Höllen-Rechenzentrum, Platine) |

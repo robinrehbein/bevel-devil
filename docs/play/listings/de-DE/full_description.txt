@@ -6,7 +6,7 @@ Mephi ist ein Daemon im doppelten Sinn: ein Hintergrundprozess, der sich tief in
 
 Das Spiel
 • Troll-Platformer mit Trial-and-Error: Sterben gehört dazu, Neustart in einer Sekunde
-• 96 Level in zwei Welten: Höllenkeller und Höllen-Rechenzentrum
+• 144 Level in drei Welten: Höllenkeller, Höllen-Rechenzentrum und Platine
 • Fallen, die bis zum Auslösen aussehen wie normaler Boden
 • Mephi schummelt: Fake-Abspann, eine Pause-Taste, die vor dir wegläuft, ein Bild, das kopfsteht
 • Nerd-Humor von Segfault bis sudo, der auch ohne IT-Studium funktioniert
@@ -14,10 +14,10 @@ Das Spiel
 Teufelskarten
 Jede Falle ist eine Karte, die aus Mephis goldenem Rahmen ins Bild fliegt. Wer darauf hereinfällt, bekommt die Karte ins Album, samt Zähler, wie oft sie dich schon erwischt hat. Von Einsturz über Stachelsaat und Türflucht bis zum Großen Finale: Sammle sie alle.
 
-Zwei Welten, weitere Schichten in Arbeit
+Drei Welten, ein Weg nach unten
 • Höllenkeller: Gold-Mauerwerk, Glut und die Klassiker unter den Fallen
 • Höllen-Rechenzentrum: Server-Racks, Laser als Firewall, Förderbänder als Datenbus und Portale mit eigenem Kopf
-• Weitere Schichten der Hölle sind in Entwicklung, die nächste ist die Platine
+• Platine: Kupferbahnen und Schaltknöpfe, Herdplatten und Kühlkörper, Lüfter mit eigenem Kopf und ein BIOS-Finale
 
 Neigen und Schütteln
 Ein paar Level verlangen mehr als Daumen: Neig dein Handy und die Welt kippt mit, schüttle es und etwas Unerwartetes fällt herunter. Wer keinen Sensor nutzen möchte, schaltet ihn in den Einstellungen ab und bekommt Tasten dafür.

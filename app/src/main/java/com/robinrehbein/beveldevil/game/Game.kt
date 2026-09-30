@@ -180,6 +180,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
         private set
     var worldAge = 0f
         private set
+    /** Seconds on the ending: first the terminal with the kill, then the final card. */
+    var endAge = 0f
+        private set
     /** Seconds of CRT glitch left after Mephi played a card. */
     var glitch = 0f
         private set
@@ -257,6 +260,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
         glitch = (glitch - dt).coerceAtLeast(0f)
         introAge += dt
         worldAge += dt
+        endAge += dt
         bubbleAge += dt
         if (bubble != null && bubbleAge > bubbleLife) bubble = null
         if (moodTimer > 0f) {
@@ -444,6 +448,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
         val best = progress.bestDeaths(levelIndex)
         if (best == null || deaths < best) progress.saveBest(levelIndex, deaths)
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
+        if (levelIndex == Levels.all.lastIndex) endAge = 0f
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
     }
 
@@ -513,7 +518,10 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 if (p in Ui.back) go(Screen.TITLE)
                 else selectedAlbum = Card.entries.indices.firstOrNull { p in Ui.albumCard(it) && progress.cardFound(Card.entries[it]) } ?: -1
             }
-            Screen.END -> if (p in Ui.endTitle) go(Screen.TITLE)
+            Screen.END -> when {
+                endAge < Intro.endDuration -> endAge = Intro.endDuration
+                p in Ui.endTitle -> go(Screen.TITLE)
+            }
         }
     }
 

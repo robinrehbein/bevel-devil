@@ -33,6 +33,21 @@ object Intro {
         Line(Tag.OK, T("1 packet still alive", "1 Paket lebt noch")),
     )
 
+    /** The ending: the kill that ends the game, typed into a terminal before the final card. */
+    val ending = listOf(
+        Line(Tag.NONE, T("root@hell:~# kill -9 \$(pidof mephi)", "root@hoelle:~# kill -9 \$(pidof mephi)")),
+        Line(Tag.OK, T("Stopped mephi.service", "mephi.service gestoppt")),
+        Line(Tag.OK, T("Reached target network.target", "network.target erreicht")),
+        Line(Tag.OK, T("Delivered 1 packet: Bevel", "1 Paket zugestellt: Bevel")),
+        Line(Tag.WARN, T("mephi: core dumped. Again.", "mephi: Core Dump. Schon wieder.")),
+        Line(Tag.OK, T("System is back online", "System wieder online")),
+        Line(Tag.NONE, T("(He restarts at next boot.)", "(Beim nächsten Start ist er zurück.)")),
+    )
+
+    const val END_LINE_T = 0.55f
+    /** Seconds until the ending's terminal has typed everything and held for a moment. */
+    val endDuration get() = (ending.size + 1) * END_LINE_T + 1.6f
+
     /** Seconds until page [i] has finished typing. */
     fun duration(i: Int): Float {
         val p = pages[i]

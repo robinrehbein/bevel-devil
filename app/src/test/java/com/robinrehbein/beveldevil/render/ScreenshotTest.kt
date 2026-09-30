@@ -551,6 +551,56 @@ class ScreenshotTest {
         shoot("116-select", g, sizes.take(2))
     }
 
+    /** World 3 at its real global index: a few levels per act, mid-action, on the green board (acts 1 and 2) and the blue one (act 3). */
+    @Test
+    fun worldThree() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(3).firstLevel + n - 1) }, s)
+            fun Film.w() = game.world!!
+            fun Film.runTo(x: Float) { game.input.right = true; play(6f) { w().player.box.cx > x }; game.input.right = false }
+            // act 1: Stromkreise
+            film(1).apply { runTo(12f); play(0.3f); save("140-w3-l01-first-copper$tag") }
+            film(2).apply { runTo(9f); play(0.3f); save("141-w3-l02-live-wire$tag") }
+            film(7).apply { play(6f) { w().circuits['Z']!!.warn > 0.6f }; save("142-w3-l07-loose-contact$tag") }
+            film(10).apply { play(1.0f); save("143-w3-l10-metronome$tag") }
+            film(13).apply { play(1.0f); save("144-w3-l13-fuse-box$tag") }
+            film(16).apply { runTo(6f); play(0.3f); save("145-w3-l16-motherboard$tag") }
+            // act 2: Überhitzung
+            film(17).apply { game.input.right = true; play(4f) { w().heaters['h']!!.heat > 0.7f }; save("146-w3-l17-hot-plate$tag") }
+            film(18).apply { play(1.5f); save("147-w3-l18-full-load$tag") }
+            film(19).apply { play(1.0f); save("148-w3-l19-melt-fuse$tag") }
+            film(22).apply { play(1.8f); save("149-w3-l22-heat-soak$tag") }
+            film(24).apply { play(1.0f); save("150-w3-l24-cooling-fins$tag") }
+            film(26).apply { play(6f) { w().circuits['Z']!!.warn > 0.5f }; save("151-w3-l26-hot-wire$tag") }
+            film(30).apply { play(1.0f); save("152-w3-l30-burn-in$tag") }
+            film(32).apply { play(1.0f); save("153-w3-l32-runaway$tag") }
+            // act 3: Lüfter, the blue board
+            film(33).apply { runTo(12.6f); play(0.45f); save("154-w3-l33-updraft$tag") }
+            film(34).apply { play(1.0f); save("155-w3-l34-tailwind$tag") }
+            film(36).apply { runTo(9.5f); play(0.45f); save("156-w3-l36-air-cushion$tag") }
+            film(39).apply { play(0.8f); save("157-w3-l39-downdraft$tag") }
+            film(40).apply { runTo(10.5f); play(0.6f); save("158-w3-l40-reverse-thrust$tag") }
+            film(41).apply { play(1.0f); save("159-w3-l41-air-bridge$tag") }
+            film(44).apply { runTo(6.6f); play(0.6f); save("160-w3-l44-monitor$tag") }
+            film(46).apply { play(1.0f); save("161-w3-l46-post$tag") }
+            film(47).apply { play(1.0f); save("162-w3-l47-boot-order$tag") }
+            film(48).apply { play(1.0f); save("163-w3-l48-bios$tag") }
+        }
+        // the ending: the terminal first, then the final card
+        Film(Game(MemoryProgress().apply { unlocked = 144 }, silent).apply { startLevel(143) }, sizes[0]).apply {
+            val w = game.world!!
+            val d = w.door.box
+            play(0.3f)
+            w.player.box.x = d.x + d.w / 2 - w.player.box.w / 2; w.player.box.y = d.y + d.h - w.player.box.h
+            play(4f) { game.screen == com.robinrehbein.beveldevil.game.Screen.END }
+            play(2.4f); save("164-w3-ending-terminal")
+            play(Intro.endDuration) { game.endAge >= Intro.endDuration }
+            play(0.6f); save("165-w3-ending-card")
+        }
+    }
+
     /** World 3's two boards: a sample level dressed green and blue (World 3 has no levels of its own yet), and the level select tabs. */
     @Test
     fun circuitBoard() {
