@@ -466,6 +466,46 @@ class ScreenshotTest {
         }
     }
 
+    /** Act 1 of World 1: every room as the player first sees it (plain and calm), and a few moments after a trap fired. */
+    @Test
+    fun worldOneActOne() {
+        Lang.german = true
+        val s = sizes[0]
+        for (n in 1..16) Film(Game(MemoryProgress(), silent).apply { startLevel(n - 1) }, s).apply { play(0.6f); save("110-l%02d-plain".format(n)) }
+        fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(n - 1) }, s)
+        fun Film.w() = game.world!!
+        film(2).apply {
+            game.input.right = true
+            play(3f) { w().player.box.cx > 8f }
+            game.input.jumpPressed = true; game.input.jump = true
+            play(0.3f); save("111-l02-landing-spikes")
+        }
+        film(3).apply {
+            game.input.right = true
+            play(6f) { w().player.box.cx > 26.6f }
+            game.input.right = false
+            play(0.5f); save("112-l03-door-up")
+        }
+        film(4).apply {
+            game.input.right = true
+            play(6f) { w().player.box.cx > 13.2f }
+            game.input.right = false
+            play(0.5f); save("113-l04-slab-down")
+        }
+        film(7).apply {
+            game.input.right = true
+            play(6f) { w().player.box.cx > 6.4f }
+            game.input.jumpPressed = true; game.input.jump = true
+            play(0.3f); save("114-l07-jump")
+        }
+        film(8).apply {
+            game.input.right = true
+            play(6f) { w().player.box.cx > 10f }
+            game.input.right = false
+            play(0.6f); save("115-l08-flip")
+        }
+    }
+
     /** The new World 1: a look at levels of act 2 (new mechanics) and act 3 (meta twists). */
     @Test
     fun worldOneActs() {

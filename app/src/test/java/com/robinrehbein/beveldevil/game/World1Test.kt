@@ -135,40 +135,99 @@ class World1Test {
     }
 
     // ---------- Act 1: Die Karten ----------
-    @Test fun level01() = b(1).rightTo(17.4f).rightJump(0.35f).right(3f).expect(WorldState.WON)
-    @Test fun level02() = b(2).rightTo(8.6f).rightJump(0.3f).rightTo(22.4f).rightJump(0.3f).right(3f).expect(WorldState.WON)
-    @Test fun level03() = b(3).rightTo(26f).wait(0.4f)
-        .leftTo(24.9f).leftJump(0.35f).wait(0.3f)
-        .leftTo(20.7f).leftJump(0.35f).wait(0.3f)
-        .leftTo(14.7f).leftJump(0.35f).wait(0.3f)
-        .leftTo(8.7f).leftJump(0.35f).left(1.5f)
+    @Test fun level01() = b(1).rightTo(17.6f).rightJump(0.35f).right(3f).expect(WorldState.WON)
+    @Test fun level02() = b(2).rightTo(8f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
+    @Test fun level03() = b(3).hopR(21.2f).rightTo(26.5f)
+        .leftTo(24.3f).leftJump(0.35f).landLeft()
+        .rightTo(21.3f).rightJump(0.35f).landRight()
+        .rightTo(25.6f).rightJump(0.35f).landRight()
+        .leftTo(23f).right(4f)
         .expect(WorldState.WON)
-    @Test fun level04() = b(4).rightTo(12.9f).wait(1.2f)
-        .rightTo(13.2f).rightJump(0.35f).right(0.3f).wait(0.2f)
-        .rightTo(21.4f).wait(1.2f).rightTo(21.9f).rightJump(0.35f).right(3f)
+    @Test fun level04() = b(4).rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
+        .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
+        .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
+        .rightJump(0.35f).landRight().right(1f).left(2f)
         .expect(WorldState.WON)
     @Test fun level05() = b(5).rightTo(18.5f).jump(0.3f).wait(0.5f)
-        .leftTo(16.8f).wait(0.2f).rightJump(0.35f).right(0.2f).rightJump(0.35f).right(3f)
+        .leftTo(16.8f).wait(0.2f).rightJump(0.35f).right(0.2f).rightJump(0.35f)
+        .rightTo(21.4f).wait(0.6f)
+        .rightTo(22.4f).rightJump(0.35f).landRight().rightJump(0.35f).right(2f)
         .expect(WorldState.WON)
-    @Test fun level06() = b(6).rightTo(12.8f).rightJump(0.3f).rightTo(20.8f).rightJump(0.35f).right(3f).expect(WorldState.WON)
-    @Test fun level07() = b(7).rightTo(6.6f).rightJump(0.3f).rightTo(11.6f).rightJump(0.3f)
-        .rightTo(16.4f).rightJump(0.3f).rightTo(21.3f).rightJump(0.35f).right(3f).expect(WorldState.WON)
+    @Test fun level06() = b(6).rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight()
+        .rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level07() = b(7).rightTo(6.4f).rightJump(0.35f).landRight().rightTo(11.6f).rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level08() = b(8).rightTo(10f).wait(1f)
-        .rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(3f)
+        .rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(4f)
         .expect(WorldState.WON)
-    @Test fun level09() = b(9).rightTo(7.2f)
-        .leftKeyRightTo(11.2f).leftJump(0.35f).left(0.3f).leftKeyRightTo(17.8f)
-        .rightTo(20.3f).rightJump(0.35f).right(3f)
+    @Test fun level09() = b(9).rightTo(11f).rightJump(0.22f).leftJump(0.2f).landLeft()
+        .leftKeyRightTo(19.6f).leftJump(0.22f).rightJump(0.2f).landRight().right(3f)
         .expect(WorldState.WON)
-    @Test fun level10() = b(10).rightTo(22.5f).wait(1.5f).leftTo(19.2f).leftJump(0.3f).leftTo(13.9f).leftJump(0.3f).left(3f)
+    @Test fun level10() = b(10).rightTo(21f).waitFor { it.player.grounded }
+        .leftTo(19.3f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(3f)
         .expect(WorldState.WON)
-    @Test fun level11() = b(11).hopR(5.7f).hopR(10.7f).hopR(15.7f).hopR(20.5f).hopR(25.7f).right(1f).expect(WorldState.WON)
-    @Test fun level12() = b(12).hopL(22.3f).hopL(11.0f).left(3f).expect(WorldState.WON)
-    @Test fun level13() = b(13).hopR(20.3f).right(2f).expect(WorldState.WON)
-    @Test fun level14() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f).hopR(15.7f).right(2f).expect(WorldState.WON)
-    @Test fun level15() = b(15).rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
-    @Test fun level16() = b(16).rightTo(7.3f).rightJump(0.35f).rightTo(15.4f).rightJump(0.3f).rightTo(24.7f).wait(1.2f).left(3f)
+    @Test fun level11() = b(11).hopR(5.7f).hopR(10.7f).hopR(14.9f).hopR(19.6f).hopR(24f).right(1f).expect(WorldState.WON)
+    @Test fun level12() = b(12).hopL(24f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(2f).expect(WorldState.WON)
+    @Test fun level13() = b(13).hopR(21f).rightJump(0.35f).right(1f).expect(WorldState.WON)
+    @Test fun level14() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
+        .rightTo(15.9f).rightJump(0.35f).landRight().rightTo(21.6f).rightJump(0.35f).landRight().right(3f)
         .expect(WorldState.WON)
+    @Test fun level15() = b(15).rightTo(11.8f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
+    @Test fun level16() = b(16).rightTo(7.3f).rightJump(0.35f).landRight().rightJump(0.3f).landRight()
+        .rightTo(24.7f).wait(1.2f).left(3f)
+        .expect(WorldState.WON)
+
+    // ---------- Act 1: the obvious run dies at the second or third trap ----------
+
+    @Test
+    fun actOneChainsPunishTheCounterJustLearned() {
+        // 2: one hop over the spike and a steady run ends in the spikes behind the landing; three hops end in the pit
+        b(2).rightTo(8f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+        b(2).rightTo(8f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+        // 3: the door comes back down when you reach the ledge, so nobody walks in on the ledge
+        val ledge = b(3).hopR(21.2f).rightTo(26.5f).leftTo(24.3f).leftJump(0.35f).landLeft()
+            .rightTo(21.3f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.35f).landRight().wait(1f)
+        ledge.expect(WorldState.PLAYING)
+        assertEquals(13.4f, ledge.world.door.box.y, 0.05f)
+        // 4: the second slab falls where the wall-top hop lands: sprinting on is fatal
+        b(4).rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
+            .rightTo(17.3f).waitFor { it.player.grounded }.right(2f).expect(WorldState.DEAD)
+        // 5: the wall top is a bad place to keep walking
+        b(5).rightTo(18.5f).jump(0.3f).wait(0.5f).leftTo(16.8f).wait(0.2f).rightJump(0.35f).right(0.2f).rightJump(0.35f)
+            .right(2f).expect(WorldState.DEAD)
+        // 7: the last platform punishes the jump from the middle of the one before it
+        b(7).rightTo(6.4f).rightJump(0.35f).landRight().rightTo(10.7f).rightJump(0.35f).landRight()
+            .rightJump(0.35f).landRight().rightJump(0.3f).landRight().right(2f).expect(WorldState.DEAD)
+        // 9: holding right through the first hole, or keeping the swapped keys over the second one
+        val pushedBack = b(9).rightTo(11f).rightJump(0.35f).landRight().right(1f)
+        pushedBack.expect(WorldState.PLAYING)
+        assertTrue(pushedBack.world.swapped && pushedBack.world.player.box.cx < 12f)
+        b(9).rightTo(11f).rightJump(0.22f).leftJump(0.2f).landLeft().leftKeyRightTo(19.6f).leftJump(0.35f).landLeft().left(1f).wait(1f)
+            .expect(WorldState.DEAD)
+        // 12 and 13: one hop and a steady run end in the spikes behind the landing
+        b(12).hopL(24f).left(2f).expect(WorldState.DEAD)
+        b(13).hopR(21f).right(2f).expect(WorldState.DEAD)
+        // 15: the obvious jump, the one that would reach the door where it hovers, meets the door one tile further right
+        b(15).rightTo(11.8f).rightJump(0.35f).landRight().rightTo(24.4f).rightJump(0.35f).right(1f).expect(WorldState.DEAD)
+    }
+
+    @Test
+    fun actOneLevelsFromThreeOnChainTwoToFourTraps() {
+        for (n in 3..16) {
+            val traps = World1Part1.levels[n - 1].traps.size
+            assertTrue("level $n has $traps traps", traps in 2..4)
+        }
+        assertEquals(2, World1Part1.levels[0].traps.size)
+    }
+
+    @Test
+    fun actOneTriggersFireCloseToTheSpot() {
+        // no level of act 1 fires a trap on a plain PastX/BeforeX more than two tiles before the thing it springs on you
+        // (the level notes say where); the jump triggers exist so that most of them need no such guess
+        val jumpy = World1Part1.levels.count { l -> l.traps.any { it.trigger is Trigger.Airborne || it.trigger is Trigger.Landed } }
+        assertTrue("$jumpy levels use jump triggers", jumpy >= 8)
+    }
 
     // ---------- Act 2: Neue Regeln ----------
     @Test fun level17() = b(17).rightTo(10.2f)

@@ -195,6 +195,9 @@ class World(val level: Level, private val past: Trail? = null) {
     var slope = 0f
         private set
     private var shaken = false
+    /** The step the player last touched down in, and where ([Trigger.Landed]). */
+    private var landTick = -9
+    private var landX = 0f
     /** Just came out of this tile: it takes the player again only after they left it. */
     private var hopBlock: Pair<Int, Int>? = null
     private var hopReady = 0f
@@ -439,6 +442,8 @@ class World(val level: Level, private val past: Trail? = null) {
             is Trigger.PastX -> b.cx > t.x
             is Trigger.BeforeX -> b.cx < t.x
             is Trigger.Zone -> b.cx in t.x0..t.x1 && b.cy in t.y0..t.y1
+            is Trigger.Airborne -> ticks > 1 && !player.grounded && b.cx in t.x0..t.x1
+            is Trigger.Landed -> ticks - landTick <= 1 && landX in t.x0..t.x1
             is Trigger.After -> time >= t.seconds
             is Trigger.Idle -> idle >= t.seconds
             Trigger.Shaken -> shaken
@@ -931,6 +936,7 @@ class World(val level: Level, private val past: Trail? = null) {
         if (p.grounded && !wasGrounded) {
             p.squash = 0.72f
             events += Event.Land
+            if (ticks > 1) { landTick = ticks; landX = b.cx }
         }
     }
 
