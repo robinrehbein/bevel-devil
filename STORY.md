@@ -12,7 +12,7 @@ Das Netzwerk wurde gekapert. **Mephi** ist ein Daemon, im doppelten Sinn: ein Hi
 |---|---|---|---|
 | 1 | Höllenkeller | Das infizierte System an der Oberfläche | Gold-Mauerwerk, Höllen-Skyline, Farbstrudel (aktueller Look) |
 | 2 | Höllen-Rechenzentrum | Netzwerk und Server | Server-Racks, Kabeltrassen, LED-Reihen, Lüftungsschlitze |
-| 3 | Platine (geplant) | Hardware | Grüne Leiterplatte, Kupferbahnen, Lötpunkte, Kondensatoren. Finale im BIOS. |
+| 3 | Platine (geplant) | Hardware | Ruhige, dunkle Leiterplatte in Grün oder Blau (evtl. beide, pro Akt), helle Kupferpads, Chips als Plattformen, Pins als Stacheln, USB-C-Buchse als Tür. Finale im BIOS. |
 
 ## Figuren
 
