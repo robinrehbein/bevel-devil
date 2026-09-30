@@ -15,7 +15,7 @@ Alles, was für den Store-Eintrag gebraucht wird, liegt hier. Die Ordner spiegel
 | `screenshots/phone/01..08.png` | Smartphone-Screenshots, deutsche Oberfläche, ohne Text |
 | `screenshots/phone-captioned/01..08.png` | dieselben mit deutscher Bildunterschrift |
 | `screenshots/phone-en/`, `screenshots/phone-captioned-en/` | englische Oberfläche (für die Sprachvariante en-US) |
-| `../privacy-policy.md` | Datenschutzerklärung, muss als öffentliche URL erreichbar sein (siehe unten) |
+| `../../PRIVACY.md` | Datenschutzerklärung, muss als öffentliche URL erreichbar sein (siehe unten) |
 
 Die Bilder sind 24-Bit-PNGs ohne Alphakanal, 1920 × 1080 (16:9, innerhalb der Play-Grenzen: Seitenverhältnis höchstens 2:1, je Datei unter 8 MB). Das Spiel ist Querformat, deshalb sind auch die Screenshots Querformat. Tablet-Screenshots (7"/10") sind optional; dieselben Bilder genügen, falls Play danach fragt.
 
@@ -37,7 +37,7 @@ Reihenfolge wie im Dashboard unter „App-Einrichtung“ und „Store-Präsenz�
 
 ### 1. App-Einrichtung (Richtlinien-Formulare)
 
-- [ ] **Datenschutzerklärung:** Platzhalter `[KONTAKT-E-MAIL]`, `[NAME/FIRMA, ADRESSE]` und `[DATUM]` in `docs/privacy-policy.md` ersetzen, den Hinweis am Anfang löschen, dann öffentlich hosten. Optionen: GitHub Pages (Repo-Einstellungen > Pages > Quelle `main`, Ordner `/docs`; die URL wäre dann `https://<nutzer>.github.io/<repo>/privacy-policy`, evtl. ist dafür ein Jekyll-Theme oder eine `index.html` nötig, damit Markdown als Seite erscheint) oder die Firmenwebsite. Nichts davon ist aktiviert. URL in Play Console > App-Inhalte > Datenschutzerklärung eintragen.
+- [ ] **Datenschutzerklärung:** steht in `PRIVACY.md` im Repo-Root (DE + EN). Muss öffentlich erreichbar sein, z. B. über GitHub Pages oder die eigene Website; die URL unter Play Console > App-Inhalte > Datenschutzerklärung eintragen.
 - [ ] **Werbung:** „Nein, meine App enthält keine Werbung“. Stimmt: keine Werbe-Bibliothek in `app/build.gradle.kts`, nur JUnit und Robolectric als Testabhängigkeiten.
 - [ ] **App-Zugriff:** „Alle Funktionen ohne Zugriffsbeschränkung verfügbar“ (kein Login, keine Konten).
 - [ ] **Zielgruppe und Inhalt:** siehe Abschnitt unten.
