@@ -14,6 +14,10 @@ interface Progress {
         get() = SAVE_VERSION
         set(_) {}
     var sound: Boolean
+    /** Background music on/off (separate from [sound], the effects). */
+    var music: Boolean
+        get() = true
+        set(_) {}
     var stickScheme: Boolean
     /** 0 = S, 1 = M, 2 = L. */
     var buttonSize: Int
@@ -31,10 +35,12 @@ interface Progress {
     fun addCardDeath(card: Card)
 }
 
-enum class Sound { JUMP, LAND, DIE, WIN, CARD, LAUGH, CLICK, CRASH, BONK, FLIP }
+enum class Sound { JUMP, LAND, DIE, WIN, CARD, LAUGH, CLICK, CRASH, BONK, FLIP, SWITCH, SIZZLE, HUM }
 
 interface Audio {
     fun play(sound: Sound)
+    /** What background music should play now (null = none) and whether softly, e.g. under the pause menu. */
+    fun music(tune: Tune?, duck: Boolean) {}
 }
 
 enum class Screen { TITLE, SELECT, PLAY, PAUSE, CLEAR, ALBUM, END, SETTINGS, INTRO, WORLD_INTRO }
@@ -55,13 +61,16 @@ object Ui {
     val sound = Hit(224, 6, 26, 12)
     val gear = Hit(196, 6, 24, 12)
     val pauseSettings = Hit(88, 102, 80, 16)
-    const val SET_ROWS = 6
-    const val SET_STEP = 18
-    val setCounts = intArrayOf(2, 3, 2, 2, 2, 2)
+    val privacy = Hit(78, 128, 100, 11)
+    const val SET_ROWS = 7
+    const val SET_STEP = 15
+    const val SET_TOP = 22
+    const val SET_H = 13
+    val setCounts = intArrayOf(2, 3, 2, 2, 2, 2, 2)
     /** Option [i] of [n] in settings row [row]. */
     fun setOpt(row: Int, i: Int, n: Int): Hit {
         val w = (114 - (n - 1) * 4) / n
-        return Hit(132 + i * (w + 4), 24 + row * SET_STEP, w, 16)
+        return Hit(132 + i * (w + 4), SET_TOP + row * SET_STEP, w, SET_H)
     }
     val back = Hit(6, 6, 20, 12)
     val selectAlbum = Hit(196, 122, 54, 14)
@@ -234,7 +243,15 @@ class Game(private val progress: Progress, private val audio: Audio) {
         startLevel((progress.unlocked - 1).coerceIn(selWorld.firstLevel, selWorld.firstLevel + selWorld.size - 1))
     }
 
+    /** The loop for the current screen; levels keep their world's tune across deaths, restarts and the pause menu. */
+    private fun tune(): Tune? = when (screen) {
+        Screen.PLAY, Screen.PAUSE, Screen.CLEAR -> Tune.ofWorld(Worlds.of(levelIndex).number)
+        Screen.SETTINGS -> if (settingsFrom == Screen.PAUSE) Tune.ofWorld(Worlds.of(levelIndex).number) else Tune.TITLE
+        else -> Tune.TITLE
+    }
+
     fun update(dt: Float) {
+        audio.music(if (progress.music) tune() else null, screen == Screen.PAUSE || (screen == Screen.SETTINGS && settingsFrom == Screen.PAUSE))
         time += dt
         shake = (shake - dt * 3f).coerceAtLeast(0f)
         heat = (heat - dt * 0.8f).coerceAtLeast(0f)
@@ -282,6 +299,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
             Event.Hop -> audio.play(Sound.FLIP)
+            Event.Switch -> audio.play(Sound.SWITCH)
+            Event.Sizzle -> audio.play(Sound.SIZZLE)
+            Event.Hum -> audio.play(Sound.HUM)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> say(e.text.toString(), 2.6f)
             is Event.Played -> {
@@ -532,8 +552,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
             1 -> progress.buttonSize = i
             2 -> progress.haptics = i == 0
             3 -> progress.sound = i == 0
-            4 -> progress.leftHanded = i == 0
-            5 -> progress.tiltSensor = i == 0
+            4 -> progress.music = i == 0
+            5 -> progress.leftHanded = i == 0
+            6 -> progress.tiltSensor = i == 0
         }
     }
 
@@ -543,7 +564,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
         1 -> progress.buttonSize
         2 -> if (progress.haptics) 0 else 1
         3 -> if (progress.sound) 0 else 1
-        4 -> if (progress.leftHanded) 0 else 1
+        4 -> if (progress.music) 0 else 1
+        5 -> if (progress.leftHanded) 0 else 1
         else -> if (progress.tiltSensor) 0 else 1
     }
 

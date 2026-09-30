@@ -11,8 +11,8 @@ android {
         applicationId = "com.robinrehbein.beveldevil"
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 5
-        versionName = providers.gradleProperty("releaseVersionName").orNull ?: "0.5.0"
+        versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 6
+        versionName = providers.gradleProperty("releaseVersionName").orNull ?: "0.6.0"
     }
 
     signingConfigs {
@@ -33,7 +33,7 @@ android {
                 signingConfig = signingConfigs.getByName("upload")
             }
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 

@@ -36,20 +36,22 @@ class SettingsPainter(px: Pixels) : Painter(px) {
         px.at(l.sx, l.sy) {
             button(Ui.back, "<", false)
             say(Txt.settings.toString(), 128f, 14f, 7f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
-            val labels = listOf(Txt.controls, Txt.btnSize, Txt.haptics, Txt.sound, Txt.leftHanded, Txt.tilt)
+            val labels = listOf(Txt.controls, Txt.btnSize, Txt.haptics, Txt.sound, Txt.music, Txt.leftHanded, Txt.tilt)
             val opts = listOf<List<T>>(
                 listOf(Txt.schemeButtons, Txt.schemeStick), listOf(T("S", "S"), T("M", "M"), T("L", "L")),
-                listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off),
+                listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off),
             )
             for (row in 0 until Ui.SET_ROWS) {
-                say(labels[row].toString(), 14f, 32.5f + row * Ui.SET_STEP, 5f, CREAM)
+                say(labels[row].toString(), 14f, Ui.SET_TOP + 7f + row * Ui.SET_STEP, 5f, CREAM)
                 for (i in opts[row].indices) {
                     val h = Ui.setOpt(row, i, opts[row].size)
                     val on = game.optionOf(row) == i
                     box(h, if (on) RED_BTN else PLUM, if (on) RED_BTN_HI else PLUM_HI)
-                    say(opts[row][i].toString(), h.x + h.w / 2f, h.y + 8.5f, 6f, if (on) CREAM else 0xFFB9A6CF.toInt(), Paint.Align.CENTER)
+                    say(opts[row][i].toString(), h.x + h.w / 2f, h.y + 7f, 6f, if (on) CREAM else 0xFFB9A6CF.toInt(), Paint.Align.CENTER)
                 }
             }
+            box(Ui.privacy, PLUM, PLUM_HI)
+            say(T("PRIVACY", "DATENSCHUTZ").toString(), 128f, 135f, 5f, CREAM, Paint.Align.CENTER)
         }
     }
 }

@@ -372,19 +372,23 @@ class UiPainter(px: Pixels) : Painter(px) {
     // ---------- screens (stage coordinates) ----------
 
     private var stripBmp: Bitmap? = null
+    private var stripTheme: Theme? = null
     private val stripFor = IntArray(4)
 
     /** Gold floor strip at the stage bottom, stretched across the canvas, with rock below it. */
-    fun floorStrip(l: Layout) {
-        if (stripBmp == null || stripFor[0] != l.lw || stripFor[1] != l.lh || stripFor[2] != l.sx || stripFor[3] != l.sy) {
+    fun floorStrip(l: Layout, theme: Theme = Themes.HELL) {
+        if (stripBmp == null || stripTheme !== theme || stripFor[0] != l.lw || stripFor[1] != l.lh || stripFor[2] != l.sx || stripFor[3] != l.sy) {
             val c0 = -((l.sx + TS - 1) / TS) - 1
             val gw = (l.lw - l.sx) / TS + 2 - c0
             val ox = l.sx + c0 * TS
             val y = l.sy + 136
             val out = IntArray(l.lw * l.lh)
-            Masonry.bake(out, l.lw, l.lh, ox, y, IntArray(gw) { 1 }, gw, 1, c0, 17, false, GOLD_STONE)
+            Masonry.bake(out, l.lw, l.lh, ox, y, IntArray(gw) { 1 }, gw, 1, c0, 17, false, theme.stone)
             val gh = (l.lh - y) / TS
-            if (gh > 1) Masonry.bake(out, l.lw, l.lh, ox, y + TS, IntArray(gw * gh) { 1 }, gw, gh, c0, 18, true, ROCK_STONE)
+            // a sliver of rock may remain below the last full tile: keep it from showing the swirl
+            if (theme !== Themes.HELL) for (yy in y + TS until l.lh) for (xx in 0 until l.lw) out[yy * l.lw + xx] = theme.rock.face
+            if (gh > 1) Masonry.bake(out, l.lw, l.lh, ox, y + TS, IntArray(gw * gh) { 1 }, gw, gh, c0, 18, true, theme.rock)
+            stripTheme = theme
             stripBmp = Bitmap.createBitmap(out, l.lw, l.lh, Bitmap.Config.ARGB_8888)
             stripFor[0] = l.lw; stripFor[1] = l.lh; stripFor[2] = l.sx; stripFor[3] = l.sy
         }
@@ -428,8 +432,30 @@ class UiPainter(px: Pixels) : Painter(px) {
         }
     }
 
+    private var selTheme: Theme? = null
+    private var selBackdrop: Backdrop? = null
+
+    /** The shown world's far scenery behind the level select, drifting like the title's; hell keeps the swirl. */
+    private fun worldBackdrop(game: Game, l: Layout) {
+        val theme = Themes.of(game.selWorld.number)
+        if (theme === Themes.HELL) return
+        val width = l.lw + 2 * WorldPainter.PARALLAX
+        val bd = selBackdrop?.takeIf { selTheme === theme && it.bmp.width == width }
+            ?: theme.build(width, Ui.H).also { selBackdrop = it; selTheme = theme }
+        // above the stage (tall screens) the scenery's top row continues
+        rect(0f, 0f, l.lw.toFloat(), l.sy.toFloat() + 1, bd.bmp.getPixel(0, 0))
+        val dx = (-WorldPainter.PARALLAX + sin(game.time * 0.21f) * 12f).roundToInt()
+        lc.drawBitmap(bd.bmp, dx.toFloat(), l.sy.toFloat(), null)
+        val leds = bd.leds
+        for (i in 0 until leds.size / 4) {
+            if (((game.time * 0.22f + leds[4 * i + 3] / 256f) % 1f) > 0.66f) continue
+            rect((leds[4 * i] + dx).toFloat(), (leds[4 * i + 1] + l.sy).toFloat(), 1f, 1f, leds[4 * i + 2])
+        }
+    }
+
     fun select(game: Game, l: Layout) {
-        floorStrip(l)
+        worldBackdrop(game, l)
+        floorStrip(l, Themes.of(game.selWorld.number))
         stage(l, Screen.SELECT) {
             val t = game.time
             button(Ui.back, "<", false)

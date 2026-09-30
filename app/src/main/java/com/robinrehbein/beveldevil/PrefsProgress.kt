@@ -22,6 +22,10 @@ class PrefsProgress(context: Context) : Progress {
         get() = prefs.getBoolean("sound", true)
         set(v) = prefs.edit().putBoolean("sound", v).apply()
 
+    override var music: Boolean
+        get() = prefs.getBoolean("music", true)
+        set(v) = prefs.edit().putBoolean("music", v).apply()
+
     override var stickScheme: Boolean
         get() = prefs.getBoolean("stick", false)
         set(v) = prefs.edit().putBoolean("stick", v).apply()

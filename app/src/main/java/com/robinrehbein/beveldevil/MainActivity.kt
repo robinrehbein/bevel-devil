@@ -6,18 +6,26 @@ import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.window.OnBackInvokedDispatcher
+import com.robinrehbein.beveldevil.audio.Music
 import com.robinrehbein.beveldevil.audio.Sfx
+import com.robinrehbein.beveldevil.game.Audio
+import com.robinrehbein.beveldevil.game.Tune
 import com.robinrehbein.beveldevil.game.Game
 
 class MainActivity : Activity() {
     private lateinit var view: GameView
     private lateinit var sfx: Sfx
+    private lateinit var music: Music
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val progress = PrefsProgress(this)
         sfx = Sfx { progress.sound }
-        view = GameView(this, Game(progress, sfx))
+        music = Music(this) { progress.music }
+        val audio = object : Audio by sfx {
+            override fun music(tune: Tune?, duck: Boolean) = music.set(tune, duck)
+        }
+        view = GameView(this, Game(progress, audio))
         setContentView(view)
         view.requestFocus()
         if (Build.VERSION.SDK_INT >= 33) {
@@ -59,10 +67,17 @@ class MainActivity : Activity() {
     override fun onPause() {
         super.onPause()
         view.onPauseApp()
+        music.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        music.resume()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         sfx.release()
+        music.release()
     }
 }

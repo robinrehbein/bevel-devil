@@ -31,6 +31,7 @@ object Txt {
     val btnSize = T("BUTTON SIZE", "TASTENGRÖSSE")
     val haptics = T("HAPTICS", "VIBRATION")
     val sound = T("SOUND", "TON")
+    val music = T("MUSIC", "MUSIK")
     val leftHanded = T("LEFT-HANDED", "LINKSHÄNDER")
     val tilt = T("TILT SENSOR", "NEIGUNG")
     val on = T("ON", "AN")

@@ -1,0 +1,40 @@
+Der Boden war nur geliehen. Die Tür hat Besseres vor. Und die Decke kommt zu dir.
+
+In Mephi the Daemon ist nicht ein Gegner das Problem, sondern der Level selbst. Du steuerst Bevel, einen kleinen, zähen Würfel, der nur eins will: zur Tür. Mephi, der Croupier der Hölle, hat etwas dagegen. Er spielt dir Fallen aus wie Karten, und du merkst erst beim Absturz, welche es diesmal war.
+
+Mephi ist ein Daemon im doppelten Sinn: ein Hintergrundprozess, der sich tief in dein Netzwerk eingenistet hat, und ein waschechter Teufel. Er kommentiert jeden Tod, jede Falle und jeden Fehlversuch. Schlagfertig, selbstverliebt und nie wirklich böse, eher beleidigt, wenn etwas nicht klappt.
+
+Das Spiel
+• Troll-Platformer mit Trial-and-Error: Sterben gehört dazu, Neustart in einer Sekunde
+• 96 Level in zwei Welten: Höllenkeller und Höllen-Rechenzentrum
+• Fallen, die bis zum Auslösen aussehen wie normaler Boden
+• Mephi schummelt: Fake-Abspann, eine Pause-Taste, die vor dir wegläuft, ein Bild, das kopfsteht
+• Nerd-Humor von Segfault bis sudo, der auch ohne IT-Studium funktioniert
+
+Teufelskarten
+Jede Falle ist eine Karte, die aus Mephis goldenem Rahmen ins Bild fliegt. Wer darauf hereinfällt, bekommt die Karte ins Album, samt Zähler, wie oft sie dich schon erwischt hat. Von Einsturz über Stachelsaat und Türflucht bis zum Großen Finale: Sammle sie alle.
+
+Zwei Welten, weitere Schichten in Arbeit
+• Höllenkeller: Gold-Mauerwerk, Glut und die Klassiker unter den Fallen
+• Höllen-Rechenzentrum: Server-Racks, Laser als Firewall, Förderbänder als Datenbus und Portale mit eigenem Kopf
+• Weitere Schichten der Hölle sind in Entwicklung, die nächste ist die Platine
+
+Neigen und Schütteln
+Ein paar Level verlangen mehr als Daumen: Neig dein Handy und die Welt kippt mit, schüttle es und etwas Unerwartetes fällt herunter. Wer keinen Sensor nutzen möchte, schaltet ihn in den Einstellungen ab und bekommt Tasten dafür.
+
+Look und Steuerung
+• Höllen-CRT im Pixel-Look: Farbstrudel, Scanlines, Vignette, Glitches, wenn Mephi das System manipuliert
+• Gestochen scharfe Pixel bei jedem Seitenverhältnis, ohne Balken
+• Touch-Steuerung mit Tasten oder Stick, Tastengröße einstellbar, Linkshänder-Modus
+• Auch mit Tastatur oder Gamepad spielbar
+• Synthetisierter Chiptune-Sound, abschaltbar, Vibration optional
+• Deutsch und Englisch, je nach Gerätesprache
+
+Fair und leicht
+• Keine Werbung
+• Keine In-App-Käufe
+• Keine Konten, keine Registrierung, keine Tracker
+• Der Spielstand bleibt auf deinem Gerät
+• Winzige App, schnell installiert
+
+Bevel sagt nichts. Er stirbt oft und macht trotzdem weiter. Bist du dabei?

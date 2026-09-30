@@ -41,6 +41,11 @@ enum class HudMode { OVERLAY, SIDE, TOP }
  * All positions are logical canvas pixels unless noted. Shared by touch input and rendering.
  */
 class Layout {
+    private companion object {
+        /** First ground row of the standard level, in logical px from the playfield's top. */
+        const val GROUND_TOP = 15 * TS
+    }
+
     var w = 0; private set
     var h = 0; private set
     var sc = 1; private set
@@ -126,7 +131,12 @@ class Layout {
         val c = controls
         val margin = 18f * dp
         val pad = 3f * sc
-        var r = min(34f * dp * c.sizeScale, h * 0.14f)
+        // the buttons stay below the ground line of the playfield where the screen has room for it: spawn, door and
+        // the rows the player walks on (up to row 14) are never under a thumb; only the ground is
+        val free = h - cutB - (fy + GROUND_TOP) * sc - pad
+        val cap = max(22f * dp, (free - 10f * dp) / 2)
+        val minR = min(26f * dp, cap)
+        var r = min(min(34f * dp * c.sizeScale, h * 0.14f), cap)
         val pair = 2.3f
         val mv: Float // x of the left arrow
         val jx: Float
@@ -135,12 +145,12 @@ class Layout {
             val colR0 = (fx + Ui.W) * sc.toFloat(); val colR1 = (w - cutR).toFloat()
             val (m0, m1) = if (c.mirror) colR0 to colR1 else colL0 to colL1
             val (j0, j1) = if (c.mirror) colL0 to colL1 else colR0 to colR1
-            r = max(min(r, min((m1 - m0 - 2 * pad) / 4.3f, (j1 - j0 - 2 * pad) / 2f)), 26f * dp)
+            r = max(min(r, min((m1 - m0 - 2 * pad) / 4.3f, (j1 - j0 - 2 * pad) / 2f)), minR)
             // too narrow a column: the buttons may reach into the playfield, but stay on screen
             mv = if (c.mirror) min((m0 + m1) / 2 + 1.15f * r, m1 - r - pad) - pair * r else max((m0 + m1) / 2 - 1.15f * r, m0 + r + pad)
             jx = if (c.mirror) max((j0 + j1) / 2, j0 + r + pad) else min((j0 + j1) / 2, j1 - r - pad)
         } else {
-            r = max(r, 26f * dp)
+            r = max(r, minR)
             mv = if (c.mirror) w - cutR - margin - r - pair * r else cutL + margin + r
             jx = if (c.mirror) cutL + margin + r else w - cutR - margin - r
         }
@@ -148,7 +158,7 @@ class Layout {
         c.leftX = mv
         c.rightX = mv + pair * r
         c.jumpX = jx
-        c.y = h - cutB - margin - r
+        c.y = h - cutB - min(margin, max(free - 2 * r, 4f * dp)) - r
         c.sc = sc
         c.stickR = 44f * dp
     }

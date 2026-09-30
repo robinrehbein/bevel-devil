@@ -47,6 +47,32 @@ sealed interface Trigger {
     data object AtDoor : Trigger
     /** The player paused and resumed [times] times in this attempt. */
     data class Resumed(val times: Int = 1) : Trigger
+
+    /**
+     * Pressure pad [pad] ([Action.Pad]) was stepped on [times] times in this attempt.
+     *
+     *     trap(Pressed('1'), Power('b', false), Say(T("Wrong button.", "Falscher Knopf.")))
+     */
+    data class Pressed(val pad: Char, val times: Int = 1) : Trigger
+
+    /**
+     * Heated group [group] ([Action.Heat]) reached heat [above] (0..1).
+     *
+     *     trap(Heated('h', 0.5f), Fall('x'))   // the plate gets warm, the ledge ahead drops
+     */
+    data class Heated(val group: Char, val above: Float) : Trigger
+}
+
+/** What a pressure pad ([Action.Pad]) does to its circuits. */
+enum class PadMode {
+    /** Every step flips them. */
+    TOGGLE,
+    /** Flips them while pressed, flips them back on release. */
+    HOLD,
+    /** Powers them up. */
+    ON,
+    /** Cuts them. */
+    OFF,
 }
 
 sealed interface Action {
@@ -128,7 +154,12 @@ sealed interface Action {
     data class Reroute(val id: Char, val to: Pair<Int, Int>) : Action
     /** The group is a conveyor belt: standing on it moves the player [speed] tiles/s (negative: left). Run again to change it. */
     data class Belt(val group: Char, val speed: Float) : Action
-    /** Switches portal, laser or belt [id] off or back on. A laser coming back on warms up (telegraphs) first. */
+    /**
+     * Switches portal, laser, belt, circuit or fan [id] off or back on. A laser coming back on warms up (telegraphs)
+     * first; a circuit's [Clock] stops; a fan spins down to a halt or back up to its speed.
+     *
+     *     trap(PastX(12f), Power('a', false))   // Mephi cuts the rail under you
+     */
     data class Power(val id: Char, val on: Boolean) : Action
 
     /**
@@ -176,6 +207,120 @@ sealed interface Action {
             const val HALF = 0.125f
         }
     }
+
+    // hardware mechanics (World 3), run-time state in Hardware.kt
+
+    /**
+     * Group [group] is a circuit, powered from the start when [on]. A lowercase (block) group is a copper rail:
+     * solid and glowing while powered, a dark outline you fall through while not. An uppercase (spike) group is an
+     * exposed live trace: deadly to touch while powered, harmless while not, never solid. Switch it with a [Pad],
+     * a [Clock], [Power], [Toggle] or [BitFlip]. A rail regaining power waits until the player is out of it.
+     *
+     *     start = listOf(Circuit('a'), Circuit('Z'), Pad('1', at = 4 to 14, circuits = "Z", mode = PadMode.OFF))
+     *     trap(PastX(12f), Power('a', false))   // the rail under you goes dark
+     */
+    data class Circuit(val group: Char, val on: Boolean = true) : Action
+
+    /**
+     * Circuit [group] runs on a clock: powered for [on] seconds, dead for [off], [phase] seconds into the cycle,
+     * counted from when this runs. Makes [group] a circuit if it is none yet. A rail flickers red before it drops.
+     * [Power], [Toggle], [BitFlip] and pads stop the clock.
+     *
+     *     start = listOf(Clock('a', on = 1.6f, off = 1.2f), Clock('b', on = 1.6f, off = 1.2f, phase = 1.4f))
+     */
+    data class Clock(val group: Char, val on: Float, val off: Float, val phase: Float = 0f) : Action {
+        /** The same timing as a blinking platform, telegraph included. */
+        val timing get() = Blink(group, on, off, phase)
+    }
+
+    /**
+     * Flips each circuit in [groups]: powered ones go dark, dark ones come on. Stops their clocks.
+     *
+     *     trap(Touch('x'), Toggle("ab"))
+     */
+    data class Toggle(val groups: String) : Action
+
+    /**
+     * "Bit flip": circuits [a] and [b] swap their power. Stops their clocks.
+     *
+     *     trap(PastX(15f), BitFlip('a', 'b'), Say(T("Cosmic ray.", "Kosmische Strahlung.")))
+     */
+    data class BitFlip(val a: Char, val b: Char) : Action
+
+    /**
+     * Pressure pad [id] lying on the floor of tile [at] (an empty tile above something solid). Stepping on it
+     * switches the circuits in [circuits] as [mode] says; its cap has the color of the first circuit, and its LED
+     * shows whether that one is powered. [Trigger.Pressed] lets traps hook onto it.
+     *
+     *     start = listOf(Circuit('a', on = false), Pad('1', at = 6 to 14, circuits = "a"))
+     *     start = listOf(Circuit('w'), Pad('2', at = 9 to 14, circuits = "w", mode = PadMode.HOLD))  // hold to open
+     */
+    data class Pad(val id: Char, val at: Pair<Int, Int>, val circuits: String = "", val mode: PadMode = PadMode.TOGGLE) : Action
+
+    /**
+     * Group [group] heats up: standing on it takes it from cold to full heat in [rise] seconds; off it cools back
+     * down in [cool] seconds. With [load] (a chip under load) it heats all the time, stood on or not, and only a
+     * [Heatsink] or [HeatSpike] cools it. At full heat it burns on touch, or with [melt] melts away for good.
+     * It glows copper → orange → yellow → white and flickers red near the end. Run again to change the rates.
+     *
+     *     start = listOf(Heat('h', rise = 1.2f), Heat('c', rise = 4f, load = true))
+     */
+    data class Heat(val group: Char, val rise: Float = 1.5f, val cool: Float = rise, val load: Boolean = false, val melt: Boolean = false) : Action {
+        init { require(rise > 0f && cool > 0f) }
+    }
+
+    /**
+     * Group [group] is a heatsink: while the player stands on it, the heated groups in [cools] cool down fast
+     * (from full heat in [Hardware.SINK] seconds).
+     *
+     *     start = listOf(Heat('c', rise = 3f, load = true), Heatsink('k', cools = "c"))
+     */
+    data class Heatsink(val group: Char, val cools: String) : Action
+
+    /**
+     * "Overclocked": group [group] jumps to heat [to] (0..1) at once and cools as a hot plate from there. A plain
+     * group that was never declared with [Heat] looks like any other floor until this runs (a hidden trap), and
+     * then heats and cools like a default [Heat] plate.
+     *
+     *     trap(PastX(14f), HeatSpike('f'), Say(T("Overclocked!", "Übertaktet!")))
+     */
+    data class HeatSpike(val group: Char, val to: Float = 0.7f) : Action
+
+    /**
+     * Fan [id] in tile [at] (a floor or wall tile; its housing is drawn over it) blowing toward [dir] across
+     * [reach] tiles, [width] tiles wide (to the right of [at] for UP and DOWN, below it for LEFT and RIGHT).
+     * [speed] is the wind in tiles/s, negative sucks: sideways it drifts the player like a belt, walking or in
+     * the air; up or down it replaces gravity, easing the player's vertical speed to the wind. A player whose
+     * center is in the zone feels it. With [off] > 0 it runs for [on] seconds, then rests [off] ([phase] into
+     * the cycle). It spins up and down at [Hardware.SPIN] tiles/s², so a change shows before it bites.
+     *
+     *     start = listOf(Fan('f', at = 12 to 15, dir = Dir.UP, reach = 9, speed = 12f, width = 2))
+     *     start = listOf(Fan('w', at = 0 to 10, dir = Dir.RIGHT, reach = 20, speed = 5f, width = 4, on = 2f, off = 2f))
+     */
+    data class Fan(
+        val id: Char, val at: Pair<Int, Int>, val dir: Dir, val reach: Int, val speed: Float = 10f, val width: Int = 1,
+        val on: Float = 0f, val off: Float = 0f, val phase: Float = 0f,
+    ) : Action {
+        init { require(reach > 0 && width > 0) { "fan $id needs reach and width" } }
+
+        val vertical get() = dir == Dir.UP || dir == Dir.DOWN
+        /** The wind zone, in tiles. */
+        val x0 get() = when (dir) { Dir.LEFT -> at.first - reach; Dir.RIGHT -> at.first + 1; else -> at.first }.toFloat()
+        val x1 get() = when (dir) { Dir.LEFT -> at.first; Dir.RIGHT -> at.first + 1 + reach; else -> at.first + width }.toFloat()
+        val y0 get() = when (dir) { Dir.UP -> at.second - reach; Dir.DOWN -> at.second + 1; else -> at.second }.toFloat()
+        val y1 get() = when (dir) { Dir.UP -> at.second; Dir.DOWN -> at.second + 1 + reach; else -> at.second + width }.toFloat()
+
+        /** Blowing (rather than resting) [t] seconds after it started. */
+        fun runsAt(t: Float): Boolean = off <= 0f || ((((t + phase) % (on + off)) + on + off) % (on + off)) < on
+    }
+
+    /**
+     * Fan [id] changes its wind to [speed] tiles/s (negative: reversed). It spins down, through zero and up again,
+     * so a reversal is visible for a moment before it pulls.
+     *
+     *     trap(PastX(9f), FanSet('w', -8f), Say(T("Reverse thrust!", "Schubumkehr!")))
+     */
+    data class FanSet(val id: Char, val speed: Float) : Action
 
     /** Tilting the phone slides the group: fully left by [left] tiles, fully right by [right], at up to [speed] tiles/s. */
     data class Tilt(val group: Char, val left: Float, val right: Float = left, val speed: Float = 8f) : Action

@@ -56,6 +56,10 @@ class Sfx(private val enabled: () -> Boolean) : Audio {
             Sound.CRASH -> listOf(Voice(120f, 40f, 0f, 0.3f, NOISE, 0.45f))
             Sound.BONK -> listOf(Voice(220f, 180f, 0f, 0.09f, SQUARE, 0.35f))
             Sound.FLIP -> listOf(Voice(200f, 900f, 0f, 0.22f, TRI, 0.35f))
+            // hardware (World 3): a relay click, a fan winding up, a hot plate hissing
+            Sound.SWITCH -> listOf(Voice(1800f, 1500f, 0f, 0.02f, SQUARE, 0.22f), Voice(700f, 620f, 0.035f, 0.035f, SQUARE, 0.2f))
+            Sound.HUM -> listOf(Voice(70f, 160f, 0f, 0.45f, TRI, 0.4f), Voice(140f, 320f, 0f, 0.45f, SQUARE, 0.06f))
+            Sound.SIZZLE -> listOf(Voice(0f, 0f, 0f, 0.4f, NOISE, 0.22f), Voice(2400f, 1800f, 0f, 0.3f, SQUARE, 0.04f))
         }
         val total = v.maxOf { it.start + it.len }
         val out = FloatArray((total * rate).toInt() + 1)
