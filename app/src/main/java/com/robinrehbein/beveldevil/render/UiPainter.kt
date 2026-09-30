@@ -664,7 +664,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     fun pause(game: Game, l: Layout) {
         dim(l)
         stage(l, Screen.PAUSE) {
-            say(Txt.pause.toString(), 128f, 36f, 14f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+            say(Txt.pause.toString(), 128f, 32f, 14f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
             if (game.pauseSwapped) {
                 // the two buttons trade places in front of you, swinging out to either side
                 val f = ((game.time - game.pausedAt - 0.15f) / 0.5f).coerceIn(0f, 1f)
@@ -674,8 +674,10 @@ class UiPainter(px: Pixels) : Painter(px) {
                 val r = Ui.pauseResume
                 button(Hit(r.x - dx, r.y + dy, r.w, r.h), Txt.levels.toString(), false)
                 button(Hit(r.x + dx, Ui.pauseLevels.y - dy, r.w, r.h), Txt.resume.toString(), true)
+                button(Ui.pauseRestart, Txt.restart.toString(), false)
             } else {
                 button(Ui.pauseResume, Txt.resume.toString(), true)
+                button(Ui.pauseRestart, Txt.restart.toString(), false)
                 button(Ui.pauseLevels, Txt.levels.toString(), false)
             }
         }

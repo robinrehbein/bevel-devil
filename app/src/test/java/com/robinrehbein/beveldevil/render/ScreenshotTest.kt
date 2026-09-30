@@ -180,6 +180,13 @@ class ScreenshotTest {
     }
 
     @Test
+    fun pauseMenuGerman() {
+        Lang.german = true
+        val g = Game(MemoryProgress(), silent); g.startLevel(1); run(g, 0.5f); g.pause()
+        shoot("15-pause-de", g)
+    }
+
+    @Test
     fun levelSelect() {
         Lang.german = true
         val two = sizes.take(2)
