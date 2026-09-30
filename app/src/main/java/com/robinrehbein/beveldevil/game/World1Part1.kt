@@ -259,6 +259,8 @@ object World1Part1 {
             ),
         ) {
             border(); floor()
+            // no floor under the ledge: whoever drops through the crumbling piece falls out instead of being stranded below
+            pit(17..29)
             fill(11..15, 14..14, 'a')
             fill(18..30, 7..7); fill(23..24, 7..7, 'b')
             put(18, 6, 'A'); put(19, 6, 'A')

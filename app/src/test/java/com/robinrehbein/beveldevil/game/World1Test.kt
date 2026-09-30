@@ -173,6 +173,10 @@ class World1Test {
     @Test fun level14() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
         .rightTo(15.9f).rightJump(0.35f).landRight().rightTo(21.6f).rightJump(0.35f).landRight().right(3f)
         .expect(WorldState.WON)
+    /** Dropping through the crumbling ledge piece must kill, not strand the player on the floor below the lift. */
+    @Test fun level14FallingThroughTheLedgeDies() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
+        .rightTo(15.9f).rightJump(0.35f).landRight().right(4f).wait(1.5f)
+        .expect(WorldState.DEAD)
     @Test fun level15() = b(15).rightTo(11.8f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
     @Test fun level16() = b(16).rightTo(7.3f).rightJump(0.35f).landRight().rightJump(0.3f).landRight()
         .rightTo(24.7f).wait(1.2f).left(3f)
