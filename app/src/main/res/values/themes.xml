@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.BevelDevil" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/night</item>
+        <item name="android:statusBarColor">@color/night</item>
+        <item name="android:navigationBarColor">@color/night</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="28" xmlns:tools="http://schemas.android.com/tools">shortEdges</item>
+    </style>
+</resources>
