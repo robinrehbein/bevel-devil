@@ -67,6 +67,8 @@ app/src/main/java/com/robinrehbein/beveldevil/
 └── MainActivity.kt
 ```
 
+Launcher-Icon: adaptives Pixel-Vektor-Icon (`res/drawable/ic_launcher_{background,foreground,monochrome}.xml`, Mephi mit goldenem Rim-Light vor gedithertem Höllen-Glühen mit Scanlines); Play-Store-Grafik in `docs/play/icon-512.png`. `IconScreenshotTest` zeichnet es unter verschiedenen Masken nach `app/build/screenshots/icon-*.png`.
+
 ## Ein Level bauen
 
 Level sind Daten. Die Karte ist 32×18 Tiles groß, der Spieler läuft normalerweise auf Zeile 14 (Bodenoberkante y = 15).
