@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.PorterDuffXfermode
+import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Group
 import com.robinrehbein.beveldevil.game.GroupMode
@@ -20,6 +21,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -50,6 +52,11 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private var groupsFor: Level? = null
     private val groups = ArrayList<Group>()
     private var groupBmp = arrayOfNulls<Bitmap>(0)
+    /** Dashed outline of each group, shown where a blinking platform is about to be. */
+    private var ghostBmp = arrayOfNulls<Bitmap>(0)
+    private var look = IntArray(0)
+    private val ghostPaint = Paint()
+    private val warnPaint = Paint().apply { colorFilter = PorterDuffColorFilter(0xFFFF6A3C.toInt(), PorterDuff.Mode.SRC_IN) }
     private var groupCol = IntArray(0)
     private var groupRow = IntArray(0)
     private var resting = BooleanArray(0)
@@ -191,7 +198,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     // ---------- level layers ----------
 
-    private fun rests(g: Group) = g.visible && g.mode == GroupMode.IDLE && g.ox == 0f && g.oy == 0f
+    private fun rests(g: Group) = g.visible && g.mode == GroupMode.IDLE && g.ox == 0f && g.oy == 0f && g.blink == null && g.tilt == null
 
     private fun newWorld(w: World) {
         world = w
@@ -208,6 +215,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
             groupCol = IntArray(groups.size)
             groupRow = IntArray(groups.size)
             groupBmp = Array(groups.size) { bakeGroup(it) }
+            ghostBmp = Array(groups.size) { bakeGhost(it) }
+            look = IntArray(groups.size)
         }
         if (cells.size != w.cols * w.rows) cells = IntArray(w.cols * w.rows)
     }
@@ -229,6 +238,39 @@ class WorldPainter(px: Pixels) : Painter(px) {
         groupCol[i] = c0
         groupRow[i] = r0
         return Bitmap.createBitmap(out, gw * TS, gh * TS, Bitmap.Config.ARGB_8888)
+    }
+
+    /** The group's outline as dashes, 1 px inside its edge. */
+    private fun bakeGhost(i: Int): Bitmap {
+        val b = groupBmp[i]!!
+        val w = b.width
+        val h = b.height
+        val col = groupCol[i]
+        val row = groupRow[i]
+        val gw = w / TS
+        val grid = BooleanArray(gw * (h / TS))
+        for (p in groups[i].pieces) if (!p.spike) grid[(p.hy.toInt() - row) * gw + p.hx.toInt() - col] = true
+        fun inside(x: Int, y: Int) = x in 0 until w && y in 0 until h && grid[(y / TS) * gw + x / TS]
+        val out = IntArray(w * h)
+        for (y in 0 until h) for (x in 0 until w) {
+            if (!inside(x, y)) continue
+            val edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)
+            val inner = !edge && (!inside(x - 2, y) || !inside(x + 2, y) || !inside(x, y - 2) || !inside(x, y + 2))
+            if (edge && (x + y) and 3 != 3) out[y * w + x] = GOLD_HI
+            else if (inner && (x + y) and 3 == 1) out[y * w + x] = GOLD_LO2
+        }
+        return Bitmap.createBitmap(out, w, h, Bitmap.Config.ARGB_8888)
+    }
+
+    /**
+     * How a group that does not rest is drawn this frame: 0 not at all, 1 solid, 2 faint outline, 3 bright outline.
+     * A blinking group flickers ever faster before it vanishes, and its outline brightens just before it returns.
+     */
+    private fun lookOf(g: Group): Int {
+        if (g.blink == null) return if (g.visible) 1 else 0
+        if (!g.visible) return if (g.soon) 3 else 2
+        if (g.warn <= 0f) return 1
+        return if (floor(g.warn * (4f + 8f * g.warn)).toInt() and 1 == 1) 3 else 1
     }
 
     /** Bakes everything resting into the tile layer and its shadow. Runs on level start and when a trap fires. */
@@ -253,7 +295,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     private fun groupX(i: Int, t: Float): Int {
         val g = groups[i]
-        val jitter = if (g.mode == GroupMode.FALL) (sin(t * 60f) * 0.8f).roundToInt() else 0
+        val jitter = if (g.mode == GroupMode.FALL || g.warn > 0f) (sin(t * 60f) * 0.8f).roundToInt() else 0
         return ((groupCol[i] + g.ox) * TS).roundToInt() + jitter
     }
 
@@ -266,7 +308,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
         for (i in 0 until groups.size) {
             val r = rests(groups[i])
             if (r != resting[i]) { resting[i] = r; dirty = true }
-            if (!r && groups[i].visible) moving = true
+            look[i] = if (r) 0 else lookOf(groups[i])
+            if (look[i] == 1) moving = true
         }
         if (dirty) bakeLevel(w)
 
@@ -279,7 +322,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             frameShadow.eraseColor(Color.TRANSPARENT)
             frameShadowC.drawBitmap(shadowBmp, 0f, 0f, null)
             for (i in 0 until groups.size) {
-                if (resting[i] || !groups[i].visible) continue
+                if (look[i] != 1) continue
                 frameShadowC.drawBitmap(groupBmp[i]!!, groupX(i, t) + 2f, groupY(i) + 2f, silhouette)
             }
             frameShadow
@@ -289,11 +332,25 @@ class WorldPainter(px: Pixels) : Painter(px) {
         lc.clipRect(0, 0, PW, PH)
         lc.drawBitmap(tileBmp, 0f, 0f, null)
         for (i in 0 until groups.size) {
-            if (resting[i] || !groups[i].visible) continue
-            lc.drawBitmap(groupBmp[i]!!, groupX(i, t).toFloat(), groupY(i).toFloat(), null)
+            when (look[i]) {
+                1 -> {
+                    lc.drawBitmap(groupBmp[i]!!, groupX(i, t).toFloat(), groupY(i).toFloat(), null)
+                    if (groups[i].tilt != null) vial(i, w.tilt)
+                    // about to vanish: its edge lights up in dashes, brighter the closer it gets
+                    if (groups[i].warn > 0f) {
+                        warnPaint.alpha = (140 + 115 * groups[i].warn).toInt()
+                        lc.drawBitmap(ghostBmp[i]!!, groupX(i, t).toFloat(), groupY(i).toFloat(), warnPaint)
+                    }
+                }
+                2, 3 -> {
+                    ghostPaint.alpha = if (look[i] == 3) 235 else 95
+                    lc.drawBitmap(ghostBmp[i]!!, groupX(i, t).toFloat(), groupY(i).toFloat(), ghostPaint)
+                }
+            }
         }
         spikeGleams(w, t)
         drawDoor(w, t)
+        for (i in 0 until w.saws.size) w.saws[i].path?.let { pathDots(it) }
         for (i in 0 until w.saws.size) { val s = w.saws[i]; drawSaw(s.x * TS, s.y * TS, s.r * TS, s.angle) }
         when (w.state) {
             WorldState.PLAYING -> drawPlayer(w)
@@ -384,7 +441,37 @@ class WorldPainter(px: Pixels) : Painter(px) {
         if (won < 0f) rect(x + 6, if (flip) top + 4 else top + 8, 1, 1, GOLD_HI)
     }
 
+    /** A spirit level set into the top of a tilt group; its bead rolls with the tilt. */
+    private fun vial(i: Int, tilt: Float) {
+        val cx = groupX(i, 0f) + groupBmp[i]!!.width / 2
+        val y = groupY(i) + 2
+        rect(cx - 6, y, 13, 4, INK)
+        rect(cx - 5, y + 1, 11, 2, TEAL)
+        rect(cx - 5, y + 1, 11, 1, 0xFF6FD6CC.toInt())
+        rect(cx, y, 1, 1, GOLD_LO2); rect(cx, y + 3, 1, 1, GOLD_LO2)
+        val bx = cx + (tilt * 4f).roundToInt()
+        rect(bx - 1, y + 1, 3, 2, MINT_HI)
+        rect(bx - 1, y + 1, 1, 1, WHITE)
+    }
+
     // ---------- saws ----------
+
+    /** Faint dots along a saw's track, brighter at the turning points. */
+    private fun pathDots(p: Action.PathSaw) {
+        val pts = p.points
+        val n = if (p.loop) pts.size else pts.size - 1
+        for (k in 0 until n) {
+            val (x0, y0) = pts[k]
+            val (x1, y1) = pts[(k + 1) % pts.size]
+            val len = hypot(x1 - x0, y1 - y0) * TS
+            val steps = max(1, (len / 4f).roundToInt())
+            for (s in 0 until steps) {
+                val f = s / steps.toFloat()
+                rect((x0 + (x1 - x0) * f) * TS, (y0 + (y1 - y0) * f) * TS, 1f, 1f, PATH_DOT)
+            }
+        }
+        for ((x, y) in pts) { rect(x * TS - 1, y * TS - 1, 3f, 3f, PATH_DOT); rect(x * TS, y * TS, 1f, 1f, STEEL_LO) }
+    }
 
     private fun drawSaw(cx: Float, cy: Float, r: Float, angle: Float) {
         val ri = r.roundToInt() + 2
@@ -529,6 +616,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
         const val SUCK = 0.42f
         private const val CRACK_WARM = 0xFFC4462C.toInt()
         private const val CRACK_HOT = 0xFFFF9A4A.toInt()
+        private const val PATH_DOT = 0x8CD9DBE6.toInt()
 
         /** Grows from nothing with a little overshoot. */
         fun popScale(f: Float): Float {

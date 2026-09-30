@@ -4,10 +4,16 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import org.robolectric.RuntimeEnvironment
 import com.robinrehbein.beveldevil.game.Audio
+import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Card
+import com.robinrehbein.beveldevil.game.Demo
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
+import com.robinrehbein.beveldevil.game.Level
+import com.robinrehbein.beveldevil.game.T
+import com.robinrehbein.beveldevil.game.Trigger
+import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
@@ -27,6 +33,7 @@ class MemoryProgress : Progress {
     override var haptics = true
     override var leftHanded = false
     override var introSeen = true
+    override var tiltSensor = true
     private val best = mutableMapOf(0 to 3, 1 to 7, 2 to 12, 3 to 5, 4 to 21, 5 to 9)
     private val found = mutableSetOf(Card.COLLAPSE, Card.SPIKE_SEED, Card.SHY_DOOR, Card.HEADBUTT, Card.UPSIDE_DOWN, Card.TWISTED)
     private val deaths = mutableMapOf<Card, Int>(Card.COLLAPSE to 12, Card.SPIKE_SEED to 8, Card.SHY_DOOR to 3)
@@ -219,6 +226,50 @@ class ScreenshotTest {
             f.play(5f) { f.game.card != null }
             f.play(0.07f); f.save("40-glitch-${s.tag}")
             f.play(0.1f); f.save("41-glitch-late-${s.tag}")
+        }
+    }
+
+    @Test
+    fun mechanics() {
+        Lang.german = true
+        val big = sizes[0]
+        // blinking bridge: solid, flickering before it goes, gone (faint outline), about to return (bright)
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.startCustom(Demo.blink)
+            val g = game.world!!.group('a')
+            play(1.0f); save("60-blink-on")
+            play(1f) { g.warn > 0.55f && g.warn < 0.8f }; save("61-blink-warn")
+            play(1f) { !g.visible }; play(0.2f); save("62-blink-off")
+            play(1f) { g.soon }; play(0.05f); save("63-blink-soon")
+        }
+        // saws on paths: a pendulum and one circling a block, with their tracks dotted in
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.startCustom(Demo.pathSaw)
+            play(2.4f); save("64-path-saw")
+        }
+        // tilt HUD: the sensor version, then the button fallback with a latched tilt and a shake
+        val both = Level(
+            T("Spirit level", "Wasserwaage"), T("Tilt the world.", "Neig die Welt."),
+            traps = listOf(trap(Trigger.Shaken, Action.Hide('b'))),
+            start = listOf(Action.Tilt('a', left = 0f, right = 13f, speed = 6f)),
+        ) {
+            border(); floor(); put(2, 14, 'P'); put(29, 14, 'D')
+            fill(8..23, 15..17, '.'); fill(8..10, 15..15, 'a'); fill(26..26, 1..14, 'b')
+        }
+        for (s in sizes.take(2)) Film(Game(MemoryProgress(), silent), s).apply {
+            game.startCustom(both)
+            game.input.right = true
+            play(0.8f) { game.world!!.player.box.cx > 9f }
+            game.input.right = false
+            play(0.3f)
+            game.input.tilt = 0.45f
+            play(1.2f); save("65-tilt-sensor-${s.tag}")
+            layout.controls.motionButtons = true
+            layout.controls.tiltLatch = 1
+            game.input.tilt = 1f
+            play(0.6f)
+            game.input.shake = true
+            play(0.1f); save("66-tilt-buttons-${s.tag}")
         }
     }
 

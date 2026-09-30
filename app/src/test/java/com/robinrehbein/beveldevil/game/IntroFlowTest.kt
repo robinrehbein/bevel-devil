@@ -14,6 +14,7 @@ class IntroFlowTest {
         override var haptics = true
         override var leftHanded = false
         override var introSeen = false
+        override var tiltSensor = true
         override fun bestDeaths(level: Int): Int? = null
         override fun saveBest(level: Int, deaths: Int) {}
         override fun cardFound(card: Card) = false

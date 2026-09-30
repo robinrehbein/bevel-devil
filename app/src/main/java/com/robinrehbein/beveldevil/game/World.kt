@@ -47,6 +47,13 @@ class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
     var tx = 0f
     var ty = 0f
     var speed = 0f
+    var blink: Action.Blink? = null
+    var blinkT0 = 0f
+    /** Blinking: 0 → 1 through the flicker before it vanishes. */
+    var warn = 0f
+    /** Blinking and gone, but about to return (or waiting for the player to step out). */
+    var soon = false
+    var tilt: Action.Tilt? = null
 }
 
 class Piece(val spike: Boolean, val dir: Dir, val hx: Float, val hy: Float, val group: Group?) {
@@ -80,7 +87,7 @@ class Door(x: Float, y: Float) {
     val moving get() = box.x != tx || box.y != ty
 }
 
-class Saw(var x: Float, var y: Float, val vx: Float, val vy: Float, val r: Float) {
+class Saw(var x: Float, var y: Float, val vx: Float, val vy: Float, val r: Float, val path: Action.PathSaw? = null, val t0: Float = 0f) {
     var angle = 0f
 }
 
@@ -102,6 +109,10 @@ class Controls {
     var right = false
     var jump = false
     var jumpPressed = false
+    /** Phone roll, -1 (left edge down) .. 1 (right edge down). */
+    var tilt = 0f
+    /** Set on a shake; the world clears it after each step. */
+    var shake = false
 }
 
 sealed interface Event {
@@ -143,6 +154,19 @@ class World(val level: Level) {
     /** The last trap card Mephi played in this attempt; collected if the player dies. */
     var lastCard: Card? = null
         private set
+    /** Seconds without left/right/jump input. */
+    var idle = 0f
+        private set
+    /** Tilt as last applied, for the HUD. */
+    var tilt = 0f
+        private set
+    /** [time] of the last shake, for the HUD. */
+    var shakeTime = -9f
+        private set
+    /** Tiles/s the player drifts at full tilt ([Action.Slope]). */
+    var slope = 0f
+        private set
+    private var shaken = false
 
     private class TrapState(val trap: Trap) {
         var fired = false
@@ -174,12 +198,23 @@ class World(val level: Level) {
         val (dx, dy) = doorAt ?: error("Level ${level.name.en} has no door")
         player = Player(sx + 0.5f, sy + 1f)
         door = Door(dx - 0.1f, dy + 1f - 1.6f)
+        level.start.forEach(::run)
+        updateBlinks()
     }
 
     fun group(id: Char): Group = groups[id] ?: error("Level ${level.name.en} has no group '$id'")
 
     fun step(dt: Float, input: Controls) {
         time += dt
+        tilt = input.tilt.coerceIn(-1f, 1f)
+        shaken = input.shake
+        input.shake = false
+        if (shaken) {
+            shakeTime = time
+            if (level.usesShake) events += Event.Shake(0.35f)
+        }
+        idle = if (input.left || input.right || input.jump || input.jumpPressed) 0f else idle + dt
+        updateBlinks()
         updateGroups(dt)
         updateDoor(dt)
         updateSaws(dt)
@@ -207,6 +242,8 @@ class World(val level: Level) {
             is Trigger.BeforeX -> b.cx < t.x
             is Trigger.Zone -> b.cx in t.x0..t.x1 && b.cy in t.y0..t.y1
             is Trigger.After -> time >= t.seconds
+            is Trigger.Idle -> idle >= t.seconds
+            Trigger.Shaken -> shaken
             is Trigger.Touch -> {
                 val g = groups[t.group] ?: return false
                 g.visible && g.pieces.any { it.solid && b.overlaps(it.box.x - 0.06f, it.box.y - 0.06f, 1.12f, 1.12f) }
@@ -259,15 +296,34 @@ class World(val level: Level) {
                 lastCard = a.card
                 events += Event.Played(a.card)
             }
+            is Action.Blink -> group(a.group).apply { blink = a; blinkT0 = time }
+            is Action.PathSaw -> a.at(0f).let { (x, y) -> saws += Saw(x, y, 0f, 0f, a.r, a, time) }
+            is Action.Tilt -> group(a.group).tilt = a
+            is Action.Slope -> slope = a.speed
         }
     }
 
     // ---------- moving things ----------
 
+    /** Blinking groups follow their clock, but never reappear inside the player. */
+    private fun updateBlinks() {
+        for (g in groups.values) {
+            val b = g.blink ?: continue
+            val t = time - g.blinkT0
+            val on = b.solidAt(t)
+            if (on && !g.visible) {
+                val inside = state == WorldState.PLAYING && g.pieces.any { !it.spike && player.box.overlaps(it.box) }
+                if (!inside) g.visible = true
+            } else if (!on) g.visible = false
+            g.warn = if (g.visible) b.warnAt(t) else 0f
+            g.soon = !g.visible && (on || b.soonAt(t))
+        }
+    }
+
     private fun updateGroups(dt: Float) {
         for (g in groups.values) {
             when (g.mode) {
-                GroupMode.IDLE -> {}
+                GroupMode.IDLE -> g.tilt?.let { tiltGroup(g, it, dt) }
                 GroupMode.FALL -> fall(g, dt)
                 GroupMode.MOVE -> {
                     val dx = g.tx - g.ox
@@ -280,18 +336,32 @@ class World(val level: Level) {
                     } else {
                         dx / dist * stepLen to dy / dist * stepLen
                     }
-                    val carried = player.grounded && player.ground?.group === g
-                    g.ox += mx
-                    g.oy += my
-                    g.pieces.forEach { it.sync() }
-                    if (carried && state == WorldState.PLAYING) {
-                        player.box.x += mx
-                        player.box.y += my
-                    }
-                    pushPlayer(g, mx, my)
+                    shift(g, mx, my)
                 }
             }
         }
+    }
+
+    private fun tiltGroup(g: Group, a: Action.Tilt, dt: Float) {
+        val target = if (tilt < 0f) tilt * a.left else tilt * a.right
+        val d = target - g.ox
+        if (d != 0f) shift(g, sign(d) * min(abs(d), a.speed * dt), 0f, soft = true)
+    }
+
+    /**
+     * Moves a group, carrying a player who stands on it and shoving one in its way. [soft]: a carried player
+     * stops at walls and the group slides on underneath instead of crushing them.
+     */
+    private fun shift(g: Group, mx: Float, my: Float, soft: Boolean = false) {
+        val carried = player.grounded && player.ground?.group === g
+        g.ox += mx
+        g.oy += my
+        g.pieces.forEach { it.sync() }
+        if (carried && state == WorldState.PLAYING) {
+            if (soft) moveX(mx, skip = g) else player.box.x += mx
+            player.box.y += my
+        }
+        pushPlayer(g, mx, my)
     }
 
     private fun fall(g: Group, dt: Float) {
@@ -356,11 +426,20 @@ class World(val level: Level) {
 
     private fun updateSaws(dt: Float) {
         for (s in saws) {
-            s.x += s.vx * dt
-            s.y += s.vy * dt
-            s.angle += dt * 14f * (if (s.vx < 0) -1 else 1)
+            val path = s.path
+            if (path == null) {
+                s.x += s.vx * dt
+                s.y += s.vy * dt
+                s.angle += dt * 14f * (if (s.vx < 0) -1 else 1)
+            } else {
+                val (x, y) = path.at(time - s.t0)
+                val dx = x - s.x
+                s.angle += dt * 14f * (if (dx < 0f || (dx == 0f && y < s.y)) -1 else 1)
+                s.x = x
+                s.y = y
+            }
         }
-        saws.removeAll { it.x < -4 || it.x > cols + 4 || it.y < -4 || it.y > rows + 4 }
+        saws.removeAll { it.path == null && (it.x < -4 || it.x > cols + 4 || it.y < -4 || it.y > rows + 4) }
     }
 
     // ---------- player ----------
@@ -396,17 +475,17 @@ class World(val level: Level) {
         p.vy += g * gravity * dt
         if (p.vy * gravity > Physics.MAX_FALL) p.vy = Physics.MAX_FALL * gravity
 
-        moveX(p.vx * dt)
+        moveX((p.vx + tilt * slope) * dt)
         moveY(p.vy * dt)
         p.squash += (1f - p.squash) * min(1f, dt * 12f)
     }
 
-    private fun moveX(dx: Float) {
+    private fun moveX(dx: Float, skip: Group? = null) {
         if (dx == 0f) return
         val b = player.box
         b.x += dx
         for (s in pieces) {
-            if (!s.solid || !b.overlaps(s.box)) continue
+            if (!s.solid || (skip != null && s.group === skip) || !b.overlaps(s.box)) continue
             if (dx > 0f) b.x = s.box.x - b.w else b.x = s.box.r
             player.vx = 0f
         }

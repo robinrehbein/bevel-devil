@@ -69,8 +69,24 @@ Level(
 
 - `#` Block, `^ v < >` Spikes, `P` Start, `D` Tür.
 - Kleinbuchstaben sind Block-Gruppen, Großbuchstaben Spike-Gruppen. Über `legend` lassen sie sich verstecken (`hidden`) oder erst beim Kopfstoß sichtbar machen (`bonk`).
-- Trigger: `PastX`, `BeforeX`, `Zone`, `Touch`, `After`.
-- Aktionen: `Fall`, `Show`, `Hide`, `Move`, `DoorTo`, `Gravity`, `Swap`, `Saw`, `Say`, `Shake`, `Play`.
+- Trigger: `PastX`, `BeforeX`, `Zone`, `Touch`, `After`, `Idle(s)` (s Sekunden keine Eingabe), `Shaken` (Handy geschüttelt).
+- Aktionen: `Fall`, `Show`, `Hide`, `Move`, `DoorTo`, `Gravity`, `Swap`, `Saw`, `Say`, `Shake`, `Play`, dazu die Mechaniken unten.
+- `start = listOf(...)` führt Aktionen gleich beim Levelstart aus (sonst per Trigger).
+
+Mechaniken (sichtbar, keine versteckten Fallen):
+
+```kotlin
+Blink('a', on = 1.8f, off = 1f, phase = 0f)       // Plattform blinkt; flackert rot vor dem Verschwinden,
+                                                  // kommt nie im Spieler zurück (wartet, bis er raus ist)
+PathSaw(6f, 16f to 14.4f, 16f to 9f, delay = 1.8f) // Säge auf Wegpunkten, Tiles/s, hin und her
+PathSaw(4f, 23f to 11f, 26f to 11f, 26f to 13f, loop = true) // oder im Kreis
+trap(Idle(1.2f), Fall('a'))                       // „Steh nicht nur rum“
+Tilt('a', left = 0f, right = 13f, speed = 6f)     // Wasserwaage: Gruppe rutscht mit der Handyneigung
+Slope(8f)                                         // Neigung schiebt Bevel bis 8 Tiles/s zur Seite
+trap(Shaken, Hide('a'))                           // Schütteln
+```
+
+Neigung und Schütteln liest `GameView` nur in Leveln, die sie nutzen (Schwerkraftsensor, sonst Beschleunigungssensor). Ohne Sensor oder mit Einstellung „Neigung: Aus“ erscheinen unten zwei Neige-Tasten (einrastend) und eine Schütteltaste; Tastatur Q/E neigen, S schüttelt. Im `Bot` gibt es dafür `tilt(v)` und `shake()`. Mini-Level für jede Mechanik liegen in den Tests (`Demo.kt`).
 
 Jedes Level hat in `World1Test` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
 

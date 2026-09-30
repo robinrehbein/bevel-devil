@@ -14,6 +14,8 @@ interface Progress {
     var leftHanded: Boolean
     /** The story intro has been shown once. */
     var introSeen: Boolean
+    /** Tilt levels read the motion sensor; off: on-screen tilt and shake buttons. */
+    var tiltSensor: Boolean
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
     fun cardFound(card: Card): Boolean
@@ -46,12 +48,13 @@ object Ui {
     val sound = Hit(224, 6, 26, 12)
     val gear = Hit(196, 6, 24, 12)
     val pauseSettings = Hit(88, 102, 80, 16)
-    const val SET_ROWS = 5
-    val setCounts = intArrayOf(2, 3, 2, 2, 2)
+    const val SET_ROWS = 6
+    const val SET_STEP = 18
+    val setCounts = intArrayOf(2, 3, 2, 2, 2, 2)
     /** Option [i] of [n] in settings row [row]. */
     fun setOpt(row: Int, i: Int, n: Int): Hit {
         val w = (114 - (n - 1) * 4) / n
-        return Hit(132 + i * (w + 4), 26 + row * 22, w, 16)
+        return Hit(132 + i * (w + 4), 24 + row * SET_STEP, w, 16)
     }
     val back = Hit(6, 6, 20, 12)
     val selectAlbum = Hit(196, 122, 54, 14)
@@ -93,7 +96,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
         private set
     var world: World? = null
         private set
-    val level get() = Levels.all[levelIndex]
+    val level get() = custom ?: Levels.all[levelIndex]
+    /** A level from outside the register (tests, demos), played in place of [levelIndex]. */
+    private var custom: Level? = null
     var deaths = 0
         private set
     var time = 0f
@@ -139,6 +144,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
     val buttonSize get() = progress.buttonSize
     val haptics get() = progress.haptics
     val leftHanded get() = progress.leftHanded
+    val tiltSensor get() = progress.tiltSensor
     private var settingsFrom = Screen.TITLE
 
     /** Intro page and seconds on it. */
@@ -347,6 +353,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
     // ---------- flow ----------
 
     fun startLevel(i: Int) {
+        custom = null
         levelIndex = i
         deaths = 0
         particles.clear()
@@ -359,12 +366,21 @@ class Game(private val progress: Progress, private val audio: Audio) {
         screen = Screen.PLAY
     }
 
+    /** Plays [l] as if it were level [levelIndex]; for tests and demos. */
+    fun startCustom(l: Level) {
+        startLevel(levelIndex)
+        custom = l
+        world = World(l)
+        say(l.intro.toString(), 2.8f)
+    }
+
     private fun restartAttempt() {
         world = World(level)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
         input.jumpPressed = false
+        input.shake = false
     }
 
     private fun finishLevel() {
@@ -479,6 +495,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             2 -> progress.haptics = i == 0
             3 -> progress.sound = i == 0
             4 -> progress.leftHanded = i == 0
+            5 -> progress.tiltSensor = i == 0
         }
     }
 
@@ -488,7 +505,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
         1 -> progress.buttonSize
         2 -> if (progress.haptics) 0 else 1
         3 -> if (progress.sound) 0 else 1
-        else -> if (progress.leftHanded) 0 else 1
+        4 -> if (progress.leftHanded) 0 else 1
+        else -> if (progress.tiltSensor) 0 else 1
     }
 
     private fun click() = audio.play(Sound.CLICK)
@@ -519,7 +537,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
     /** App went to background. */
     fun pause() {
         if (screen == Screen.PLAY) screen = Screen.PAUSE
-        input.left = false; input.right = false; input.jump = false; input.jumpPressed = false
+        input.left = false; input.right = false; input.jump = false; input.jumpPressed = false; input.shake = false
     }
 
     companion object {

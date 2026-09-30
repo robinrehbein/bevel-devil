@@ -86,6 +86,23 @@ class Bot(private val level: Level) {
         return hold(0f, right = true)
     }
 
+    /** Holds the phone at [v] from now on: -1 left edge down .. 1 right edge down. */
+    fun tilt(v: Float) = apply { input.tilt = v }
+
+    /** Shakes the phone once, then stands still for [s] seconds. */
+    fun shake(s: Float = 0.1f): Bot {
+        input.shake = true
+        return wait(s)
+    }
+
+    /** Stands still until [cond] holds (at most [max] seconds). */
+    fun waitFor(max: Float = 10f, cond: (World) -> Boolean): Bot {
+        input.left = false; input.right = false; input.jump = false
+        val end = world.time + max
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) world.step(DT, input)
+        return hold(0f)
+    }
+
     fun rightTo(x: Float) = until(x, left = false, goingRight = true)
     fun leftTo(x: Float) = until(x, left = true, goingRight = false)
     /** For swapped controls: press left, move right. */
@@ -113,7 +130,8 @@ class LevelsTest {
 
     @Test
     fun standingStillIsSafeAtTheStart() {
-        Levels.all.forEach { l -> Bot(l).wait(2f).expect(WorldState.PLAYING) }
+        // levels that punish idling on purpose are the exception
+        Levels.all.filter { l -> l.traps.none { it.trigger is Trigger.Idle } }.forEach { l -> Bot(l).wait(2f).expect(WorldState.PLAYING) }
     }
 
     @Test

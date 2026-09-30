@@ -27,6 +27,9 @@ class ControlLayout {
     var stickY = 0f
     var knobX = 0f
     var stickR = 0f
+    /** Tilt levels without the sensor: on-screen tilt and shake buttons, and the latched tilt (-1, 0, 1). */
+    var motionButtons = false
+    var tiltLatch = 0
 }
 
 /** Where the HUD goes: over the playfield, in the side columns (wide phones) or in a band above it (tablets). */
@@ -56,7 +59,15 @@ class Layout {
     var frame = Ui.devilFrame; private set
     /** OVERLAY/TOP: bubble's right edge (with tail), top and max width. SIDE: the box the bubble must fit in. */
     var bubble = Hit(0, 18, 118, 0); private set
+    /** Tilt HUD at the bottom of the playfield: the spirit level, tilt buttons either side, then shake. */
+    var tiltVial = Hit(113, 129, 30, 11); private set
+    var tiltL = Hit(96, 129, 15, 11); private set
+    var tiltR = Hit(145, 129, 15, 11); private set
+    var shakeBtn = Hit(165, 129, 15, 11); private set
     val controls = ControlLayout()
+
+    /** Where the shake button sits: right of the tilt row, or centered when the level has no tilt. */
+    fun shakeHit(tilt: Boolean) = if (tilt) shakeBtn else Hit(fx + Ui.W / 2 - 8, shakeBtn.y, shakeBtn.w, shakeBtn.h)
 
     /** [w]×[h] surface in screen px, [density] px per dp, cutout insets in screen px. */
     fun update(w: Int, h: Int, density: Float, cutL: Int = 0, cutT: Int = 0, cutR: Int = 0, cutB: Int = 0) {
@@ -98,6 +109,11 @@ class Layout {
                 frame = Hit(min(fx + Ui.W + (right - fs) / 2, vw - ir - fs - 1), fy + 4, fs, fs)
             }
         }
+        val my = fy + Ui.H - 15
+        tiltVial = Hit(fx + Ui.W / 2 - 15, my, 30, 11)
+        tiltL = Hit(tiltVial.x - 17, my, 15, 11)
+        tiltR = Hit(tiltVial.x + tiltVial.w + 2, my, 15, 11)
+        shakeBtn = Hit(tiltR.x + tiltR.w + 5, my, 15, 11)
         placeControls(density, cutL, cutR, cutB)
         if (hud == HudMode.SIDE) {
             val top = frame.y + frame.h + 6

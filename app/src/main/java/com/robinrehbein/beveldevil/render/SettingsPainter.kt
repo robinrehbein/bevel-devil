@@ -36,13 +36,13 @@ class SettingsPainter(px: Pixels) : Painter(px) {
         px.at(l.sx, l.sy) {
             button(Ui.back, "<", false)
             say(Txt.settings.toString(), 128f, 14f, 7f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
-            val labels = listOf(Txt.controls, Txt.btnSize, Txt.haptics, Txt.sound, Txt.leftHanded)
+            val labels = listOf(Txt.controls, Txt.btnSize, Txt.haptics, Txt.sound, Txt.leftHanded, Txt.tilt)
             val opts = listOf<List<T>>(
                 listOf(Txt.schemeButtons, Txt.schemeStick), listOf(T("S", "S"), T("M", "M"), T("L", "L")),
-                listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off),
+                listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off), listOf(Txt.on, Txt.off),
             )
             for (row in 0 until Ui.SET_ROWS) {
-                say(labels[row].toString(), 14f, 34.5f + row * 22, 5f, CREAM)
+                say(labels[row].toString(), 14f, 32.5f + row * Ui.SET_STEP, 5f, CREAM)
                 for (i in opts[row].indices) {
                     val h = Ui.setOpt(row, i, opts[row].size)
                     val on = game.optionOf(row) == i

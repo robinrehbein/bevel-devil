@@ -3,7 +3,12 @@ package com.robinrehbein.beveldevil
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Rect
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
+import android.os.SystemClock
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -11,10 +16,14 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.WindowInsets
 import com.robinrehbein.beveldevil.game.Game
+import com.robinrehbein.beveldevil.game.Hit
+import com.robinrehbein.beveldevil.game.Motion
+import com.robinrehbein.beveldevil.game.ShakeDetector
 import com.robinrehbein.beveldevil.game.Scheme
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.TouchInput
 import com.robinrehbein.beveldevil.game.Ui
+import com.robinrehbein.beveldevil.game.World
 import com.robinrehbein.beveldevil.render.Layout
 import com.robinrehbein.beveldevil.render.Renderer
 import kotlin.math.abs
@@ -43,6 +52,37 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
     private var swipeId = -1
     private var swipeX = 0f
     private var swipeY = 0f
+
+    // motion: sensors only while a tilt/shake level is being played
+    private val sensors = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    private val gravitySensor = sensors?.getDefaultSensor(Sensor.TYPE_GRAVITY)
+    private val accelSensor = sensors?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val hasMotion = accelSensor != null || gravitySensor != null
+    @Volatile private var listening = false
+    @Volatile private var sensorTilt = 0f
+    @Volatile private var shook = false
+    private val shakes = ShakeDetector()
+    private val lowPass = FloatArray(3)
+    private var keyTiltL = false
+    private var keyTiltR = false
+    private var motionWorld: World? = null
+
+    private val motionListener = object : SensorEventListener {
+        override fun onSensorChanged(e: SensorEvent) {
+            val v = e.values
+            val rot = display?.rotation ?: 0
+            if (e.sensor.type == Sensor.TYPE_GRAVITY) sensorTilt = Motion.tilt(v[0], v[1], v[2], rot)
+            else {
+                if (shakes.feed(v[0], v[1], v[2], e.timestamp / 1e9)) shook = true
+                if (gravitySensor == null) {
+                    for (i in 0..2) lowPass[i] += (v[i] - lowPass[i]) * 0.15f
+                    sensorTilt = Motion.tilt(lowPass[0], lowPass[1], lowPass[2], rot)
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+    }
 
     init {
         holder.addCallback(this)
@@ -117,13 +157,69 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
         running = false
         thread?.join(500)
         thread = null
+        listen(false)
     }
 
-    fun onPauseApp() = synchronized(lock) {
-        game.pause()
-        touch.cancel()
-        applyInput()
-        keyLeft = false; keyRight = false; keyJump = false
+    fun onPauseApp() {
+        synchronized(lock) {
+            game.pause()
+            touch.cancel()
+            applyInput()
+            keyLeft = false; keyRight = false; keyJump = false; keyTiltL = false; keyTiltR = false
+        }
+        listen(false)
+    }
+
+    /** Main thread only. */
+    private fun listen(on: Boolean) {
+        val sm = sensors ?: return
+        if (on == listening) return
+        listening = on
+        if (on) {
+            lowPass.fill(0f)
+            gravitySensor?.let { sm.registerListener(motionListener, it, SensorManager.SENSOR_DELAY_GAME) }
+            accelSensor?.let { sm.registerListener(motionListener, it, SensorManager.SENSOR_DELAY_GAME) }
+        } else {
+            sm.unregisterListener(motionListener)
+            sensorTilt = 0f
+            shook = false
+        }
+    }
+
+    /** Before each simulation batch: tilt and shake from keys, the on-screen buttons or the sensor. */
+    private fun motionInput(): Boolean {
+        val w = game.world
+        val level = w?.level
+        val active = game.screen == Screen.PLAY && level != null && level.usesMotion
+        val c = controls
+        if (w !== motionWorld) { motionWorld = w; c.tiltLatch = 0 }
+        val sensor = active && game.tiltSensor && hasMotion
+        c.motionButtons = active && !sensor
+        val keys = (if (keyTiltR) 1f else 0f) - (if (keyTiltL) 1f else 0f)
+        game.input.tilt = when {
+            !active -> 0f
+            keys != 0f -> keys
+            c.motionButtons -> c.tiltLatch.toFloat()
+            else -> sensorTilt
+        }
+        if (shook) { shook = false; if (active) game.input.shake = true }
+        return sensor
+    }
+
+    /** A tap on the on-screen tilt/shake buttons; true if it hit one. */
+    private fun motionTap(lx: Float, ly: Float): Boolean {
+        val c = controls
+        val level = game.world?.level ?: return false
+        if (!c.motionButtons) return false
+        fun near(h: Hit) = lx >= h.x - 3 && lx < h.x + h.w + 3 && ly >= h.y - 4 && ly < h.y + h.h + 4
+        when {
+            level.usesTilt && near(layout.tiltL) -> c.tiltLatch = if (c.tiltLatch == -1) 0 else -1
+            level.usesTilt && near(layout.tiltR) -> c.tiltLatch = if (c.tiltLatch == 1) 0 else 1
+            level.usesShake && near(layout.shakeHit(level.usesTilt)) -> game.input.shake = true
+            else -> return false
+        }
+        if (game.haptics) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        return true
     }
 
     fun back(): Boolean = synchronized(lock) { game.back() }
@@ -137,8 +233,10 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
             acc += min(0.1f, (now - last) / 1e9f)
             last = now
             var haptic = false
+            var sensor: Boolean
             synchronized(lock) {
                 if (config() != cfg) relayout()
+                sensor = motionInput()
                 while (acc >= step) {
                     game.update(step)
                     acc -= step
@@ -146,6 +244,7 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                 if (game.hapticPulse) { haptic = true; game.hapticPulse = false }
             }
             if (haptic && game.haptics) post { performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
+            if (sensor != listening) post { listen(sensor && running) }
             val canvas = try { holder.lockHardwareCanvas() } catch (_: Exception) { null } ?: continue
             try {
                 synchronized(lock) { renderer.draw(canvas, game, layout) }
@@ -172,7 +271,7 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                         game.tap(lx - layout.stageX(game.screen), ly - layout.stageY(game.screen))
                     } else if ((lx to ly) in layout.pause) {
                         game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
-                    } else {
+                    } else if (!motionTap(lx, ly)) {
                         touch.down(id, e.getX(i), e.getY(i))
                     }
                 }
@@ -230,6 +329,9 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                     if (game.screen == Screen.PLAY) game.input.jumpPressed = true
                 }
             }
+            KeyEvent.KEYCODE_Q, KeyEvent.KEYCODE_BUTTON_L1 -> keyTiltL = down
+            KeyEvent.KEYCODE_E, KeyEvent.KEYCODE_BUTTON_R1 -> keyTiltR = down
+            KeyEvent.KEYCODE_S, KeyEvent.KEYCODE_BUTTON_Y -> if (down && first && game.screen == Screen.PLAY) game.input.shake = true
             KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> if (down && first && game.screen != Screen.PLAY) {
                 if (game.screen == Screen.SELECT) game.selectConfirm() else game.tap(Ui.titlePlay.x + 1f, Ui.titlePlay.y + 1f)
             }

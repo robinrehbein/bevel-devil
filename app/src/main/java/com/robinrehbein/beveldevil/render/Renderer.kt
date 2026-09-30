@@ -33,6 +33,7 @@ class Renderer(context: Context) {
     private val intro = IntroPainter(px, ui)
     private val glitch = Glitch(px)
     private val controls = ControlsPainter()
+    private val motion = MotionPainter(px)
 
     private var swirlPx = IntArray(0)
     private var swirlBmp: Bitmap? = null
@@ -103,7 +104,7 @@ class Renderer(context: Context) {
             Screen.SETTINGS -> { ui.floorStrip(l); settings.screen(game, l) }
             Screen.SELECT -> ui.select(game, l)
             Screen.ALBUM -> ui.album(game, l)
-            Screen.PLAY -> { world.draw(game, l); ui.hud(game, l) }
+            Screen.PLAY -> { world.draw(game, l); ui.hud(game, l); motion.hud(game, l) }
             Screen.PAUSE -> { world.draw(game, l); ui.pause(l); settings.extras(game, l) }
             Screen.CLEAR -> { world.draw(game, l); ui.clear(game, l) }
             Screen.END -> { world.draw(game, l); ui.end(game, l) }

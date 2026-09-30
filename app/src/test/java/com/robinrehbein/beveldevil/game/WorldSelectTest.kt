@@ -14,6 +14,7 @@ class WorldSelectTest {
         override var haptics = true
         override var leftHanded = false
         override var introSeen = true
+        override var tiltSensor = true
         val best = HashMap<Int, Int>()
         override fun bestDeaths(level: Int): Int? = best[level]
         override fun saveBest(level: Int, deaths: Int) { best[level] = deaths }

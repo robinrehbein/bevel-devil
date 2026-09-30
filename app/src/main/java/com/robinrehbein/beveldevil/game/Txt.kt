@@ -32,6 +32,7 @@ object Txt {
     val haptics = T("HAPTICS", "VIBRATION")
     val sound = T("SOUND", "TON")
     val leftHanded = T("LEFT-HANDED", "LINKSHÄNDER")
+    val tilt = T("TILT SENSOR", "NEIGUNG")
     val on = T("ON", "AN")
     val off = T("OFF", "AUS")
     val skip = T("SKIP", "ÜBERSPRINGEN")
