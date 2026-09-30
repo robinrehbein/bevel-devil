@@ -104,6 +104,22 @@ class Bot(private val level: Level) {
         return hold(0f)
     }
 
+    /** Holds right (or left with [left]) until [cond] holds, at most [max] seconds: ride a fan or a belt until far enough. */
+    fun rightUntil(max: Float = 10f, left: Boolean = false, cond: (World) -> Boolean): Bot {
+        input.left = left; input.right = !left; input.jump = false
+        val end = world.time + max
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) world.step(DT, input)
+        return hold(0f, left = left, right = !left)
+    }
+
+    fun leftUntil(max: Float = 10f, cond: (World) -> Boolean) = rightUntil(max, left = true, cond)
+
+    /** Stands still until circuit [id] is powered (or dead, with [on] false). */
+    fun waitPowered(id: Char, on: Boolean = true, max: Float = 10f) = waitFor(max) { it.circuits[id]?.powered == on }
+
+    /** Stands still until heated group [id] is down to [below] heat, e.g. on a heatsink. */
+    fun waitCooled(id: Char, below: Float = 0f, max: Float = 10f) = waitFor(max) { (it.heaters[id]?.heat ?: 0f) <= below }
+
     /** Like [waitFor], but hops on the spot so that idle triggers never fire. */
     fun fidgetUntil(max: Float = 10f, cond: (World) -> Boolean): Bot {
         val end = world.time + max

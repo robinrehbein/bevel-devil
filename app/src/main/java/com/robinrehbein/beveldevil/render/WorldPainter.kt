@@ -48,6 +48,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private val shadowPaint = Paint().apply { alpha = Color.alpha(SHADOW) }
     private val glowPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD) }
     private val net = NetPainter(px)
+    private val hw = HardwarePainter(px)
 
     private var world: World? = null
     private var baked: World? = null
@@ -214,7 +215,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     // ---------- level layers ----------
 
-    private fun rests(g: Group) = g.visible && g.mode == GroupMode.IDLE && g.ox == 0f && g.oy == 0f && g.blink == null && g.tilt == null
+    private fun rests(g: Group) = g.visible && g.mode == GroupMode.IDLE && g.ox == 0f && g.oy == 0f && g.blink == null && g.tilt == null && g.circuit == null
 
     private fun newWorld(w: World) {
         world = w
@@ -283,6 +284,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
      * A blinking group flickers ever faster before it vanishes, and its outline brightens just before it returns.
      */
     private fun lookOf(g: Group): Int {
+        // circuits are all copper, drawn by the hardware painter
+        if (g.circuit != null) return 0
         if (g.blink == null) return if (g.visible) 1 else 0
         if (!g.visible) return if (g.soon) 3 else 2
         if (g.warn <= 0f) return 1
@@ -344,6 +347,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             frameShadow
         }
         lc.drawBitmap(shadow, 0f, 0f, shadowPaint)
+        hw.shadow(w)
         lc.save()
         lc.clipRect(0, 0, PW, PH)
         lc.drawBitmap(tileBmp, 0f, 0f, null)
@@ -365,6 +369,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             }
         }
         spikeGleams(w, t)
+        hw.under(w, t)
         net.under(w, t)
         drawDoor(w, t)
         for (i in 0 until w.saws.size) w.saws[i].path?.let { pathDots(it) }
@@ -383,7 +388,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private fun spikeGleams(w: World, t: Float) {
         for (i in 0 until w.pieces.size) {
             val p = w.pieces[i]
-            if (!p.spike || !p.visible) continue
+            if (!p.spike || !p.visible || p.group?.circuit != null) continue
             val ph = frac(t * 0.4f - p.box.x * 0.03f - p.box.y * 0.011f)
             if (ph > 0.12f) continue
             val y = TS - 1 - (ph / 0.12f * 6.99f).toInt()

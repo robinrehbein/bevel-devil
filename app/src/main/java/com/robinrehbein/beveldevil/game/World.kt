@@ -61,6 +61,8 @@ class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
     /** How far the belt surface has run, for drawing it. */
     var beltRun = 0f
     val beltSpeed get() = if (beltOn && visible) belt ?: 0f else 0f
+    /** The group is a circuit ([Action.Circuit]): drawn as copper, [visible] is its power. */
+    var circuit: Circuit? = null
 }
 
 class Piece(val spike: Boolean, val dir: Dir, val hx: Float, val hy: Float, val group: Group?) {
@@ -139,6 +141,12 @@ sealed interface Event {
     data object Unfaked : Event
     /** The player went through a portal. */
     data object Hop : Event
+    /** The player stepped on a pressure pad. */
+    data object Switch : Event
+    /** A heated group got hot enough to hurt soon, or melted. */
+    data object Sizzle : Event
+    /** A fan spun up from a standstill. */
+    data object Hum : Event
 }
 
 enum class WorldState { PLAYING, DEAD, WON }
@@ -152,6 +160,11 @@ class World(val level: Level, private val past: Trail? = null) {
     val saws = ArrayList<Saw>()
     val links = ArrayList<Link>()
     val beams = ArrayList<Beam>()
+    val circuits = LinkedHashMap<Char, Circuit>()
+    val pads = ArrayList<Switch>()
+    val heaters = LinkedHashMap<Char, Heater>()
+    val sinks = ArrayList<Sink>()
+    val fans = ArrayList<Blower>()
     val events = ArrayList<Event>()
     val player: Player
     val door: Door
@@ -284,6 +297,7 @@ class World(val level: Level, private val past: Trail? = null) {
         level.start.forEach(::run)
         updateBlinks()
         updateNet(0f)
+        updateCircuits()
     }
 
     fun group(id: Char): Group = groups[id] ?: error("Level ${level.name.en} has no group '$id'")
@@ -304,6 +318,7 @@ class World(val level: Level, private val past: Trail? = null) {
         updateDoor(dt)
         updateSaws(dt)
         updateNet(dt)
+        updateHardware(dt)
         if (state != WorldState.PLAYING) {
             input.jumpPressed = false
             return
@@ -429,10 +444,9 @@ class World(val level: Level, private val past: Trail? = null) {
             Trigger.Shaken -> shaken
             is Trigger.Resumed -> resumes >= t.times
             Trigger.AtDoor -> false
-            is Trigger.Touch -> {
-                val g = groups[t.group] ?: return false
-                g.visible && g.pieces.any { it.solid && b.overlaps(it.box.x - 0.06f, it.box.y - 0.06f, 1.12f, 1.12f) }
-            }
+            is Trigger.Touch -> groups[t.group]?.let(::touches) ?: false
+            is Trigger.Pressed -> pads.any { it.pad.id == t.pad && it.presses >= t.times }
+            is Trigger.Heated -> (heaters[t.group]?.heat ?: 0f) >= t.above
         }
     }
 
@@ -511,7 +525,38 @@ class World(val level: Level, private val past: Trail? = null) {
                     found = true
                 }
                 groups[a.id]?.takeIf { it.belt != null }?.let { it.beltOn = a.on; found = true }
-                require(found) { "Level ${level.name.en} has no portal, laser or belt '${a.id}'" }
+                circuits[a.id]?.let { it.set(a.on); found = true }
+                fans.filter { it.id == a.id }.forEach { it.on = a.on; found = true }
+                require(found) { "Level ${level.name.en} has no portal, laser, belt, circuit or fan '${a.id}'" }
+            }
+            is Action.Circuit -> circuit(a.group, create = true).set(a.on)
+            is Action.Clock -> circuit(a.group, create = true).apply { clock = a; clockT0 = time }
+            is Action.Toggle -> for (id in a.groups) circuit(id).let { it.set(!it.wants(time)) }
+            is Action.BitFlip -> {
+                val x = circuit(a.a)
+                val y = circuit(a.b)
+                val v = x.wants(time)
+                x.set(y.wants(time))
+                y.set(v)
+            }
+            is Action.Pad -> {
+                requireFree(a.at, "Pad")
+                a.circuits.forEach { circuit(it) }
+                pads.removeAll { it.pad.id == a.id }
+                pads += Switch(a)
+            }
+            is Action.Heat -> heaters[a.group]?.let { it.spec = a } ?: heaters.set(a.group, Heater(group(a.group), a, declared = true))
+            is Action.Heatsink -> sinks += Sink(group(a.group), a.cools)
+            is Action.HeatSpike -> heaters.getOrPut(a.group) { Heater(group(a.group), Action.Heat(a.group), declared = false) }.heat = a.to.coerceIn(0f, 1f)
+            is Action.Fan -> {
+                fans.removeAll { it.id == a.id }
+                // fans of the level start already run; later ones spin up
+                fans += Blower(a, time).also { if (ticks == 0) it.wind = it.want(time) }
+            }
+            is Action.FanSet -> {
+                val f = fans.filter { it.id == a.id }
+                require(f.isNotEmpty()) { "Level ${level.name.en} has no fan '${a.id}'" }
+                f.forEach { it.target = a.speed }
             }
             is Action.Slope -> slope = a.speed
             is Action.FakeWin -> if (fake == null) {
@@ -548,9 +593,9 @@ class World(val level: Level, private val past: Trail? = null) {
 
     private fun link(id: Char) = links.firstOrNull { it.id == id } ?: error("Level ${level.name.en} has no portal '$id'")
 
-    private fun requireFree(c: Pair<Int, Int>) {
+    private fun requireFree(c: Pair<Int, Int>, what: String = "Portal") {
         val (x, y) = c
-        require(x in 0 until cols && y in 0 until rows && level.map.grid[y][x] == '.') { "Portal tile $c in ${level.name.en} is not empty" }
+        require(x in 0 until cols && y in 0 until rows && level.map.grid[y][x] == '.') { "$what tile $c in ${level.name.en} is not empty" }
     }
 
     private fun updateNet(dt: Float) {
@@ -577,6 +622,83 @@ class World(val level: Level, private val past: Trail? = null) {
             player.ground = null
             events += Event.Hop
             return
+        }
+    }
+
+    // ---------- hardware: circuits, pads, heat, fans ----------
+
+    private fun circuit(id: Char, create: Boolean = false): Circuit = circuits[id] ?: run {
+        require(create) { "Level ${level.name.en} has no circuit '$id'" }
+        val g = group(id)
+        Circuit(g, g.visible).also { circuits[id] = it; g.circuit = it }
+    }
+
+    private fun touches(g: Group): Boolean {
+        val b = player.box
+        return g.visible && g.pieces.any { it.solid && b.overlaps(it.box.x - 0.06f, it.box.y - 0.06f, 1.12f, 1.12f) }
+    }
+
+    private fun standingOn(g: Group) = state == WorldState.PLAYING && player.grounded && player.ground?.group === g
+
+    private fun updateHardware(dt: Float) {
+        if (state == WorldState.PLAYING && fake == null) updatePads()
+        updateCircuits()
+        for (s in sinks) s.active = standingOn(s.group)
+        for (h in heaters.values) {
+            if (h.melted) continue
+            h.standing = standingOn(h.group)
+            h.sinking = sinks.any { it.active && h.group.id in it.cools }
+            val before = h.heat
+            h.update(dt)
+            if (before < Hardware.HOT && h.heat >= Hardware.HOT) events += Event.Sizzle
+            if (h.heat >= 1f && h.spec.melt) {
+                h.melted = true
+                h.group.visible = false
+                events += Event.Sizzle
+                events += Event.Shake(0.3f)
+            }
+        }
+        for (f in fans) if (f.update(time, dt)) events += Event.Hum
+    }
+
+    /** Pads switch their circuits on the step onto them (and, holding, on the step off). */
+    private fun updatePads() {
+        for (s in pads) {
+            val down = s.pressedBy(player.box)
+            if (down == s.down) continue
+            s.down = down
+            s.time = time
+            if (down) {
+                s.presses++
+                events += Event.Switch
+            }
+            for (id in s.pad.circuits) {
+                val c = circuit(id)
+                when (s.pad.mode) {
+                    PadMode.TOGGLE -> if (down) c.set(!c.wants(time))
+                    PadMode.HOLD -> c.set(!c.wants(time))
+                    PadMode.ON -> if (down) c.set(true)
+                    PadMode.OFF -> if (down) c.set(false)
+                }
+            }
+        }
+    }
+
+    /** Circuits follow their switches and clocks, but a rail never comes back inside the player. */
+    private fun updateCircuits() {
+        for (c in circuits.values) {
+            val g = c.group
+            val want = c.wants(time)
+            if (want && !g.visible) {
+                val inside = !c.trace && state == WorldState.PLAYING && g.pieces.any { player.box.overlaps(it.box) }
+                if (!inside) { g.visible = true; c.flipTime = time }
+            } else if (!want && g.visible) {
+                g.visible = false
+                c.flipTime = time
+            }
+            val clock = c.clock
+            c.warn = if (g.visible && clock != null) clock.timing.warnAt(time - c.clockT0) else 0f
+            c.soon = !g.visible && (want || (clock != null && clock.timing.soonAt(time - c.clockT0)))
         }
     }
 
@@ -749,13 +871,23 @@ class World(val level: Level, private val past: Trail? = null) {
             events += Event.Jump
         }
 
+        // fans: sideways they drift, up or down they take over from gravity
+        var drift = 0f
+        var grip = 0f
+        var lift = 0f
+        for (f in fans) if (f.blows(p.box)) {
+            drift += f.drift
+            if (f.grip > grip) { grip = f.grip; lift = f.lift }
+        }
+
         val rising = p.vy * gravity < 0f
         val g = Physics.GRAVITY * (if (rising && !input.jump) Physics.JUMP_CUT else 1f)
-        p.vy += g * gravity * dt
+        p.vy += g * gravity * dt * (1f - grip)
+        if (grip > 0f) p.vy += sign(lift - p.vy) * min(abs(lift - p.vy), Hardware.LIFT * grip * dt)
         if (p.vy * gravity > Physics.MAX_FALL) p.vy = Physics.MAX_FALL * gravity
 
         val belt = if (p.grounded) p.ground?.group?.beltSpeed ?: 0f else 0f
-        moveX((p.vx + tilt * slope + belt) * dt)
+        moveX((p.vx + tilt * slope + belt + drift) * dt)
         moveY(p.vy * dt)
         p.squash += (1f - p.squash) * min(1f, dt * 12f)
     }
@@ -806,7 +938,9 @@ class World(val level: Level, private val past: Trail? = null) {
 
     private fun checkHazards() {
         val b = player.box
-        if (pieces.any { it.spike && it.visible && it.hurts(b) }) return die()
+        if (pieces.any { it.spike && it.visible && it.group?.circuit == null && it.hurts(b) }) return die()
+        for (c in circuits.values) if (c.trace && c.powered && c.group.pieces.any { traceHits(it, b) }) return die()
+        for (h in heaters.values) if (!h.melted && h.heat >= 1f && touches(h.group)) return die()
         ghost?.let { g -> if (b.overlaps(g.x + GHOST_INSET, g.y + GHOST_INSET, g.w - 2 * GHOST_INSET, g.h - 2 * GHOST_INSET)) return die() }
         for (l in beams) if (l.hits(b)) return die()
         for (s in saws) {
@@ -815,6 +949,11 @@ class World(val level: Level, private val past: Trail? = null) {
             if (hypot(s.x - nx, s.y - ny) < s.r * 0.85f) return die()
         }
         if (b.y > rows + 1 || b.b < -1) die()
+    }
+
+    private fun traceHits(p: Piece, b: Box): Boolean {
+        val i = Hardware.TRACE_INSET
+        return b.overlaps(p.box.x + i, p.box.y + i, 1f - 2 * i, 1f - 2 * i)
     }
 
     private fun doorReached(): Boolean {

@@ -5,8 +5,10 @@ import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Controls
 import com.robinrehbein.beveldevil.game.Dir
 import com.robinrehbein.beveldevil.game.GroupMode
+import com.robinrehbein.beveldevil.game.HardwareDemos
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Levels
+import com.robinrehbein.beveldevil.game.Trigger
 import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.World
 import com.robinrehbein.beveldevil.game.Worlds
@@ -74,6 +76,9 @@ class TrapInvisibilityTest {
         assertTrue("checked $checked levels", checked >= 8)
     }
 
+    /** Hardware in plain sight: copper circuits, pads, hot plates, heatsinks and fans (see [hardwareTrapsLookHarmlessUntilTheyFire]). */
+    private fun hardware(a: Action) = a is Action.Circuit || a is Action.Clock || a is Action.Pad || a is Action.Heat || a is Action.Heatsink || a is Action.Fan
+
     private fun checkTraps(range: IntRange): Int {
         var checked = 0
         for (i in range) {
@@ -82,7 +87,7 @@ class TrapInvisibilityTest {
             val trapWorld = World(level)
             if (trapWorld.groups.isEmpty()) continue
             // blinking, tilting and network gear (belts, lasers, portals) are honest mechanics: they show what they do from the first frame
-            if (level.start.any { it is Action.Blink || it is Action.Tilt || it is Action.Belt || it is Action.Laser || it is Action.Portal }) continue
+            if (level.start.any { it is Action.Blink || it is Action.Tilt || it is Action.Belt || it is Action.Laser || it is Action.Portal || hardware(it) }) continue
             val plainWorld = World(plain(level))
             assertTrue(plainWorld.groups.isEmpty())
             for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) {
@@ -97,6 +102,34 @@ class TrapInvisibilityTest {
     fun crackingFrameLooksLikeTheFrameUntilItFires() {
         val level = TwistDemos.crack
         for (t in floatArrayOf(0.37f, 2.9f)) diff(render(World(level), t), render(World(plain(level)), t))?.let { throw AssertionError("t=$t: $it") }
+    }
+
+    /**
+     * Hardware traps (a rail about to lose power, a fan about to reverse, floor about to be overclocked) look exactly
+     * like the same level without its traps, with circuits, clocks, fans and heat running, until they fire.
+     */
+    @Test
+    fun hardwareTrapsLookHarmlessUntilTheyFire() {
+        var checked = 0
+        for (level in HardwareDemos.all + Worlds.get(3).levels) {
+            if (level.traps.isEmpty()) continue
+            // traps that fire on their own while nobody moves are not surprises of this kind
+            if (level.traps.any { it.trigger is Trigger.After || it.trigger is Trigger.Idle || it.trigger is Trigger.Heated }) continue
+            val harmless = Level(level.name, level.intro, level.legend, emptyList(), level.start) {
+                for (y in 0 until level.rows) for (x in 0 until level.cols) put(x, y, level.map.grid[y][x])
+            }
+            val a = World(level)
+            val b = World(harmless)
+            for (t in floatArrayOf(0.37f, 1.6f, 2.9f)) {
+                while (a.time < t) { a.step(1f / 120f, Controls()); b.step(1f / 120f, Controls()) }
+                diff(render(a, t), render(b, t))?.let { throw AssertionError("${level.name.en} at t=$t: $it") }
+            }
+            checked++
+        }
+        assertTrue("checked $checked levels", checked >= 3)
+        // an overclocked floor is plain floor until then
+        val oc = HardwareDemos.overclock
+        for (t in floatArrayOf(0.37f, 2.9f)) diff(render(World(oc), t), render(World(plain(oc)), t))?.let { throw AssertionError("t=$t: $it") }
     }
 
     @Test

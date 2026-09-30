@@ -31,7 +31,7 @@ interface Progress {
     fun addCardDeath(card: Card)
 }
 
-enum class Sound { JUMP, LAND, DIE, WIN, CARD, LAUGH, CLICK, CRASH, BONK, FLIP }
+enum class Sound { JUMP, LAND, DIE, WIN, CARD, LAUGH, CLICK, CRASH, BONK, FLIP, SWITCH, SIZZLE, HUM }
 
 interface Audio {
     fun play(sound: Sound)
@@ -282,6 +282,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
             Event.Hop -> audio.play(Sound.FLIP)
+            Event.Switch -> audio.play(Sound.SWITCH)
+            Event.Sizzle -> audio.play(Sound.SIZZLE)
+            Event.Hum -> audio.play(Sound.HUM)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> say(e.text.toString(), 2.6f)
             is Event.Played -> {
