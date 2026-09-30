@@ -3,6 +3,7 @@ package com.robinrehbein.beveldevil
 import android.content.Context
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Progress
+import com.robinrehbein.beveldevil.game.SAVE_VERSION
 
 /** Progress stored in SharedPreferences. */
 class PrefsProgress(context: Context) : Progress {
@@ -11,6 +12,11 @@ class PrefsProgress(context: Context) : Progress {
     override var unlocked: Int
         get() = prefs.getInt("unlocked", 1)
         set(v) = prefs.edit().putInt("unlocked", v).apply()
+
+    // a save without a version that already has progress is from the 128-level World 1 (version 1)
+    override var saveVersion: Int
+        get() = prefs.getInt("save_version", if (prefs.contains("unlocked")) 1 else SAVE_VERSION)
+        set(v) = prefs.edit().putInt("save_version", v).apply()
 
     override var sound: Boolean
         get() = prefs.getBoolean("sound", true)

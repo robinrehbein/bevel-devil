@@ -1,231 +1,69 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.DoorTo
+import com.robinrehbein.beveldevil.game.Action.FakeWin
 import com.robinrehbein.beveldevil.game.Action.Fall
+import com.robinrehbein.beveldevil.game.Action.Flip
+import com.robinrehbein.beveldevil.game.Action.FrameCrack
+import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Hide
 import com.robinrehbein.beveldevil.game.Action.Move
+import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
+import com.robinrehbein.beveldevil.game.Action.Roll
 import com.robinrehbein.beveldevil.game.Action.Say
-import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
+import com.robinrehbein.beveldevil.game.Action.Tilt
 import com.robinrehbein.beveldevil.game.Trigger.After
-import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Trigger.PastX
+import com.robinrehbein.beveldevil.game.Trigger.Resumed
+import com.robinrehbein.beveldevil.game.Trigger.Shaken
 import com.robinrehbein.beveldevil.game.Trigger.Touch
-import com.robinrehbein.beveldevil.game.Trigger.Zone
 
-/** World 1, levels 33-48: twists. Fake traps, timing, waiting, and the answer. */
+/** World 1, levels 33-48. Act 3, "Mephi schummelt": the meta twists and phone motion, sparingly, as surprises. */
 object World1Part3 {
-
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
     private val hiddenSpike = Glyph(spike = true, hidden = true)
     private val ceilingSpike = Glyph(spike = true, dir = Dir.DOWN)
 
     val levels: List<Level> = listOf(
-        // 33 — the first trap is a bluff, the second one is real
+        // 33 — the door is a fake: clear screen, then the floor is gone and the door went home
+        // TWIST: FakeWin (clear)
         Level(
-            name = T("Crying Wolf", "Der Hirte und der Wolf"),
-            intro = T("Watch the ceiling. Or don't. I mean it this time.", "Achte auf die Decke. Oder nicht. Diesmal meine ich es ernst."),
-            legend = mapOf('S' to ceilingSpike),
-            traps = listOf(
-                trap(PastX(2.6f), Fall('S'), Shake(0.6f), Say(T("Incoming!", "Achtung, Einschlag!"))),
-                trap(PastX(18f), Play(Card.COLLAPSE), Fall('a'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte."))),
-            ),
-        ) {
-            border(); floor()
-            put(12, 1, 'S'); put(13, 1, 'S')
-            fill(22..24, 15..17, 'a')
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 34 — an invisible bridge appears under you, but only if you jump
-        Level(
-            name = T("Leap of Faith", "Glaube versetzt Brücken"),
-            intro = T("That gap is far too wide. Believe in yourself.", "Die Lücke ist viel zu breit. Glaub an dich."),
-            legend = mapOf('b' to hiddenSolid),
-            traps = listOf(
-                trap(Zone(9.5f, 0f, 13.4f, 13.9f), Play(Card.GHOST_BLOCK), Show('b'), Say(T("See? It was always there.", "Siehst du? Sie war immer da.")), delay = 0.12f),
-            ),
-        ) {
-            border(); floor(); pit(13..20)
-            fill(13..20, 15..15, 'b')
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 35 — climb: the floor is spikes and it is rising
-        Level(
-            name = T("Rising Tide", "Steigende Flut"),
-            intro = T("Nice view. Enjoy it while it lasts.", "Schöne Aussicht. Genieß sie, solange sie dauert."),
-            traps = listOf(
-                trap(After(2.3f), Play(Card.SPIKE_SEED), Move('L', 0f, -16f, 1.6f), Say(T("The floor is lava. Well. Spikes.", "Der Boden ist Lava. Na gut. Spikes."))),
-            ),
-        ) {
-            border()
-            fill(1..5, 13..13); fill(8..11, 11..11); fill(14..17, 9..9); fill(20..23, 7..7); fill(26..30, 5..5)
-            fill(1..30, 17..17, 'L')
-            put(3, 12, 'P'); put(29, 4, 'D')
-        },
-
-        // 36 — tetrominoes drop from the ceiling and build the stairs. You only have to wait.
-        // EASTER EGG: Tetris (O-pieces stack up, "Line clear!")
-        Level(
-            name = T("Tetris", "Tetris"),
-            intro = T("Here, I built you some stairs. Almost.", "Hier, ich habe dir eine Treppe gebaut. Fast."),
-            traps = listOf(
-                trap(After(2.4f), Play(Card.HEADBUTT), Fall('p'), Say(T("Next piece: staircase.", "Nächster Stein: Treppe."))),
-                trap(After(3.4f), Fall('q')),
-                trap(After(4.4f), Fall('r')),
-                trap(After(5.4f), Fall('s')),
-                trap(After(6.4f), Fall('t')),
-                trap(After(7.4f), Fall('u'), Say(T("Line clear! You're welcome.", "Reihe voll! Gern geschehen."))),
-            ),
-        ) {
-            border(); floor()
-            fill(14..15, 1..2, 'p')
-            fill(16..17, 3..4, 'q'); fill(16..17, 1..2, 'r')
-            fill(18..19, 5..6, 's'); fill(18..19, 3..4, 't'); fill(18..19, 1..2, 'u')
-            fill(22..30, 8..8)
-            put(2, 14, 'P'); put(28, 7, 'D')
-        },
-
-        // 37 — two walls of spikes converge; jump the one that comes at you
-        // EASTER EGG: git merge conflict markers
-        Level(
-            name = T("Merge Conflict", "Merge-Konflikt"),
-            intro = T("<<<<<<< HEAD  Two branches want your spot.", "<<<<<<< HEAD  Zwei Branches wollen deinen Platz."),
-            legend = mapOf('L' to Glyph(spike = true, dir = Dir.RIGHT), 'R' to Glyph(spike = true, dir = Dir.LEFT)),
-            traps = listOf(
-                trap(After(2.4f), Play(Card.DEVIL_SAW), Move('R', -20f, 0f, 4.2f), Move('L', 25f, 0f, 3f),
-                    Say(T(">>>>>>> feature/squash-bevel", ">>>>>>> feature/bevel-plattmachen"))),
-            ),
-        ) {
-            border(); floor()
-            put(8, 13, 'L'); put(8, 14, 'L')
-            put(22, 13, 'R'); put(22, 14, 'R')
-            put(15, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 38 — saws drop from the ceiling just as you pass under; stop and let each one go
-        Level(
-            name = T("Guillotine", "Fallbeil"),
-            intro = T("Head up! No wait. Head down. No wait.", "Kopf hoch! Nein, Kopf runter. Nein, warte."),
-            traps = listOf(
-                trap(PastX(7f), Play(Card.DEVIL_SAW), Saw(9.5f, 9f, 0f, 22f, 0.6f), Say(T("Guillotine service!", "Fallbeil-Lieferservice!"))),
-                trap(PastX(13f), Saw(15.5f, 9f, 0f, 22f, 0.6f)),
-                trap(PastX(19f), Saw(21.5f, 9f, 0f, 22f, 0.6f)),
-                trap(PastX(24f), Saw(26.5f, 9f, 0f, 22f, 0.6f), Say(T("Habit-forming, isn't it?", "Macht süchtig, oder?"))),
-            ),
-        ) {
-            border(); floor()
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 39 — the bridge is built plank by plank, on a timer
-        // NOD: 90s web "under construction"
-        Level(
-            name = T("Under Construction", "Baustelle"),
-            intro = T("This page is under construction. Please hold.", "Diese Seite befindet sich im Aufbau. Bitte warten."),
-            legend = mapOf('a' to hiddenSolid, 'b' to hiddenSolid, 'c' to hiddenSolid, 'd' to hiddenSolid),
-            traps = listOf(
-                trap(After(2.5f), Play(Card.GHOST_BLOCK), Show('a'), Say(T("Plank one. Hurry, it's temporary.", "Brett eins. Beeil dich, ist nur vorübergehend."))),
-                trap(After(3.4f), Show('b')),
-                trap(After(4.3f), Show('c')),
-                trap(After(5.2f), Show('d')),
-                trap(After(6.5f), Hide('a')),
-                trap(After(7.4f), Hide('b')),
-                trap(After(8.3f), Hide('c')),
-                trap(After(9.2f), Hide('d')),
-            ),
-        ) {
-            border(); floor(); pit(6..27)
-            fill(8..10, 14..14, 'a'); fill(13..15, 14..14, 'b'); fill(18..20, 14..14, 'c'); fill(23..25, 14..14, 'd')
-            put(2, 14, 'P'); put(30, 14, 'D')
-        },
-
-        // 40 — a bulldozer slides in from the right; hop it, then spikes appear where you land
-        Level(
-            name = T("Bulldozer", "Planierraupe"),
-            intro = T("Beep beep. Beep beep.", "Piep piep. Piep piep."),
+            name = T("Too Easy", "Zu einfach"),
+            intro = T("Just walk. Honestly.", "Einfach laufen. Ehrlich."),
             legend = mapOf('A' to hiddenSpike),
+            traps = listOf(trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14)))),
+        ) {
+            border(); floor()
+            fill(13..16, 15..17, 'f')
+            put(6, 14, 'A'); put(7, 14, 'A')
+            put(8, 14, 'P'); put(28, 14, 'D')
+        },
+
+        // 34 — the pause button dodges; only a real pause (back button) opens the wall
+        // TWIST: PauseTrap dodge + Resumed
+        Level(
+            name = T("Coffee Break", "Kaffeepause"),
+            intro = T("You look tired. Take a break.", "Du wirkst müde. Mach mal Pause."),
             traps = listOf(
-                trap(PastX(8f), Play(Card.DEVIL_SAW), Move('m', -30f, 0f, 5f), Say(T("Road works!", "Bauarbeiten!"))),
-                trap(PastX(13.5f), Show('A'), Say(T("Also: spikes. Sorry.", "Außerdem: Spikes. Sorry."))),
+                trap(After(0.3f), Play(Card.SHY_DOOR), PauseTrap(PauseTrick.DODGE)),
+                trap(Resumed(), Hide('w'), Hide('a'), Say(T("Refreshed? The floor took a break too.", "Erholt? Der Boden macht jetzt auch Pause."))),
             ),
         ) {
             border(); floor()
-            fill(22..24, 14..14, 'm')
-            put(16, 14, 'A'); put(17, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            fill(22..22, 1..14, 'w')
+            fill(12..14, 15..17, 'a')
+            put(2, 14, 'P'); put(28, 14, 'D')
         },
 
-        // 41 — the whole level is mirrored, until it suddenly is not
-        Level(
-            name = T("Mirror Mirror", "Spieglein, Spieglein"),
-            intro = T("Left is right and right is... wait, what?", "Links ist rechts und rechts ist... Moment, was?"),
-            traps = listOf(
-                trap(After(0.05f), Play(Card.TWISTED), Swap(true), Say(T("Mirror, mirror, on the wall.", "Spieglein, Spieglein an der Wand."))),
-                trap(PastX(25.5f), Swap(false), Say(T("Habits die hard.", "Gewohnheiten sterben langsam."))),
-            ),
-        ) {
-            border(); floor()
-            pit(9..10); pit(21..22)
-            put(16, 14, '^'); put(28, 14, '^')
-            put(2, 14, 'P'); put(30, 14, 'D')
-        },
-
-        // 42 — the answer: 0b101010. A cosmic ray flips bits in the floor.
-        // EASTER EGG: 42 / Hitchhiker's Guide / binary 101010 / bit flip (cosmic ray)
-        Level(
-            name = T("42", "42"),
-            intro = T("The answer to everything: 0b101010. Mostly.", "Die Antwort auf alles: 0b101010. Meistens."),
-            legend = mapOf('p' to hiddenSolid, 'r' to hiddenSolid, 's' to hiddenSolid),
-            traps = listOf(
-                trap(PastX(5.4f), Play(Card.COLLAPSE), Show('p'), Show('r'), Fall('q'), Say(T("Bit flip! Cosmic ray. Not my fault.", "Bit gekippt! Kosmische Strahlung. Nicht meine Schuld.")), delay = 0.15f),
-                trap(PastX(12f), Show('s'), Fall('t'), Say(T("Six times nine, in base 13.", "Sechs mal neun, zur Basis 13.")), delay = 0.15f),
-            ),
-        ) {
-            border(); floor(); pit(8..10); pit(14..16); pit(20..22)
-            fill(8..10, 15..17, 'p'); fill(11..13, 15..17, 'q'); fill(14..16, 15..17, 'r')
-            fill(17..19, 15..17, 't'); fill(20..22, 15..17, 's')
-            art(14, 3, "#.#", "#.#", "###", "..#", "..#")   // 4
-            art(18, 3, "###", "..#", "###", "#..", "###")   // 2
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 43 — an invisible ceiling clips your jump
-        Level(
-            name = T("Glass Ceiling", "Gläserne Decke"),
-            intro = T("The sky is the limit. Well, roughly.", "Der Himmel ist die Grenze. Ungefähr."),
-            legend = mapOf('g' to ghost),
-            traps = listOf(
-                trap(Touch('g'), Play(Card.GHOST_BLOCK), Say(T("Invisible ceiling. Patent pending.", "Unsichtbare Decke. Patent angemeldet."))),
-            ),
-        ) {
-            border(); floor(); pit(13..14)
-            fill(8..18, 12..12, 'g')
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 44 — the floor ahead of you vanishes, one trapdoor at a time
-        Level(
-            name = T("Trapdoor Alley", "Klappenallee"),
-            intro = T("Solid ground. All the way. Promise.", "Fester Boden. Die ganze Strecke. Versprochen."),
-            traps = listOf(
-                trap(PastX(5.5f), Play(Card.COLLAPSE), Hide('a'), Say(T("Ground: 404 not found.", "Boden: 404 nicht gefunden."))),
-                trap(PastX(12.5f), Hide('b')),
-                trap(PastX(19.5f), Hide('c'), Say(T("Ta-da. Again.", "Tadaa. Schon wieder."))),
-            ),
-        ) {
-            border(); floor()
-            fill(10..11, 15..17, 'a'); fill(17..18, 15..17, 'b'); fill(24..25, 15..17, 'c')
-            put(2, 14, 'P'); put(29, 14, 'D')
-        },
-
-        // 45 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.
+        // 35 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.
         // NOD: video buffering
         Level(
             name = T("Buffering...", "Lädt..."),
@@ -244,19 +82,166 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 6, 'D')
         },
 
-        // 46 — any jump flips gravity: the spiked floor becomes a harmless ceiling walk
-        // NOD: flip-flop (toggle)
+        // 36 — a piece of the golden frame breaks off the ceiling and lands on the path
+        // TWIST: FrameCrack
         Level(
-            name = T("Flip-Flop", "Kippschalter"),
-            intro = T("Please don't jump. You will regret jumping.", "Bitte nicht springen. Du würdest es bereuen."),
+            name = T("Load-Bearing Frame", "Tragender Rahmen"),
+            intro = T("Nice frame, isn't it?", "Schöner Rahmen, oder?"),
+            traps = listOf(trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack.")))),
+        ) {
+            border(); floor()
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 37 — reach the door and I overwrite history: it moves back to the start and spikes appear
+        // EASTER EGG: git push --force
+        Level(
+            name = T("git push --force", "git push --force"),
+            intro = T("The door is at the remote. Or so you thought.", "Die Tür liegt im Remote. Dachtest du."),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
-                trap(Zone(1f, 0f, 7f, 13.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Flip-flop. Not the sandals.", "Flip-Flop. Nicht die Badelatschen."))),
+                trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(29, 0, speed = 25f), Show('A'), Say(T("History rewritten. You're welcome.", "Historie umgeschrieben. Gern geschehen."))),
+                trap(PastX(23f), DoorTo(2, 14, speed = 20f), delay = 0.8f),
+            ),
+        ) {
+            border(); floor(); pit(11..12)
+            put(18, 14, '#')
+            put(5, 14, 'A'); put(6, 14, 'A')
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 38 — the picture turns upside down over a spike pit; left and right follow the screen
+        // TWIST: Flip
+        Level(
+            name = T("Headstand", "Kopfstand"),
+            intro = T("Hold your phone properly.", "Halt dein Handy mal richtig."),
+            traps = listOf(
+                trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
             ),
         ) {
             border(); floor()
-            fill(6..25, 14..14, '^')
-            put(15, 1, 'v'); put(16, 1, 'v')
+            fill(13..14, 14..14, '^')
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt
+        // MOTION: Tilt
+        Level(
+            name = T("Spirit Level", "Wasserwaage"),
+            intro = T("Hold it level, please.", "Bitte gerade halten."),
+            start = listOf(Tilt('a', left = 0f, right = 13f, speed = 6f)),
+        ) {
+            border(); floor(); pit(8..23)
+            fill(8..10, 15..15, 'a')
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 40 — at the first step everything flips: gravity and controls. Walk the ceiling.
+        // EASTER EGG: Kernel panic
+        Level(
+            name = T("Kernel Panic", "Kernel Panic"),
+            intro = T("Everything is fine. Really.", "Alles in Ordnung. Wirklich."),
+            traps = listOf(
+                trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
+            ),
+        ) {
+            border(); floor()
+            fill(6..27, 14..14, '^')
+            put(18, 0, '.'); put(19, 0, '.')
             put(2, 14, 'P'); put(29, 1, 'D')
+        },
+
+        // 41 — stalactites fall in two waves while the picture rolls; you cannot see them land
+        // TWIST: Roll
+        Level(
+            name = T("V-Sync", "Bildfang"),
+            intro = T("Enjoy the show. Keep your eyes on the level.", "Viel Spaß beim Zuschauen. Bleib mit den Augen im Level."),
+            legend = mapOf('S' to ceilingSpike, 'T' to ceilingSpike),
+            traps = listOf(
+                trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Technical difficulties.", "Bildstörung."))),
+                trap(PastX(20.5f), Fall('T'), Roll(2f, 2)),
+            ),
+        ) {
+            border(); floor()
+            put(14, 1, 'S'); put(15, 1, 'S')
+            put(24, 1, 'T'); put(25, 1, 'T')
+            ceilingSpikes(7..8); ceilingSpikes(29..30)
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 42 — the old wall of teeth chases you and Mephi offers a pause; the pause button is a spike
+        // TWIST: PauseTrap spike
+        Level(
+            name = T("Panic Button", "Notbremse"),
+            intro = T("Don't look back. Seriously.", "Schau nicht zurück. Ernsthaft."),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
+            traps = listOf(
+                trap(PastX(7f), Play(Card.SPIKE_SEED), Move('W', 30f, 0f, 7.4f), PauseTrap(PauseTrick.SPIKE),
+                    Say(T("Hungry wall! Need a break? Tap pause.", "Hungrige Wand! Pause? Tipp auf Pause."))),
+            ),
+        ) {
+            border(); floor()
+            fill(1..1, 1..14, 'W')
+            pit(11..12); pit(21..22)
+            put(17, 14, '#'); put(26, 14, '#')
+            put(5, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 43 — your last attempt comes back as a deadly ghost one second behind you
+        // TWIST: Ghost
+        Level(
+            name = T("git blame", "git blame"),
+            intro = T("Replaying your last attempt.", "Ich spiele deinen letzten Versuch ab."),
+            traps = listOf(trap(After(0f), Play(Card.DEVIL_SAW), Ghost(1f))),
+        ) {
+            border(); floor(); pit(22..24)
+            fill(15..16, 14..14, '^')
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 44 — a wall to the ceiling that only comes down when you shake the phone
+        // MOTION: Shaken
+        Level(
+            name = T("Shake It", "Schüttel dich"),
+            intro = T("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?"),
+            traps = listOf(trap(Shaken, Play(Card.COLLAPSE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!")))),
+        ) {
+            border(); floor()
+            fill(20..20, 1..14, 'a')
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+        // 45 — the floor is deleted when you are halfway; the shelf above it is not
+        // EASTER EGG: sudo rm -rf /
+        Level(
+            name = T("sudo rm -rf /", "sudo rm -rf /"),
+            intro = T("Are you sure? [y/N]", "Bist du sicher? [j/N]"),
+            traps = listOf(
+                trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
+            ),
+        ) {
+            border()
+            fill(1..30, 15..17, 'f')
+            fill(4..30, 13..13)
+            put(20, 12, '^')
+            put(2, 14, 'P'); put(29, 12, 'D')
+        },
+
+        // 46 — the wall is unclimbable; the way out is behind you
+        Level(
+            name = T("Wrong Way", "Falsche Richtung"),
+            intro = T("That wall is huge. Maybe stop staring at it.", "Die Wand ist riesig. Vielleicht guck woanders hin."),
+            legend = mapOf('A' to hiddenSpike),
+            traps = listOf(
+                trap(Touch('k'), Play(Card.DECOY), Hide('w'), Say(T("Oh, you found the button. Boo.", "Oh, du hast den Knopf gefunden. Buh."))),
+                trap(PastX(20.5f), Show('A')),
+            ),
+        ) {
+            border(); floor()
+            fill(15..16, 3..14, 'w')
+            put(2, 14, 'k')
+            put(25, 14, 'A'); put(26, 14, 'A')
+            put(10, 14, 'P'); put(29, 14, 'D')
         },
 
         // 47 — the wall only opens for the one who finds the root block
@@ -277,26 +262,22 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 48 — three doors, three traps, one real exit
-        // NOD: Monty Hall / Let's Make a Deal
+        // 48 — finale: a blinking bridge, then the door ends the game. The credits roll, become stairs, the door went home.
+        // TWIST: FakeWin (credits) + Roll
         Level(
-            name = T("Behind Door Number Three", "Hinter Tür Nummer Drei"),
-            intro = T("Pick a door. Any door. Would you like to switch?", "Such dir eine Tür aus. Irgendeine. Willst du wechseln?"),
-            legend = mapOf('A' to hiddenSpike, 'S' to ceilingSpike),
+            name = T("Roll Credits", "Abspann"),
+            intro = T("Last level. Promise.", "Letztes Level. Versprochen."),
+            legend = mapOf('c' to hiddenSolid),
             traps = listOf(
-                trap(PastX(9.3f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Door one: spikes!", "Tür eins: Spikes!"))),
-                trap(PastX(16f), Fall('S'), Say(T("Door two: ceiling!", "Tür zwei: Decke!"))),
-                trap(PastX(22f), Fall('a'), Say(T("Door three: no floor!", "Tür drei: kein Boden!"))),
+                trap(PastX(5f), Play(Card.GRAND_FINALE), Say(T("Final level! Everything I've got.", "Letztes Level! Alles, was ich habe."))),
+                trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8), Roll(3f, 2))),
             ),
+            start = listOf(Blink('a', on = 2.4f, off = 1f)),
         ) {
-            border(); floor()
-            art(9, 3, ".#.", "##.", ".#.", ".#.", "###")      // 1
-            art(15, 3, "###", "..#", "###", "#..", "###")     // 2
-            art(21, 3, "###", "..#", "###", "..#", "###")     // 3
-            put(13, 14, 'A'); put(14, 14, 'A')
-            put(20, 1, 'S'); put(21, 1, 'S')
-            fill(25..27, 15..17, 'a')
-            put(2, 14, 'P'); put(30, 14, 'D')
+            border(); floor(); pit(10..16)
+            fill(10..16, 15..15, 'a')
+            fill(1..13, 9..9, 'c'); fill(15..19, 11..11, 'c'); fill(22..26, 13..13, 'c')
+            put(2, 14, 'P'); put(28, 14, 'D')
         },
     )
 }

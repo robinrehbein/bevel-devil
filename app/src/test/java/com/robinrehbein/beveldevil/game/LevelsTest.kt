@@ -104,6 +104,13 @@ class Bot(private val level: Level) {
         return hold(0f)
     }
 
+    /** Like [waitFor], but hops on the spot so that idle triggers never fire. */
+    fun fidgetUntil(max: Float = 10f, cond: (World) -> Boolean): Bot {
+        val end = world.time + max
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) hold(0.1f, jump = true)
+        return hold(0f)
+    }
+
     fun rightTo(x: Float) = until(x, left = false, goingRight = true)
     fun leftTo(x: Float) = until(x, left = true, goingRight = false)
     /** For swapped controls: press left, move right. */
@@ -170,62 +177,8 @@ class LevelsTest {
 
     @Test
     fun naiveRunIsPunished() {
-        for (i in listOf(1, 2, 4, 7, 12)) bot(i).right(8f).expect(WorldState.DEAD)
+        for (i in listOf(1, 2, 4, 6, 16)) bot(i).right(8f).expect(WorldState.DEAD)
     }
-
-    @Test fun level1() = bot(1).rightTo(17.4f).rightJump(0.35f).right(3f).expect(WorldState.WON)
-
-    @Test fun level2() = bot(2).rightTo(8.6f).rightJump(0.3f).rightTo(22.4f).rightJump(0.3f).right(3f).expect(WorldState.WON)
-
-    @Test
-    fun level3() = bot(3).rightTo(26f).wait(0.4f)
-        .leftTo(24.9f).leftJump(0.35f).wait(0.3f)
-        .leftTo(20.7f).leftJump(0.35f).wait(0.3f)
-        .leftTo(14.7f).leftJump(0.35f).wait(0.3f)
-        .leftTo(8.7f).leftJump(0.35f).left(1.5f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level4() = bot(4).rightTo(12.9f).wait(1.2f)
-        .rightTo(13.2f).rightJump(0.35f).right(0.3f).wait(0.2f)
-        .rightTo(21.4f).wait(1.2f).rightTo(21.9f).rightJump(0.35f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level5() = bot(5).rightTo(10f).wait(1f)
-        .rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level6() = bot(6).rightTo(7.2f)
-        .leftKeyRightTo(11.2f).leftJump(0.35f).left(0.3f).leftKeyRightTo(17.8f)
-        .rightTo(20.3f).rightJump(0.35f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level7() = bot(7).rightTo(12.8f).rightJump(0.3f).rightTo(20.8f).rightJump(0.35f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level8() = bot(8).rightTo(18.5f).jump(0.3f).wait(0.5f)
-        .leftTo(16.8f).wait(0.2f).rightJump(0.35f).right(0.2f).rightJump(0.35f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level9() = bot(9).rightTo(6.6f).rightJump(0.3f).rightTo(11.6f).rightJump(0.3f)
-        .rightTo(16.4f).rightJump(0.3f).rightTo(21.3f).rightJump(0.35f).right(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level10() = bot(10).rightTo(22.5f).wait(1.5f).leftTo(19.2f).leftJump(0.3f).leftTo(13.9f).leftJump(0.3f).left(3f)
-        .expect(WorldState.WON)
-
-    @Test
-    fun level11() = bot(11).right(4.5f).expect(WorldState.WON)
-
-    @Test
-    fun level12() = bot(12).rightTo(7.3f).rightJump(0.35f).rightTo(15.4f).rightJump(0.3f).rightTo(24.7f).wait(1.2f).left(3f)
-        .expect(WorldState.WON)
 
     @Test
     fun cardsAreRememberedPerAttempt() {

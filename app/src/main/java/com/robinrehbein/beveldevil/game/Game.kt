@@ -4,8 +4,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
+/** Layout of the saved progress: 1 = World 1 had 128 levels, 2 = 48. */
+const val SAVE_VERSION = 2
+
 interface Progress {
     var unlocked: Int
+    /** Which [SAVE_VERSION] the save was written for; in-memory saves are always current. */
+    var saveVersion: Int
+        get() = SAVE_VERSION
+        set(_) {}
     var sound: Boolean
     var stickScheme: Boolean
     /** 0 = S, 1 = M, 2 = L. */
@@ -176,8 +183,17 @@ class Game(private val progress: Progress, private val audio: Audio) {
         private set
 
     init {
-        // saves from before a world was added: a cleared last level unlocks the next world
-        while (progress.unlocked in 1 until Levels.all.size && progress.bestDeaths(progress.unlocked - 1) != null) progress.unlocked++
+        if (progress.saveVersion < SAVE_VERSION) {
+            // World 1 shrank from 128 to 48 levels, so an old save's global numbers point into World 2 now. Clamp it to
+            // "World 1 done, World 2 level 1 open". Old best-death counts keep their index and may show on other levels.
+            progress.unlocked = progress.unlocked.coerceIn(1, World1.levels.size + 1)
+            progress.saveVersion = SAVE_VERSION
+        }
+        // saves from before a world was added: a cleared last level unlocks the next world (only that one step,
+        // or stale best-death entries would chain-unlock everything behind it)
+        for (w in Worlds.all.drop(1)) {
+            if (w.size > 0 && progress.unlocked == w.firstLevel && progress.bestDeaths(w.firstLevel - 1) != null) progress.unlocked++
+        }
         if (!progress.introSeen) startIntro(first = true)
     }
 
@@ -361,6 +377,8 @@ class Game(private val progress: Progress, private val audio: Audio) {
     }
 
     private fun say(text: String, life: Float) {
+        // an empty line is Mephi saying nothing: no bubble (the layout can't wrap "")
+        if (text.isBlank()) { bubble = null; return }
         bubble = text
         bubbleAge = 0f
         bubbleLife = life + text.length / 28f

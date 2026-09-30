@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.render
 
 import android.graphics.Color
+import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Controls
 import com.robinrehbein.beveldevil.game.Dir
 import com.robinrehbein.beveldevil.game.GroupMode
@@ -64,6 +65,8 @@ class TrapInvisibilityTest {
         for ((i, level) in Levels.all.withIndex()) {
             val trapWorld = World(level)
             if (trapWorld.groups.isEmpty()) continue
+            // blinking and tilting groups are honest mechanics: they show what they do from the first frame
+            if (level.start.any { it is Action.Blink || it is Action.Tilt }) continue
             val plainWorld = World(plain(level))
             assertTrue(plainWorld.groups.isEmpty())
             for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) {

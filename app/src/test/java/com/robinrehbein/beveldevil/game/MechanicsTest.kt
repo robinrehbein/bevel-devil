@@ -181,7 +181,7 @@ class MechanicsTest {
         assertTrue(Demo.slope.usesTilt)
         assertTrue(Demo.shake.usesShake); assertFalse(Demo.shake.usesTilt)
         assertFalse(Demo.blink.usesMotion)
-        assertTrue(Levels.all.none { it.usesMotion })
+        assertEquals(2, Levels.all.count { it.usesMotion })  // World 1 has two surprise levels, World 2 none
     }
 
     @Test
