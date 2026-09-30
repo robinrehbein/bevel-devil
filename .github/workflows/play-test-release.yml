@@ -28,6 +28,9 @@ jobs:
           java-version: '17'
           cache: gradle
       - uses: android-actions/setup-android@v3
+        with:
+          # the default also installs 'tools', which current cmdline-tools no longer ship
+          packages: platform-tools
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
