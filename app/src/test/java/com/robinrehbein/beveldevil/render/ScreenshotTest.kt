@@ -10,6 +10,7 @@ import com.robinrehbein.beveldevil.game.Demo
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
+import com.robinrehbein.beveldevil.game.NetDemos
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.PauseTrick
 import com.robinrehbein.beveldevil.game.T
@@ -21,6 +22,7 @@ import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.game.WorldState
+import com.robinrehbein.beveldevil.game.Worlds
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -355,6 +357,55 @@ class ScreenshotTest {
         }
     }
 
+    /** World 2's network mechanics on their test-only demo levels. */
+    @Test
+    fun net() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(level: Level) = Film(Game(MemoryProgress(), silent).apply { startCustom(level) }, s)
+            fun Film.w() = game.world!!
+            film(NetDemos.portal).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().links[0].hopTime > 0f }
+                play(0.05f); save("100-portal-hop$tag")
+            }
+            film(NetDemos.dns).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().links[0].rerouteTime > 0f }
+                game.input.right = false
+                play(0.15f); save("101-portal-reroute$tag")
+            }
+            film(NetDemos.belt).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 9f }
+                game.input.right = false
+                play(1.2f); save("102-belt$tag")
+            }
+            film(NetDemos.reorder).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 10.5f }
+                play(0.3f); save("103-belt-reversed$tag")
+            }
+            film(NetDemos.laser).apply {
+                play(0.5f)
+                play(3f) { w().beams[0].warn > 0.6f }
+                save("104-laser-telegraph$tag")
+                play(3f) { w().beams[0].lit }
+                play(0.1f); save("105-laser-on$tag")
+            }
+            film(NetDemos.firewall).apply {
+                play(0.5f)
+                play(3f) { w().beams[1].lit }
+                play(0.1f); save("106-firewall$tag")
+            }
+        }
+    }
+
     /** The new World 1: a look at levels of act 2 (new mechanics) and act 3 (meta twists). */
     @Test
     fun worldOneActs() {
@@ -405,6 +456,70 @@ class ScreenshotTest {
                 play(14f) { w().fake == null }
                 play(1.5f); save("88-l48-stairs$tag")
             }
+        }
+    }
+
+    @Test
+    fun dataCenter() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(2).firstLevel + n - 1) }, s)
+            film(1).apply { play(1.2f); save("110-w2-l1$tag") }
+            film(5).apply { play(1.2f); save("111-w2-l5$tag") }
+            film(13).apply { play(1.2f); save("112-w2-l13-flip-level$tag") }
+            film(10).apply {
+                game.input.right = true
+                play(4f) { game.world!!.player.box.cx > 6.6f }
+                game.input.right = false
+                play(0.45f); save("113-w2-l10-trap$tag")
+            }
+        }
+        Film(Game(MemoryProgress(), silent).apply { startLevel(14) }, sizes[0]).apply { play(1.2f); save("114-w1-l15-compare") }
+        // long names must fit the plate in every HUD mode
+        val names = com.robinrehbein.beveldevil.game.Levels.all.withIndex()
+        val sandwich = names.first { it.value.name.de.startsWith("sudo mach") }.index
+        val w2 = Worlds.get(2)
+        val longest = (w2.firstLevel until w2.firstLevel + w2.size).maxByOrNull { com.robinrehbein.beveldevil.game.Levels.all[it].name.de.length }!!
+        for (s in sizes) {
+            val sfx = if (s === sizes[0]) "" else "-${s.tag}"
+            Film(Game(MemoryProgress(), silent).apply { startLevel(sandwich) }, s).apply { play(0.8f); save("115-hud-sandwich$sfx") }
+            Film(Game(MemoryProgress(), silent).apply { startLevel(longest) }, s).apply { play(0.8f); save("117-hud-longest-w2$sfx") }
+        }
+        val g = Game(MemoryProgress().apply { unlocked = 60 }, silent)
+        run(g, 0.5f); g.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(g, 0.6f)
+        shoot("116-select", g, sizes.take(2))
+    }
+
+    /** World 2's three acts at their real global index, so the data-center theme is the real one. */
+    @Test
+    fun worldTwoActs() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(2).firstLevel + n - 1) }, s)
+            fun Film.w() = game.world!!
+            fun Film.runTo(x: Float) { game.input.right = true; play(6f) { w().player.box.cx > x }; game.input.right = false }
+            film(2).apply { play(1.0f); save("120-w2-l02-open-port$tag") }
+            film(6).apply { runTo(6.5f); play(0.25f); save("121-w2-l06-dns-rerouted$tag") }
+            film(10).apply { play(1.0f); save("122-w2-l10-vpn-tunnel$tag") }
+            film(17).apply { play(1.0f); save("123-w2-l17-data-bus$tag") }
+            film(18).apply { play(6f) { w().beams[0].lit }; play(0.1f); save("124-w2-l18-firewall-lit$tag") }
+            film(19).apply { runTo(10.5f); play(0.3f); save("125-w2-l19-belt-reversed$tag") }
+            film(21).apply { play(1.0f); save("126-w2-l21-beam-ceiling$tag") }
+            film(23).apply { play(1.0f); save("127-w2-l23-superhighway$tag") }
+            film(24).apply { play(1.0f); save("128-w2-l24-uplink$tag") }
+            film(25).apply { play(1.0f); save("129-w2-l25-load-balancer$tag") }
+            film(28).apply { play(1.0f); save("130-w2-l28-split-tunnel$tag") }
+            film(31).apply { play(4.8f); save("131-w2-l31-timeout-gate$tag") }
+            film(34).apply { game.input.right = true; play(6f) { w().links[0].hopTime > 0f }; game.input.right = false; play(0.5f); save("132-w2-l34-reverse-proxy$tag") }
+            film(35).apply { play(1.0f); save("133-w2-l35-pipeline$tag") }
+            film(38).apply { runTo(5.7f); play(0.3f); save("134-w2-l38-bobby-tables$tag") }
+            film(40).apply { runTo(6.3f); play(0.8f); save("135-w2-l40-lag-spike$tag") }
+            film(43).apply { play(1.0f); save("136-w2-l43-rack-quake$tag") }
+            film(46).apply { play(1.0f); save("137-w2-l46-escalation$tag") }
+            film(48).apply { play(1.0f); save("138-w2-l48-shutdown$tag") }
+            film(36).apply { play(1.0f); save("139-w2-l36-replay$tag") }
         }
     }
 

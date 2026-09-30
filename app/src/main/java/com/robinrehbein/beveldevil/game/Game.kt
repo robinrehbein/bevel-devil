@@ -4,8 +4,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-/** Layout of the saved progress: 1 = World 1 had 128 levels, 2 = 48. */
-const val SAVE_VERSION = 2
+/** Layout of the saved progress: 1 = World 1 had 128 levels, 2 = 48 (and World 2 still 128), 3 = World 2 has 48 too. */
+const val SAVE_VERSION = 3
 
 interface Progress {
     var unlocked: Int
@@ -184,8 +184,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     init {
         if (progress.saveVersion < SAVE_VERSION) {
-            // World 1 shrank from 128 to 48 levels, so an old save's global numbers point into World 2 now. Clamp it to
-            // "World 1 done, World 2 level 1 open". Old best-death counts keep their index and may show on other levels.
+            // World 1 shrank from 128 to 48 levels and World 2 followed, so an old save's global numbers point into
+            // levels it never played. Clamp it to "World 1 done, World 2 level 1 open". Old best-death counts keep
+            // their index and may show on other levels.
             progress.unlocked = progress.unlocked.coerceIn(1, World1.levels.size + 1)
             progress.saveVersion = SAVE_VERSION
         }
@@ -280,6 +281,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Event.Bonk -> { audio.play(Sound.BONK); shake = maxOf(shake, 0.4f) }
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
+            Event.Hop -> audio.play(Sound.FLIP)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> say(e.text.toString(), 2.6f)
             is Event.Played -> {

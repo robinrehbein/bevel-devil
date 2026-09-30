@@ -16,6 +16,7 @@ import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Particle
 import com.robinrehbein.beveldevil.game.World
 import com.robinrehbein.beveldevil.game.WorldState
+import com.robinrehbein.beveldevil.game.Worlds
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -46,6 +47,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private val silhouette = Paint().apply { colorFilter = PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN) }
     private val shadowPaint = Paint().apply { alpha = Color.alpha(SHADOW) }
     private val glowPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD) }
+    private val net = NetPainter(px)
 
     private var world: World? = null
     private var baked: World? = null
@@ -62,7 +64,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private var resting = BooleanArray(0)
     private var cells = IntArray(0)
 
-    private val backdrop by lazy { Fx.backdrop(PW + 2 * PARALLAX, PH, 15 * TS) }
+    private var theme = Themes.HELL
     private val doorHalo by lazy { Fx.halo(26, 0xFFFF9A48.toInt(), 0x58, 0x30) }
     private val door by lazy { buildDoor() }
     private val doorFlipped by lazy { Bitmap.createBitmap(door, 0, 0, door.width, door.height, Matrix().apply { setScale(1f, -1f) }, false) }
@@ -77,13 +79,17 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     fun draw(game: Game, l: Layout) {
         val w = game.world ?: return
-        draw(w, game.time, game.heat, game.particles, l)
+        draw(w, game.time, game.heat, game.particles, l, Themes.of(Worlds.of(game.levelIndex).number))
     }
 
-    fun draw(w: World, t: Float, heat: Float, particles: List<Particle>, l: Layout) {
+    fun draw(w: World, t: Float, heat: Float, particles: List<Particle>, l: Layout, theme: Theme = Themes.HELL) {
+        if (theme !== this.theme) {
+            this.theme = theme
+            world = null; groupsFor = null; rockBmp = null
+        }
         surroundings(w, l, t, heat)
-        px.at(l.fx, l.fy) { backdrop(w) }
-        Fx.embers(px, l.lw, l.lh, t, heat)
+        px.at(l.fx, l.fy) { backdrop(w, t) }
+        if (theme.fire) Fx.embers(px, l.lw, l.lh, t, heat)
         px.at(l.fx, l.fy) { drawWorld(w, t, particles) }
     }
 
@@ -147,7 +153,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
         val out = IntArray(l.lw * l.lh)
         val ox = l.fx + c0 * TS
         val oy = l.fy + r0 * TS
-        Masonry.bake(out, l.lw, l.lh, ox, oy, grid, gw, gh, c0, r0, true, ROCK_STONE)
+        Masonry.bake(out, l.lw, l.lh, ox, oy, grid, gw, gh, c0, r0, true, theme.rock)
         crackCount = 0
         for (row in r0 until r1) for (col in c0 until c1) {
             val x = ox + (col - c0) * TS
@@ -161,11 +167,11 @@ class WorldPainter(px: Pixels) : Painter(px) {
                 }
                 val a = minOf(230, d * 70 - 20)
                 for (yy in y until y + TS) for (xx in x until x + TS) {
-                    if (xx in 0 until l.lw && yy in 0 until l.lh) out[yy * l.lw + xx] = Color.argb(if (bayer(xx, yy) < 0.5f) a else max(0, a - 40), 7, 3, 13)
+                    if (xx in 0 until l.lw && yy in 0 until l.lh) out[yy * l.lw + xx] = Color.argb(if (bayer(xx, yy) < 0.5f) a else max(0, a - 40), theme.pit[0], theme.pit[1], theme.pit[2])
                 }
                 continue
             }
-            if (v != 1) continue
+            if (v != 1 || !theme.fire) continue
             val h = Masonry.hash(col * 5 + 11, row * 3 - 7)
             if (Math.floorMod(h, 10) != 0) continue
             // a jagged fissure; its pixels glow per frame
@@ -188,12 +194,22 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     // ---------- backdrop ----------
 
-    private fun backdrop(w: World) {
+    private fun backdrop(w: World, t: Float) {
         lc.save()
         lc.clipRect(0, 0, PW, PH)
         val shift = ((w.cols / 2f - w.player.box.cx) * 0.7f).roundToInt().coerceIn(-PARALLAX, PARALLAX)
-        lc.drawBitmap(backdrop, (shift - PARALLAX).toFloat(), 0f, null)
+        val bd = theme.backdrop
+        lc.drawBitmap(bd.bmp, (shift - PARALLAX).toFloat(), 0f, null)
+        blinkLeds(bd.leds, shift - PARALLAX, t)
         lc.restore()
+    }
+
+    /** Status lights in the backdrop: slow, each on about two thirds of a long cycle. */
+    private fun blinkLeds(leds: IntArray, dx: Int, t: Float) {
+        for (i in 0 until leds.size / 4) {
+            if (frac(t * 0.22f + leds[4 * i + 3] / 256f) > 0.66f) continue
+            rect(leds[4 * i] + dx, leds[4 * i + 1], 1, 1, leds[4 * i + 2])
+        }
     }
 
     // ---------- level layers ----------
@@ -233,8 +249,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
         val grid = IntArray(gw * gh)
         for (p in g.pieces) if (!p.spike) grid[(p.hy.toInt() - r0) * gw + p.hx.toInt() - c0] = 1
         val out = IntArray(gw * TS * gh * TS)
-        Masonry.bake(out, gw * TS, gh * TS, 0, 0, grid, gw, gh, c0, r0, false, GOLD_STONE)
-        for (p in g.pieces) if (p.spike) Masonry.spike(out, gw * TS, gh * TS, (p.hx.toInt() - c0) * TS, (p.hy.toInt() - r0) * TS, p.dir)
+        Masonry.bake(out, gw * TS, gh * TS, 0, 0, grid, gw, gh, c0, r0, false, theme.stone)
+        for (p in g.pieces) if (p.spike) Masonry.spike(out, gw * TS, gh * TS, (p.hx.toInt() - c0) * TS, (p.hy.toInt() - r0) * TS, p.dir, theme.spike)
         groupCol[i] = c0
         groupRow[i] = r0
         return Bitmap.createBitmap(out, gw * TS, gh * TS, Bitmap.Config.ARGB_8888)
@@ -256,8 +272,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
             if (!inside(x, y)) continue
             val edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)
             val inner = !edge && (!inside(x - 2, y) || !inside(x + 2, y) || !inside(x, y - 2) || !inside(x, y + 2))
-            if (edge && (x + y) and 3 != 3) out[y * w + x] = GOLD_HI
-            else if (inner && (x + y) and 3 == 1) out[y * w + x] = GOLD_LO2
+            if (edge && (x + y) and 3 != 3) out[y * w + x] = theme.stone.hi
+            else if (inner && (x + y) and 3 == 1) out[y * w + x] = theme.stone.lo2
         }
         return Bitmap.createBitmap(out, w, h, Bitmap.Config.ARGB_8888)
     }
@@ -283,8 +299,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
             val r = p.hy.toInt()
             if (c in 0 until w.cols && r in 0 until w.rows) cells[r * w.cols + c] = 1
         }
-        Masonry.bake(tilePx, PW, PH, 0, 0, cells, w.cols, w.rows, 0, 0, false, GOLD_STONE)
-        for (p in w.pieces) if (p.spike && restingPiece(p.group)) Masonry.spike(tilePx, PW, PH, p.hx.toInt() * TS, p.hy.toInt() * TS, p.dir)
+        Masonry.bake(tilePx, PW, PH, 0, 0, cells, w.cols, w.rows, 0, 0, false, theme.stone)
+        for (p in w.pieces) if (p.spike && restingPiece(p.group)) Masonry.spike(tilePx, PW, PH, p.hx.toInt() * TS, p.hy.toInt() * TS, p.dir, theme.spike)
         tileBmp.setPixels(tilePx, 0, PW, 0, 0, PW, PH)
         shadowBmp.eraseColor(Color.TRANSPARENT)
         shadowC.drawBitmap(tileBmp, 2f, 2f, silhouette)
@@ -349,6 +365,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             }
         }
         spikeGleams(w, t)
+        net.under(w, t)
         drawDoor(w, t)
         for (i in 0 until w.saws.size) w.saws[i].path?.let { pathDots(it) }
         for (i in 0 until w.saws.size) { val s = w.saws[i]; drawSaw(s.x * TS, s.y * TS, s.r * TS, s.angle) }
@@ -357,6 +374,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             WorldState.DEAD -> deathFx(w)
             WorldState.WON -> { winFx(w); drawPlayer(w) }
         }
+        net.over(w)
         drawParticles(particles)
         lc.restore()
     }

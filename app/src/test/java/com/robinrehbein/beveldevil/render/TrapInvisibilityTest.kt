@@ -9,6 +9,7 @@ import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.World
+import com.robinrehbein.beveldevil.game.Worlds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -42,11 +43,11 @@ class TrapInvisibilityTest {
         }
     }
 
-    private fun render(w: World, t: Float): IntArray {
+    private fun render(w: World, t: Float, theme: Theme = Themes.HELL): IntArray {
         val px = Pixels(RuntimeEnvironment.getApplication())
         px.resize(layout.lw, layout.lh)
         px.lo.eraseColor(Color.BLACK)
-        WorldPainter(px).draw(w, t, 0f, emptyList(), layout)
+        WorldPainter(px).draw(w, t, 0f, emptyList(), layout, theme)
         val out = IntArray(layout.lw * layout.lh)
         px.lo.getPixels(out, 0, layout.lw, 0, 0, layout.lw, layout.lh)
         return out
@@ -61,21 +62,35 @@ class TrapInvisibilityTest {
 
     @Test
     fun trapsLookLikePlainLevelUntilTheyFire() {
+        val checked = checkTraps(0 until Worlds.get(2).firstLevel)
+        // collapse, hidden spikes, headbutt, bonk block, sinking, decoy, crumble, finale
+        assertTrue("checked $checked levels", checked >= 8)
+    }
+
+    @Test
+    fun trapsLookLikePlainLevelInTheDataCenterToo() {
+        val w2 = Worlds.get(2)
+        val checked = checkTraps(w2.firstLevel until w2.firstLevel + w2.size)
+        assertTrue("checked $checked levels", checked >= 8)
+    }
+
+    private fun checkTraps(range: IntRange): Int {
         var checked = 0
-        for ((i, level) in Levels.all.withIndex()) {
+        for (i in range) {
+            val level = Levels.all[i]
+            val theme = Themes.of(Worlds.of(i).number)
             val trapWorld = World(level)
             if (trapWorld.groups.isEmpty()) continue
-            // blinking and tilting groups are honest mechanics: they show what they do from the first frame
-            if (level.start.any { it is Action.Blink || it is Action.Tilt }) continue
+            // blinking, tilting and network gear (belts, lasers, portals) are honest mechanics: they show what they do from the first frame
+            if (level.start.any { it is Action.Blink || it is Action.Tilt || it is Action.Belt || it is Action.Laser || it is Action.Portal }) continue
             val plainWorld = World(plain(level))
             assertTrue(plainWorld.groups.isEmpty())
             for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) {
-                diff(render(trapWorld, t), render(plainWorld, t))?.let { throw AssertionError("Level ${i + 1} (${level.name.en}) at t=$t: $it") }
+                diff(render(trapWorld, t, theme), render(plainWorld, t, theme))?.let { throw AssertionError("Level ${i + 1} (${level.name.en}) at t=$t: $it") }
             }
             checked++
         }
-        // collapse, hidden spikes, headbutt, bonk block, sinking, decoy, crumble, finale
-        assertTrue("checked $checked levels", checked >= 8)
+        return checked
     }
 
     @Test

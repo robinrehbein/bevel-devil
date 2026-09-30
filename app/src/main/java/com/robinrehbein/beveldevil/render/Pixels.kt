@@ -118,6 +118,12 @@ class Pixels(context: Context) {
         return measure.measureText(s)
     }
 
+    /** Width as the crisp full-res text will really be: measuring at 3 px text size rounds glyph advances. */
+    fun fineWidth(s: String, size: Float): Float {
+        measure.textSize = size * 8f
+        return measure.measureText(s) / 8f
+    }
+
     fun wrap(text: String, size: Float, maxW: Float): List<String> {
         val out = ArrayList<String>()
         var line = ""

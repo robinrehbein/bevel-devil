@@ -9,4 +9,7 @@ captures/
 .cxx/
 *.apk
 *.aab
+*.jks
+*.keystore
+/release/
 .kotlin/
