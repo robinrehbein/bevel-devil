@@ -46,6 +46,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private val silhouette = Paint().apply { colorFilter = PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN) }
     private val shadowPaint = Paint().apply { alpha = Color.alpha(SHADOW) }
     private val glowPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD) }
+    private val net = NetPainter(px)
 
     private var world: World? = null
     private var baked: World? = null
@@ -349,6 +350,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             }
         }
         spikeGleams(w, t)
+        net.under(w, t)
         drawDoor(w, t)
         for (i in 0 until w.saws.size) w.saws[i].path?.let { pathDots(it) }
         for (i in 0 until w.saws.size) { val s = w.saws[i]; drawSaw(s.x * TS, s.y * TS, s.r * TS, s.angle) }
@@ -357,6 +359,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
             WorldState.DEAD -> deathFx(w)
             WorldState.WON -> { winFx(w); drawPlayer(w) }
         }
+        net.over(w)
         drawParticles(particles)
         lc.restore()
     }

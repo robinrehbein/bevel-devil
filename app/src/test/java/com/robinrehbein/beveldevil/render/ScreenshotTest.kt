@@ -10,6 +10,7 @@ import com.robinrehbein.beveldevil.game.Demo
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
+import com.robinrehbein.beveldevil.game.NetDemos
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.PauseTrick
 import com.robinrehbein.beveldevil.game.T
@@ -352,6 +353,55 @@ class ScreenshotTest {
             play(0.6f)
             game.input.shake = true
             play(0.1f); save("66-tilt-buttons-${s.tag}")
+        }
+    }
+
+    /** World 2's network mechanics on their test-only demo levels. */
+    @Test
+    fun net() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(level: Level) = Film(Game(MemoryProgress(), silent).apply { startCustom(level) }, s)
+            fun Film.w() = game.world!!
+            film(NetDemos.portal).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().links[0].hopTime > 0f }
+                play(0.05f); save("100-portal-hop$tag")
+            }
+            film(NetDemos.dns).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().links[0].rerouteTime > 0f }
+                game.input.right = false
+                play(0.15f); save("101-portal-reroute$tag")
+            }
+            film(NetDemos.belt).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 9f }
+                game.input.right = false
+                play(1.2f); save("102-belt$tag")
+            }
+            film(NetDemos.reorder).apply {
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 10.5f }
+                play(0.3f); save("103-belt-reversed$tag")
+            }
+            film(NetDemos.laser).apply {
+                play(0.5f)
+                play(3f) { w().beams[0].warn > 0.6f }
+                save("104-laser-telegraph$tag")
+                play(3f) { w().beams[0].lit }
+                play(0.1f); save("105-laser-on$tag")
+            }
+            film(NetDemos.firewall).apply {
+                play(0.5f)
+                play(3f) { w().beams[1].lit }
+                play(0.1f); save("106-firewall$tag")
+            }
         }
     }
 

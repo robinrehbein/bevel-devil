@@ -55,6 +55,12 @@ class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
     /** Blinking and gone, but about to return (or waiting for the player to step out). */
     var soon = false
     var tilt: Action.Tilt? = null
+    /** Conveyor belt speed in tiles/s ([Action.Belt]), null if it is no belt. */
+    var belt: Float? = null
+    var beltOn = true
+    /** How far the belt surface has run, for drawing it. */
+    var beltRun = 0f
+    val beltSpeed get() = if (beltOn && visible) belt ?: 0f else 0f
 }
 
 class Piece(val spike: Boolean, val dir: Dir, val hx: Float, val hy: Float, val group: Group?) {
@@ -131,6 +137,8 @@ sealed interface Event {
     data object FakeWon : Event
     /** The fake win is over: Mephi glitches back in. */
     data object Unfaked : Event
+    /** The player went through a portal. */
+    data object Hop : Event
 }
 
 enum class WorldState { PLAYING, DEAD, WON }
@@ -142,6 +150,8 @@ class World(val level: Level, private val past: Trail? = null) {
     val pieces = ArrayList<Piece>()
     val groups = LinkedHashMap<Char, Group>()
     val saws = ArrayList<Saw>()
+    val links = ArrayList<Link>()
+    val beams = ArrayList<Beam>()
     val events = ArrayList<Event>()
     val player: Player
     val door: Door
@@ -172,6 +182,9 @@ class World(val level: Level, private val past: Trail? = null) {
     var slope = 0f
         private set
     private var shaken = false
+    /** Just came out of this tile: it takes the player again only after they left it. */
+    private var hopBlock: Pair<Int, Int>? = null
+    private var hopReady = 0f
 
     private class TrapState(val trap: Trap) {
         var fired = false
@@ -270,6 +283,7 @@ class World(val level: Level, private val past: Trail? = null) {
         door = Door(dx - 0.1f, dy + 1f - 1.6f)
         level.start.forEach(::run)
         updateBlinks()
+        updateNet(0f)
     }
 
     fun group(id: Char): Group = groups[id] ?: error("Level ${level.name.en} has no group '$id'")
@@ -289,6 +303,7 @@ class World(val level: Level, private val past: Trail? = null) {
         updateGroups(dt)
         updateDoor(dt)
         updateSaws(dt)
+        updateNet(dt)
         if (state != WorldState.PLAYING) {
             input.jumpPressed = false
             return
@@ -304,6 +319,7 @@ class World(val level: Level, private val past: Trail? = null) {
         updateTraps(dt)
         updatePlayer(dt, input)
         input.jumpPressed = false
+        hop()
         checkHazards()
         if (state == WorldState.PLAYING && fake == null && time >= doorLock && doorReached()) {
             val atDoor = traps.firstOrNull { !it.fired && it.trap.trigger == Trigger.AtDoor }
@@ -468,6 +484,35 @@ class World(val level: Level, private val past: Trail? = null) {
             is Action.Blink -> group(a.group).apply { blink = a; blinkT0 = time }
             is Action.PathSaw -> a.at(0f).let { (x, y) -> saws += Saw(x, y, 0f, 0f, a.r, a, time) }
             is Action.Tilt -> group(a.group).tilt = a
+            is Action.Portal -> {
+                requireFree(a.from); requireFree(a.to)
+                links.removeAll { it.id == a.id }
+                links += Link(a.id, a.from, a.to, a.twoWay)
+            }
+            is Action.Reroute -> link(a.id).apply {
+                requireFree(a.to)
+                if (hopBlock == to) hopBlock = null
+                oldTo = to
+                to = a.to
+                rerouteTime = time
+            }
+            is Action.Belt -> group(a.group).belt = a.speed
+            is Action.Laser -> {
+                beams.removeAll { it.laser.id == a.id }
+                beams += Beam(a, time).also { it.update(time) }
+            }
+            is Action.Power -> {
+                var found = false
+                links.filter { it.id == a.id }.forEach { it.on = a.on; found = true }
+                beams.filter { it.laser.id == a.id }.forEach { b ->
+                    if (a.on && !b.on) { b.t0 = time; b.warm = Action.Laser.TELEGRAPH }
+                    b.on = a.on
+                    b.update(time)
+                    found = true
+                }
+                groups[a.id]?.takeIf { it.belt != null }?.let { it.beltOn = a.on; found = true }
+                require(found) { "Level ${level.name.en} has no portal, laser or belt '${a.id}'" }
+            }
             is Action.Slope -> slope = a.speed
             is Action.FakeWin -> if (fake == null) {
                 fake = a
@@ -496,6 +541,42 @@ class World(val level: Level, private val past: Trail? = null) {
                 rollLaps = a.laps
             }
             is Action.Ghost -> ghostStart = ticks + Math.round(a.delay * Twists.HZ)
+        }
+    }
+
+    // ---------- network: portals, belts, lasers ----------
+
+    private fun link(id: Char) = links.firstOrNull { it.id == id } ?: error("Level ${level.name.en} has no portal '$id'")
+
+    private fun requireFree(c: Pair<Int, Int>) {
+        val (x, y) = c
+        require(x in 0 until cols && y in 0 until rows && level.map.grid[y][x] == '.') { "Portal tile $c in ${level.name.en} is not empty" }
+    }
+
+    private fun updateNet(dt: Float) {
+        for (g in groups.values) if (g.belt != null) g.beltRun += g.beltSpeed * dt
+        for (b in beams) b.update(time)
+    }
+
+    /** Walking into a portal tile pops the player out of the other end, same velocity, same spot within the tile. */
+    private fun hop() {
+        if (state != WorldState.PLAYING) return
+        val b = player.box
+        val here = Net.cell(b)
+        if (hopBlock != null && here != hopBlock) hopBlock = null
+        if (time < hopReady || here == hopBlock) return
+        for (l in links) {
+            val to = l.exit(here) ?: continue
+            Net.place(b, here, to)
+            l.hopTime = time
+            l.hopA = here
+            l.hopB = to
+            hopBlock = to
+            hopReady = time + Net.COOLDOWN
+            player.grounded = false
+            player.ground = null
+            events += Event.Hop
+            return
         }
     }
 
@@ -673,7 +754,8 @@ class World(val level: Level, private val past: Trail? = null) {
         p.vy += g * gravity * dt
         if (p.vy * gravity > Physics.MAX_FALL) p.vy = Physics.MAX_FALL * gravity
 
-        moveX((p.vx + tilt * slope) * dt)
+        val belt = if (p.grounded) p.ground?.group?.beltSpeed ?: 0f else 0f
+        moveX((p.vx + tilt * slope + belt) * dt)
         moveY(p.vy * dt)
         p.squash += (1f - p.squash) * min(1f, dt * 12f)
     }
@@ -726,6 +808,7 @@ class World(val level: Level, private val past: Trail? = null) {
         val b = player.box
         if (pieces.any { it.spike && it.visible && it.hurts(b) }) return die()
         ghost?.let { g -> if (b.overlaps(g.x + GHOST_INSET, g.y + GHOST_INSET, g.w - 2 * GHOST_INSET, g.h - 2 * GHOST_INSET)) return die() }
+        for (l in beams) if (l.hits(b)) return die()
         for (s in saws) {
             val nx = s.x.coerceIn(b.x, b.r)
             val ny = s.y.coerceIn(b.y, b.b)

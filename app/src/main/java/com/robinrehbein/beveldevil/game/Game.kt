@@ -280,6 +280,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Event.Bonk -> { audio.play(Sound.BONK); shake = maxOf(shake, 0.4f) }
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
+            Event.Hop -> audio.play(Sound.FLIP)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> say(e.text.toString(), 2.6f)
             is Event.Played -> {
