@@ -19,7 +19,9 @@ import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Action.Tilt
 import com.robinrehbein.beveldevil.game.Trigger.After
+import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.AtDoor
+import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
 import com.robinrehbein.beveldevil.game.Trigger.Shaken
@@ -33,15 +35,19 @@ object World1Part3 {
     private val ceilingSpike = Glyph(spike = true, dir = Dir.DOWN)
 
     val levels: List<Level> = listOf(
-        // 33 — the door is a fake: clear screen, then the floor is gone and the door went home
+        // 33 — a hidden pit on the way to the door; the door is a fake: clear screen, then the floor is gone and the door went home
         // TWIST: FakeWin (clear)
         Level(
             name = T("Clear Road", "Freie Fahrt"),
             intro = T("No traps today. I'm on vacation.", "Heute keine Fallen. Ich habe Urlaub."),
             legend = mapOf('A' to hiddenSpike),
-            traps = listOf(trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14)))),
+            traps = listOf(
+                trap(Touch('c'), Fall('c'), delay = 0.06f),
+                trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14))),
+            ),
         ) {
             border(); floor()
+            fill(20..21, 15..17, 'c')
             fill(13..16, 15..17, 'f')
             put(6, 14, 'A'); put(7, 14, 'A')
             put(8, 14, 'P'); put(28, 14, 'D')
@@ -82,14 +88,19 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 6, 'D')
         },
 
-        // 36 — a piece of the golden frame breaks off the ceiling and lands on the path
+        // 36 — a piece of the golden frame breaks off the ceiling and lands on the path; hopping onto it sprouts spikes behind it
         // TWIST: FrameCrack
         Level(
             name = T("Gallery", "Galerie"),
             intro = T("All real gold. Almost. Don't touch.", "Alles echtes Gold. Fast. Nicht anfassen."),
-            traps = listOf(trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack.")))),
+            legend = mapOf('A' to hiddenSpike),
+            traps = listOf(
+                trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack."))),
+                trap(Airborne(14f, 20f), Show('A')),
+            ),
         ) {
             border(); floor()
+            put(21, 14, 'A'); put(22, 14, 'A')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
@@ -110,28 +121,38 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 38 — the picture turns upside down over a spike pit; left and right follow the screen
+        // 38 — the picture turns upside down over a spike pit; left and right follow the screen; the jump over the spikes lands before more
         // TWIST: Flip
         Level(
             name = T("Clear View", "Durchblick"),
             intro = T("Nice picture today. Sharper than ever.", "Schönes Bild heute. Schärfer als je zuvor."),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
+                trap(Airborne(10f, 16.5f), Show('A')),
             ),
         ) {
             border(); floor()
             fill(13..14, 14..14, '^')
+            put(18, 14, 'A'); put(19, 14, 'A')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt
+        // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt; hopping onto it and hopping off it both land on spikes
         // MOTION: Tilt
         Level(
             name = T("Hardware Store", "Baumarkt"),
             intro = T("I built something wide. No instructions.", "Ich habe was Breites gebaut. Ohne Anleitung."),
+            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
+            traps = listOf(
+                trap(Airborne(5.5f, 9.6f), Show('B')),
+                trap(Airborne(22f, 28f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Nobody said you could jump.", "Springen hat niemand erlaubt."))),
+            ),
             start = listOf(Tilt('a', left = 0f, right = 13f, speed = 6f)),
         ) {
             border(); floor(); pit(8..23)
+            put(9, 14, 'B'); put(10, 14, 'B')
+            put(27, 14, 'A'); put(28, 14, 'A')
             fill(8..10, 15..15, 'a')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
@@ -143,6 +164,7 @@ object World1Part3 {
             intro = T("Everything is fine. Really.", "Alles in Ordnung. Wirklich."),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
+                trap(Airborne(15f, 20.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
             ),
         ) {
             border(); floor()
@@ -174,14 +196,16 @@ object World1Part3 {
         Level(
             name = T("Tailwind", "Rückenwind"),
             intro = T("Look ahead. There's nothing behind you.", "Schau nach vorne. Hinter dir ist nichts."),
-            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'A' to hiddenSpike),
             traps = listOf(
                 trap(PastX(7f), Play(Card.SPIKE_SEED), Move('W', 30f, 0f, 7.4f), PauseTrap(PauseTrick.SPIKE),
                     Say(T("Hungry wall! Need a break? Tap pause.", "Hungrige Wand! Pause? Tipp auf Pause."))),
+                trap(Airborne(9.5f, 12.6f), Show('A')),
             ),
         ) {
             border(); floor()
             fill(1..1, 1..14, 'W')
+            put(15, 14, 'A'); put(16, 14, 'A')
             pit(11..12); pit(21..22)
             put(17, 14, '#'); put(26, 14, '#')
             put(5, 14, 'P'); put(29, 14, 'D')
@@ -192,10 +216,15 @@ object World1Part3 {
         Level(
             name = T("git blame", "git blame"),
             intro = T("I keep a log. Of everything you do.", "Ich führe Buch. Über alles, was du tust."),
-            traps = listOf(trap(After(0f), Play(Card.DEVIL_SAW), Ghost(1f))),
+            legend = mapOf('A' to hiddenSpike),
+            traps = listOf(
+                trap(After(0f), Play(Card.DEVIL_SAW), Ghost(1f)),
+                trap(Airborne(12.5f, 17.5f), Show('A')),
+            ),
         ) {
-            border(); floor(); pit(22..24)
+            border(); floor(); pit(25..26)
             fill(15..16, 14..14, '^')
+            put(20, 14, 'A'); put(21, 14, 'A')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
@@ -204,25 +233,35 @@ object World1Part3 {
         Level(
             name = T("Wallflower", "Mauerblümchen"),
             intro = T("The wall won't budge. Neither will I.", "Die Wand bewegt sich nicht. Ich auch nicht."),
-            traps = listOf(trap(Shaken, Play(Card.COLLAPSE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!")))),
+            legend = mapOf('A' to hiddenSpike),
+            traps = listOf(
+                trap(Shaken, Play(Card.COLLAPSE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!"))),
+                trap(Airborne(17f, 19.7f), Show('A')),
+                trap(Touch('f'), Fall('f'), delay = 0.06f),
+            ),
         ) {
             border(); floor()
             fill(20..20, 1..14, 'a')
+            put(18, 14, 'A'); put(19, 14, 'A')
+            fill(24..25, 15..17, 'f')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 45 — the floor is deleted when you are halfway; the shelf above it is not
+        // 45 — the floor is deleted when you are halfway; the shelf above it is not, but climbing onto it sprouts spikes
         // EASTER EGG: sudo rm -rf /
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
+                trap(Airborne(2.5f, 7f), Show('A')),
             ),
         ) {
             border()
             fill(1..30, 15..17, 'f')
             fill(4..30, 13..13)
+            put(9, 12, 'A'); put(10, 12, 'A')
             put(20, 12, '^')
             put(2, 14, 'P'); put(29, 12, 'D')
         },
@@ -249,12 +288,16 @@ object World1Part3 {
         Level(
             name = T("sudo make me a sandwich", "sudo mach mir ein Sandwich"),
             intro = T("I'm hungry. Make me a sandwich.", "Ich habe Hunger. Mach mir ein Sandwich."),
-            legend = mapOf('k' to ghost),
+            legend = mapOf('k' to ghost, 'A' to hiddenSpike),
             traps = listOf(
                 trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Say(T("Okay.", "Okay."))),
+                trap(PastX(13.5f), Show('A')),
+                trap(Landed(19f, 22f), Fall('f')),
             ),
         ) {
             border(); floor()
+            put(17, 14, 'A'); put(18, 14, 'A')
+            fill(23..23, 15..17, 'f')
             fill(20..21, 3..14, 'w')
             put(10, 12, 'k')
             // the sandwich, hovering above the root block
@@ -267,14 +310,15 @@ object World1Part3 {
         Level(
             name = T("Exit", "Ausgang"),
             intro = T("Last level. Promise.", "Letztes Level. Versprochen."),
-            legend = mapOf('c' to hiddenSolid),
+            legend = mapOf('c' to hiddenSolid, 'A' to hiddenSpike),
             traps = listOf(
-                trap(PastX(5f), Play(Card.GRAND_FINALE), Say(T("Final level! Everything I've got.", "Letztes Level! Alles, was ich habe."))),
+                trap(Airborne(15.2f, 18.6f), Play(Card.GRAND_FINALE), Show('A'), Say(T("Final level! Everything I've got.", "Letztes Level! Alles, was ich habe."))),
                 trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8), Roll(3f, 2))),
             ),
             start = listOf(Blink('a', on = 2.4f, off = 1f)),
         ) {
             border(); floor(); pit(10..16)
+            put(19, 14, 'A'); put(20, 14, 'A')
             fill(10..16, 15..15, 'a')
             fill(1..13, 9..9, 'c'); fill(15..19, 11..11, 'c'); fill(22..26, 13..13, 'c')
             put(2, 14, 'P'); put(28, 14, 'D')
