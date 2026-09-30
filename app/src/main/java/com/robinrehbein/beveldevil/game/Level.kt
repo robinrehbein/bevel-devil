@@ -37,6 +37,19 @@ sealed interface Trigger {
     data class Zone(val x0: Float, val y0: Float, val x1: Float, val y1: Float) : Trigger
     /** Player stands on or touches a visible piece of the group. */
     data class Touch(val group: Char) : Trigger
+    /**
+     * The player is in the air (mid-jump or falling) with the center between [x0] and [x1]. Fires once they are
+     * committed: too late to turn back, in time to react.
+     *
+     *     trap(Airborne(9.3f, 10.9f), Show('A'))   // spikes sprout where the jump over the spike will land
+     */
+    data class Airborne(val x0: Float, val x1: Float) : Trigger
+    /**
+     * The player touched down (airborne one step, on the ground the next) with the center between [x0] and [x1].
+     *
+     *     trap(Landed(17f, 19.5f), Fall('d'), Say(T("Welcome back.", "Willkommen zurück.")))
+     */
+    data class Landed(val x0: Float, val x1: Float) : Trigger
     /** Seconds since the attempt started. */
     data class After(val seconds: Float) : Trigger
     /** No left/right/jump input for [seconds] in a row. */

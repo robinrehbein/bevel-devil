@@ -25,7 +25,7 @@ object World2Part2 {
         // 17 — the first conveyor belt: standing still rides you into the spikes
         Level(
             name = T("Data Bus", "Datenbus"),
-            intro = T("All aboard the data bus. Do not stand still.", "Alles einsteigen in den Datenbus. Nicht stehen bleiben."),
+            intro = T("Timetable: every ten seconds. Roughly.", "Fahrplan: alle zehn Sekunden. Ungefähr."),
             start = listOf(Belt('b', 3.5f)),
         ) {
             border(); floor()
@@ -37,7 +37,7 @@ object World2Part2 {
         // 18 — the first laser: a firewall gate that opens now and then
         Level(
             name = T("Firewall", "Firewall"),
-            intro = T("Port closed. Port open. Port closed. Wait for it.", "Port zu. Port auf. Port zu. Warte auf den richtigen Moment."),
+            intro = T("I configured the firewall myself. Nice pattern, right?", "Die Firewall habe ich selbst eingestellt. Schönes Muster, oder?"),
             start = listOf(Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f, phase = 1.4f)),
         ) {
             border(); floor()
@@ -47,8 +47,8 @@ object World2Part2 {
 
         // 19 — the belt carries you along, then reverses faster than you run
         Level(
-            name = T("Out of Order", "Paketsalat"),
-            intro = T("Packets arrive in order. Usually.", "Pakete kommen der Reihe nach an. Meistens."),
+            name = T("Delivery", "Zustellung"),
+            intro = T("Packets arrive in order. Guaranteed.", "Pakete kommen der Reihe nach an. Garantiert."),
             start = listOf(Belt('b', 2f)),
             traps = listOf(
                 trap(PastX(10f), Play(Card.TWISTED), Belt('b', -10f), say("Packet reordering! Everything arrives backwards.", "Paket-Umsortierung! Alles kommt rückwärts an.")),
@@ -63,7 +63,7 @@ object World2Part2 {
         // 20 — two gates that are never open together: wait on the island between them
         Level(
             name = T("Stateful Inspection", "Zustandsprüfung"),
-            intro = T("The second gate remembers what the first one let through.", "Das zweite Tor weiß, was das erste durchgelassen hat."),
+            intro = T("Please have your ID ready.", "Bitte Ausweis bereithalten."),
             start = listOf(
                 Laser('L', 10 to 1, 10 to 14, on = 1f, off = 2f, phase = 2f),
                 Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
@@ -76,8 +76,8 @@ object World2Part2 {
 
         // 21 — EASTER EGG: bandwidth (a beam as a low ceiling: only short hops fit through)
         Level(
-            name = T("Bandwidth Limit", "Bandbreiten-Limit"),
-            intro = T("Your plan allows 1.5 tiles of height.", "Dein Tarif erlaubt 1,5 Kacheln Höhe."),
+            name = T("Flat Rate", "Flatrate"),
+            intro = T("Unlimited flat rate. There is no small print.", "Unbegrenzte Flatrate. Ein Kleingedrucktes gibt es nicht."),
             legend = mapOf('A' to hidden),
             start = listOf(Laser('H', 5 to 12, 26 to 12)),
             traps = listOf(
@@ -92,8 +92,8 @@ object World2Part2 {
 
         // 22 — a hidden block is the switch for the firewall: knock by jumping
         Level(
-            name = T("Port Knocking", "Anklopfen"),
-            intro = T("Knock, knock. Who's there? Try jumping.", "Klopf, klopf. Wer ist da? Spring mal."),
+            name = T("Bouncer", "Türsteher"),
+            intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             legend = mapOf('k' to ghost),
             start = listOf(
                 Laser('L', 15 to 1, 15 to 14),
@@ -111,7 +111,7 @@ object World2Part2 {
         // 23 — a ride through three belts and two one-way portals: only the spikes need you
         Level(
             name = T("Information Superhighway", "Datenautobahn"),
-            intro = T("Surf the net. Mind the spikes on the on-ramp.", "Surf im Netz. Vorsicht vor den Spikes auf der Auffahrt."),
+            intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
             start = listOf(
                 Belt('a', 4.5f), Belt('b', 4.5f), Belt('c', 4.5f),
                 Portal('1', 15 to 14, 4 to 8, twoWay = false),
@@ -129,7 +129,7 @@ object World2Part2 {
         // 24 — climb the racks: every jump crosses a timed beam, and the last rack crumbles
         Level(
             name = T("Uplink", "Uplink"),
-            intro = T("The uplink is on the top shelf. Mind the lasers.", "Der Uplink steht im obersten Fach. Vorsicht, Laser."),
+            intro = T("The uplink is at the top. I'm taking the elevator.", "Der Uplink ist ganz oben. Ich nehme den Aufzug."),
             start = listOf(
                 Laser('1', 8 to 1, 8 to 12, on = 1f, off = 1.8f, phase = 1.4f),
                 Laser('2', 14 to 1, 14 to 10, on = 1f, off = 1.8f, phase = 0.4f),
@@ -149,7 +149,7 @@ object World2Part2 {
         // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it
         Level(
             name = T("Load Balancer", "Lastverteiler"),
-            intro = T("Traffic is distributed evenly. Left, right, left, right.", "Der Verkehr wird gleichmäßig verteilt. Links, rechts, ..."),
+            intro = T("I distribute the load evenly. Onto you.", "Ich verteile die Last gleichmäßig. Auf dich."),
             start = listOf(Belt('a', 4f), Belt('b', -4f), Belt('c', 4f), Belt('d', -4f)),
             traps = listOf(
                 trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 0.9f),
@@ -167,8 +167,8 @@ object World2Part2 {
 
         // 26 — the gate stays shut for seconds, but idle connections are dropped: keep hopping while you wait
         Level(
-            name = T("Keep-Alive", "Keep-Alive"),
-            intro = T("Idle connections are closed after 1.5 seconds.", "Untätige Verbindungen werden nach 1,5 Sekunden getrennt."),
+            name = T("Ticket Number", "Wartenummer"),
+            intro = T("The gate opens shortly. Please linger.", "Das Tor öffnet gleich. Bitte kurz verweilen."),
             start = listOf(Laser('L', 15 to 1, 15 to 14, on = 3.5f, off = 1.6f)),
             traps = listOf(
                 trap(Idle(1.5f), Play(Card.CRUMBLE), Fall('a'), say("Connection closed: idle timeout.", "Verbindung beendet: Leerlauf-Timeout.")),
@@ -182,7 +182,7 @@ object World2Part2 {
         // 27 — EASTER EGG: DDoS (Distributed Denial of Stairs, on a belt that runs against you)
         Level(
             name = T("DDoS", "DDoS"),
-            intro = T("Distributed Denial of Stairs. The belt is against you too.", "Distributed Denial of Stairs. Das Band ist auch gegen dich."),
+            intro = T("Light traffic today. Just you and the stairs.", "Heute wenig Verkehr. Nur du und die Treppe."),
             start = listOf(Belt('b', -3f)),
             traps = listOf(
                 trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("10,000 blocks per second.", "10.000 Blöcke pro Sekunde.")),
@@ -203,7 +203,7 @@ object World2Part2 {
         // 28 — a VPN tunnel goes under the firewall; the intrusion prevention system lays a beam on the floor behind it
         Level(
             name = T("Split Tunnel", "Split Tunnel"),
-            intro = T("The firewall blocks everything. Everything except the tunnel.", "Die Firewall blockt alles. Alles außer dem Tunnel."),
+            intro = T("The tunnel is the only shortcut. I swear.", "Der Tunnel ist die einzige Abkürzung. Ich schwöre."),
             start = listOf(Laser('L', 15 to 1, 15 to 14), Portal('1', 11 to 14, 19 to 14)),
             traps = listOf(
                 trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 23 to 14, 26 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
@@ -216,7 +216,7 @@ object World2Part2 {
         // 29 — a pendulum saw over a belt that hurries you, and another saw that is right behind you
         Level(
             name = T("Race Condition", "Wettlaufsituation"),
-            intro = T("Two threads race to the door. Guess who's not winning.", "Zwei Threads rennen zur Tür. Rate, wer nicht gewinnt."),
+            intro = T("The winner gets a cookie. I have no cookies.", "Der Sieger bekommt einen Keks. Ich habe keine Kekse."),
             start = listOf(
                 Belt('b', 5f),
                 PathSaw(5f, 16f to 14.4f, 16f to 11.6f),
@@ -235,7 +235,7 @@ object World2Part2 {
         // 30 — three one-way portals, each one lands higher up in the air
         Level(
             name = T("Hop Limit", "Hop-Limit"),
-            intro = T("Every hop costs 1 TTL. You have three.", "Jeder Hop kostet 1 TTL. Du hast drei."),
+            intro = T("TTL: 64. No need to rush.", "TTL: 64. Kein Grund zur Eile."),
             start = listOf(
                 Portal('1', 7 to 14, 12 to 8, twoWay = false),
                 Portal('2', 18 to 9, 23 to 4, twoWay = false),
@@ -251,8 +251,8 @@ object World2Part2 {
 
         // 31 — EASTER EGG: HTTP 408 Request Timeout (a treadmill against you and a gate that closes for good at 5.2 s)
         Level(
-            name = T("408 Request Timeout", "408 Zeitüberschreitung"),
-            intro = T("Connection closes in 5 seconds. The belt is slow. So are you.", "Verbindung endet in 5 Sekunden. Das Band ist langsam. Du auch."),
+            name = T("Detention", "Nachsitzen"),
+            intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),
             start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
             traps = listOf(
                 trap(After(0.2f), Play(Card.SINKING), say("408: the server waited for you. Not anymore.", "408: Der Server hat auf dich gewartet. Nicht mehr.")),
@@ -266,7 +266,7 @@ object World2Part2 {
         // 32 — act finale: belt, tunnel, timed gate and a belt that turns around in front of it
         Level(
             name = T("Core Switch", "Core-Switch"),
-            intro = T("Belt, tunnel, gate. The core switch does all of it at once.", "Band, Tunnel, Tor. Der Core-Switch macht alles auf einmal."),
+            intro = T("Finally, the data-center basement. This is where I live.", "Endlich der Rechenzentrumskeller. Hier wohne ich."),
             start = listOf(
                 Belt('a', 4f), Belt('b', 3f),
                 Portal('1', 13 to 14, 17 to 14, twoWay = false),

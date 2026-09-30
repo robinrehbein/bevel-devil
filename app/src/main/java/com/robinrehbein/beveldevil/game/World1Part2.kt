@@ -22,8 +22,8 @@ object World1Part2 {
         // 17 — blinking bridge over a pit: cross when it comes back
         // MECHANIC: Blink (alone)
         Level(
-            name = T("Blinkenlights", "Sparmodus"),
-            intro = T("New house rule: platforms have a power-saving mode.", "Neue Hausordnung: Plattformen haben jetzt einen Energiesparmodus."),
+            name = T("Night Shift", "Nachtschicht"),
+            intro = T("Management is saving money now. On everything.", "Die Hausverwaltung spart neuerdings. An allem."),
             start = listOf(Blink('a', on = 1.8f, off = 1f)),
         ) {
             border(); floor(); pit(11..20)
@@ -34,8 +34,8 @@ object World1Part2 {
         // 18 — three saws bob up and down across the path; slip under each while it is up
         // MECHANIC: PathSaw (alone)
         Level(
-            name = T("Pendulum", "Pendeluhr"),
-            intro = T("Clockwork. Mostly teeth.", "Uhrwerk. Überwiegend Zähne."),
+            name = T("On the Hour", "Stundenschlag"),
+            intro = T("Be right back. Just getting coffee.", "Bin gleich zurück. Nur kurz Kaffee holen."),
             start = listOf(
                 PathSaw(6.5f, 9f to 14.4f, 9f to 7f, delay = 1f),
                 PathSaw(7.5f, 15f to 7f, 15f to 14.4f),
@@ -49,8 +49,8 @@ object World1Part2 {
         // 19 — the door comes if you wait, but standing still collapses the start platform
         // MECHANIC: Idle (punishes standing still)
         Level(
-            name = T("Heisenbug", "Heisenbug"),
-            intro = T("Don't just stand there. Do something.", "Steh nicht nur rum. Mach was."),
+            name = T("Waiting Room", "Wartezimmer"),
+            intro = T("Have a seat for a second. I'll fetch the door.", "Setz dich kurz. Ich hole die Tür."),
             traps = listOf(
                 trap(After(3.5f), Play(Card.SHY_DOOR), DoorTo(4, 14, speed = 12f), Say(T("Told you.", "Hab's dir gesagt."))),
                 trap(Idle(1f), Fall('a'), Say(T("Observed. Collapsed.", "Beobachtet. Kollabiert."))),
@@ -64,8 +64,8 @@ object World1Part2 {
         // 20 — four stones blink one after another, like a running light: keep running
         // MECHANIC: Blink (rhythm)
         Level(
-            name = T("Running Lights", "Lauflicht"),
-            intro = T("Keep up with the lights. Don't stop.", "Lauf mit dem Licht. Nicht stehen bleiben."),
+            name = T("Disco Night", "Discoabend"),
+            intro = T("Disco tonight. You're not invited.", "Heute Abend ist Disco. Du hast keine Einladung."),
             start = listOf(
                 Blink('a', on = 1.6f, off = 1.4f, phase = -0.3f),
                 Blink('b', on = 1.6f, off = 1.4f, phase = -0.9f),
@@ -81,8 +81,8 @@ object World1Part2 {
         // 21 — each floor segment you touch deletes the one two segments ahead
         // EASTER EGG: Segfault (floor segments fault away)
         Level(
-            name = T("Segfault", "Segmentierungsfehler"),
-            intro = T("Core dumped. Floor segments, that is.", "Core Dump. Bodensegmente, genauer gesagt."),
+            name = T("Foundation", "Fundament"),
+            intro = T("Concrete. Two inches. Fully inspected.", "Beton. Fünf Zentimeter. Alles geprüft."),
             traps = listOf(
                 trap(Touch('a'), Play(Card.COLLAPSE), Fall('c'), Say(T("Segmentation fault (core dumped)", "Speicherzugriffsfehler (Speicherabbild erstellt)")), delay = 0.3f),
                 trap(Touch('b'), Fall('d'), delay = 0.3f),
@@ -99,7 +99,7 @@ object World1Part2 {
         // MECHANIC: Blink (walls)
         Level(
             name = T("Airlock", "Schleuse"),
-            intro = T("Please stand clear of the closing doors.", "Zurückbleiben bitte, die Türen schließen selbsttätig."),
+            intro = T("Tuesday is field-trip day. For the walls.", "Dienstag ist Wandertag. Für die Wände."),
             start = listOf(
                 Blink('a', on = 1.6f, off = 1.6f, phase = 0f),
                 Blink('b', on = 1.6f, off = 1.6f, phase = 1.6f),
@@ -115,8 +115,8 @@ object World1Part2 {
         // 23 — a long blinking bridge with a saw bobbing through the middle of it
         // MECHANIC: Blink + PathSaw
         Level(
-            name = T("Sawmill", "Sägewerk"),
-            intro = T("The bridge blinks. The saw works shifts.", "Die Brücke blinkt. Die Säge macht Schichtdienst."),
+            name = T("Carpentry", "Zimmerei"),
+            intro = T("Everything here is still handmade.", "Hier ist noch alles Handarbeit."),
             start = listOf(
                 Blink('a', on = 4.4f, off = 1f),
                 PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
@@ -131,7 +131,7 @@ object World1Part2 {
         // EASTER EGG: git merge conflict markers
         Level(
             name = T("Merge Conflict", "Merge-Konflikt"),
-            intro = T("<<<<<<< HEAD  Two branches want your spot.", "<<<<<<< HEAD  Zwei Branches wollen deinen Platz."),
+            intro = T("<<<<<<< HEAD  Commit message: 'minor changes'.", "<<<<<<< HEAD  Commit-Nachricht: 'kleine Änderungen'."),
             legend = mapOf('L' to Glyph(spike = true, dir = Dir.RIGHT), 'R' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
                 trap(After(2.4f), Play(Card.DEVIL_SAW), Move('R', -20f, 0f, 4.2f), Move('L', 25f, 0f, 3f),
@@ -147,8 +147,8 @@ object World1Part2 {
         // 25 — hands off: standing perfectly still brings the door to you
         // MECHANIC: Idle (rewards standing still)
         Level(
-            name = T("Patience", "Geduld"),
-            intro = T("Good things come to those who wait. Hands off.", "Gut Ding will Weile haben. Finger weg."),
+            name = T("Rush Hour", "Stoßzeit"),
+            intro = T("Hurry! The door closes soon.", "Schnell, schnell! Die Tür schließt gleich."),
             traps = listOf(
                 trap(Idle(2f), Play(Card.SHY_DOOR), DoorTo(4, 14, speed = 12f), Say(T("Good boy. Sit. Stay.", "Brav. Sitz. Platz."))),
             ),
@@ -162,8 +162,8 @@ object World1Part2 {
         // 26 — a staircase whose steps blink in turns; wait on each one for the next
         // MECHANIC: Blink (climb)
         Level(
-            name = T("Stairway to Heaven", "Himmelsleiter"),
-            intro = T("Stairs on a timetable. Delays are likely.", "Treppe mit Fahrplan. Verspätungen sind möglich."),
+            name = T("Skyscraper", "Hochhaus"),
+            intro = T("Top floor. The air is better up there.", "Oberste Etage. Da oben ist die Luft besser."),
             start = listOf(
                 Blink('a', on = 3f, off = 1.2f, phase = -0.5f),
                 Blink('b', on = 3f, off = 1.2f, phase = -2f),
@@ -182,7 +182,7 @@ object World1Part2 {
         // EASTER EGG: 42 / Hitchhiker's Guide / binary 101010 / bit flip (cosmic ray)
         Level(
             name = T("42", "42"),
-            intro = T("The answer to everything: 0b101010. Mostly.", "Die Antwort auf alles: 0b101010. Meistens."),
+            intro = T("The answer to everything. I forgot the question.", "Die Antwort auf alles. Die Frage habe ich vergessen."),
             legend = mapOf('p' to hiddenSolid, 'r' to hiddenSolid, 's' to hiddenSolid),
             traps = listOf(
                 trap(PastX(5.4f), Play(Card.COLLAPSE), Show('p'), Show('r'), Fall('q'), Say(T("Bit flip! Cosmic ray. Not my fault.", "Bit gekippt! Kosmische Strahlung. Nicht meine Schuld.")), delay = 0.15f),
@@ -200,8 +200,8 @@ object World1Part2 {
         // 28 — two saws patrol the floor; jump each as it comes
         // MECHANIC: PathSaw (patrol)
         Level(
-            name = T("Jump Rope", "Seilspringen"),
-            intro = T("Sports day. Everybody jumps.", "Sporttag. Seilspringen für alle."),
+            name = T("Gym Class", "Turnstunde"),
+            intro = T("Mephi is training for a marathon. Don't disturb him.", "Mephi trainiert für den Marathon. Stör ihn nicht."),
             start = listOf(
                 PathSaw(6f, 14f to 14.4f, 6f to 14.4f),
                 PathSaw(9f, 26f to 14.4f, 18f to 14.4f),
@@ -213,8 +213,8 @@ object World1Part2 {
 
         // 29 — climb: the floor is spikes and it is rising
         Level(
-            name = T("Rising Tide", "Steigende Flut"),
-            intro = T("Nice view. Enjoy it while it lasts.", "Schöne Aussicht. Genieß sie, solange sie dauert."),
+            name = T("Hike", "Bergtour"),
+            intro = T("The journey is the destination. Allegedly.", "Der Weg ist das Ziel. Angeblich."),
             traps = listOf(
                 trap(After(2.3f), Play(Card.SPIKE_SEED), Move('L', 0f, -16f, 1.6f), Say(T("The floor is lava. Well. Spikes.", "Der Boden ist Lava. Na gut. Spikes."))),
             ),
@@ -228,8 +228,8 @@ object World1Part2 {
         // 30 — tetrominoes drop from the ceiling and build the stairs. You only have to wait.
         // EASTER EGG: Tetris (O-pieces stack up, "Line clear!")
         Level(
-            name = T("Tetris", "Tetris"),
-            intro = T("Here, I built you some stairs. Almost.", "Hier, ich habe dir eine Treppe gebaut. Fast."),
+            name = T("Arcade", "Spielhalle"),
+            intro = T("I'm about to play something. Go on ahead.", "Ich spiele gleich was. Geh ruhig schon vor."),
             traps = listOf(
                 trap(After(2.4f), Play(Card.HEADBUTT), Fall('p'), Say(T("Next piece: staircase.", "Nächster Stein: Treppe."))),
                 trap(After(3.4f), Fall('q')),
@@ -250,8 +250,8 @@ object World1Part2 {
         // 31 — a saw swings up and down in each pit; jump when it is up
         // MECHANIC: PathSaw (started by the Devil Saw card)
         Level(
-            name = T("Sawfly", "Flugsäge"),
-            intro = T("Watch your step. And the thing above it.", "Achte auf den Sprung. Und auf das Ding darüber."),
+            name = T("Meadow", "Wiesengrund"),
+            intro = T("Sunny day. Birds singing. Nothing with teeth.", "Sonniger Tag. Vögel zwitschern. Nichts mit Zähnen."),
             traps = listOf(
                 trap(PastX(3f), Play(Card.DEVIL_SAW), PathSaw(6f, 12f to 14.4f, 12f to 6f), PathSaw(6f, 19f to 6f, 19f to 14.4f),
                     Say(T("It only wants a hug! Two, actually.", "Sie will nur kuscheln! Genauer: zwei."))),
@@ -266,7 +266,7 @@ object World1Part2 {
         // MECHANIC: Blink + Idle + PathSaw
         Level(
             name = T("Beta Test", "Betaversion"),
-            intro = T("New rules: all of them. Tested: none.", "Neue Regeln: alle. Getestet: keine."),
+            intro = T("Please send feedback via the form. There is none.", "Bitte Feedback über das Formular senden. Es gibt keins."),
             traps = listOf(
                 trap(Idle(1.2f), Play(Card.COLLAPSE), Fall('f'), Say(T("You stood still. That's a regression.", "Du standest still. Das ist ein Rückschritt."))),
             ),
