@@ -7,7 +7,9 @@ import com.robinrehbein.beveldevil.game.Audio
 import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Demo
+import com.robinrehbein.beveldevil.game.Bot
 import com.robinrehbein.beveldevil.game.Game
+import com.robinrehbein.beveldevil.game.HardwareDemos
 import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
 import com.robinrehbein.beveldevil.game.NetDemos
@@ -403,6 +405,64 @@ class ScreenshotTest {
                 play(3f) { w().beams[1].lit }
                 play(0.1f); save("106-firewall$tag")
             }
+        }
+    }
+
+    /** World 3's hardware mechanics on their test-only demo levels, in the game (hell look until World 3 has its theme). */
+    @Test
+    fun hardware() {
+        Lang.german = true
+        val s = sizes[0]
+        fun film(level: Level) = Film(Game(MemoryProgress(), silent).apply { startCustom(level) }, s)
+        fun Film.w() = game.world!!
+        film(HardwareDemos.circuit).apply {
+            play(0.4f); save("150-circuit-dead")
+            game.input.right = true
+            play(3f) { w().player.box.cx > 12f }
+            game.input.right = false
+            play(0.1f); save("151-circuit-powered")
+        }
+        film(HardwareDemos.heat).apply {
+            game.input.right = true
+            play(3f) { w().heaters['h']!!.heat > 0.8f }
+            save("152-heat")
+        }
+        film(HardwareDemos.fan).apply {
+            game.input.right = true
+            play(3f) { w().player.box.cx > 12.6f }
+            game.input.right = false
+            play(0.5f); save("153-updraft")
+        }
+    }
+
+    /**
+     * The same mechanics, playfield only and 4× enlarged, on a dark green and a dark blue board (stand-ins for the
+     * real World 3 theme), to check that copper, heat, air and danger read on both.
+     */
+    @Test
+    fun hardwareBoards() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val boards = listOf("green" to Themes.PCB_GREEN, "blue" to Themes.PCB_BLUE)
+        fun at(level: Level, script: Bot.() -> Unit) = Bot(level).apply(script).world
+        val scenes = listOf(
+            "circuit" to at(HardwareDemos.circuit) { rightTo(13f) },
+            "clock" to at(HardwareDemos.clock) { waitFor { it.circuits['a']!!.warn > 0.6f } },
+            "live" to at(HardwareDemos.live) { wait(0.5f) },
+            "cut" to at(HardwareDemos.cut) { rightTo(11.7f).wait(0.08f) },
+            "heat" to at(HardwareDemos.heat) { rightTo(13.5f) },
+            "chip" to at(HardwareDemos.chip) { rightTo(15.5f).wait(0.12f) },
+            "overclock" to at(HardwareDemos.overclock) { rightTo(17.5f) },
+            "fan" to at(HardwareDemos.fan) { rightTo(12.6f).wait(0.5f) },
+            "wind" to at(HardwareDemos.wind) { rightTo(8.6f).rightJump(0.2f) },
+        )
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((name, w) in scenes) for ((board, theme) in boards) {
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, theme)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 4, PH * 4, false)
+            File(dir, "155-hw-$name-$board.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 

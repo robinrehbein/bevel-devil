@@ -91,6 +91,7 @@ Level(
 - Kleinbuchstaben sind Block-Gruppen, Großbuchstaben Spike-Gruppen. Über `legend` lassen sie sich verstecken (`hidden`) oder erst beim Kopfstoß sichtbar machen (`bonk`).
 - Trigger: `PastX`, `BeforeX`, `Zone`, `Touch`, `After`, `Idle(s)` (s Sekunden keine Eingabe), `Shaken` (Handy geschüttelt).
 - Aktionen: `Fall`, `Show`, `Hide`, `Move`, `DoorTo`, `Gravity`, `Swap`, `Saw`, `Say`, `Shake`, `Play`, dazu die Mechaniken unten.
+- Hardware-Trigger (Welt 3): `Pressed(pad)`, `Heated(group, above)`.
 - `start = listOf(...)` führt Aktionen gleich beim Levelstart aus (sonst per Trigger).
 
 Mechaniken (sichtbar, keine versteckten Fallen):
@@ -118,6 +119,25 @@ Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f) // Strahl zwischen zwei Emitt
                                                   // Emitter glühen 0,6 s vor dem Feuern, dazu eine Punktlinie
 trap(PastX(10f), Power('L', false))               // Portal, Laser oder Band aus/an; ein Laser heizt beim Einschalten erst vor
 ```
+
+Hardware-Mechaniken für Welt 3 (Laufzeit in `game/Hardware.kt`, Look in `render/HardwarePainter.kt`, Demos in `HardwareDemos`):
+
+```kotlin
+Circuit('a')                                      // Kleinbuchstaben-Gruppe = Kupferschiene: mit Strom fest, ohne nur gestrichelter Umriss
+Circuit('Z')                                      // Großbuchstaben-Gruppe = blanke Leiterbahn: unter Strom tödlich, nie fest
+Clock('a', on = 1.8f, off = 1f, phase = 0f)       // Takt; flackert rot vor dem Abschalten, kommt nie im Spieler zurück
+Pad('1', at = 6 to 14, circuits = "ab", mode = PadMode.TOGGLE) // Druckplatte (TOGGLE, HOLD, ON, OFF), Kappe in der Farbe des Kreises
+trap(PastX(12f), Power('a', false))               // Mephi dreht den Strom ab; Toggle("ab"), BitFlip('a', 'b') tauschen
+trap(Pressed('1'), ...)                           // Trigger: Platte getreten; Heated('h', 0.5f): Gruppe so heiß
+Heat('h', rise = 1.2f, cool = 1.2f)               // Heizplatte: heizt, solange man draufsteht, kühlt sonst ab; voll heiß = tödlich
+Heat('c', rise = 3f, load = true, melt = false)   // Chip unter Last: heizt immer; melt: schmilzt statt zu brennen
+Heatsink('k', cools = "c")                        // Kühlkörper: draufstehen kühlt die Gruppen schnell ab
+trap(PastX(14f), HeatSpike('f', 0.7f))            // „Übertaktet“: normaler Boden wird schlagartig heiß (bis dahin pixelgleich)
+Fan('f', at = 12 to 15, dir = Dir.UP, reach = 9, speed = 10f, width = 2) // Lüfter: seitlich Drift, hoch/runter ersetzt er die Schwerkraft
+trap(PastX(9f), FanSet('f', -8f))                 // dreht langsam über null um; Power('f', false) läuft aus
+```
+
+Im `Bot` gibt es dafür `waitPowered(id)`, `waitCooled(id)` und `rightUntil { … }` (z. B. im Aufwind, bis hoch genug).
 
 Neigung und Schütteln liest `GameView` nur in Leveln, die sie nutzen (Schwerkraftsensor, sonst Beschleunigungssensor). Ohne Sensor oder mit Einstellung „Neigung: Aus“ erscheinen unten zwei Neige-Tasten (einrastend) und eine Schütteltaste; Tastatur Q/E neigen, S schüttelt. Im `Bot` gibt es dafür `tilt(v)` und `shake()`. Mini-Level für jede Mechanik liegen in den Tests (`Demo.kt`).
 
