@@ -16,6 +16,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Resumed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -318,6 +319,53 @@ class TwistsTest {
         // RESUME now sits where LEVELS was
         g.tapOn(Ui.pauseLevels); assertEquals(Screen.PLAY, g.screen)
         g.tapOn(Ui.hudPause); g.tapOn(Ui.pauseResume); assertEquals(Screen.SELECT, g.screen)
+    }
+
+    @Test
+    fun restartFromPauseIsAnInstantCountedRetry() {
+        val g = sandbox(Level(T("", ""), T("", ""), traps = listOf(trap(After(0.3f), Hide('w')))) {
+            border(); floor(); put(2, 14, 'P'); put(29, 14, 'D'); put(10, 13, 'w')
+        })
+        g.input.right = true
+        g.run(0.6f)
+        g.input.right = false
+        val old = g.world!!
+        assertFalse(old.group('w').visible)
+        assertTrue(old.player.box.cx > 4f)
+        g.tapOn(Ui.hudPause); assertEquals(Screen.PAUSE, g.screen)
+        g.tapOn(Ui.pauseRestart)
+        assertEquals(Screen.PLAY, g.screen)
+        assertEquals(1, g.deaths)
+        assertNotSame(old, g.world)
+        assertEquals(WorldState.PLAYING, g.world!!.state)
+        assertTrue(g.world!!.group('w').visible)
+        assertTrue(g.world!!.player.box.cx < 3f)
+        assertEquals(0, g.world!!.resumes)
+        // no death animation delay: Bevel moves right away
+        g.input.right = true; g.run(0.2f)
+        assertTrue(g.world!!.player.box.cx > 2.5f)
+        g.input.right = false
+        g.tapOn(Ui.hudPause); g.tapOn(Ui.pauseRestart)
+        assertEquals(2, g.deaths)
+    }
+
+    @Test
+    fun restartFromEveryPauseTrapPauseJustRestarts() {
+        for (trick in PauseTrick.entries) {
+            val lvl = Level(T("", ""), T("", ""), traps = listOf(trap(After(0f), PauseTrap(trick)), trap(Resumed(), Hide('w')))) {
+                border(); floor(); put(2, 14, 'P'); put(29, 14, 'D'); put(10, 13, 'w')
+            }
+            val g = sandbox(lvl)
+            g.run(0.2f)
+            g.back(); assertEquals("$trick", Screen.PAUSE, g.screen)
+            g.tapOn(Ui.pauseRestart)
+            assertEquals("$trick", Screen.PLAY, g.screen)
+            assertEquals("$trick", 1, g.deaths)
+            assertEquals("$trick", 0, g.world!!.resumes)
+            g.run(0.2f)
+            assertTrue("$trick", g.world!!.group('w').visible)
+            assertEquals("$trick", trick, g.world!!.pauseTrick)
+        }
     }
 
     @Test
