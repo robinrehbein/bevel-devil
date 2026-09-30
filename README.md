@@ -1,4 +1,4 @@
-# Bevel Devil
+# Melphi the Daemon
 
 Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würfel **Bevel** will zur Tür, und **Mephi**, der Croupier der Hölle, spielt ihm dabei Fallenkarten aus.
 
@@ -29,6 +29,22 @@ Voraussetzungen: JDK 17+ und ein Android-SDK (compileSdk 35). Mit Android Studio
 ```
 
 Die Screenshot-Tests rendern echte Screens mit Robolectric nach `app/build/screenshots/`. So lässt sich der Look ohne Gerät prüfen.
+
+## Test-Releases über GitHub Actions
+
+Nach jedem Push auf `main` (auch nach einem Merge) baut `.github/workflows/play-test-release.yml` einen signierten AAB, führt die Unit-Tests aus und veröffentlicht denselben Build in den Play-Tracks `internal` und `alpha`. Der `versionCode` wird aus der GitHub-Workflow-Laufnummer gebildet. Der Workflow kann auch manuell gestartet werden.
+
+Für den Workflow sind diese Repository-Secrets nötig:
+
+| Secret | Inhalt |
+|---|---|
+| `ANDROID_UPLOAD_KEYSTORE_BASE64` | Base64-kodierte Upload-Keystore-Datei |
+| `ANDROID_UPLOAD_STORE_PASSWORD` | Keystore-Passwort |
+| `ANDROID_UPLOAD_KEY_ALIAS` | Alias des Upload-Schlüssels |
+| `ANDROID_UPLOAD_KEY_PASSWORD` | Passwort des Upload-Schlüssels |
+| `PLAY_SERVICE_ACCOUNT_JSON` | JSON-Schlüssel eines Google-Servicekontos mit Veröffentlichungsrecht für diese App |
+
+Die lokale Upload-Key-Datei und die Zugangsdaten liegen in `release/`, das von Git ignoriert wird. **Beide Dateien sicher sichern:** Ohne den Upload-Schlüssel lassen sich spätere Builds nicht mit demselben Schlüssel hochladen. Der erste signierte AAB muss über die Play Console hochgeladen werden, bevor die Google Play Developer API Updates für eine neue App übernehmen kann. Für den geschlossenen Alpha-Test muss die App-Einrichtung in der Play Console abgeschlossen sein; Tester werden dort verwaltet.
 
 ## Aufbau
 

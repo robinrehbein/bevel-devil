@@ -11,12 +11,27 @@ android {
         applicationId = "com.robinrehbein.beveldevil"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 4
+        versionName = providers.gradleProperty("releaseVersionName").orNull ?: "0.4.0"
+    }
+
+    signingConfigs {
+        create("upload") {
+            val keyFile = System.getenv("ANDROID_UPLOAD_KEYSTORE")
+            if (keyFile != null) {
+                storeFile = file(keyFile)
+                storePassword = System.getenv("ANDROID_UPLOAD_STORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
+            if (System.getenv("ANDROID_UPLOAD_KEYSTORE") != null) {
+                signingConfig = signingConfigs.getByName("upload")
+            }
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
