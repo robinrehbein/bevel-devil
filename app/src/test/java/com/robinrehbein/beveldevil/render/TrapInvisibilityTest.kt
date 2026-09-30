@@ -6,6 +6,7 @@ import com.robinrehbein.beveldevil.game.Dir
 import com.robinrehbein.beveldevil.game.GroupMode
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Levels
+import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.World
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -72,6 +73,12 @@ class TrapInvisibilityTest {
         }
         // collapse, hidden spikes, headbutt, bonk block, sinking, decoy, crumble, finale
         assertTrue("checked $checked levels", checked >= 8)
+    }
+
+    @Test
+    fun crackingFrameLooksLikeTheFrameUntilItFires() {
+        val level = TwistDemos.crack
+        for (t in floatArrayOf(0.37f, 2.9f)) diff(render(World(level), t), render(World(plain(level)), t))?.let { throw AssertionError("t=$t: $it") }
     }
 
     @Test

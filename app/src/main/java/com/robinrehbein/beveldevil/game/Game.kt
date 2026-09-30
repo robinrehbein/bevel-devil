@@ -96,9 +96,9 @@ class Game(private val progress: Progress, private val audio: Audio) {
         private set
     var world: World? = null
         private set
-    val level get() = custom ?: Levels.all[levelIndex]
-    /** A level from outside the register (tests, demos), played in place of [levelIndex]. */
-    private var custom: Level? = null
+    val level get() = sandbox ?: Levels.all[levelIndex]
+    /** Plays this level instead of the registered one (tests and screenshots of levels outside the register). */
+    internal var sandbox: Level? = null
     var deaths = 0
         private set
     var time = 0f
@@ -136,6 +136,13 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     val soundOn get() = progress.sound
     fun unlocked() = progress.unlocked
+    /** [time] when the pause screen last opened. */
+    var pausedAt = 0f
+        private set
+    /** The pause screen's RESUME and LEVELS buttons have traded places ([PauseTrick.SWAP]). */
+    val pauseSwapped get() = world?.pauseTrick == PauseTrick.SWAP
+    /** A fake clear screen or credits roll is showing instead of the HUD. */
+    val fakeShown get() = screen == Screen.PLAY && world?.fakeShown == true
     fun bestDeaths(i: Int) = progress.bestDeaths(i)
     fun cardFound(c: Card) = progress.cardFound(c)
     fun cardDeaths(c: Card) = progress.cardDeaths(c)
@@ -281,6 +288,20 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 hapticPulse = true
                 deadTimer = 0f
             }
+            Event.FakeWon -> {
+                audio.play(Sound.WIN)
+                setMood(Mood.SHOCK, 99f)
+                say(WIN_LINES[rng.nextInt(WIN_LINES.size)].toString(), 3f)
+            }
+            Event.Unfaked -> {
+                glitch = GLITCH_TIME * 1.6f
+                heat = 1f
+                shake = maxOf(shake, 0.8f)
+                audio.play(Sound.CARD)
+                audio.play(Sound.LAUGH)
+                setMood(Mood.LAUGH, 1.6f)
+                say(Twists.nope.toString(), 1.6f)
+            }
             Event.Won -> {
                 audio.play(Sound.WIN)
                 setMood(Mood.SHOCK, 99f)
@@ -353,7 +374,6 @@ class Game(private val progress: Progress, private val audio: Audio) {
     // ---------- flow ----------
 
     fun startLevel(i: Int) {
-        custom = null
         levelIndex = i
         deaths = 0
         particles.clear()
@@ -368,14 +388,12 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     /** Plays [l] as if it were level [levelIndex]; for tests and demos. */
     fun startCustom(l: Level) {
+        sandbox = l
         startLevel(levelIndex)
-        custom = l
-        world = World(l)
-        say(l.intro.toString(), 2.8f)
     }
 
     private fun restartAttempt() {
-        world = World(level)
+        world = World(level, world?.trail)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -433,11 +451,11 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 else -> openSelect(progress.unlocked - 1)
             }
             Screen.SELECT -> tapSelect(p)
-            Screen.PLAY -> if (p in Ui.hudPause) go(Screen.PAUSE)
+            Screen.PLAY -> if (p in Ui.hudPause && world?.pausePressed() != false) go(Screen.PAUSE)
             Screen.PAUSE -> when {
-                p in Ui.pauseLevels -> openSelect(levelIndex)
+                p in (if (pauseSwapped) Ui.pauseResume else Ui.pauseLevels) -> openSelect(levelIndex)
                 p in Ui.pauseSettings -> openSettings()
-                else -> go(Screen.PLAY)
+                else -> { world?.resumed(); go(Screen.PLAY) }
             }
             Screen.SETTINGS -> if (p in Ui.back) go(settingsFrom) else {
                 for (row in 0 until Ui.SET_ROWS) for (i in 0 until Ui.setCounts[row]) if (p in Ui.setOpt(row, i, Ui.setCounts[row])) { setOption(row, i); click() }
@@ -515,6 +533,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
         click()
         if (s == Screen.ALBUM) selectedAlbum = -1
         if (s == Screen.TITLE || s == Screen.SELECT) setMood(Mood.GRIN, 0f)
+        if (s == Screen.PAUSE && screen == Screen.PLAY) pausedAt = time
         screen = s
     }
 
@@ -536,7 +555,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
 
     /** App went to background. */
     fun pause() {
-        if (screen == Screen.PLAY) screen = Screen.PAUSE
+        if (screen == Screen.PLAY) { screen = Screen.PAUSE; pausedAt = time }
         input.left = false; input.right = false; input.jump = false; input.jumpPressed = false; input.shake = false
     }
 

@@ -8,8 +8,10 @@ import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Hit
 import com.robinrehbein.beveldevil.game.Mood
+import com.robinrehbein.beveldevil.game.PauseTrick
 import com.robinrehbein.beveldevil.game.Rarity
 import com.robinrehbein.beveldevil.game.Screen
+import com.robinrehbein.beveldevil.game.Twists
 import com.robinrehbein.beveldevil.game.Txt
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.game.WorldInfo
@@ -123,9 +125,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     fun hud(game: Game, l: Layout) {
         val t = game.time
         if (l.hud == HudMode.TOP) header(l)
-        val p = l.pause
-        box(p, PLUM, PLUM_HI)
-        rect(p.x + 4, p.y + 3, 2, 6, CREAM); rect(p.x + 8, p.y + 3, 2, 6, CREAM)
+        pauseButton(game, l)
         if (l.hud == HudMode.SIDE) sidePills(game, l.pills) else pillRow(game, l.pills.x.toFloat(), l.pills.y.toFloat())
         val f = l.frame
         devilFrame(f.x.toFloat(), f.y.toFloat(), f.w.toFloat(), game.mood, t)
@@ -133,6 +133,37 @@ class UiPainter(px: Pixels) : Painter(px) {
             if (l.hud == HudMode.SIDE) bubbleBelow(it, game.bubbleAge, f.x + f.w / 2f, l.bubble)
             else bubble(it, game.bubbleAge, l.bubble.x.toFloat(), l.bubble.y.toFloat(), l.bubble.w.toFloat())
         }
+    }
+
+    /** The HUD pause button, unless a [PauseTrick] makes it dodge or grow spikes. */
+    private fun pauseButton(game: Game, l: Layout) {
+        val p = l.pause
+        var x = p.x.toFloat()
+        var y = p.y.toFloat()
+        val w = game.world
+        if (w != null && w.pauseTrick == PauseTrick.DODGE && w.dodges > 0) {
+            val f = (w.time - w.dodgeTime) / Twists.DODGE_TIME
+            if (f in 0f..1f) {
+                // darts off, loiters, sneaks back
+                val e = when { f < 0.18f -> f / 0.18f; f < 0.7f -> 1f; else -> (1f - f) / 0.3f }
+                val (dx, dy) = DODGE_HOPS[(w.dodges - 1) % DODGE_HOPS.size]
+                x = (x + dx * e).roundToInt().toFloat().coerceIn(2f, l.lw - p.w - 2f)
+                y = (y + dy * e + sin(f * PI.toFloat()) * -6f).roundToInt().toFloat().coerceIn(2f, l.lh - p.h - 2f)
+            }
+        }
+        if (w?.pauseTrick == PauseTrick.SPIKE) {
+            box(x, y, p.w.toFloat(), p.h.toFloat(), DEVIL_RED_LO, RED_BTN)
+            for (i in 0 until 3) {
+                val sx = x + 2 + i * 4
+                rect(sx + 1, y + 2, 1f, 2f, INK)
+                rect(sx, y + 4, 3f, 3f, INK)
+                rect(sx + 1, y + 3, 1f, 5f, BONE)
+                rect(sx, y + 6, 1f, 3f, BONE); rect(sx + 2, y + 6, 1f, 3f, BONE_LO)
+            }
+            return
+        }
+        box(x, y, p.w.toFloat(), p.h.toFloat(), PLUM, PLUM_HI)
+        rect(x + 4, y + 3, 2, 6, CREAM); rect(x + 8, y + 3, 2, 6, CREAM)
     }
 
     private fun pillRow(game: Game, x: Float, y: Float) {
@@ -585,12 +616,23 @@ class UiPainter(px: Pixels) : Painter(px) {
 
     private fun dim(l: Layout) = rect(0, 0, l.lw, l.lh, 0xB0100818.toInt())
 
-    fun pause(l: Layout) {
+    fun pause(game: Game, l: Layout) {
         dim(l)
         stage(l, Screen.PAUSE) {
             say(Txt.pause.toString(), 128f, 36f, 14f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
-            button(Ui.pauseResume, Txt.resume.toString(), true)
-            button(Ui.pauseLevels, Txt.levels.toString(), false)
+            if (game.pauseSwapped) {
+                // the two buttons trade places in front of you, swinging out to either side
+                val f = ((game.time - game.pausedAt - 0.15f) / 0.5f).coerceIn(0f, 1f)
+                val e = f * f * (3 - 2 * f)
+                val dy = ((Ui.pauseLevels.y - Ui.pauseResume.y) * e).roundToInt()
+                val dx = (sin(e * PI.toFloat()) * 46f).roundToInt()
+                val r = Ui.pauseResume
+                button(Hit(r.x - dx, r.y + dy, r.w, r.h), Txt.levels.toString(), false)
+                button(Hit(r.x + dx, Ui.pauseLevels.y - dy, r.w, r.h), Txt.resume.toString(), true)
+            } else {
+                button(Ui.pauseResume, Txt.resume.toString(), true)
+                button(Ui.pauseLevels, Txt.levels.toString(), false)
+            }
         }
     }
 
@@ -615,5 +657,10 @@ class UiPainter(px: Pixels) : Painter(px) {
             say(Txt.endDeaths.toString().replace("%d", game.totalBestDeaths().toString()), 128f, 100f, 5.5f, CREAM, Paint.Align.CENTER)
             button(Ui.endTitle, Txt.toTitle.toString(), true)
         }
+    }
+
+    private companion object {
+        /** Where the dodging pause button hops to, in logical pixels from home. */
+        val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
     }
 }

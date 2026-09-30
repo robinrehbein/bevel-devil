@@ -412,7 +412,12 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     private fun doorX(w: World) = (w.door.box.x * TS).roundToInt() + 1
     private fun doorTop(w: World) = if (w.door.hanging) (w.door.box.y * TS).roundToInt() else (w.door.box.b * TS).roundToInt() - 13
-    private fun winAge(w: World) = if (w.state == WorldState.WON) w.time - w.stateTime else -1f
+    /** Seconds since Bevel reached the door, for a real win or a fake one alike; -1 otherwise. */
+    private fun winAge(w: World) = when {
+        w.state == WorldState.WON -> w.time - w.stateTime
+        w.fake != null -> w.time - w.fakeTime
+        else -> -1f
+    }
 
     private fun drawHalo(w: World, t: Float) {
         val won = winAge(w)
@@ -499,7 +504,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
         val flip = w.gravity < 0
         var cx = p.box.cx * TS
         var feet = (if (flip) p.box.y else p.box.b) * TS
-        var k = if (w.time < POP) popScale(w.time / POP) else 1f
+        val age = w.time - w.spawnTime
+        var k = if (age < POP) popScale(age / POP) else 1f
         val won = winAge(w)
         if (won >= 0f) {
             // sucked into the door
