@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Clock
 import com.robinrehbein.beveldevil.game.Action.DoorTo
@@ -15,6 +16,8 @@ import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Roll
+import com.robinrehbein.beveldevil.game.Action.Saw
+import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
@@ -26,16 +29,25 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
  * and the BIOS finale in the last three levels. The blue board.
  */
 object World3Part3 {
+    private val hidden = Glyph(spike = true, hidden = true)
+
     val levels: List<Level> = listOf(
 
         // 33 — teaches the updraft: stand in the draft until you are high enough, then step out onto the ledge
         Level(
             name = T("Updraft", "Aufwind"),
             intro = T("Free ride. Hold on to your cube.", "Freifahrt. Halt deinen Würfel fest."),
+            legend = mapOf('A' to hidden, 'B' to hidden),
             start = listOf(Fan('f', at = 12 to 15, dir = Dir.UP, reach = 11, speed = 9f, width = 2)),
+            traps = listOf(
+                trap(PastX(4.4f), Show('B'), say("Boarding pass, please. Spikes only.", "Bordkarte bitte. Nur Spikes.")),
+                trap(PastX(22.3f), Play(Card.SPIKE_SEED), Show('A'), say("Landing fee for passengers.", "Landegebühr für Passagiere.")),
+            ),
         ) {
             border(); floor()
+            put(5, 14, 'B')
             fill(15..30, 7..7)
+            put(23, 6, 'A'); put(24, 6, 'A')
             spawn(); door(28, 6)
         },
 
@@ -44,18 +56,26 @@ object World3Part3 {
             name = T("Tailwind", "Rückenwind"),
             intro = T("Go with the flow. Jump into it.", "Schwimm mit dem Strom. Spring hinein."),
             start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6)),
+            traps = listOf(
+                trap(Touch('e'), Play(Card.CRUMBLE), Fall('e'), say("Landing zone: crumbly.", "Landezone: bröselig."), delay = 0.45f),
+            ),
         ) {
             border(); floor(); pit(9..16)
+            fill(17..18, 15..17, 'e')
             spawn(); door()
         },
 
         // 35 — a headwind that takes breaks: no jump clears the spikes against it
         Level(
             name = T("Headwind", "Gegenwind"),
-            intro = T("The wind has opinions. Wait for it to stop.", "Der Wind hat eine Meinung. Warte, bis er sich legt."),
+            intro = T("Breezy today.", "Heute ist es windig."),
             start = listOf(Fan('w', at = 31 to 11, dir = Dir.LEFT, reach = 12, speed = 5.5f, width = 4, on = 2.2f, off = 2f)),
+            traps = listOf(
+                trap(Touch('x'), Play(Card.DECOY), Fall('x'), say("Wind-eroded. Sorry.", "Windgeschliffen. Sorry."), delay = 0.15f),
+            ),
         ) {
             border(); floor()
+            fill(4..5, 15..17, 'x')
             put(25, 14, '^'); put(26, 14, '^')
             spawn(); door()
         },
@@ -63,28 +83,39 @@ object World3Part3 {
         // 36 — an updraft over a spike pit: looks deadly, carries you across
         Level(
             name = T("Air Cushion", "Luftkissen"),
-            intro = T("Looks deadly. Jump in anyway.", "Sieht tödlich aus. Spring trotzdem."),
+            intro = T("Watch your step. Literally.", "Pass auf, wo du hintrittst. Wörtlich."),
+            legend = mapOf('A' to hidden),
             start = listOf(Fan('f', at = 9 to 17, dir = Dir.UP, reach = 7, speed = 8f, width = 12)),
+            traps = listOf(
+                trap(PastX(3.4f), HeatSpike('g', 0.8f), say("Runway: heated.", "Startbahn: beheizt.")),
+                trap(PastX(25.2f), Play(Card.GHOST_BLOCK), Show('A'), say("The pit was the safe part.", "Die Grube war der sichere Teil.")),
+            ),
         ) {
             border(); floor(); pit(9..20)
+            fill(4..6, 15..15, 'g')
             fill(9..20, 17..17); fill(9..20, 16..16, '^')
+            put(26, 14, 'A'); put(27, 14, 'A')
             spawn(); door()
         },
 
         // 37 — the tailwind runs in shifts: jump when it is working
         Level(
             name = T("Lull", "Flaute"),
-            intro = T("Fans have lunch breaks. Jump while it's working.", "Lüfter machen Pause. Spring, solange er arbeitet."),
+            intro = T("Union rules apply to fans too.", "Für Lüfter gilt der Betriebsrat."),
             start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6, on = 2.2f, off = 2.4f)),
+            traps = listOf(
+                trap(Touch('e'), Play(Card.SINKING), Fall('e'), say("Break time is over. For the floor, too.", "Pause vorbei. Für den Boden auch."), delay = 0.45f),
+            ),
         ) {
             border(); floor(); pit(10..17)
+            fill(18..19, 15..17, 'e')
             spawn(); door()
         },
 
         // 38 — the fan is dead until you step on the reset pad
         Level(
-            name = T("Fan Reset", "Lüfter-Reset"),
-            intro = T("Fan 2 is dead. Have you tried the big button?", "Lüfter 2 ist tot. Schon den Knopf probiert?"),
+            name = T("Silence", "Stille"),
+            intro = T("It's so quiet in here.", "Schön leise hier."),
             start = listOf(
                 Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2), Power('f', false),
                 Pad('1', at = 5 to 14),
@@ -102,16 +133,23 @@ object World3Part3 {
         Level(
             name = T("Downdraft", "Fallwind"),
             intro = T("Gravity, but with a motor.", "Schwerkraft, aber mit Motor."),
+            legend = mapOf('A' to hidden, 'B' to hidden),
             start = listOf(Fan('d', at = 15 to 0, dir = Dir.DOWN, reach = 14, speed = 9f, width = 4, on = 2f, off = 2.4f)),
+            traps = listOf(
+                trap(PastX(4.4f), Show('B'), say("Ground crew says hello. With spikes.", "Bodenpersonal grüßt. Mit Spikes.")),
+                trap(PastX(22.2f), Play(Card.SPIKE_SEED), Show('A'), say("Made it across. The next gap is spiky.", "Drüben. Die nächste Lücke ist spitz.")),
+            ),
         ) {
             border(); floor(); pit(15..18)
+            put(5, 14, 'B')
+            put(23, 14, 'A'); put(24, 14, 'A')
             spawn(); door()
         },
 
         // 40 — the updraft over the spikes reverses while you float: settle on the stone, it comes back
         Level(
-            name = T("Reverse Thrust", "Schubumkehr"),
-            intro = T("Wind is free. So are the spikes.", "Wind ist kostenlos. Die Spikes auch."),
+            name = T("Air Castle", "Luftschloss"),
+            intro = T("Wind is free. Take as much as you like.", "Wind ist kostenlos. Nimm, so viel du willst."),
             start = listOf(Fan('f', at = 9 to 17, dir = Dir.UP, reach = 7, speed = 8f, width = 16)),
             traps = listOf(
                 trap(PastX(11.3f), Play(Card.TWISTED), FanSet('f', -9f), say("Reverse thrust! (The stone is your friend.)", "Schubumkehr! (Der Stein ist dein Freund.)")),
@@ -132,22 +170,33 @@ object World3Part3 {
                 Fan('f', at = 6 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2),
                 Fan('g', at = 13 to 8, dir = Dir.UP, reach = 6, speed = 9f, width = 2),
             ),
+            legend = mapOf('A' to hidden),
+            traps = listOf(
+                trap(PastX(23.3f), Play(Card.GHOST_BLOCK), Show('A'), say("Turbulence on the top floor.", "Turbulenzen im Obergeschoss.")),
+            ),
         ) {
             border(); floor()
             fill(9..15, 8..8); fill(16..30, 4..4)
+            put(23, 3, 'A')
             spawn(); door(28, 3)
         },
 
         // 42 — the floor is a chip under load: there is no waiting here, only the way up
         Level(
             name = T("Exhaust", "Abluft"),
-            intro = T("The floor is a chip. The exit is up.", "Der Boden ist ein Chip. Der Ausgang ist oben."),
+            intro = T("It's a bit warm in here.", "Ist ein bisschen warm hier."),
+            legend = mapOf('B' to hidden),
             start = listOf(
                 Heat('c', rise = 3.5f, load = true),
                 Fan('f', at = 12 to 15, dir = Dir.UP, reach = 10, speed = 9f, width = 2),
             ),
+            traps = listOf(
+                trap(PastX(4.4f), Show('B'), say("Ventilation shaft: entry spike.", "Lüftungsschacht: Eingangsspike.")),
+                trap(PastX(20.5f), Play(Card.DEVIL_SAW), Saw(33f, 7.4f, -7f, 0f), say("Exhaust fan blade. Free-range.", "Abluft-Lüfterblatt. Freilaufend.")),
+            ),
         ) {
             border(); floor()
+            put(5, 14, 'B')
             fill(3..30, 15..15, 'c'); put(12, 15, '#')
             fill(15..30, 8..8)
             spawn(); door(28, 7)
@@ -156,13 +205,18 @@ object World3Part3 {
         // 43 — the pad on the high ledge powers the bridge: fan, pad, bridge
         Level(
             name = T("Wiring Diagram", "Schaltplan"),
-            intro = T("Plan: up, press, down, across.", "Plan: rauf, drücken, runter, rüber."),
+            intro = T("Follow the wiring diagram.", "Folge dem Schaltplan."),
             start = listOf(
                 Fan('f', at = 7 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2),
                 Circuit('a', on = false), Pad('1', at = 12 to 7, circuits = "a"),
             ),
+            legend = mapOf('A' to hidden),
+            traps = listOf(
+                trap(PastX(4.4f), Play(Card.SPIKE_SEED), Show('A'), say("Wiring diagram, page 1: spikes.", "Schaltplan, Seite 1: Spikes.")),
+            ),
         ) {
             border(); floor()
+            put(5, 14, 'A')
             fill(10..15, 8..8)
             bridge(20..27, 'a')
             spawn(); door()
@@ -170,15 +224,20 @@ object World3Part3 {
 
         // 44 — the monitor is mounted upside down for a while, exactly when you ride the fan
         Level(
-            name = T("Monitor Upside Down", "Bildschirm kopfüber"),
+            name = T("Display", "Anzeige"),
             intro = T("I mounted the monitor myself.", "Den Monitor habe ich selbst montiert."),
             start = listOf(Fan('f', at = 14 to 15, dir = Dir.UP, reach = 10, speed = 9f, width = 2)),
             traps = listOf(
+                trap(PastX(4.4f), Show('B'), say("Pixel error at column five.", "Pixelfehler in Spalte fünf.")),
                 trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3.5f), say("Better view from down here. Or up. Whatever.", "Von hier unten hat man die bessere Aussicht. Oder oben.")),
+                trap(PastX(23.3f), Show('A'), say("Right side up again. Spikes too.", "Wieder richtig herum. Spikes auch.")),
             ),
+            legend = mapOf('A' to hidden, 'B' to hidden),
         ) {
             border(); floor()
+            put(5, 14, 'B')
             fill(17..30, 7..7)
+            put(24, 6, 'A'); put(25, 6, 'A')
             spawn(); door(28, 6)
         },
 
@@ -190,9 +249,15 @@ object World3Part3 {
                 Heat('h', rise = 1.5f), Heatsink('k', cools = "h"),
                 Fan('f', at = 8 to 15, dir = Dir.UP, reach = 10, speed = 9f, width = 2),
             ),
+            legend = mapOf('A' to hidden),
+            traps = listOf(
+                trap(PastX(3.4f), HeatSpike('g', 0.8f), say("Hot start, cold finish. Or so I hoped.", "Heißer Start, kalter Schluss. Dachte ich.")),
+                trap(PastX(26.2f), Play(Card.CRUMBLE), Show('A'), say("Cold air, hot plate, sharp finish.", "Kalte Luft, heiße Platte, spitzes Ende.")),
+            ),
         ) {
             border(); floor()
-            fill(3..26, 15..15, 'h'); put(8, 15, '#')
+            put(27, 14, 'A'); put(28, 14, 'A')
+            fill(3..26, 15..15, 'h'); put(8, 15, '#'); fill(4..6, 15..15, 'g')
             fill(11..15, 8..8, 'k')
             spawn(); door()
         },
@@ -223,7 +288,7 @@ object World3Part3 {
         // 47 — BIOS finale, stage 2: the boot order. USB and disk are fake doors, the network is real.
         Level(
             name = T("Boot Order", "Boot-Reihenfolge"),
-            intro = T("Boot order: USB, disk, network. Probably.", "Bootreihenfolge: USB, Platte, Netzwerk. Vermutlich."),
+            intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
             start = listOf(
                 Clock('Z', on = 1.3f, off = 1.7f),
                 Fan('f', at = 16 to 15, dir = Dir.UP, reach = 10, speed = 9f, width = 2), Power('f', false),

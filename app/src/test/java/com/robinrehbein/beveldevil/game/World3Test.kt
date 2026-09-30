@@ -82,11 +82,11 @@ class World3Test {
         assertTrue("levels without hardware: $plain", plain.isEmpty())
     }
 
-    /** Holding right and never letting go wins only the lessons that are about something else than dodging. */
+    /** Holding right and never letting go wins no level: even the first lessons end with a surprise. */
     @Test
-    fun holdingRightAloneWinsOnlyTheFirstLessons() {
+    fun holdingRightAloneWinsNothing() {
         val winners = World3.levels.withIndex().filter { (_, l) -> Bot(l).right(14f).world.state == WorldState.WON }.map { it.index + 1 }
-        assertEquals(listOf(1, 2, 9, 36), winners)
+        assertEquals(emptyList<Int>(), winners)
     }
 
     @Test
@@ -99,16 +99,34 @@ class World3Test {
     // ---------- acts ----------
 
     @Test
-    fun actOneIsCircuitsOnly() {
-        assertTrue(World3Part1.levels.all { l -> actions(l).none { heat(it) || fans(it) } })
-        // the first three levels just teach: a pad, a live trace, a clock. No traps, no cards
-        assertTrue(World3Part1.levels.take(3).all { it.traps.isEmpty() })
+    fun actOneIsCircuits() {
+        assertTrue(World3Part1.levels.all { l -> actions(l).none { it is Action.Heat || it is Action.Heatsink || fans(it) } })
+        // the first three levels teach a pad, a live trace and a clock, each with one surprise at the end
         assertTrue(actions(World3.levels[0]).any { it is Action.Pad })
         assertTrue(actions(World3.levels[1]).any { it is Action.Circuit && it.group.isUpperCase() })
         assertTrue(actions(World3.levels[2]).any { it is Action.Clock })
+        assertTrue(World3Part1.levels.take(3).all { it.traps.isNotEmpty() })
         val a = World3Part1.levels.flatMap(::actions)
         assertTrue(a.any { it is Action.Pad && it.mode == PadMode.HOLD } && a.any { it is Action.Pad && it.mode == PadMode.OFF })
         assertTrue(a.any { it is Action.BitFlip } && a.any { it is Action.Power && !it.on })
+    }
+
+    @Test
+    fun trapsComeInChains() {
+        val chained = World3.levels.withIndex().filter { (i, l) -> i >= 3 && l.traps.size >= 2 }.map { it.index + 1 }
+        assertTrue("only $chained have a chain of traps", chained.size >= 25)
+        // and every level from the fourth on surprises at least once
+        assertTrue(World3.levels.drop(3).all { it.traps.isNotEmpty() })
+    }
+
+    @Test
+    fun namesAndIntrosDoNotSpoilTheTraps() {
+        val banned = listOf("spike", "trap", "collapse", "falls", "drop", "cut", "flip", "reverse", "Falle", "Stachel", "Spike", "stürz", "kapp")
+        World3.levels.forEachIndexed { i, l ->
+            for (t in listOf(l.name.en, l.name.de, l.intro.en, l.intro.de)) {
+                assertTrue("level ${i + 1} gives away a trap: $t", banned.none { t.contains(it, ignoreCase = true) })
+            }
+        }
     }
 
     @Test
@@ -249,58 +267,58 @@ class World3Test {
     }
 
     // ---------- Act 1: Stromkreise ----------
-    @Test fun level01() = b(1).right(5f).expect(WorldState.WON)
-    @Test fun level02() = b(2).right(5f).expect(WorldState.WON)
-    @Test fun level03() = b(3).rightTo(8.3f).waitPowered('a', false).waitPowered('a').right(4f).expect(WorldState.WON)
-    @Test fun level04() = b(4).hopR(11.5f).right(3f).expect(WorldState.WON)
-    @Test fun level05() = b(5).hopR(19f).right(3f).expect(WorldState.WON)
-    @Test fun level06() = b(6).rightTo(5.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level07() = b(7).rightTo(10.6f).waitPowered('Z', false).rightTo(14f).rightTo(18.5f).waitPowered('Y', false).right(3f).expect(WorldState.WON)
-    @Test fun level08() = b(8).hopR(14f).right(3f).expect(WorldState.WON)
-    @Test fun level09() = b(9).right(5f).expect(WorldState.WON)
+    @Test fun level01() = b(1).rightTo(22f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level02() = b(2).rightTo(24f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level03() = b(3).rightTo(3f).rightJump(0.55f).landRight().rightTo(8.3f).waitPowered('a', false).waitPowered('a').rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level04() = b(4).hopR(11.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level05() = b(5).rightTo(3f).rightJump(0.55f).landRight().rightTo(15.3f).rightJump(0.55f).landRight().rightTo(21.8f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level06() = b(6).rightTo(5.3f).rightJump(0.55f).landRight().rightTo(20f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    @Test fun level07() = b(7).rightTo(3f).rightJump(0.55f).landRight().rightTo(10.6f).fidgetUntil { !it.circuits['Z']!!.powered }.rightTo(14f).rightTo(18.5f).fidgetUntil { !it.circuits['Y']!!.powered }.right(3f).expect(WorldState.WON)
+    @Test fun level08() = b(8).hopR(14f).rightTo(24.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level09() = b(9).rightTo(16.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level10() = b(10).rightTo(6f).rightJump(0.55f).landRight().rightTo(12.3f).waitPowered('b')
         .rightJump(0.55f).landRight().rightTo(19.3f).waitPowered('a').rightJump(0.55f).landRight().rightTo(26.3f).right(3f).expect(WorldState.WON)
-    @Test fun level11() = b(11).hopR(11.5f).right(3f).expect(WorldState.WON)
-    @Test fun level12() = b(12).hopR(12f).right(3f).expect(WorldState.WON)
+    @Test fun level11() = b(11).hopR(11.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level12() = b(12).hopR(12f).rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level13() = b(13).rightTo(5.3f).rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightJump(0.3f).landRight()
         .rightJump(0.3f).landRight().rightJump(0.3f).landRight().right(5f).expect(WorldState.WON)
-    @Test fun level14() = b(14).rightTo(7.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level15() = b(15).rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopR(20f).right(3f).expect(WorldState.WON)
+    @Test fun level14() = b(14).rightTo(7.2f).rightJump(0.55f).landRight().rightTo(25f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level15() = b(15).rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopR(20f).rightUntil { it.pads[2].presses >= 1 }.leftKeyRightTo(31f).expect(WorldState.WON)
     @Test fun level16() = b(16).rightTo(5f).rightTo(15.5f).waitPowered('Z', false).rightTo(21f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
 
     // ---------- Act 2: Überhitzung ----------
-    @Test fun level17() = b(17).rightTo(15.5f).waitCooled('h').right(4f).expect(WorldState.WON)
-    @Test fun level18() = b(18).hopR(3f).waitCooled('c').right(5f).expect(WorldState.WON)
+    @Test fun level17() = b(17).rightTo(3f).rightJump(0.55f).landRight().rightTo(15.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level18() = b(18).hopR(3f).waitCooled('c').rightTo(24f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level19() = b(19).hopR(6.8f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level20() = b(20).hopR(13f).right(3f).expect(WorldState.WON)
-    @Test fun level21() = b(21).rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').right(4f).expect(WorldState.WON)
-    @Test fun level22() = b(22).rightTo(24f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level23() = b(23).rightTo(7f).waitPowered('a').right(4f).expect(WorldState.WON)
+    @Test fun level20() = b(20).hopR(13f).rightTo(21.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level21() = b(21).rightTo(2.3f).rightJump(0.55f).landRight().rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    @Test fun level22() = b(22).rightTo(3f).rightJump(0.55f).landRight().rightTo(24f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level23() = b(23).rightTo(7f).waitPowered('a').rightTo(24.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level24() = b(24).hopR(3.6f).hopR(8.9f).hopR(14.9f).hopR(20.9f).hopR(26.9f).right(2f).expect(WorldState.WON)
-    @Test fun level25() = b(25).rightTo(11.4f).rightJump(0.55f).landRight().waitCooled('h').right(5f).expect(WorldState.WON)
-    @Test fun level26() = b(26).rightTo(13.5f).waitCooled('h').waitPowered('Z', false).right(5f).expect(WorldState.WON)
-    @Test fun level27() = b(27).rightTo(5f).rightTo(15.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level28() = b(28).rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level29() = b(29).rightTo(10.5f).waitFor { !it.group('w').visible }.right(4f).expect(WorldState.WON)
+    @Test fun level25() = b(25).rightTo(3f).rightJump(0.55f).landRight().rightTo(11.4f).rightJump(0.55f).landRight().waitCooled('h').rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level26() = b(26).rightTo(2.6f).rightJump(0.55f).landRight().rightTo(13.5f).waitCooled('h').waitPowered('Z', false).rightTo(23.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level27() = b(27).rightTo(5f).rightTo(15.4f).rightJump(0.55f).landRight().rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level28() = b(28).rightTo(3f).rightJump(0.55f).landRight().rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    @Test fun level29() = b(29).rightTo(10.5f).waitFor { !it.group('w').visible }.rightTo(17.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level30() = b(30).rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
         .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f).expect(WorldState.WON)
-    @Test fun level31() = b(31).rightTo(15.5f).waitCooled('h').rightTo(19f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    @Test fun level31() = b(31).rightTo(15.5f).waitCooled('h').rightTo(19f).rightJump(0.55f).landRight().rightTo(24.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level32() = b(32).rightTo(5.5f).waitCooled('c').rightTo(25.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
 
     // ---------- Act 3: Lüfter ----------
-    @Test fun level33() = b(33).rightTo(12.6f).waitFor { it.player.box.cy < 5.6f }.right(3f).expect(WorldState.WON)
+    @Test fun level33() = b(33).rightTo(3f).rightJump(0.55f).landRight().rightTo(12.6f).waitFor { it.player.box.cy < 5.6f }.rightTo(21.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level34() = b(34).hopR(8f).right(3f).expect(WorldState.WON)
-    @Test fun level35() = b(35).rightTo(22f).waitFor { it.fans[0].wind == 0f }.rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level36() = b(36).hopR(8f).right(3f).expect(WorldState.WON)
+    @Test fun level35() = b(35).rightTo(3f).rightJump(0.55f).landRight().rightTo(22f).waitFor { it.fans[0].wind == 0f }.rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level36() = b(36).rightTo(3f).rightJump(0.55f).landRight().hopR(8f).rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level37() = b(37).rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level38() = b(38).rightTo(6f).rightTo(10f).waitFor { it.player.box.cy < 7f }.right(3f).expect(WorldState.WON)
-    @Test fun level39() = b(39).rightTo(14.2f).waitFor { it.fans[0].wind == 0f }.rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level39() = b(39).rightTo(3f).rightJump(0.55f).landRight().rightTo(14.2f).waitFor { it.fans[0].wind == 0f }.rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level40() = b(40).rightTo(11.35f).waitFor { it.player.grounded }.waitFor { it.fans[0].wind > 5f }.rightTo(25.5f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level41() = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level42() = b(42).rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.right(3f).expect(WorldState.WON)
-    @Test fun level43() = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(17f).right(6f).expect(WorldState.WON)
-    @Test fun level44() = b(44).rightTo(6.5f).waitWhile(1f) { it.viewTurn() < 1f }.leftKeyRightTo(15f).waitWhile(5f) { it.viewTurn() > 0f }.right(3f).expect(WorldState.WON)
-    @Test fun level45() = b(45).rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h').right(6f).expect(WorldState.WON)
+    @Test fun level41() = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight().rightTo(21.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    @Test fun level42() = b(42).rightTo(3f).rightJump(0.55f).landRight().rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level43() = b(43).rightJump(0.55f).landRight().rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(17f).right(6f).expect(WorldState.WON)
+    @Test fun level44() = b(44).rightTo(3f).rightJump(0.55f).landRight().rightTo(6.5f).waitWhile(1f) { it.viewTurn() < 1f }.leftKeyRightTo(15f).waitWhile(5f) { it.viewTurn() > 0f }.rightTo(22.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level45() = b(45).rightTo(3f).rightJump(0.55f).landRight().rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level46() = b(46).hopR(8.4f).rightTo(16.5f).waitCooled('c').rightTo(26.8f).waitFor { it.player.box.cy < 6.6f }.right(3f).expect(WorldState.WON)
     @Test fun level47() = b(47).rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
         .waitWhile(2f) { !it.player.grounded || it.door.moving }
