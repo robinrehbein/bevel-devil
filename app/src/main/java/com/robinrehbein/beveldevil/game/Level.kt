@@ -117,6 +117,66 @@ sealed interface Action {
         }
     }
 
+    // network mechanics (World 2), run-time state in Net.kt
+
+    /**
+     * Portal pair [id]: walking into tile [from] (col, row) pops the player out of tile [to] (and back, when [twoWay])
+     * at the same spot within the tile and with the same velocity. Both tiles must be empty.
+     */
+    data class Portal(val id: Char, val from: Pair<Int, Int>, val to: Pair<Int, Int>, val twoWay: Boolean = true) : Action
+    /** "DNS changed": portal [id] now comes out at tile [to]. */
+    data class Reroute(val id: Char, val to: Pair<Int, Int>) : Action
+    /** The group is a conveyor belt: standing on it moves the player [speed] tiles/s (negative: left). Run again to change it. */
+    data class Belt(val group: Char, val speed: Float) : Action
+    /** Switches portal, laser or belt [id] off or back on. A laser coming back on warms up (telegraphs) first. */
+    data class Power(val id: Char, val on: Boolean) : Action
+
+    /**
+     * Laser [id] between emitters on tiles [from] and [to] (same column or row). The emitters sit on the far side of
+     * their tiles, facing each other, and the beam kills. It is lit for [on] seconds, then dark for [off] (0: always
+     * lit), after [delay] seconds, [phase] seconds into the cycle. The emitters glow for [telegraph] seconds before it fires.
+     */
+    data class Laser(
+        val id: Char, val from: Pair<Int, Int>, val to: Pair<Int, Int>,
+        val on: Float = 1f, val off: Float = 0f, val phase: Float = 0f, val delay: Float = 0f,
+    ) : Action {
+        init { require(from != to && (from.first == to.first || from.second == to.second)) { "laser $id must be straight" } }
+
+        val vertical get() = from.first == to.first
+        val period get() = on + off
+        val telegraph get() = min(TELEGRAPH, off * 0.6f)
+        private val lo get() = if (vertical) min(from.second, to.second) else min(from.first, to.first)
+        private val hi get() = if (vertical) max(from.second, to.second) else max(from.first, to.first)
+        /** The beam, lens to lens, in tiles. */
+        val x0 get() = if (vertical) from.first + 0.5f - HALF else lo + LENS
+        val x1 get() = if (vertical) from.first + 0.5f + HALF else hi + 1 - LENS
+        val y0 get() = if (vertical) lo + LENS else from.second + 0.5f - HALF
+        val y1 get() = if (vertical) hi + 1 - LENS else from.second + 0.5f + HALF
+
+        fun cycle(t: Float): Float = (((t + phase) % period) + period) % period
+        /** Firing, [t] seconds after it started. */
+        fun litAt(t: Float) = t >= delay && (off <= 0f || cycle(t - delay) < on)
+        /** 0 → 1 through the glow before it fires, 0 otherwise. */
+        fun warnAt(t: Float): Float {
+            if (t < delay) {
+                val w = min(TELEGRAPH, delay)
+                return if (t >= delay - w) (t - (delay - w)) / w else 0f
+            }
+            if (off <= 0f) return 0f
+            val c = cycle(t - delay)
+            val w = telegraph
+            return if (c >= period - w) (c - (period - w)) / w else 0f
+        }
+
+        companion object {
+            const val TELEGRAPH = 0.6f
+            /** How far into its tile an emitter reaches. */
+            const val LENS = 0.625f
+            /** Half the beam's thickness. */
+            const val HALF = 0.125f
+        }
+    }
+
     /** Tilting the phone slides the group: fully left by [left] tiles, fully right by [right], at up to [speed] tiles/s. */
     data class Tilt(val group: Char, val left: Float, val right: Float = left, val speed: Float = 8f) : Action
     /** Tilting the phone pushes the player sideways by up to [speed] tiles/s, like a slope. 0 turns it off. */

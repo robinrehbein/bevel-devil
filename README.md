@@ -86,6 +86,19 @@ Slope(8f)                                         // Neigung schiebt Bevel bis 8
 trap(Shaken, Hide('a'))                           // Schütteln
 ```
 
+Netzwerk-Mechaniken für Welt 2 (Laufzeit in `game/Net.kt`, Look in `render/NetPainter.kt`, Demos in `NetDemos`):
+
+```kotlin
+Portal('1', from = 8 to 14, to = 17 to 14)        // Tile → Tile, gleiche Geschwindigkeit, gleiche Stelle im Tile;
+                                                  // beidseitig (twoWay = false: Einbahn), nimmt erst wieder, wenn man raus ist
+trap(PastX(6f), Reroute('1', to = 5 to 3))        // „DNS geändert“: Ausgang springt woandershin
+Belt('b', 3f)                                     // Gruppe 'b' ist ein Förderband, Tiles/s (negativ: links), addiert zur Laufgeschwindigkeit
+trap(PastX(10f), Belt('b', -10f))                 // „Paket-Umsortierung“: dreht um, schneller als Bevel läuft
+Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f) // Strahl zwischen zwei Emittern (gerade Linie), tödlich; off = 0: Dauerfeuer.
+                                                  // Emitter glühen 0,6 s vor dem Feuern, dazu eine Punktlinie
+trap(PastX(10f), Power('L', false))               // Portal, Laser oder Band aus/an; ein Laser heizt beim Einschalten erst vor
+```
+
 Neigung und Schütteln liest `GameView` nur in Leveln, die sie nutzen (Schwerkraftsensor, sonst Beschleunigungssensor). Ohne Sensor oder mit Einstellung „Neigung: Aus“ erscheinen unten zwei Neige-Tasten (einrastend) und eine Schütteltaste; Tastatur Q/E neigen, S schüttelt. Im `Bot` gibt es dafür `tilt(v)` und `shake()`. Mini-Level für jede Mechanik liegen in den Tests (`Demo.kt`).
 
 ### Meta-Twists
