@@ -74,11 +74,30 @@ class TrapInvisibilityTest {
         assertTrue("checked $checked levels", checked >= 8)
     }
 
-    private fun checkTraps(range: IntRange): Int {
+    @Test
+    fun trapsLookLikePlainLevelOnBothCircuitBoards() {
+        // World 3 has no levels of its own yet: the earlier worlds' trap levels stand in, dressed as a green and a blue board
+        for (theme in listOf(Themes.PCB_GREEN, Themes.PCB_BLUE)) {
+            val checked = checkTraps(0 until Worlds.get(2).firstLevel + 10, theme)
+            assertTrue("checked $checked levels", checked >= 8)
+        }
+    }
+
+    @Test
+    fun actsPickTheirBoard() {
+        assertTrue(Themes.of(3, 1) === Themes.PCB_GREEN)
+        assertTrue(Themes.of(3, 32) === Themes.PCB_GREEN)
+        assertTrue(Themes.of(3, 33) === Themes.PCB_BLUE)
+        assertTrue(Themes.of(3, 48) === Themes.PCB_BLUE)
+        assertTrue(Themes.of(2, 40) === Themes.DATA_CENTER)
+        assertTrue(Themes.forLevel(0) === Themes.HELL)
+    }
+
+    private fun checkTraps(range: IntRange, fixed: Theme? = null): Int {
         var checked = 0
         for (i in range) {
             val level = Levels.all[i]
-            val theme = Themes.of(Worlds.of(i).number)
+            val theme = fixed ?: Themes.forLevel(i)
             val trapWorld = World(level)
             if (trapWorld.groups.isEmpty()) continue
             // blinking, tilting and network gear (belts, lasers, portals) are honest mechanics: they show what they do from the first frame

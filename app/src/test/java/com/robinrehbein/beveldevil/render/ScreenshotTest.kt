@@ -491,6 +491,38 @@ class ScreenshotTest {
         shoot("116-select", g, sizes.take(2))
     }
 
+    /** World 3's two boards: a sample level dressed green and blue (World 3 has no levels of its own yet), and the level select tabs. */
+    @Test
+    fun circuitBoard() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            for ((name, theme) in listOf("green" to Themes.PCB_GREEN, "blue" to Themes.PCB_BLUE)) {
+                for ((n, idx) in listOf(1 to 2, 2 to Worlds.get(2).firstLevel + 4)) {
+                    val game = Game(MemoryProgress(), silent).apply { startLevel(idx) }
+                    Film(game, s).apply { r.themeOverride = theme; play(1.2f); save("130-w3-$name-$n$tag") }
+                }
+            }
+        }
+        // the door itself, up close on a level that ends in it
+        Film(Game(MemoryProgress(), silent).apply { startLevel(2) }, sizes[0]).apply {
+            r.themeOverride = Themes.PCB_GREEN
+            game.input.right = true
+            play(4f) { game.world!!.player.box.cx > 26f }
+            save("131-w3-door")
+        }
+        val g = Game(MemoryProgress().apply { unlocked = 60 }, silent)
+        run(g, 0.5f); g.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(g, 0.6f)
+        g.tap(Ui.worldTab(1, 3).x + 2f, Ui.worldTab(1, 3).y + 2f); run(g, 0.6f)
+        shoot("132-select-w2", g, sizes.take(2))
+        val w3 = Game(MemoryProgress().apply { unlocked = 60 }, silent)
+        run(w3, 0.5f); w3.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(w3, 0.6f)
+        // the tab is locked until World 3 has levels, so show it by setting the field directly
+        Game::class.java.getDeclaredField("selWorld").apply { isAccessible = true; set(w3, Worlds.get(3)) }
+        run(w3, 0.3f)
+        shoot("133-select-w3", w3, sizes.take(2))
+    }
+
     /** World 2's three acts at their real global index, so the data-center theme is the real one. */
     @Test
     fun worldTwoActs() {

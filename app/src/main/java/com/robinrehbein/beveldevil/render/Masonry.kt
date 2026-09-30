@@ -10,6 +10,9 @@ class Stone(
     val details: Boolean,
     /** Steel panels instead of stones: vent slots and rivets as the details. */
     val metal: Boolean = false,
+    /** IC packages instead of stones (0 for none): copper pins ([pins], shaded [pinLo]) along the exposed bottom and side edges. */
+    val pins: Int = 0,
+    val pinLo: Int = 0,
 )
 
 val GOLD_STONE = Stone(
@@ -101,7 +104,11 @@ object Masonry {
                 if (px < 0 || px >= stride) continue
                 var c = face
                 if (hash(col * TS + x, row * TS + y) and 31 == 0) c = s.speck
-                if (s.metal) when (detail) {
+                if (s.pins != 0) when (detail) {
+                    // package markings: a short printed line, or the pin-1 dimple
+                    0, 1 -> if (x in 2..5 && y == gy) c = s.jointHi
+                    2 -> if ((x == gx || x == gx + 1) && (y == gy || y == gy + 1)) c = s.lo2
+                } else if (s.metal) when (detail) {
                     0, 1 -> if (x in 2..5) { if (y == 3 || y == 5) c = s.lo2 else if (y == 4) c = s.jointHi }
                     2, 3 -> if (x == gx && y == gy) c = s.mid else if (x == gx + 1 && y == gy + 1) c = s.lo2
                 } else when (detail) {
@@ -119,6 +126,12 @@ object Masonry {
                 if (!w && x == 0) c = s.hi else if (!w && x == 1 && y > 0) c = s.mid
                 if (!so && y == TS - 1) c = s.lo else if (!so && y == TS - 2) c = s.lo2
                 if (!e && x == TS - 1) c = s.lo else if (!e && x == TS - 2) c = s.lo2
+                // IC pins: stubs two px wide along the exposed sides and the underside; the top stays a clean bevel
+                if (s.pins != 0) {
+                    if (!so && y >= TS - 2 && (x shr 1) and 1 == 0) c = if (y == TS - 1) s.pinLo else s.pins
+                    if (!w && x <= 1 && y > 1 && y < TS - 2 && (y shr 1) and 1 == 1) c = if (x == 0) s.pins else s.pinLo
+                    if (!e && x >= TS - 2 && y > 1 && y < TS - 2 && (y shr 1) and 1 == 1) c = if (x == TS - 1) s.pinLo else s.pins
+                }
                 // inner corners continue the neighbours' bevels
                 if (n && w && m and NW == 0 && x <= 1 && y <= 1) c = if (x == 0 && y == 0) s.hi else s.mid
                 if (n && e && m and NE == 0 && x == TS - 1 && y <= 1) c = s.lo2
