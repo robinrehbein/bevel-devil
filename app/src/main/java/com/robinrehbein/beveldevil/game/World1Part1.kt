@@ -69,6 +69,8 @@ object World1Part1 {
             traps = listOf(
                 trap(PastX(26.4f), Play(Card.SHY_DOOR), DoorTo(29, 6, speed = 18f), Say(T("Whoops. Up there now.", "Hoppla. Jetzt ist sie da oben."))),
                 trap(Touch('b'), Fall('b'), delay = 0.7f),
+                // the step floats back after a while: whoever fell with it can climb again instead of being stuck below
+                trap(Touch('b'), Move('b', 0f, -3f, 5f), delay = 3f),
                 trap(Zone(27.2f, 5f, 28.3f, 7f), DoorTo(29, 14, speed = 20f), Say(T("Going down?", "Wieder runter?"))),
             ),
         ) {

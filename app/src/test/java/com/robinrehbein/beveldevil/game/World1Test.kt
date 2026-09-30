@@ -144,6 +144,18 @@ class World1Test {
         .rightTo(25.6f).rightJump(0.35f).landRight()
         .leftTo(23f).right(4f)
         .expect(WorldState.WON)
+    /** Falling with the crumbling step must not strand the player: the step floats back and the stairs work again. */
+    @Test fun level03CrumbledStepComesBack() {
+        val fell = b(3).hopR(21.2f).rightTo(26.5f).leftTo(24.3f).leftJump(0.35f).landLeft().wait(2.2f)
+        fell.expect(WorldState.PLAYING)
+        assertTrue("fell to the floor", fell.world.player.box.y > 13f)
+        fell.wait(3f)
+        assertEquals(0f, fell.world.group('b').oy, 0.05f)
+        // it carries whoever fell with it back up, and the climb goes on
+        assertEquals(11f, fell.world.player.box.b, 0.05f)
+        fell.rightTo(21.3f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.35f).landRight()
+            .leftTo(23f).right(4f).expect(WorldState.WON)
+    }
     @Test fun level04() = b(4).rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
         .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
         .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
