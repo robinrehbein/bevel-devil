@@ -8,6 +8,14 @@ import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Intro
 import com.robinrehbein.beveldevil.game.Lang
+import com.robinrehbein.beveldevil.game.Level
+import com.robinrehbein.beveldevil.game.Action
+import com.robinrehbein.beveldevil.game.PauseTrick
+import com.robinrehbein.beveldevil.game.T
+import com.robinrehbein.beveldevil.game.Trigger
+import com.robinrehbein.beveldevil.game.TwistDemos
+import com.robinrehbein.beveldevil.game.Twists
+import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
@@ -219,6 +227,85 @@ class ScreenshotTest {
             f.play(5f) { f.game.card != null }
             f.play(0.07f); f.save("40-glitch-${s.tag}")
             f.play(0.1f); f.save("41-glitch-late-${s.tag}")
+        }
+    }
+
+    /** The meta twists, each on its test-only demo level. */
+    @Test
+    fun twists() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(level: Level) = Film(Game(MemoryProgress(), silent).apply { sandbox = level; startLevel(0) }, s)
+            fun Film.w() = game.world!!
+            film(TwistDemos.credits).apply {
+                play(0.6f)
+                game.input.right = true
+                play(6f) { w().fake != null }
+                game.input.right = false
+                play(Twists.FAKE_DELAY + 2.4f); save("60-fake-credits-mid$tag")
+                play(12f) { w().fake == null }
+                play(0.05f); save("61-fake-nope$tag")
+                play(1.2f); save("62-credits-platforms$tag")
+            }
+            film(TwistDemos.clear).apply {
+                game.input.right = true
+                play(6f) { w().fake != null }
+                game.input.right = false
+                play(Twists.FAKE_DELAY + 1.2f); save("63-fake-clear$tag")
+            }
+            film(TwistDemos.crack).apply {
+                play(0.4f)
+                game.input.right = true
+                play(3f) { w().cracks.isNotEmpty() }
+                game.input.right = false
+                play(0.55f); save("64-frame-crack$tag")
+                play(0.62f); save("65-frame-falling$tag")
+                play(1f); save("66-frame-landed$tag")
+            }
+            film(TwistDemos.ghost).apply {
+                play(0.5f)
+                game.input.right = true
+                play(6f) { w().state == WorldState.DEAD }
+                game.input.right = false
+                val dead = w()
+                play(3f) { game.world !== dead }
+                play(0.4f)
+                // run ahead and stop short of the spikes; the ghost comes after you
+                game.input.right = true
+                play(1.1f)
+                game.input.right = false
+                play(0.8f); save("67-ghost$tag")
+            }
+            film(TwistDemos.pause).apply {
+                play(0.6f)
+                game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
+                play(0.3f); save("68-pause-dodge$tag")
+            }
+            film(Level(T("Sharp Break", "Spitze Pause"), T("Relax.", "Entspann dich."), traps = listOf(trap(Trigger.After(0.2f), Action.PauseTrap(PauseTrick.SPIKE), Action.Say(T("Go on, take a break.", "Mach ruhig Pause."))))) {
+                border(); floor(); put(2, 14, 'P'); put(29, 14, 'D')
+            }).apply { play(1.5f); save("69-pause-spike$tag") }
+            film(Level(T("Swap", "Tausch"), T("Need a break?", "Pause gefällig?"), traps = listOf(trap(Trigger.After(0f), Action.PauseTrap(PauseTrick.SWAP)))) {
+                border(); floor(); put(2, 14, 'P'); put(29, 14, 'D')
+            }).apply {
+                play(0.8f); game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
+                play(0.38f); save("70-pause-swap-mid$tag")
+                play(1f); save("71-pause-swapped$tag")
+            }
+            film(TwistDemos.flip).apply {
+                game.input.right = true
+                play(3f) { w().viewTurn() > 0f }
+                game.input.right = false
+                play(0.12f); save("72-flip-mid$tag")
+                play(0.6f); save("73-flip-upside$tag")
+            }
+            film(Level(T("Vertical Hold", "Bildlauf"), T("Nice picture, right?", "Schönes Bild, oder?"), traps = listOf(trap(Trigger.PastX(5f), Action.Roll(1.4f)))) {
+                border(); floor(); fill(12..14, 12..12); put(2, 14, 'P'); put(29, 14, 'D')
+            }).apply {
+                game.input.right = true
+                play(3f) { w().viewRoll() > 0.3f }
+                save("74-roll$tag")
+            }
         }
     }
 

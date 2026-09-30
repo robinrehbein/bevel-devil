@@ -6,7 +6,8 @@ import org.junit.Test
 
 /** Plays scripted inputs through a level with the real physics. */
 class Bot(private val level: Level) {
-    val world = World(level)
+    var world = World(level)
+        private set
     private val input = Controls()
     private val trace = StringBuilder()
 
@@ -92,6 +93,33 @@ class Bot(private val level: Level) {
     fun leftKeyRightTo(x: Float) = until(x, left = true, goingRight = true)
     /** For swapped controls: press right, move left. */
     fun rightKeyLeftTo(x: Float) = until(x, left = false, goingRight = false)
+
+    /** Stand still while [cond] holds (at most [max] seconds), e.g. through a fake win. */
+    fun waitWhile(max: Float = 20f, cond: (World) -> Boolean): Bot {
+        input.left = false; input.right = false; input.jump = false
+        var t = 0f
+        while (cond(world) && world.state == WorldState.PLAYING && t < max) { world.step(DT, input); t += DT }
+        return hold(0f)
+    }
+
+    /** Taps the HUD pause button; if it really paused, resumes right away. */
+    fun tapPause(): Bot {
+        if (world.pausePressed()) world.resumed()
+        return hold(0f)
+    }
+
+    /** Pauses (via back, which always works) and resumes. */
+    fun pauseResume(): Bot {
+        world.resumed()
+        return hold(0f)
+    }
+
+    /** Next attempt after a death, carrying this attempt's trail for a ghost, as the game does. */
+    fun retry(): Bot {
+        world = World(level, world.trail)
+        trace.append("--- retry\n")
+        return this
+    }
 
     fun expect(state: WorldState) {
         assertEquals("${level.name.en}\n$trace", state, world.state)

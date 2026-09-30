@@ -36,6 +36,10 @@ sealed interface Trigger {
     data class Touch(val group: Char) : Trigger
     /** Seconds since the attempt started. */
     data class After(val seconds: Float) : Trigger
+    /** The player reaches the door. Fires instead of the win (its delay is ignored); pair it with [Action.FakeWin]. */
+    data object AtDoor : Trigger
+    /** The player paused and resumed [times] times in this attempt. */
+    data class Resumed(val times: Int = 1) : Trigger
 }
 
 sealed interface Action {
@@ -52,6 +56,24 @@ sealed interface Action {
     data class Shake(val amount: Float) : Action
     /** Mephi plays a trap card: it flies into view, and dying before the attempt ends collects it. */
     data class Play(val card: Card) : Action
+    /**
+     * Meta twists, see Twists.kt. A fake win: Bevel is sucked into the door, a [FakeEnd] screen shows, then Mephi
+     * glitches in ("Nope.") and Bevel is spat back out. [then] runs at that moment. With [FakeEnd.CREDITS] and a
+     * hidden [platforms] group, the last credit lines stop on that group's rows and turn into its platforms.
+     */
+    data class FakeWin(val end: FakeEnd, val platforms: Char?, val then: List<Action>) : Action {
+        constructor(end: FakeEnd = FakeEnd.CLEAR, platforms: Char? = null, vararg then: Action) : this(end, platforms, then.toList())
+    }
+    /** From now on the HUD pause button plays [trick]. The back button always pauses for real. */
+    data class PauseTrap(val trick: PauseTrick) : Action
+    /** The golden frame cracks in the tile rectangle for [warn] seconds, then that piece of it falls into the level. */
+    data class FrameCrack(val x0: Int, val y0: Int, val x1: Int = x0, val y1: Int = y0, val warn: Float = 0.8f) : Action
+    /** The picture turns upside down for [seconds]. Left and right follow the screen, so the controls stay sane. */
+    data class Flip(val seconds: Float) : Action
+    /** The CRT loses vertical hold for [seconds]: the picture rolls [laps] times. Visual only. */
+    data class Roll(val seconds: Float, val laps: Int = 2) : Action
+    /** The previous attempt replays as a deadly ghost, starting [delay] seconds from now. */
+    data class Ghost(val delay: Float = 1f) : Action
 }
 
 class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0f)

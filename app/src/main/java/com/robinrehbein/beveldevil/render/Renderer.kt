@@ -33,6 +33,7 @@ class Renderer(context: Context) {
     private val intro = IntroPainter(px, ui)
     private val glitch = Glitch(px)
     private val controls = ControlsPainter()
+    private val twist = TwistPainter(px, ui)
 
     private var swirlPx = IntArray(0)
     private var swirlBmp: Bitmap? = null
@@ -44,6 +45,7 @@ class Renderer(context: Context) {
     // screen transitions: the last frame before a change, dissolved away with a dither pattern
     private var lastScreen: Screen? = null
     private var lastWorld: World? = null
+    private var lastFake = false
     private var wipeT = -1f
     private var wipeP = 1f
     private var wipeIris = false
@@ -103,10 +105,10 @@ class Renderer(context: Context) {
             Screen.SETTINGS -> { ui.floorStrip(l); settings.screen(game, l) }
             Screen.SELECT -> ui.select(game, l)
             Screen.ALBUM -> ui.album(game, l)
-            Screen.PLAY -> { world.draw(game, l); ui.hud(game, l) }
-            Screen.PAUSE -> { world.draw(game, l); ui.pause(l); settings.extras(game, l) }
-            Screen.CLEAR -> { world.draw(game, l); ui.clear(game, l) }
-            Screen.END -> { world.draw(game, l); ui.end(game, l) }
+            Screen.PLAY -> { level(game, l); if (!twist.fake(game, l)) ui.hud(game, l) }
+            Screen.PAUSE -> { level(game, l); ui.pause(game, l); settings.extras(game, l) }
+            Screen.CLEAR -> { level(game, l); ui.clear(game, l) }
+            Screen.END -> { level(game, l); ui.end(game, l) }
             Screen.INTRO -> intro.intro(game, l)
             Screen.WORLD_INTRO -> intro.worldIntro(game, l)
         }
@@ -140,7 +142,14 @@ class Renderer(context: Context) {
         if (game.screen == Screen.ALBUM && game.albumSelection >= 0) ui.bigCard(canvas, game, Card.entries[game.albumSelection], l)
         canvas.restore()
         crt(canvas, l)
-        if (game.screen == Screen.PLAY) controls.draw(canvas, l.controls)
+        if (game.screen == Screen.PLAY && !game.fakeShown) controls.draw(canvas, l.controls)
+    }
+
+    /** The level with its meta twists: ghost, cracks, credit platforms, then the flipped or rolling picture. */
+    private fun level(game: Game, l: Layout) {
+        world.draw(game, l)
+        twist.inWorld(game, l)
+        twist.view(game, l)
     }
 
     // ---------- transitions ----------
@@ -150,7 +159,9 @@ class Renderer(context: Context) {
         val s = game.screen
         val w = game.world
         val newWorld = s == Screen.PLAY && w !== lastWorld
-        if (lastScreen != null && sameSize && (s != lastScreen || newWorld)) {
+        // a fake win dissolves in exactly like the real clear screen
+        val fake = game.fakeShown && !lastFake
+        if (lastScreen != null && sameSize && (s != lastScreen || newWorld || fake)) {
             val n = l.lw * l.lh
             if (snapPx.size != n) { snapPx = IntArray(n); curPx = IntArray(n) }
             px.lo.getPixels(snapPx, 0, l.lw, 0, 0, l.lw, l.lh)
@@ -170,6 +181,7 @@ class Renderer(context: Context) {
         }
         lastScreen = s
         lastWorld = w
+        lastFake = game.fakeShown
     }
 
     /** 0..1: where pixel ([x], [y]) sits in the wipe order, dithered in 2×2 blocks. */

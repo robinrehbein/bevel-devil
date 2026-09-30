@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -115,12 +116,16 @@ sealed interface Event {
     data class Say(val text: T) : Event
     data class Shake(val amount: Float) : Event
     data class Played(val card: Card) : Event
+    /** A [Action.FakeWin] started: looks exactly like [Won] but grants nothing. */
+    data object FakeWon : Event
+    /** The fake win is over: Mephi glitches back in. */
+    data object Unfaked : Event
 }
 
 enum class WorldState { PLAYING, DEAD, WON }
 
 /** One attempt at a level. Pure game logic, no Android. */
-class World(val level: Level) {
+class World(val level: Level, private val past: Trail? = null) {
     val cols = level.cols
     val rows = level.rows
     val pieces = ArrayList<Piece>()
@@ -152,6 +157,65 @@ class World(val level: Level) {
 
     private val traps = level.traps.map { TrapState(it) }
 
+    // ---------- meta twists (see Twists.kt) ----------
+
+    /** This attempt's path, recorded only in levels with a ghost: the next attempt's ghost. */
+    val trail = Trail()
+    private val recording = level.traps.any { t -> t.actions.any { it is Action.Ghost } }
+    /** Simulation steps so far. */
+    var ticks = 0
+        private set
+    /** [time] when Bevel last popped in: the attempt start, or being spat out after a fake win. */
+    var spawnTime = 0f
+        private set
+    var fake: Action.FakeWin? = null
+        private set
+    var fakeTime = 0f
+        private set
+    private var fakeLength = 0f
+    private var doorLock = 0f
+    /** The credits roll of the running (or last) [FakeEnd.CREDITS] fake. */
+    var credits: List<CreditLine> = emptyList()
+        private set
+    /** The group the credits turned into, once they did: its platforms carry the lines. */
+    var creditPlatforms: Char? = null
+        private set
+    /** The fake screen is up (after the door animation). */
+    val fakeShown get() = fake != null && time - fakeTime >= Twists.FAKE_DELAY
+    val fakeAge get() = time - fakeTime - Twists.FAKE_DELAY
+
+    var pauseTrick = PauseTrick.HONEST
+        private set
+    var dodges = 0
+        private set
+    var dodgeTime = -99f
+        private set
+    var resumes = 0
+        private set
+
+    class Crack(val group: Group, val time: Float, val warn: Float) {
+        var fell = false
+    }
+    val cracks = ArrayList<Crack>()
+    private val crackRects = level.traps.flatMap { it.actions }.filterIsInstance<Action.FrameCrack>().distinct()
+    private val crackGroups = HashMap<Action.FrameCrack, Group>()
+
+    private var turnFrom = -99f
+    private var turnUntil = -99f
+    private var rollFrom = -99f
+    private var rollUntil = -99f
+    private var rollLaps = 0
+
+    private var ghostStart = Int.MAX_VALUE
+    /** The previous attempt's ghost, while it walks; null otherwise. */
+    var ghost: Box? = null
+        private set
+    private val ghostBox = Box(0f, 0f, Physics.PLAYER_W, Physics.PLAYER_H)
+    /** The ghost's frame in the previous attempt's [Trail], or -1. */
+    var ghostFrame = -1
+        private set
+    private var spawnX = 0f
+
     init {
         var spawn: Pair<Int, Int>? = null
         var doorAt: Pair<Int, Int>? = null
@@ -163,7 +227,12 @@ class World(val level: Level) {
                 '.' -> {}
                 else -> {
                     val g = level.glyph(c) ?: error("Unknown map char '$c' in ${level.name.en}")
-                    val group = if (c == '#' || c in "^v<>") null else groups.getOrPut(c) { Group(c, g.hidden, g.bonk) }
+                    val crack = if (c == '#') crackRects.indexOfFirst { x in it.x0..it.x1 && y in it.y0..it.y1 } else -1
+                    val group = when {
+                        crack >= 0 -> groups.getOrPut(CRACK_ID + crack) { Group(CRACK_ID + crack, false, false) }.also { crackGroups[crackRects[crack]] = it }
+                        c == '#' || c in "^v<>" -> null
+                        else -> groups.getOrPut(c) { Group(c, g.hidden, g.bonk) }
+                    }
                     val p = Piece(g.spike, g.dir, x.toFloat(), y.toFloat(), group)
                     pieces += p
                     group?.pieces?.add(p)
@@ -173,6 +242,7 @@ class World(val level: Level) {
         val (sx, sy) = spawn ?: error("Level ${level.name.en} has no spawn")
         val (dx, dy) = doorAt ?: error("Level ${level.name.en} has no door")
         player = Player(sx + 0.5f, sy + 1f)
+        spawnX = sx + 0.5f
         door = Door(dx - 0.1f, dy + 1f - 1.6f)
     }
 
@@ -180,6 +250,7 @@ class World(val level: Level) {
 
     fun step(dt: Float, input: Controls) {
         time += dt
+        ticks++
         updateGroups(dt)
         updateDoor(dt)
         updateSaws(dt)
@@ -187,15 +258,111 @@ class World(val level: Level) {
             input.jumpPressed = false
             return
         }
+        if (recording) trail.add(player.box.x, player.box.y)
+        updateGhost()
+        if (fake != null) {
+            input.jumpPressed = false
+            if (time - fakeTime >= fakeLength) unfake()
+            return
+        }
+        updateCracks()
         updateTraps(dt)
         updatePlayer(dt, input)
         input.jumpPressed = false
         checkHazards()
-        if (state == WorldState.PLAYING && doorReached()) {
-            state = WorldState.WON
-            stateTime = time
-            events += Event.Won
+        if (state == WorldState.PLAYING && fake == null && time >= doorLock && doorReached()) {
+            val atDoor = traps.firstOrNull { !it.fired && it.trap.trigger == Trigger.AtDoor }
+            if (atDoor != null) {
+                atDoor.fired = true
+                atDoor.done = true
+                atDoor.trap.actions.forEach(::run)
+            } else {
+                state = WorldState.WON
+                stateTime = time
+                events += Event.Won
+            }
         }
+    }
+
+    // ---------- meta twists ----------
+
+    /** The HUD pause button was tapped. True if the game should really pause. */
+    fun pausePressed(): Boolean = when (pauseTrick) {
+        PauseTrick.HONEST, PauseTrick.SWAP -> true
+        PauseTrick.SPIKE -> if (state == WorldState.PLAYING && fake == null) {
+            events += Event.Say(SPIKE_LINE)
+            die()
+            false
+        } else true
+        PauseTrick.DODGE -> when {
+            time - dodgeTime < Twists.DODGE_TIME -> false
+            dodges >= Twists.DODGES -> true
+            else -> {
+                events += Event.Say(Twists.dodgeLines[dodges])
+                dodgeTime = time
+                dodges++
+                false
+            }
+        }
+    }
+
+    /** The player came back from the pause screen. */
+    fun resumed() {
+        resumes++
+    }
+
+    /** 0 = upright, 1 = upside down; turns over [Twists.TURN] seconds each way. */
+    fun viewTurn(): Float {
+        val on = ((time - turnFrom) / Twists.TURN).coerceIn(0f, 1f)
+        val off = (1f - (time - turnUntil) / Twists.TURN).coerceIn(0f, 1f)
+        return min(on, off)
+    }
+
+    /** How far the rolling picture is shifted up, as a fraction 0..1 of its height. */
+    fun viewRoll(): Float {
+        if (time < rollFrom || time >= rollUntil) return 0f
+        val f = (time - rollFrom) / (rollUntil - rollFrom)
+        val e = f * f * (3f - 2f * f) * rollLaps
+        return e - floor(e)
+    }
+
+    private fun updateCracks() {
+        for (c in cracks) if (!c.fell && time >= c.time + c.warn) {
+            c.fell = true
+            c.group.mode = GroupMode.FALL
+            c.group.vy = 0f
+            events += Event.Shake(0.4f)
+        }
+    }
+
+    private fun updateGhost() {
+        val p = past
+        val i = ticks - ghostStart
+        if (p == null || i !in 0 until p.size) { ghost = null; ghostFrame = -1; return }
+        ghostFrame = i
+        ghostBox.x = p.x(i)
+        ghostBox.y = p.y(i)
+        ghost = ghostBox
+    }
+
+    private fun unfake() {
+        val f = fake ?: return
+        fake = null
+        f.platforms?.let { if (f.end == FakeEnd.CREDITS) { group(it).visible = true; creditPlatforms = it } }
+        f.then.forEach(::run)
+        // spat out of the door, back toward the start
+        val d = door.box
+        val b = player.box
+        val dir = if (spawnX < d.cx) -1 else 1
+        b.x = d.cx - b.w / 2
+        b.y = if (door.hanging) d.y else d.b - b.h
+        player.vx = dir * 9f
+        player.vy = -12f * gravity
+        player.facing = dir
+        player.grounded = false
+        spawnTime = time
+        doorLock = time + Twists.DOOR_LOCK
+        events += Event.Unfaked
     }
 
     // ---------- traps ----------
@@ -207,6 +374,8 @@ class World(val level: Level) {
             is Trigger.BeforeX -> b.cx < t.x
             is Trigger.Zone -> b.cx in t.x0..t.x1 && b.cy in t.y0..t.y1
             is Trigger.After -> time >= t.seconds
+            is Trigger.Resumed -> resumes >= t.times
+            Trigger.AtDoor -> false
             is Trigger.Touch -> {
                 val g = groups[t.group] ?: return false
                 g.visible && g.pieces.any { it.solid && b.overlaps(it.box.x - 0.06f, it.box.y - 0.06f, 1.12f, 1.12f) }
@@ -259,6 +428,33 @@ class World(val level: Level) {
                 lastCard = a.card
                 events += Event.Played(a.card)
             }
+            is Action.FakeWin -> if (fake == null) {
+                fake = a
+                fakeTime = time
+                player.vx = 0f
+                player.vy = 0f
+                credits = if (a.end == FakeEnd.CREDITS) Twists.creditLines(pieces, a.platforms, cols) else emptyList()
+                fakeLength = Twists.FAKE_DELAY + if (a.end == FakeEnd.CREDITS) Twists.creditsLength(credits, rows) else Twists.FAKE_CLEAR
+                events += Event.FakeWon
+            }
+            is Action.PauseTrap -> pauseTrick = a.trick
+            is Action.FrameCrack -> crackGroups[a]?.let { g ->
+                if (cracks.none { it.group === g }) {
+                    cracks += Crack(g, time, a.warn)
+                    events += Event.Shake(0.25f)
+                }
+            }
+            is Action.Flip -> {
+                val v = viewTurn()
+                turnFrom = time - v * Twists.TURN
+                turnUntil = time + a.seconds
+            }
+            is Action.Roll -> {
+                rollFrom = time
+                rollUntil = time + a.seconds
+                rollLaps = a.laps
+            }
+            is Action.Ghost -> ghostStart = ticks + Math.round(a.delay * Twists.HZ)
         }
     }
 
@@ -369,6 +565,8 @@ class World(val level: Level) {
         val p = player
         var dir = (if (input.right) 1 else 0) - (if (input.left) 1 else 0)
         if (swapped) dir = -dir
+        // upside down, left and right follow the screen
+        if (viewTurn() >= 0.5f) dir = -dir
         if (dir != 0) p.facing = dir
 
         val target = dir * Physics.RUN
@@ -448,6 +646,7 @@ class World(val level: Level) {
     private fun checkHazards() {
         val b = player.box
         if (pieces.any { it.spike && it.visible && it.hurts(b) }) return die()
+        ghost?.let { g -> if (b.overlaps(g.x + GHOST_INSET, g.y + GHOST_INSET, g.w - 2 * GHOST_INSET, g.h - 2 * GHOST_INSET)) return die() }
         for (s in saws) {
             val nx = s.x.coerceIn(b.x, b.r)
             val ny = s.y.coerceIn(b.y, b.b)
@@ -467,5 +666,12 @@ class World(val level: Level) {
         stateTime = time
         events += Event.Died(player.box.cx, player.box.cy)
         events += Event.Shake(1f)
+    }
+
+    private companion object {
+        /** Groups made for [Action.FrameCrack] pieces get ids from the private use area, clear of map letters. */
+        const val CRACK_ID = '\uE000'
+        const val GHOST_INSET = 0.12f
+        val SPIKE_LINE = T("Pause? Ours come with spikes.", "Pause? Gibt's hier nur mit Stacheln.")
     }
 }

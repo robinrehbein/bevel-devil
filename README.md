@@ -72,6 +72,26 @@ Level(
 - Trigger: `PastX`, `BeforeX`, `Zone`, `Touch`, `After`.
 - Aktionen: `Fall`, `Show`, `Hide`, `Move`, `DoorTo`, `Gravity`, `Swap`, `Saw`, `Say`, `Shake`, `Play`.
 
+### Meta-Twists
+
+Fallen, die das Spiel selbst angreifen, jeweils opt-in pro Level (Logik in `game/Twists.kt`, Look in `render/TwistPainter.kt`):
+
+```kotlin
+trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8)))  // Fake-Abspann; die letzten Zeilen werden Gruppe 'c'
+trap(AtDoor, FakeWin(FakeEnd.CLEAR, null, Hide('f')))     // Fake-„GESCHAFFT!“, danach fehlt der Boden
+trap(After(0.3f), PauseTrap(PauseTrick.DODGE))            // Pause-Button weicht aus (auch SPIKE, SWAP)
+trap(Resumed(), Hide('w'))                                // feuert nach Pause + Weiter
+trap(PastX(4f), FrameCrack(16, 0, 19, 0, warn = 0.9f))   // Stück vom Goldrahmen bricht ab und fällt
+trap(PastX(6f), Flip(3f))                                 // Bild steht 3 s Kopf
+trap(PastX(21f), Roll(1.2f))                              // CRT verliert den Bildfang
+trap(After(0f), Ghost(1f))                                // letzter Versuch läuft als tödlicher Geist mit
+```
+
+- `AtDoor` feuert statt des Siegs; ein Fake-Sieg speichert nichts, zählt nichts und schaltet nichts frei. Danach spuckt die Tür Bevel wieder aus (kurz gesperrt).
+- Pause bleibt immer echt erreichbar: Zurück-Taste und App-Wechsel pausieren unabhängig vom Trick, und im Pausemenü setzt ein Tipp neben die Buttons fort.
+- `Flip` ist nur optisch; links/rechts folgen dem Bildschirm (drückt man rechts, läuft Bevel auf dem Kopfstand-Bild nach rechts), Springen bleibt Springen.
+- Demo-Level für jeden Twist liegen nur in den Tests (`TwistsTest`).
+
 Jedes Level hat in `World1Test` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
 
 ## Lizenzen
