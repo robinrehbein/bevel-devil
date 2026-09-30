@@ -467,7 +467,7 @@ class ScreenshotTest {
             fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(2).firstLevel + n - 1) }, s)
             film(1).apply { play(1.2f); save("110-w2-l1$tag") }
             film(5).apply { play(1.2f); save("111-w2-l5$tag") }
-            film(13).apply { play(1.2f); save("112-w2-l13-long-name$tag") }
+            film(13).apply { play(1.2f); save("112-w2-l13-flip-level$tag") }
             film(10).apply {
                 game.input.right = true
                 play(4f) { game.world!!.player.box.cx > 6.6f }
@@ -489,6 +489,38 @@ class ScreenshotTest {
         val g = Game(MemoryProgress().apply { unlocked = 60 }, silent)
         run(g, 0.5f); g.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(g, 0.6f)
         shoot("116-select", g, sizes.take(2))
+    }
+
+    /** World 2's three acts at their real global index, so the data-center theme is the real one. */
+    @Test
+    fun worldTwoActs() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(Worlds.get(2).firstLevel + n - 1) }, s)
+            fun Film.w() = game.world!!
+            fun Film.runTo(x: Float) { game.input.right = true; play(6f) { w().player.box.cx > x }; game.input.right = false }
+            film(2).apply { play(1.0f); save("120-w2-l02-open-port$tag") }
+            film(6).apply { runTo(6.5f); play(0.25f); save("121-w2-l06-dns-rerouted$tag") }
+            film(10).apply { play(1.0f); save("122-w2-l10-vpn-tunnel$tag") }
+            film(17).apply { play(1.0f); save("123-w2-l17-data-bus$tag") }
+            film(18).apply { play(6f) { w().beams[0].lit }; play(0.1f); save("124-w2-l18-firewall-lit$tag") }
+            film(19).apply { runTo(10.5f); play(0.3f); save("125-w2-l19-belt-reversed$tag") }
+            film(21).apply { play(1.0f); save("126-w2-l21-beam-ceiling$tag") }
+            film(23).apply { play(1.0f); save("127-w2-l23-superhighway$tag") }
+            film(24).apply { play(1.0f); save("128-w2-l24-uplink$tag") }
+            film(25).apply { play(1.0f); save("129-w2-l25-load-balancer$tag") }
+            film(28).apply { play(1.0f); save("130-w2-l28-split-tunnel$tag") }
+            film(31).apply { play(4.8f); save("131-w2-l31-timeout-gate$tag") }
+            film(34).apply { game.input.right = true; play(6f) { w().links[0].hopTime > 0f }; game.input.right = false; play(0.5f); save("132-w2-l34-reverse-proxy$tag") }
+            film(35).apply { play(1.0f); save("133-w2-l35-pipeline$tag") }
+            film(38).apply { runTo(5.7f); play(0.3f); save("134-w2-l38-bobby-tables$tag") }
+            film(40).apply { runTo(6.3f); play(0.8f); save("135-w2-l40-lag-spike$tag") }
+            film(43).apply { play(1.0f); save("136-w2-l43-rack-quake$tag") }
+            film(46).apply { play(1.0f); save("137-w2-l46-escalation$tag") }
+            film(48).apply { play(1.0f); save("138-w2-l48-shutdown$tag") }
+            film(36).apply { play(1.0f); save("139-w2-l36-replay$tag") }
+        }
     }
 
     @Test

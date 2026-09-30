@@ -72,7 +72,7 @@ object World2Part3 {
         // 35 — a belt carries you through gates that open in a rhythm: you cannot stand and wait, only lean back against it
         Level(
             name = T("Pipeline", "Datenleitung"),
-            intro = T("Packets flow in one direction. Gates open in another rhythm.", "Pakete fließen in eine Richtung. Die Tore öffnen sich in einem anderen Takt."),
+            intro = T("Packets flow in one direction. Gates open in another rhythm.", "Pakete fließen nach rechts. Die Tore haben ihren eigenen Takt."),
             start = listOf(
                 Belt('b', 5f),
                 Laser('A', 9 to 1, 9 to 14, on = 1.2f, off = 1f),
@@ -110,7 +110,7 @@ object World2Part3 {
         // 37 — EASTER EGG: two-factor authentication
         Level(
             name = T("Two-Factor Auth", "Zwei-Faktor-Login"),
-            intro = T("Please enter the code we just sent to your other door.", "Bitte gib den Code ein, den wir an deine andere Tür gesendet haben."),
+            intro = T("Please enter the code we just sent to your other door.", "Gib den Code ein, den wir an deine andere Tür geschickt haben."),
             legend = mapOf('B' to hiddenSolid, 'A' to hidden),
             traps = listOf(
                 trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Factor 1 accepted. Now factor 2.", "Faktor 1 akzeptiert. Jetzt Faktor 2.")),

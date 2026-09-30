@@ -11,6 +11,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 ## Was drin ist
 
 - **48 Level** in Welt 1 „Höllenkeller“, drei Akte à 16: **Die Karten** (die zwölf klassischen Tricks: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden, Finale), **Neue Regeln** (blinkende Plattformen, Pfad-Sägen, der Idle-Trigger, erst einzeln, dann mit den Klassikern) und **Mephi schummelt** (Meta-Twists wie Fake-Abspann, ausweichender Pause-Knopf, Rahmenbruch, Kopfstand, Geister-Versuch; nur zwei Level nutzen Handy-Neigung und Schütteln; Finale „Abspann“). Dazu Nerd-Anspielungen von Segfault bis sudo.
+- **48 Level** in Welt 2 „Höllen-Rechenzentrum“ (Schicht 2: Netzwerk und Server), wieder drei Akte à 16: **Handshake** (die besten Nerd-Witze von Hello World bis 404, erste Portale, der DNS-Trick), **Traffic** (Förderbänder als Datenbus und Laser als Firewall, erst einzeln, dann mit Portalen und Klassikern) und **Root** (Kombinationen, drei Meta-Twists in neuer Verkleidung: Replay-Angriff, Pause als Lösung, Lag-Spitze; ein Level mit Schütteln; Finale „shutdown -h now“, bei dem Mephi nach Schicht 3 flieht).
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
@@ -39,6 +40,7 @@ app/src/main/java/com/robinrehbein/beveldevil/
 │   ├── Levels.kt    Level-Register (alle Welten hintereinander)
 │   ├── Worlds.kt    Welten: Name, Übergangsscreen, Index-Mapping ("2-17")
 │   ├── World1*.kt   Die 48 Level von Welt 1 (Part1–Part3, ein Akt je 16 Level) und Bau-Helfer
+│   ├── World2*.kt   Die 48 Level von Welt 2 (Part1–Part3: Handshake, Traffic, Root) und Bau-Helfer (Racks, LEDs)
 │   ├── World.kt     Physik, Kollision, Fallen (ein Versuch)
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt
 │   ├── Cards.kt     Die Teufelskarten
@@ -121,7 +123,7 @@ trap(After(0f), Ghost(1f))                                // letzter Versuch lä
 - `Flip` ist nur optisch; links/rechts folgen dem Bildschirm (drückt man rechts, läuft Bevel auf dem Kopfstand-Bild nach rechts), Springen bleibt Springen.
 - Demo-Level für jeden Twist liegen nur in den Tests (`TwistsTest`).
 
-Jedes Level hat in `World1Test` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
+Jedes Level hat in `World1Test` und `World2Test` einen Bot, der es mit der echten Physik durchspielt. Wer ein Level ändert, sieht sofort, ob es noch lösbar ist.
 
 ## Lizenzen
 

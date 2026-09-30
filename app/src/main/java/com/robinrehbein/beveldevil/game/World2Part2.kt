@@ -149,7 +149,7 @@ object World2Part2 {
         // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it
         Level(
             name = T("Load Balancer", "Lastverteiler"),
-            intro = T("Traffic is distributed evenly. Left, right, left, right.", "Der Verkehr wird gleichmäßig verteilt. Links, rechts, links, rechts."),
+            intro = T("Traffic is distributed evenly. Left, right, left, right.", "Der Verkehr wird gleichmäßig verteilt. Links, rechts, ..."),
             start = listOf(Belt('a', 4f), Belt('b', -4f), Belt('c', 4f), Belt('d', -4f)),
             traps = listOf(
                 trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 0.9f),
@@ -252,7 +252,7 @@ object World2Part2 {
         // 31 — EASTER EGG: HTTP 408 Request Timeout (a treadmill against you and a gate that closes for good at 5.2 s)
         Level(
             name = T("408 Request Timeout", "408 Zeitüberschreitung"),
-            intro = T("Connection closes in 5 seconds. The belt is slow. So are you.", "Die Verbindung schließt in 5 Sekunden. Das Band ist langsam. Du auch."),
+            intro = T("Connection closes in 5 seconds. The belt is slow. So are you.", "Verbindung endet in 5 Sekunden. Das Band ist langsam. Du auch."),
             start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
             traps = listOf(
                 trap(After(0.2f), Play(Card.SINKING), say("408: the server waited for you. Not anymore.", "408: Der Server hat auf dich gewartet. Nicht mehr.")),

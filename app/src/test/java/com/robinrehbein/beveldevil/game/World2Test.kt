@@ -48,7 +48,7 @@ class World2Test {
     fun namesAndIntrosAreFilledInBothLanguages() {
         World2.levels.forEach { l ->
             assertTrue(l.name.en.isNotBlank() && l.name.de.isNotBlank() && l.intro.en.isNotBlank() && l.intro.de.isNotBlank())
-            assertTrue("${l.name.en}: intro too long", l.intro.en.length <= 90 && l.intro.de.length <= 90)
+            assertTrue("${l.name.en}: intro too long", l.intro.en.length <= 66 && l.intro.de.length <= 66)
         }
     }
 
