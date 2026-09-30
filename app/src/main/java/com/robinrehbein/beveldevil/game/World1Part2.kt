@@ -22,7 +22,7 @@ object World1Part2 {
         // 17 — blinking bridge over a pit: cross when it comes back
         // MECHANIC: Blink (alone)
         Level(
-            name = T("Blinkenlights", "Energiesparmodus"),
+            name = T("Blinkenlights", "Sparmodus"),
             intro = T("New house rule: platforms have a power-saving mode.", "Neue Hausordnung: Plattformen haben jetzt einen Energiesparmodus."),
             start = listOf(Blink('a', on = 1.8f, off = 1f)),
         ) {

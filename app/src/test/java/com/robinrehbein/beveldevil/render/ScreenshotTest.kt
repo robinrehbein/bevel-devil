@@ -163,8 +163,8 @@ class ScreenshotTest {
         run(g, 1.6f, right = true); shoot("04-level1-trap", g)
         run(g, 0.45f, right = true); shoot("05-level1-dead", g)
         g.startLevel(2); run(g, 3.0f, right = true); shoot("06-level3-door", g)
-        g.startLevel(4); run(g, 2.0f, right = true); shoot("07-level5-flip", g)
-        g.startLevel(6); run(g, 1.7f, right = true); shoot("08-level7-saw", g)
+        g.startLevel(7); run(g, 2.0f, right = true); shoot("07-level5-flip", g)
+        g.startLevel(5); run(g, 1.7f, right = true); shoot("08-level7-saw", g)
         g.startLevel(10); run(g, 1.3f, right = true); shoot("09-level11-crumble", g)
         g.startLevel(0); run(g, 2.0f, right = true, jumpAt = 1.75f); run(g, 2.5f, right = true); shoot("10-clear", g)
         g.back(); g.back(); g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.3f); shoot("11-album", g)
@@ -182,8 +182,8 @@ class ScreenshotTest {
         fun cleared(n: Int) = MemoryProgress().apply { unlocked = n + 1; for (i in 0 until n) saveBest(i, (i * 7) % 23) }
         fun open(p: Progress) = Game(p, silent).also { run(it, 0.5f); it.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(it, 0.6f) }
         shoot("50-select-w1-p1", open(MemoryProgress()), two)
-        shoot("51-select-w1-mid", open(cleared(69)), two)
-        val w2 = open(cleared(128 + 20))
+        shoot("51-select-w1-mid", open(cleared(30)), two)
+        val w2 = open(cleared(48 + 20))
         shoot("52-select-w2", w2, two)
         w2.page(-1); run(w2, 0.6f)
         w2.tap(Ui.worldTab(0, 3).x + 2f, Ui.worldTab(0, 3).y + 2f); run(w2, 0.6f)
@@ -191,7 +191,7 @@ class ScreenshotTest {
         Lang.german = false
         shoot("54-select-w1-last-en", w2, two.take(1))
         Lang.german = true
-        w2.startLevel(128 + 16); run(w2, 1.2f)
+        w2.startLevel(48 + 16); run(w2, 1.2f)
         shoot("55-hud-w2", w2, sizes)
     }
 
@@ -352,6 +352,59 @@ class ScreenshotTest {
             play(0.6f)
             game.input.shake = true
             play(0.1f); save("66-tilt-buttons-${s.tag}")
+        }
+    }
+
+    /** The new World 1: a look at levels of act 2 (new mechanics) and act 3 (meta twists). */
+    @Test
+    fun worldOneActs() {
+        Lang.german = true
+        for (s in sizes.take(2)) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            fun film(n: Int) = Film(Game(MemoryProgress(), silent).apply { startLevel(n - 1) }, s)
+            fun Film.w() = game.world!!
+            film(17).apply { play(1.2f); save("90-l17-blink-on$tag"); play(2f) { !w().group('a').visible }; play(0.2f); save("91-l17-blink-off$tag") }
+            film(18).apply { play(2.6f); save("92-l18-pendulum$tag") }
+            film(20).apply { play(1.4f); save("93-l20-lights$tag") }
+            film(22).apply { play(2.0f); save("94-l22-airlock$tag") }
+            film(26).apply { play(1.6f); save("95-l26-stairs$tag") }
+            film(28).apply { play(0.8f); save("96-l28-rope$tag") }
+            film(32).apply { play(0.9f); save("97-l32-beta$tag") }
+            film(36).apply {
+                game.input.right = true
+                play(3f) { w().player.box.cx > 4.6f }
+                game.input.right = false
+                play(0.5f); save("80-l36-crack-warn$tag")
+                play(1.0f); save("81-l36-crack-fell$tag")
+            }
+            film(38).apply {
+                game.input.right = true
+                play(3f) { w().player.box.cx > 6.3f }
+                game.input.right = false
+                play(0.6f); save("82-l38-flip$tag")
+            }
+            film(39).apply { play(0.6f); save("83-l39-tilt$tag") }
+            film(41).apply {
+                game.input.right = true
+                play(3f) { w().player.box.cx > 10.3f }
+                game.input.right = false
+                play(0.9f); save("84-l41-roll$tag")
+            }
+            film(42).apply {
+                game.input.right = true
+                play(3f) { w().player.box.cx > 8f }
+                play(0.5f); save("85-l42-panic$tag")
+            }
+            film(44).apply { play(0.6f); save("86-l44-shake$tag") }
+            film(48).apply {
+                game.input.right = true
+                play(0.5f)
+                play(6f) { w().fake != null }
+                game.input.right = false
+                play(Twists.FAKE_DELAY + 2.4f); save("87-l48-credits$tag")
+                play(14f) { w().fake == null }
+                play(1.5f); save("88-l48-stairs$tag")
+            }
         }
     }
 

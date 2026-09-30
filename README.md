@@ -10,7 +10,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 
 ## Was drin ist
 
-- **128 Level** in Welt 1 „Höllenkeller“ (acht Kapitel à 16): erst ein Trick pro Level (Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden), dann Doppel-Trolle, Warten, Rückwärtslaufen und Kombis mit vielen Nerd-Anspielungen bis zum Finale „Integer Overflow“.
+- **48 Level** in Welt 1 „Höllenkeller“, drei Akte à 16: **Die Karten** (die zwölf klassischen Tricks: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden, Finale), **Neue Regeln** (blinkende Plattformen, Pfad-Sägen, der Idle-Trigger, erst einzeln, dann mit den Klassikern) und **Mephi schummelt** (Meta-Twists wie Fake-Abspann, ausweichender Pause-Knopf, Rahmenbruch, Kopfstand, Geister-Versuch; nur zwei Level nutzen Handy-Neigung und Schütteln; Finale „Abspann“). Dazu Nerd-Anspielungen von Segfault bis sudo.
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
@@ -38,7 +38,7 @@ app/src/main/java/com/robinrehbein/beveldevil/
 │   ├── Level.kt     Level-DSL: Karte, Glyphen, Trigger, Aktionen
 │   ├── Levels.kt    Level-Register (alle Welten hintereinander)
 │   ├── Worlds.kt    Welten: Name, Übergangsscreen, Index-Mapping ("2-17")
-│   ├── World1*.kt   Die 128 Level von Welt 1 (Part1–Part8, je 16 Level) und Bau-Helfer
+│   ├── World1*.kt   Die 48 Level von Welt 1 (Part1–Part3, ein Akt je 16 Level) und Bau-Helfer
 │   ├── World.kt     Physik, Kollision, Fallen (ein Versuch)
 │   ├── Game.kt      Screens, Mephis Stimmung, Karten, Fortschritt
 │   ├── Cards.kt     Die Teufelskarten
