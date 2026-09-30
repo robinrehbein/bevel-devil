@@ -194,6 +194,35 @@ class World1Test {
         .rightTo(24.7f).wait(1.2f).left(3f)
         .expect(WorldState.WON)
 
+    // ---------- Act 1 softlock audit: nobody may end up alive with the door out of reach ----------
+
+    /** Hopping back off the first slab that sank must not strand the player on the start side: it gives way. */
+    @Test fun level07RetreatingFromTheSunkSlabDies() {
+        val back = b(7).rightTo(6.4f).rightJump(0.35f).landRight().rightTo(11.6f).rightJump(0.12f).landRight()
+            .left(0.12f).leftJump(0.3f).landLeft().wait(0.3f)
+        back.expect(WorldState.PLAYING)
+        assertTrue("back on the start platform", back.world.player.box.cx < 12f && back.world.player.grounded)
+        back.wait(3f).expect(WorldState.DEAD)
+    }
+
+    /** Hopping back from the crumbled stone to the start side is fatal, not a dead end: the start side gives way. */
+    @Test fun level11RetreatingFromACrumbledStoneDies() =
+        b(11).hopR(5.7f).hopR(10.7f).leftJump(0.35f).landLeft().wait(4f).expect(WorldState.DEAD)
+
+    /** Stepping off the rising lift onto the floor is fatal: the floor leaves with it. */
+    @Test fun level14SteppingOffTheLiftDies() =
+        b(14).rightTo(10.2f).rightJump(0.3f).landRight().leftTo(10.2f).wait(3f).expect(WorldState.DEAD)
+
+    /** Bumping into the side of the lift must not set it off without the player on board. */
+    @Test fun level14LiftWaitsForAPassenger() {
+        val bump = b(14).right(2f).wait(2f)
+        bump.expect(WorldState.PLAYING)
+        assertEquals(0f, bump.world.group('a').oy, 0.05f)
+        bump.leftTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
+            .rightTo(15.9f).rightJump(0.35f).landRight().rightTo(21.6f).rightJump(0.35f).landRight().right(3f)
+            .expect(WorldState.WON)
+    }
+
     // ---------- Act 1: the obvious run dies at the second or third trap ----------
 
     @Test

@@ -138,12 +138,14 @@ object World1Part1 {
             traps = listOf(
                 trap(Touch('b'), Play(Card.SINKING), Move('b', 0f, 12f, 7f), Say(T("Solid ground, limited offer.", "Fester Boden, nur kurz gültig.")), delay = 0.12f),
                 trap(Touch('c'), Move('c', 0f, 12f, 9f), delay = 0.08f),
+                // hopping back off the first slab strands nobody: the start side gives way a moment after it sank
+                trap(Touch('b'), Fall('s'), delay = 2.5f),
                 trap(Airborne(22f, 23.6f), Show('A')),
             ),
         ) {
             border(); floor()
             fill(7..26, 15..17, '.')
-            fill(9..11, 13..13); fill(14..16, 13..13, 'b'); fill(19..21, 13..13, 'c'); fill(23..26, 13..13)
+            fill(1..6, 15..17, 's'); fill(9..11, 13..13, 's'); fill(14..16, 13..13, 'b'); fill(19..21, 13..13, 'c'); fill(23..26, 13..13)
             put(23, 12, 'A'); put(24, 12, 'A')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
@@ -206,10 +208,12 @@ object World1Part1 {
                 trap(Touch('b'), Play(Card.CRUMBLE), Fall('b'), Say(T("Stone number two says bye.", "Stein Nummer zwei sagt tschüss.")), delay = 0.45f),
                 trap(Touch('c'), Fall('c'), delay = 0.2f),
                 trap(Airborne(21.3f, 22.6f), Show('A')),
+                // the bank and the first stone give way behind you: hopping back after stone two leads nowhere, so it ends
+                trap(Touch('b'), Fall('s'), delay = 2.2f),
             ),
         ) {
             border(); floor(); pit(6..27)
-            fill(8..10, 14..14); fill(13..15, 14..14, 'b'); fill(18..20, 14..14, 'c'); fill(23..26, 13..13)
+            fill(1..5, 15..17, 's'); fill(8..10, 14..14, 's'); fill(13..15, 14..14, 'b'); fill(18..20, 14..14, 'c'); fill(23..26, 13..13)
             put(25, 12, 'A')
             put(2, 14, 'P'); put(30, 14, 'D')
         },
@@ -255,7 +259,9 @@ object World1Part1 {
             intro = T("Please hold. Your call is important to us.", "Bitte warten. Ihr Anliegen ist uns wichtig."),
             legend = mapOf('A' to Glyph(spike = true, hidden = true)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, -7f, 4.5f), Say(T("Ding! Next floor: pointy.", "Ding! Nächste Etage: spitz."))),
+                // the lift only leaves with somebody above it, and the floor it leaves behind goes with it
+                trap(Zone(11f, 9f, 16f, 14f), Play(Card.SINKING), Move('a', 0f, -7f, 4.5f), Say(T("Ding! Next floor: pointy.", "Ding! Nächste Etage: spitz."))),
+                trap(Zone(11f, 9f, 16f, 14f), Fall('f'), delay = 0.6f),
                 trap(Zone(11f, 5.5f, 16f, 7.6f), Show('A')),
                 trap(Touch('b'), Fall('b'), delay = 0.2f),
             ),
@@ -263,6 +269,7 @@ object World1Part1 {
             border(); floor()
             // no floor under the ledge: whoever drops through the crumbling piece falls out instead of being stranded below
             pit(17..29)
+            fill(1..16, 15..17, 'f')
             fill(11..15, 14..14, 'a')
             fill(18..30, 7..7); fill(23..24, 7..7, 'b')
             put(18, 6, 'A'); put(19, 6, 'A')
