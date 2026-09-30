@@ -50,6 +50,8 @@ class SettingsPainter(px: Pixels) : Painter(px) {
                     say(opts[row][i].toString(), h.x + h.w / 2f, h.y + 7f, 6f, if (on) CREAM else 0xFFB9A6CF.toInt(), Paint.Align.CENTER)
                 }
             }
+            box(Ui.privacy, PLUM, PLUM_HI)
+            say(T("PRIVACY", "DATENSCHUTZ").toString(), 128f, 135f, 5f, CREAM, Paint.Align.CENTER)
         }
     }
 }

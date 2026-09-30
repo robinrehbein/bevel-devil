@@ -2,6 +2,9 @@ package com.robinrehbein.beveldevil
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -268,7 +271,18 @@ class GameView(context: Context, private val game: Game) : SurfaceView(context),
                     if (game.screen == Screen.SELECT) {
                         if (swipeId < 0) { swipeId = id; swipeX = lx; swipeY = ly }
                     } else if (game.screen != Screen.PLAY) {
-                        game.tap(lx - layout.stageX(game.screen), ly - layout.stageY(game.screen))
+                        val point = (lx - layout.stageX(game.screen)) to (ly - layout.stageY(game.screen))
+                        if (game.screen == Screen.SETTINGS && point in Ui.privacy) {
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://robinrehbein.github.io/bevel-devil/privacy.html")))
+                            } catch (_: ActivityNotFoundException) {
+                                // Devices without a browser can still read the bundled policy.
+                                android.app.AlertDialog.Builder(context)
+                                    .setTitle("Mephi the Daemon — Privacy / Datenschutz")
+                                    .setMessage(context.assets.open("privacy.txt").bufferedReader().use { it.readText() })
+                                    .setPositiveButton(android.R.string.ok, null).show()
+                            }
+                        } else game.tap(point.first, point.second)
                     } else if ((lx to ly) in layout.pause) {
                         game.tap(Ui.hudPause.x + 1f, Ui.hudPause.y + 1f)
                     } else if (!motionTap(lx, ly)) {
