@@ -20,4 +20,12 @@ enum class Card(val title: T, val flavor: T, val rarity: Rarity) {
     DECOY(T("Decoy", "Attrappe"), T("That door was decoration.", "Die Tür war Deko."), Rarity.RARE),
     CRUMBLE(T("Crumble", "Wackelboden"), T("Keep moving. Seriously.", "Nicht stehen bleiben. Ernsthaft."), Rarity.COMMON),
     GRAND_FINALE(T("Grand Finale", "Großes Finale"), T("Everything. At once.", "Alles. Gleichzeitig."), Rarity.LEGENDARY),
+
+    // World 3 (hardware); appended so that saved cards and album positions stay as they were
+    SHORT_CIRCUIT(T("Short Circuit", "Kurzschluss"), T("The wire was on my side.", "Der Draht war auf meiner Seite."), Rarity.COMMON),
+    OVERCLOCKED(T("Overclocked", "Übertaktet"), T("Warranty void. Floor too.", "Garantie erloschen. Boden auch."), Rarity.COMMON),
+    BIT_FLIP(T("Bit Flip", "Bitkipper"), T("Cosmic rays. Allegedly.", "Kosmische Strahlung. Angeblich."), Rarity.RARE),
+    BACKDRAFT(T("Backdraft", "Gegenwind"), T("Wind is free. Direction is not.", "Wind ist gratis. Die Richtung nicht."), Rarity.COMMON),
+    THROTTLE(T("Throttle", "Drosselung"), T("Slow down. Or I will.", "Werd langsamer. Sonst mach ich es."), Rarity.RARE),
+    BIOS(T("BIOS", "BIOS"), T("Press DEL to lose.", "ENTF drücken zum Verlieren."), Rarity.LEGENDARY),
 }

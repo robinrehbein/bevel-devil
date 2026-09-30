@@ -160,7 +160,8 @@ class ScreenshotTest {
     @Test
     fun screens() {
         Lang.german = true
-        val g = Game(MemoryProgress(), silent)
+        val prog = MemoryProgress()
+        val g = Game(prog, silent)
         run(g, 1.3f); shoot("01-title", g)
         g.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f); run(g, 0.5f); shoot("02-select", g)
         g.startLevel(0); run(g, 0.8f); shoot("03-level1-intro", g)
@@ -173,10 +174,23 @@ class ScreenshotTest {
         g.startLevel(0); run(g, 2.0f, right = true, jumpAt = 1.75f); run(g, 2.5f, right = true); shoot("10-clear", g)
         g.back(); g.back(); g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.3f); shoot("11-album", g)
         g.tap(Ui.albumCard(0).x + 2f, Ui.albumCard(0).y + 2f); run(g, 0.1f); shoot("12-album-card", g)
+        g.tap(128f, 77f); run(g, 0.1f)
+        Card.entries.drop(12).forEach { prog.findCard(it) }
+        g.tap(Ui.pageNext.x + 2f, Ui.pageNext.y + 2f); run(g, 0.3f); shoot("12b-album-page2", g)
+        g.tap(Ui.albumCard(12).x + 2f, Ui.albumCard(12).y + 2f); run(g, 0.1f); shoot("12c-album-page2-card", g)
+        g.tap(128f, 77f); run(g, 0.1f)
+        g.tap(Ui.pagePrev.x + 2f, Ui.pagePrev.y + 2f); run(g, 0.1f)
         val phone = Game(MemoryProgress(), silent); phone.startLevel(3); run(phone, 1.2f, right = true)
         shoot("13-level4", phone)
         shootAt("14-level4-cutout", phone, Size("cutout", 2400, 1080, 2.75f, cutL = 110))
         g.back(); g.startLevel(1); run(g, 1.0f, right = true); g.pause(); shoot("15-pause", g)
+    }
+
+    @Test
+    fun pauseMenuGerman() {
+        Lang.german = true
+        val g = Game(MemoryProgress(), silent); g.startLevel(1); run(g, 0.5f); g.pause()
+        shoot("15-pause-de", g)
     }
 
     @Test

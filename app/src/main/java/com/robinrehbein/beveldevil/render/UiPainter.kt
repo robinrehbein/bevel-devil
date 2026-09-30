@@ -614,7 +614,18 @@ class UiPainter(px: Pixels) : Painter(px) {
             button(Ui.back, "<", false)
             val found = Card.entries.count { game.cardFound(it) }
             say("${Txt.albumTitle} $found/${Card.entries.size}", 128f, 14f, 7f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+            val pages = game.albumPages()
+            val first = game.albumPage * Ui.ALBUM_PAGE
+            if (pages > 1) {
+                pageArrow(Ui.pagePrev, -1, game.albumPage > 0, game.time)
+                pageArrow(Ui.pageNext, 1, game.albumPage < pages - 1, game.time)
+                for (p in 0 until pages) {
+                    val cur = p == game.albumPage
+                    rect(128f - pages * 5 + p * 10 + 2, 3f, 6f, 3f, if (cur) GOLD else ROCK)
+                }
+            }
             Card.entries.forEachIndexed { i, c ->
+                if (i < first || i >= first + Ui.ALBUM_PAGE) return@forEachIndexed
                 val h = Ui.albumCard(i)
                 val bob = (sin(game.time * 2f + i) * 1.2f).roundToInt()
                 val x = h.x.toFloat()
@@ -664,7 +675,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     fun pause(game: Game, l: Layout) {
         dim(l)
         stage(l, Screen.PAUSE) {
-            say(Txt.pause.toString(), 128f, 36f, 14f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+            say(Txt.pause.toString(), 128f, 32f, 14f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
             if (game.pauseSwapped) {
                 // the two buttons trade places in front of you, swinging out to either side
                 val f = ((game.time - game.pausedAt - 0.15f) / 0.5f).coerceIn(0f, 1f)
@@ -674,8 +685,10 @@ class UiPainter(px: Pixels) : Painter(px) {
                 val r = Ui.pauseResume
                 button(Hit(r.x - dx, r.y + dy, r.w, r.h), Txt.levels.toString(), false)
                 button(Hit(r.x + dx, Ui.pauseLevels.y - dy, r.w, r.h), Txt.resume.toString(), true)
+                button(Ui.pauseRestart, Txt.restart.toString(), false)
             } else {
                 button(Ui.pauseResume, Txt.resume.toString(), true)
+                button(Ui.pauseRestart, Txt.restart.toString(), false)
                 button(Ui.pauseLevels, Txt.levels.toString(), false)
             }
         }

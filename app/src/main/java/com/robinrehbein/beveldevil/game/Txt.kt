@@ -11,6 +11,7 @@ object Txt {
     val new = T("new", "neu")
     val pause = T("PAUSE", "PAUSE")
     val resume = T("RESUME", "WEITER")
+    val restart = T("RESTART", "NEU STARTEN")
     val levels = T("LEVELS", "LEVELS")
     val cleared = T("CLEARED!", "GESCHAFFT!")
     val next = T("NEXT", "WEITER")

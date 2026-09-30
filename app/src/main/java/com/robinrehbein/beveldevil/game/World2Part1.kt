@@ -10,7 +10,9 @@ import com.robinrehbein.beveldevil.game.Action.Reroute
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
+import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Touch
 
@@ -22,42 +24,52 @@ object World2Part1 {
 
     val levels: List<Level> = listOf(
 
-        // 1 — EASTER EGG: Hello, World!
+        // 1 — EASTER EGG: Hello, World! (the floor driver segfaults; landing drops the next piece; the landing after that grows spikes)
         Level(
             name = T("Hello, World!", "Hallo, Welt!"),
             intro = T("Print it, then walk to the door.", "Gib es aus, dann lauf zur Tür."),
             legend = mapOf('A' to hidden),
             traps = listOf(
-                trap(PastX(3.5f), say("Hello, World!", "Hallo, Welt!")),
-                trap(PastX(10.4f), Play(Card.COLLAPSE), Fall('a'), say("Segfault in the floor driver.", "Segfault im Boden-Treiber.")),
-                trap(PastX(17.6f), Show('A'), say("Warning: 2 new spikes installed.", "Warnung: 2 neue Spikes installiert.")),
+                trap(PastX(10.6f), Play(Card.COLLAPSE), Fall('a'), say("Hello, World! Segfault in the floor driver.", "Hallo, Welt! Segfault im Boden-Treiber.")),
+                trap(Landed(14.6f, 18.5f), Fall('b'), say("Hello again, World.", "Hallo nochmal, Welt.")),
+                trap(Airborne(20f, 23.5f), Show('A'), say("Warning: 2 new spikes installed.", "Warnung: 2 neue Spikes installiert.")),
             ),
         ) {
             border(); floor()
-            fill(12..14, 15..17, 'a')
-            put(21, 14, 'A'); put(22, 14, 'A')
+            fill(12..14, 15..17, 'a'); fill(20..22, 15..17, 'b')
+            put(25, 14, 'A'); put(26, 14, 'A')
             spawn(); door(); bits(1)
         },
 
-        // 2 — first portal: the wall is a firewall, port 80 is open (the spikes teach the hop)
+        // 2 — first portal: the wall is a firewall, port 80 is open. The hop over the first spike grows one more before the portal,
+        // and the landing behind the second spike grows a pair in front of the door
         Level(
             name = T("Open Port", "Offener Port"),
             intro = T("The firewall is in a bad mood today. Like me.", "Die Firewall hat heute schlechte Laune. Wie ich."),
+            legend = mapOf('A' to hidden, 'B' to hidden),
             start = listOf(Portal('1', 10 to 14, 19 to 14)),
+            traps = listOf(
+                trap(Airborne(4.6f, 7.4f), Play(Card.SPIKE_SEED), Show('A'), say("Port 80 open. Port 9: a spike.", "Port 80 offen. Port 9: ein Spike.")),
+                trap(Landed(23.5f, 27.6f), Show('B'), say("Packet loss: two spikes in transit.", "Paketverlust: zwei Spikes unterwegs.")),
+            ),
         ) {
             border(); floor()
             fill(14..15, 1..14)
             put(6, 14, '^'); put(23, 14, '^')
-            spawn(); door(); bits(2)
+            put(9, 14, 'A')
+            put(28, 14, 'B'); put(29, 14, 'B')
+            spawn(); door(30); bits(2)
         },
 
-        // 3 — EASTER EGG: HTTP 404, the door is gone (it runs back to the start)
+        // 3 — EASTER EGG: HTTP 404, the door is gone (it runs back to the start). The hop over the second rack lands in spikes,
+        // and the way back has a spike behind the start that only shows when you come running
         Level(
             name = T("Reception", "Empfang"),
             intro = T("One moment please. Connecting you.", "Einen Moment bitte. Wir verbinden."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('A' to hidden, 'B' to hidden),
             traps = listOf(
-                trap(BeforeX(4.6f), Show('A'), say("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?")),
+                trap(Airborne(19f, 21.5f), Show('B'), say("Hold music: a spike.", "Warteschleifenmusik: ein Spike.")),
+                trap(BeforeX(6.5f), Show('A'), say("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?")),
             ) + doorTrail(
                 PastX(22f), 29, 14,
                 listOf(DoorTo(29, 1, 24f, hanging = true), DoorTo(1, 1, 24f, hanging = true), DoorTo(1, 14, 24f)),
@@ -66,56 +78,65 @@ object World2Part1 {
         ) {
             border(); floor()
             rack(15, 2, 2); rack(20, 2, 2)
-            put(3, 14, 'A')
+            put(3, 14, 'A'); put(27, 14, 'B'); put(28, 14, 'B')
             spawn(10); door(); bits(3)
         },
 
-        // 4 — EASTER EGG: off-by-one (the safe gap in the LED row is index 14, and it moves)
+        // 4 — EASTER EGG: off-by-one (the safe gap in the LED row is index 14, and it moves; the hop over the rack lands in spikes; the door steps aside)
         Level(
             name = T("String Lights", "Lichterkette"),
             intro = T("Nice lighting. I laid the cables myself.", "Schönes Licht hier. Ich habe die Kabel selbst verlegt."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('A' to hidden, 'B' to hidden),
             traps = listOf(
                 trap(PastX(11.6f), Play(Card.SPIKE_SEED), Show('A'), say("Off by one. Classic.", "Um eins daneben. Klassiker.")),
+                trap(Airborne(20.4f, 22.6f), Show('B'), say("Buffer overflow: two more.", "Pufferüberlauf: noch zwei.")),
                 trap(PastX(24.8f), DoorTo(28, 14, speed = 30f), say("You counted from zero, I counted from one.", "Du hast bei null angefangen, ich bei eins.")),
             ),
         ) {
             border(); floor()
             put(13, 14, '^'); put(15, 14, '^'); put(17, 14, '^'); put(14, 14, 'A')
             rack(21, 2, 2)
+            put(25, 14, 'B'); put(26, 14, 'B')
             spawn(); door(27); bits(4)
         },
 
-        // 5 — EASTER EGG: NullPointerException
+        // 5 — EASTER EGG: NullPointerException (the bonk block is real; landing behind the wall drops the floor; the hop over that lands in spikes)
         Level(
             name = T("Null Pointer", "Nullzeiger"),
             intro = T("Nothing there. Literally.", "Da ist nichts. Wortwörtlich."),
-            legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true), 'A' to hidden),
+            legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true), 'A' to hidden, 'B' to hidden),
             traps = listOf(
                 trap(Touch('b'), Play(Card.GHOST_BLOCK), Show('A'), say("NullPointerException: block is null. It was there all along.", "NullPointerException: Block ist null. War aber die ganze Zeit da.")),
+                trap(Landed(19f, 21.6f), Fall('f'), say("Garbage collected.", "Vom Garbage Collector abgeholt."), delay = 0.08f),
+                trap(Airborne(23.2f, 25.6f), Show('B'), say("Use after free.", "Use after free.")),
             ),
         ) {
             border(); floor()
             rack(17, 2, 3)
             put(15, 13, 'b')
             put(17, 11, 'A'); put(18, 11, 'A')
+            fill(22..24, 15..17, 'f')
+            put(27, 14, 'B'); put(28, 14, 'B')
             spawn(); door(); bits(5)
         },
 
-        // 6 — EASTER EGG: "It's always DNS" (Reroute: the portal's exit moves onto spikes, the floating block flushes the cache)
+        // 6 — EASTER EGG: "It's always DNS" (Reroute: the portal's exit moves onto spikes, the floating block flushes the cache; behind the exit grows a last pair)
         Level(
             name = T("Address Book", "Adressbuch"),
             intro = T("I looked up the door. It's in the phone book.", "Ich habe die Tür nachgeschlagen. Steht im Telefonbuch."),
+            legend = mapOf('A' to hidden),
             start = listOf(Portal('1', 8 to 14, 17 to 14)),
             traps = listOf(
                 trap(PastX(6f), Play(Card.DECOY), Reroute('1', 5 to 3), say("DNS changed. The portal leads somewhere nicer now.", "DNS geändert. Das Portal führt jetzt an einen schöneren Ort.")),
                 trap(Touch('s'), Reroute('1', 17 to 14), say("ipconfig /flushdns: cache cleared. Try again.", "ipconfig /flushdns: Cache geleert. Versuch's nochmal.")),
+                trap(PastX(19.5f), Show('A'), say("Cache poisoned.", "Cache vergiftet.")),
             ),
         ) {
             border(); floor()
             fill(12..12, 1..14)
             fill(3..8, 5..5); fill(3..8, 4..4, '^')
             fill(2..3, 12..12, 's')
+            put(23, 14, 'A'); put(24, 14, 'A')
             spawn(); door(); bits(6)
         },
 
@@ -150,34 +171,38 @@ object World2Part1 {
             spawn(); door(); bits(8)
         },
 
-        // 9 — EASTER EGG: hot swap (unplug the controls, plug them back in wrong)
+        // 9 — EASTER EGG: hot swap (unplug the controls, plug them back in wrong; the hop off the last stone lands in spikes)
         Level(
             name = T("Cable Mess", "Kabelsalat"),
             intro = T("Everything is plugged in tight. I checked.", "Alles steckt fest. Ich habe nachgesehen."),
+            legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(PastX(6.5f), Play(Card.TWISTED), Swap(true), say("Hot swap: left and right exchanged.", "Hot Swap: links und rechts getauscht.")),
                 trap(PastX(23f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
+                trap(Airborne(21.8f, 24.4f), Show('A'), say("Driver signed by nobody.", "Treiber von niemandem signiert.")),
             ),
         ) {
             border(); floor()
             leds(8..23)
             fill(10..11, 14..14); fill(15..16, 14..14); fill(20..21, 14..14)
+            put(26, 14, 'A'); put(27, 14, 'A')
             spawn(); door(); bits(9)
         },
 
-        // 10 — a portal hangs in mid-air above an LED field; hidden spikes wait where you land
+        // 10 — a portal hangs in mid-air above an LED field; hidden spikes wait where you land, and a saw waits at the door
         Level(
             name = T("VPN Tunnel", "VPN-Tunnel"),
             intro = T("Your connection is secure. Really secure.", "Deine Verbindung ist sicher. Wirklich sicher."),
             legend = mapOf('A' to hidden),
             start = listOf(Portal('1', 10 to 12, 21 to 12)),
             traps = listOf(
-                trap(PastX(22.2f), Play(Card.SPIKE_SEED), Show('A'), say("Tunnel established. Spikes included.", "Tunnel steht. Spikes inklusive.")),
+                trap(Landed(21f, 23.8f), Play(Card.SPIKE_SEED), Show('A'), say("Tunnel established. Spikes included.", "Tunnel steht. Spikes inklusive.")),
+                trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f), say("Packet loss. Incoming.", "Paketverlust. Kommt rein.")),
             ),
         ) {
             border(); floor()
             leds(9..20)
-            put(25, 14, 'A'); put(26, 14, 'A')
+            put(26, 14, 'A'); put(27, 14, 'A')
             spawn(); door(); bits(10)
         },
 
@@ -216,33 +241,39 @@ object World2Part1 {
             spawn(); door(); bits(12)
         },
 
-        // 13 — EASTER EGG: "works on my machine" (works until it's deployed to production)
+        // 13 — EASTER EGG: "works on my machine" (works until it's deployed to production; the ceiling grows a third spike where you land)
         Level(
             name = T("Works on My Machine", "Läuft bei mir"),
             intro = T("Tested locally. Green everywhere.", "Lokal getestet. Überall grün."),
+            legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN, hidden = true)),
             traps = listOf(
                 trap(PastX(8.8f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Production has different gravity.", "Produktion hat eine andere Schwerkraft.")),
+                trap(Landed(12.5f, 16.5f), Show('C'), say("Hotfix deployed.", "Hotfix eingespielt.")),
                 trap(PastX(25f), Gravity(false), say("Works on my machine!", "Läuft bei mir!")),
             ),
         ) {
             border(); floor()
             leds(11..24)
             put(19, 1, 'v'); put(22, 1, 'v')
+            put(17, 1, 'C'); put(18, 1, 'C')
             leds(26..27)
             spawn(); door()
         },
 
-        // 14 — EASTER EGG: 127.0.0.1 (loopback: the portal sends you home; jumping over it is the `break`)
+        // 14 — EASTER EGG: 127.0.0.1 (loopback: the portal sends you home; jumping over it is the `break`; the landing behind it grows spikes)
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
+            legend = mapOf('A' to hidden),
             start = listOf(Portal('1', 15 to 14, 4 to 14, twoWay = false)),
             traps = listOf(
+                trap(Landed(12f, 15f), Show('A'), say("The loopback has a guest book.", "Das Loopback hat ein Gästebuch.")),
                 trap(PastX(17.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 14.4f, -6f, 0f), say("ping 127.0.0.1: reply from 127.0.0.1. That was me.", "ping 127.0.0.1: Antwort von 127.0.0.1. Das war ich.")),
             ),
         ) {
             border(); floor()
             rack(10, 1, 2)
+            put(16, 14, 'A'); put(17, 14, 'A')
             spawn(); door(); bits(14)
         },
 
@@ -264,19 +295,21 @@ object World2Part1 {
             spawn(3); door(); bits(15)
         },
 
-        // 16 — EASTER EGG: man in the middle (you end up in a cell)
+        // 16 — EASTER EGG: man in the middle (you end up in a cell; the secret block is your way out, the landing behind the wall grows spikes)
         Level(
             name = T("Through Traffic", "Durchgangsverkehr"),
             intro = T("Your connection is encrypted. Mostly by me.", "Deine Verbindung ist verschlüsselt. Größtenteils von mir."),
-            legend = mapOf('b' to ghost),
+            legend = mapOf('b' to ghost, 'A' to hidden),
             traps = listOf(
                 trap(PastX(15.8f), Play(Card.HEADBUTT), Fall('l'), Fall('r'), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür.")),
                 trap(Touch('b'), say("Certificate valid. (It isn't.)", "Zertifikat gültig. (Ist es nicht.)")),
+                trap(Landed(23f, 26.4f), Show('A'), say("Man in the middle: spikes.", "Man in the Middle: Spikes.")),
             ),
         ) {
             border(); floor()
             fill(13..14, 3..5, 'l'); fill(21..22, 3..5, 'r')
             put(18, 13, 'b')
+            put(27, 14, 'A'); put(28, 14, 'A')
             spawn(); door(); bits(16)
         },
     )

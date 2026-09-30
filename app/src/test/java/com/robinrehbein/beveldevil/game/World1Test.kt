@@ -69,7 +69,7 @@ class World1Test {
     @Test
     fun actOneShowsAllTwelveCards() {
         val cards = World1Part1.levels.flatMap { l -> actions(l).filterIsInstance<Action.Play>().map { it.card } }.toSet()
-        assertEquals(Card.entries.toSet(), cards)
+        assertEquals(Card.entries.take(12).toSet(), cards)
     }
 
     /** The obvious thing to do, running right and never letting go, must not win any level. */
@@ -94,9 +94,9 @@ class World1Test {
             val l = World1.levels[n - 1]
             assertFalse("level $n is a classic", actions(l).any { it is Action.Blink || it is Action.PathSaw } || l.traps.any { it.trigger is Trigger.Idle })
         }
-        // each mechanic shows up alone before it is mixed in
-        assertTrue(actions(World1.levels[16]).all { it is Action.Blink })
-        assertTrue(actions(World1.levels[17]).all { it is Action.PathSaw })
+        // each mechanic is taught by itself before it is mixed in: blinking first, then saws, then idling
+        assertTrue(actions(World1.levels[16]).any { it is Action.Blink } && actions(World1.levels[16]).none { it is Action.PathSaw })
+        assertTrue(actions(World1.levels[17]).any { it is Action.PathSaw } && actions(World1.levels[17]).none { it is Action.Blink })
         assertTrue(World1.levels[18].traps.any { it.trigger is Trigger.Idle })
     }
 
@@ -144,6 +144,18 @@ class World1Test {
         .rightTo(25.6f).rightJump(0.35f).landRight()
         .leftTo(23f).right(4f)
         .expect(WorldState.WON)
+    /** Falling with the crumbling step must not strand the player: the step floats back and the stairs work again. */
+    @Test fun level03CrumbledStepComesBack() {
+        val fell = b(3).hopR(21.2f).rightTo(26.5f).leftTo(24.3f).leftJump(0.35f).landLeft().wait(2.2f)
+        fell.expect(WorldState.PLAYING)
+        assertTrue("fell to the floor", fell.world.player.box.y > 13f)
+        fell.wait(3f)
+        assertEquals(0f, fell.world.group('b').oy, 0.05f)
+        // it carries whoever fell with it back up, and the climb goes on
+        assertEquals(11f, fell.world.player.box.b, 0.05f)
+        fell.rightTo(21.3f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.35f).landRight()
+            .leftTo(23f).right(4f).expect(WorldState.WON)
+    }
     @Test fun level04() = b(4).rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
         .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
         .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
@@ -173,10 +185,43 @@ class World1Test {
     @Test fun level14() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
         .rightTo(15.9f).rightJump(0.35f).landRight().rightTo(21.6f).rightJump(0.35f).landRight().right(3f)
         .expect(WorldState.WON)
+    /** Dropping through the crumbling ledge piece must kill, not strand the player on the floor below the lift. */
+    @Test fun level14FallingThroughTheLedgeDies() = b(14).rightTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
+        .rightTo(15.9f).rightJump(0.35f).landRight().right(4f).wait(1.5f)
+        .expect(WorldState.DEAD)
     @Test fun level15() = b(15).rightTo(11.8f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
     @Test fun level16() = b(16).rightTo(7.3f).rightJump(0.35f).landRight().rightJump(0.3f).landRight()
         .rightTo(24.7f).wait(1.2f).left(3f)
         .expect(WorldState.WON)
+
+    // ---------- Act 1 softlock audit: nobody may end up alive with the door out of reach ----------
+
+    /** Hopping back off the first slab that sank must not strand the player on the start side: it gives way. */
+    @Test fun level07RetreatingFromTheSunkSlabDies() {
+        val back = b(7).rightTo(6.4f).rightJump(0.35f).landRight().rightTo(11.6f).rightJump(0.12f).landRight()
+            .left(0.12f).leftJump(0.3f).landLeft().wait(0.3f)
+        back.expect(WorldState.PLAYING)
+        assertTrue("back on the start platform", back.world.player.box.cx < 12f && back.world.player.grounded)
+        back.wait(3f).expect(WorldState.DEAD)
+    }
+
+    /** Hopping back from the crumbled stone to the start side is fatal, not a dead end: the start side gives way. */
+    @Test fun level11RetreatingFromACrumbledStoneDies() =
+        b(11).hopR(5.7f).hopR(10.7f).leftJump(0.35f).landLeft().wait(4f).expect(WorldState.DEAD)
+
+    /** Stepping off the rising lift onto the floor is fatal: the floor leaves with it. */
+    @Test fun level14SteppingOffTheLiftDies() =
+        b(14).rightTo(10.2f).rightJump(0.3f).landRight().leftTo(10.2f).wait(3f).expect(WorldState.DEAD)
+
+    /** Bumping into the side of the lift must not set it off without the player on board. */
+    @Test fun level14LiftWaitsForAPassenger() {
+        val bump = b(14).right(2f).wait(2f)
+        bump.expect(WorldState.PLAYING)
+        assertEquals(0f, bump.world.group('a').oy, 0.05f)
+        bump.leftTo(10.2f).rightJump(0.3f).landRight().wait(1.9f)
+            .rightTo(15.9f).rightJump(0.35f).landRight().rightTo(21.6f).rightJump(0.35f).landRight().right(3f)
+            .expect(WorldState.WON)
+    }
 
     // ---------- Act 1: the obvious run dies at the second or third trap ----------
 
@@ -230,72 +275,86 @@ class World1Test {
     }
 
     // ---------- Act 2: Neue Regeln ----------
-    @Test fun level17() = b(17).rightTo(10.2f)
+
+    /** Walks back and forth near the start (never idle, never far) until the clock reaches [t]. */
+    private fun Bot.pace(t: Float): Bot {
+        while (world.time < t && world.state == WorldState.PLAYING) right(0.2f).left(0.2f)
+        return this
+    }
+
+    @Test fun level17() = b(17).rightTo(7.5f)
         .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .rightTo(22f).right(2f).expect(WorldState.WON)
+        .rightTo(24.8f).rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
     @Test fun level18() = b(18).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
-        .rightTo(13.3f).waitFor { it.saws[1].y < 10.5f }
+        .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
         .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
-        .right(3f).expect(WorldState.WON)
-    @Test fun level19() = b(19).fidgetUntil(10f) { it.time > 6.2f }.right(3f).expect(WorldState.WON)
-    @Test fun level20() = b(20).hopR(5.7f).hopR(10.7f).hopR(15.7f).hopR(20.5f).hopR(25.7f).right(1f).expect(WorldState.WON)
+        .rightTo(23.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight()
+        .left(2f).expect(WorldState.WON)
+    @Test fun level19() = b(19).pace(6.5f).rightTo(4.6f).right(2f).expect(WorldState.WON)
+    @Test fun level20() = b(20).hopR(4.9f).hopR(9.1f).hopR(14.0f).hopR(18.8f).hopR(25.7f).right(1f).expect(WorldState.WON)
     @Test fun level21() = b(21).hopR(7.7f).hopR(15.7f).right(2f).expect(WorldState.WON)
-    @Test fun level22() = b(22).rightTo(7.2f).waitFor { it.gapLeft('a') > 1f }
-        .rightTo(9.4f).rightJump(0.35f).landRight().waitFor { it.gapLeft('b') > 1f }
-        .rightTo(15.4f).rightJump(0.35f).landRight().waitFor { it.gapLeft('c') > 1f }
-        .rightTo(21.4f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level23() = b(23).rightTo(8f)
+    @Test fun level22() = b(22).rightTo(7.2f).waitFor { val g = it.gapLeft('a'); g > 0f && g <= 0.55f }
+        .rightTo(9.4f).rightJump(0.35f).landRight()
+        .rightTo(15.4f).rightJump(0.35f).landRight()
+        .rightTo(21.4f).rightJump(0.35f).landRight()
+        .rightJump(0.3f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level23() = b(23).rightTo(5.8f)
         .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .rightTo(13.6f).waitFor { it.saws[0].y < 10.5f }
-        .rightTo(17f).right(3f).expect(WorldState.WON)
-    @Test fun level24() = b(24).waitUntil(3.3f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level25() = b(25).wait(5f).right(3f).expect(WorldState.WON)
+        .rightTo(12.9f).waitFor { it.saws[0].y < 9.5f }
+        .rightTo(13.3f).rightJump(0.35f).landRight()
+        .right(4f).expect(WorldState.WON)
+    @Test fun level24() = b(24).waitUntil(3.3f).rightJump(0.35f).landRight()
+        .rightTo(21.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level25() = b(25).wait(2.2f).right(0.06f).wait(1.25f).left(0.06f).wait(1.3f).right(2f).expect(WorldState.WON)
     @Test fun level26() = b(26).rightTo(2.9f)
         .waitFor(14f) { it.solidLeft('a') > 1.2f }.rightJump(0.35f).landRight()
         .waitFor(14f) { it.solidLeft('b') > 1.2f }.rightTo(8.6f).rightJump(0.35f).landRight()
         .waitFor(14f) { it.solidLeft('c') > 1.2f }.rightTo(13.6f).rightJump(0.35f).landRight()
         .waitFor(14f) { it.solidLeft('d') > 1.2f }.rightTo(18.6f).rightJump(0.35f).landRight()
-        .rightTo(23.6f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level27() = b(27).rightTo(10.7f).rightJump(0.35f).landRight().rightTo(16.7f).rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
+        .rightTo(21.8f).rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level27() = b(27).rightTo(10.7f).rightJump(0.35f).landRight().rightTo(16.7f).rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
     @Test fun level28() = b(28).rightUntilSaw(4.5f).rightJump(0.35f).landRight()
-        .rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level29() = b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(23.7f).right(2f).expect(WorldState.WON)
-    @Test fun level30() = b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.7f).hopR(17.7f).hopR(19.7f).right(2f).expect(WorldState.WON)
+        .rightTo(13.3f).rightJump(0.35f).landRight()
+        .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level29() = b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(21.3f).right(2f).expect(WorldState.WON)
+    @Test fun level30() = b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.0f).hopR(16.9f).hopR(19.7f).rightTo(24.8f).rightJump(0.35f).landRight().left(2f).expect(WorldState.WON)
     @Test fun level31() = b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }
         .rightTo(9.7f).rightJump(0.35f).landRight()
         .waitFor { it.saws[1].y < 6.3f }.rightTo(16.6f).rightJump(0.35f).landRight()
-        .right(3f).expect(WorldState.WON)
+        .rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level32() = b(32).rightTo(5.8f)
         .fidgetUntil(10f) { it.solidLeft('a') > 1.6f }
         .rightTo(13.4f).fidgetUntil(10f) { it.solidLeft('b') > 1.2f }
         .rightTo(22.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
 
     // ---------- Act 3: Mephi schummelt ----------
-    @Test fun level33() = b(33).right(4f)
+    @Test fun level33() = b(33).hopR(18.6f).right(2f)
         .also { assertEquals(FakeEnd.CLEAR, it.world.fake?.end) }
         .waitWhile { it.fake != null }
         .waitWhile(2f) { !it.player.grounded || it.door.moving }
-        .leftTo(18f).hopL(17.4f).hopL(8.6f).left(4f).expect(WorldState.WON)
+        .hopL(22.6f).hopL(17.4f).hopL(8.6f).left(4f).expect(WorldState.WON)
     @Test fun level34() = b(34).wait(0.5f).tapPause().also { assertEquals(1, it.world.dodges) }
         .pauseResume().wait(0.1f).hopR(10.6f).right(4f).expect(WorldState.WON)
     @Test fun level35() = b(35).waitUntil(11.5f).right(2f).expect(WorldState.WON)
-    @Test fun level36() = b(36).rightTo(10f).wait(1.6f).hopR(14.4f).right(4f).expect(WorldState.WON)
+    @Test fun level36() = b(36).rightTo(10f).wait(1.6f).hopR(14.4f).hopR(19.7f).right(4f).expect(WorldState.WON)
     @Test fun level37() = b(37).hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f).expect(WorldState.WON)
     @Test fun level38() = b(38).rightTo(6.5f)
         .waitWhile(1f) { it.viewTurn() < 1f }
         .leftKeyRightTo(11.4f).leftJump(0.35f).landLeft()
         .waitWhile(5f) { it.viewTurn() > 0f }
-        .right(4f).expect(WorldState.WON)
+        .hopR(16.6f).right(4f).expect(WorldState.WON)
     @Test fun level39() = b(39).rightTo(9.2f).wait(0.2f).tilt(1f).wait(2.4f).right(2f).expect(WorldState.WON)
-    @Test fun level40() = b(40).rightTo(4.6f).wait(1.0f).hopS(17.7f).left(3f).expect(WorldState.WON)
+    @Test fun level40() = b(40).rightTo(4.6f).wait(1.0f).leftKeyRightTo(17.7f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level41() = b(41).rightTo(10.2f).wait(1.2f).rightTo(20.7f).wait(1.2f).right(3f).expect(WorldState.WON)
-    @Test fun level42() = b(42).hopR(10.2f).hopR(15.6f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
+    @Test fun level42() = b(42).hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
     @Test fun level43() = b(43).right(4f).also { it.expect(WorldState.DEAD) }
-        .retry().hopR(13.6f).hopR(21.0f).right(3f).expect(WorldState.WON)
-    @Test fun level44() = b(44).rightTo(18f).shake().right(3f).expect(WorldState.WON)
-    @Test fun level45() = b(45).rightJump(0.35f).landRight().hopR(18.2f).right(2f).expect(WorldState.WON)
+        .retry().hopR(13.6f).hopR(19.3f).hopR(24.4f).right(2f).expect(WorldState.WON)
+    @Test fun level44() = b(44).rightTo(18f).shake().hopR(22.8f).right(3f).expect(WorldState.WON)
+    @Test fun level45() = b(45).rightJump(0.35f).landRight().hopR(8f).hopR(18.2f).right(2f).expect(WorldState.WON)
     @Test fun level46() = b(46).left(1.2f).hopR(23.6f).right(2f).expect(WorldState.WON)
-    @Test fun level47() = b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).right(4f).expect(WorldState.WON)
+    @Test fun level47() = b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).hopR(15.2f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level48() = b(48).rightTo(9f)
         .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
         .right(4f).also { assertEquals(FakeEnd.CREDITS, it.world.fake?.end) }
@@ -305,4 +364,125 @@ class World1Test {
         .leftTo(22.4f).leftJump(0.35f).landLeft()
         .leftTo(15.4f).leftJump(0.35f).landLeft()
         .left(3f).expect(WorldState.WON)
+
+    // ---------- Acts 2 and 3: chains around the mechanics ----------
+
+    /** Level 26 up to standing on the third step ('d'), ready for the last jump. */
+    private fun skyscraperToD() = b(26).rightTo(2.9f)
+        .waitFor(14f) { it.solidLeft('a') > 1.2f }.rightJump(0.35f).landRight()
+        .waitFor(14f) { it.solidLeft('b') > 1.2f }.rightTo(8.6f).rightJump(0.35f).landRight()
+        .waitFor(14f) { it.solidLeft('c') > 1.2f }.rightTo(13.6f).rightJump(0.35f).landRight()
+        .waitFor(14f) { it.solidLeft('d') > 1.2f }.rightTo(18.6f).rightJump(0.35f).landRight()
+
+    @Test
+    fun actTwoAndThreeChainsPunishTheCounterJustLearned() {
+        // 17: the ledge before the bridge crumbles under whoever waits, a jump off the bridge's end lands on spikes, the last floor is a hidden pit
+        b(17).rightTo(9.6f).wait(2.5f).expect(WorldState.DEAD)
+        b(17).rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .rightTo(19f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+        b(17).rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .rightTo(22f).right(3f).expect(WorldState.DEAD)
+        // 18: nobody waits for the second saw on the floor that drops
+        b(18).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }.rightTo(13.3f).wait(1.2f).expect(WorldState.DEAD)
+        // 19: hopping in place meets the spikes, pacing to the edge drops the platform too
+        b(19).jump(0.4f).wait(1f).expect(WorldState.DEAD)
+        b(19).rightTo(6f).wait(1f).expect(WorldState.DEAD)
+        // 20: edge hops land on spikes: on the first stone, on the third, and on the far bank
+        b(20).hopR(5.7f).wait(1f).expect(WorldState.DEAD)
+        b(20).hopR(4.9f).hopR(9.1f).hopR(15.7f).wait(1f).expect(WorldState.DEAD)
+        b(20).hopR(4.9f).hopR(9.1f).hopR(14.0f).hopR(18.8f).hopR(24.5f).wait(1f).expect(WorldState.DEAD)
+        // 22: waiting after the first door is waiting on a floor that drops
+        b(22).rightTo(7.2f).waitFor { it.gapLeft('a') > 1f }.rightTo(9.4f).rightJump(0.35f).landRight().wait(1.5f).expect(WorldState.DEAD)
+        // 23: the middle of the bridge is a hidden gap
+        b(23).rightTo(5.8f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }.right(2f).expect(WorldState.DEAD)
+        // 24: the jump over the wall lands before a pit
+        b(24).waitUntil(3.3f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
+        // 25: sitting too long and stepping too far to the left are both fatal
+        b(25).wait(6f).expect(WorldState.DEAD)
+        b(25).leftTo(1.5f).wait(0.5f).expect(WorldState.DEAD)
+        // 26: running to the end of the last step lands on the ledge's spikes
+        skyscraperToD().rightTo(21.8f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
+        skyscraperToD().rightTo(23.6f).wait(0.5f).expect(WorldState.DEAD)
+        // 27: the last stone crumbles under a runner
+        b(27).rightTo(10.7f).rightJump(0.35f).landRight().rightTo(16.7f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+        // 28: a hidden pit right behind the first saw
+        b(28).rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
+        // 29: running across the fourth platform meets its spikes
+        b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(23.7f).right(2f).expect(WorldState.DEAD)
+        // 30: the top of the stairs
+        b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.0f).hopR(16.9f).hopR(19.7f).right(3f).expect(WorldState.DEAD)
+        // 31: nobody waits on the island
+        b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }.rightTo(9.7f).rightJump(0.35f).landRight().wait(2.5f).expect(WorldState.DEAD)
+        // 33: a hidden pit on the way to the door
+        b(33).right(3f).expect(WorldState.DEAD)
+        // 36: the block from the frame has spikes behind it
+        b(36).rightTo(10f).wait(1.6f).hopR(14.4f).right(4f).expect(WorldState.DEAD)
+        // 38: the spikes behind the landing
+        b(38).rightTo(6.5f).waitWhile(1f) { it.viewTurn() < 1f }.leftKeyRightTo(11.4f).leftJump(0.35f).landLeft()
+            .waitWhile(5f) { it.viewTurn() > 0f }.right(4f).expect(WorldState.DEAD)
+        // 39: hopping onto the platform or off it is punished, only walking is not
+        b(39).rightTo(5f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
+        b(39).rightTo(9.2f).wait(0.2f).tilt(1f).wait(2.4f).rightTo(23.6f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
+        // 40: the keys come back while you are over the hole in the ceiling
+        val pushedBack = b(40).rightTo(4.6f).wait(1.0f).leftKeyRightTo(17.7f).leftJump(0.35f).landLeft()
+        pushedBack.expect(WorldState.PLAYING)
+        assertTrue(pushedBack.world.player.box.cx < 17f)   // still pressing the old key: sent back
+        b(40).rightTo(4.6f).wait(1.0f).leftKeyRightTo(19f).wait(1f).expect(WorldState.DEAD)
+        // 42: the obvious jump over the first pit lands in the spikes
+        b(42).hopR(10.2f).wait(0.5f).expect(WorldState.DEAD)
+        // 43: the ghost's attempt teaches the first hop, then the second one has spikes
+        b(43).right(4f).also { it.expect(WorldState.DEAD) }.retry().hopR(13.6f).hopR(20.5f).right(2f).expect(WorldState.DEAD)
+        // 44: jumping at the wall
+        b(44).rightTo(17f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
+        // 45: climbing onto the shelf and running on
+        b(45).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+        // 47: the wall is down, the spikes behind it are not
+        b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).right(4f).expect(WorldState.DEAD)
+        // 48: jumping off the bridge's end
+        b(48).rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }.rightTo(15.4f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
+    }
+
+    @Test
+    fun actTwoAndThreeChainTwoOrMoreTrapsAndAverageTwoAndAHalf() {
+        val all = World1Part2.levels + World1Part3.levels
+        all.forEachIndexed { i, l -> assertTrue("level ${i + 17} has ${l.traps.size} traps", l.traps.size >= 2) }
+        val counts = all.map { it.traps.size }
+        assertTrue("average ${counts.average()}", counts.average() >= 2.5)
+        assertTrue("act 2 average ${World1Part2.levels.map { it.traps.size }.average()}", World1Part2.levels.map { it.traps.size }.average() >= 2.5)
+        // the meta twists already surprise: their chains stay short
+        for (n in listOf(33, 34, 36, 37, 38, 40, 41, 42, 43, 45, 46, 48)) {
+            assertTrue("twist level $n has ${World1.levels[n - 1].traps.size} traps", World1.levels[n - 1].traps.size <= 3)
+        }
+    }
+
+    @Test
+    fun actTwoAndThreeTriggersFireOnTheSpot() {
+        val jumpy = (World1Part2.levels + World1Part3.levels).count { l -> l.traps.any { it.trigger is Trigger.Airborne || it.trigger is Trigger.Landed } }
+        assertTrue("$jumpy levels use jump triggers", jumpy >= 15)
+    }
+
+    /** A dropped floor falls out of the world: nothing solid of another group lies below it to stand on afterwards. */
+    @Test
+    fun noTrapDropsThePlayerOntoAFloorBelow() {
+        (World1Part2.levels + World1Part3.levels).forEachIndexed { i, l ->
+            if (i + 17 == 30) return@forEachIndexed   // the tetrominoes are meant to land
+            val falling = l.traps.flatMap { it.actions }.filterIsInstance<Action.Fall>().map { it.group }.toSet()
+            for (g in falling) for (y in 0 until l.rows) for (x in 0 until l.cols) {
+                if (l.map.grid[y][x] != g || l.glyph(g)?.spike == true) continue
+                for (yy in y + 1 until l.rows) {
+                    val c = l.map.grid[yy][x]
+                    val solid = c != '.' && c != g && c != 'P' && c != 'D' && l.glyph(c)?.spike == false && l.glyph(c)?.hidden != true
+                    assertFalse("level ${i + 17}: group '$g' at ($x,$y) falls onto '$c' at ($x,$yy)", solid)
+                }
+            }
+        }
+    }
+
+    /** Whoever stays on a piece that drops falls out of the world: a death, never a ledge to wait on. */
+    @Test
+    fun droppedFloorsLeaveNothingToWaitOn() {
+        b(17).rightTo(9.6f).wait(4f).also { assertTrue(it.world.player.box.y > it.world.rows - 1f) }.expect(WorldState.DEAD)
+        b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }.rightTo(9.7f).rightJump(0.35f).landRight().wait(3f)
+            .also { assertTrue(it.world.player.box.y > it.world.rows - 1f) }.expect(WorldState.DEAD)
+    }
 }
