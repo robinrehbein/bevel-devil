@@ -38,30 +38,30 @@ Reihenfolge wie im Dashboard unter „App-Einrichtung“ und „Store-Präsenz�
 ### 1. App-Einrichtung (Richtlinien-Formulare)
 
 - [ ] **Datenschutzerklärung:** steht in `PRIVACY.md` im Repo-Root (DE + EN). Muss öffentlich erreichbar sein, z. B. über GitHub Pages oder die eigene Website; die URL unter Play Console > App-Inhalte > Datenschutzerklärung eintragen.
-- [ ] **Werbung:** „Nein, meine App enthält keine Werbung“. Stimmt: keine Werbe-Bibliothek in `app/build.gradle.kts`, nur JUnit und Robolectric als Testabhängigkeiten.
+- [ ] **Werbung:** „Ja, meine App enthält Werbung“ (Google AdMob: Interstitial zwischen Leveln, Rewarded-Werbung für den Level-Skip, siehe `ads/AdsBilling.kt`).
 - [ ] **App-Zugriff:** „Alle Funktionen ohne Zugriffsbeschränkung verfügbar“ (kein Login, keine Konten).
 - [ ] **Zielgruppe und Inhalt:** siehe Abschnitt unten.
 - [ ] **Datensicherheit:** siehe Abschnitt unten.
 - [ ] **Inhaltsbewertung (IARC):** siehe Abschnitt unten.
 - [ ] **Nachrichten-App:** nein. **COVID-19-Kontaktverfolgung/Status:** nein. **Finanzfunktionen, Gesundheit, Regierungs-App:** nein.
-- [ ] **Werbe-ID:** „Nein“, die App verwendet sie nicht (Pflichtangabe für Apps mit Target Android 13 und höher; die Berechtigung `AD_ID` steht nicht im Manifest).
+- [ ] **Werbe-ID:** „Ja“, Verwendungszweck „Werbung oder Marketing“ (die Berechtigung `AD_ID` steht im Manifest; Pflichtangabe für Apps mit Target Android 13 und höher).
 - [ ] **Kontoerstellung löschen:** entfällt, es gibt keine Konten.
 
 ### 2. Datensicherheit (Antworten aus dem Code abgeleitet)
 
-Grundlage: `AndroidManifest.xml` enthält keine einzige `uses-permission` (auch nicht `INTERNET`), keine Drittanbieter-SDKs, Fortschritt nur in lokalen SharedPreferences (`PrefsProgress.kt`), Sensoren nur im Arbeitsspeicher (`GameView.kt`).
+Grundlage: Manifest mit `INTERNET`, `ACCESS_NETWORK_STATE` und `AD_ID`; Drittanbieter-SDKs sind Google Mobile Ads (AdMob), User Messaging Platform (Einwilligung) und Play Billing. Fortschritt nur in lokalen SharedPreferences (`PrefsProgress.kt`), Sensoren nur im Arbeitsspeicher (`GameView.kt`).
 
 | Frage | Antwort |
 |---|---|
-| Erhebt oder teilt deine App Nutzerdaten? | **Nein** |
-| Daten werden bei der Übertragung verschlüsselt? | entfällt (keine Übertragung) |
+| Erhebt oder teilt deine App Nutzerdaten? | **Ja**, über das AdMob-SDK: „Geräte- oder andere IDs“ (Werbe-ID), ungefährer Standort (IP), „App-Interaktionen“ und „Diagnose“; Zweck „Werbung oder Marketing“, „Analyse“ und „Betrugsprävention“; geteilt mit Google. Aktuelle Liste in der AdMob-Doku „Play Data Safety“ gegenprüfen |
+| Daten werden bei der Übertragung verschlüsselt? | Ja (HTTPS) |
 | Können Nutzer die Löschung ihrer Daten beantragen? | entfällt (keine Kontodaten); Daten lassen sich per „App-Daten löschen“ oder Deinstallation entfernen |
 
 Hinweise dazu:
 - Die lokale Speicherung von Spielstand und Einstellungen zählt nicht als „Erhebung“, solange nichts das Gerät verlässt.
 - Die Sensorwerte (Beschleunigung/Schwerkraft für Neigen und Schütteln) werden nur flüchtig verarbeitet: nicht erhoben.
 - `allowBackup="true"` im Manifest: Android-Geräte-Backup kann Spielstand ins Google-Konto des Nutzers sichern. Das ist eine Systemfunktion und zählt nicht als Weitergabe durch die App. Falls du es vermeiden willst, `android:allowBackup="false"` setzen (Quelltext-Änderung, hier nicht gemacht).
-- Sollte später etwas hinzukommen (Crash-Reporting, Ads, Online-Bestenliste, Cloud-Save), müssen Formular und Datenschutzerklärung vorher angepasst werden.
+- Sollte später etwas hinzukommen (Crash-Reporting, Online-Bestenliste, Cloud-Save), müssen Formular und Datenschutzerklärung vorher angepasst werden.
 
 ### 3. Inhaltsbewertung (IARC-Fragebogen)
 
@@ -78,8 +78,8 @@ Kategorie „Spiel“ wählen. Antworten, die zum Code passen:
 | Furcht erregende Inhalte | Nein, höchstens „leicht“ | Teufel-Maskottchen als Comicfigur (rot, Hörner, grinst). Falls der Fragebogen Horror/Okkultes abfragt: es ist ein humorvoller Cartoon-Teufel ohne Schockeffekte |
 | Nutzerinteraktion / Chat | Nein | |
 | Teilen von Standort | Nein | |
-| Digitale Käufe | Nein | |
-| Kinder-/Jugendinhalte im Web | Nein | kein Browser, kein Internet |
+| Digitale Käufe | Ja | einmaliger Kauf „Ohne Werbung“ (`remove_ads`) |
+| Kinder-/Jugendinhalte im Web | Nein | kein Browser; Werbung kommt über AdMob |
 
 Erwartetes Ergebnis: USK 0 oder 6, PEGI 3 oder 7, ESRB Everyone (10+, falls „Fantasy-Gewalt“ angekreuzt wird). Die Angaben müssen wahrheitsgemäß sein; im Zweifel lieber die höhere Stufe wählen. Wegen des Teufelsmotivs kann ein Bewerter „Okkultismus/Horror-Themen“ anmerken; das Spiel ist bewusst komödiantisch.
 
@@ -89,7 +89,7 @@ Empfehlung: **13+ (oder 16+ / 18+) als Zielgruppe wählen, nicht Kinder unter 13
 
 Gründe:
 - Der Humor (Nerd-Witze, Kernel Panic, sudo, Teufel) und der hohe Schwierigkeitsgrad (Troll-Platformer, Dauer-Tod) zielen auf Jugendliche und Erwachsene.
-- Wählst du Kinder (unter 13) als Zielgruppe oder mit, gilt die Richtlinie „Families“: zusätzliche Prüfung, Pflicht zu geprüften Werbe-SDKs (hier unkritisch, weil keine Ads), strengere Datenschutzvorgaben und eine Erwähnung im Store-Eintrag. Die App würde das technisch erfüllen, aber der Aufwand und die Prüfungen lohnen sich für dieses Spiel nicht.
+- Wählst du Kinder (unter 13) als Zielgruppe oder mit, gilt die Richtlinie „Families“: zusätzliche Prüfung, Pflicht zu geprüften Werbe-SDKs (mit Kindern als Zielgruppe wäre AdMob nur im „Families“-Modus erlaubt, deshalb nicht empfohlen), strengere Datenschutzvorgaben und eine Erwähnung im Store-Eintrag. Die App würde das technisch erfüllen, aber der Aufwand und die Prüfungen lohnen sich für dieses Spiel nicht.
 - Die Zielgruppe muss zum Inhalt passen: Bunte Pixel-Grafik und ein Cartoon-Teufel sind nicht „zwingend kinderanziehend“, trotzdem sollte die Beschreibung (wie hier) keine Kinder ansprechen.
 
 Wenn du bewusst auch Kinder erreichen willst, die Altersgruppen „6 bis 8“ usw. ankreuzen und die Families-Richtlinie durchgehen; das ist möglich, aber eine eigene Entscheidung.
@@ -101,7 +101,9 @@ Wenn du bewusst auch Kinder erreichen willst, die Altersgruppen „6 bis 8“ us
 - [ ] **Kontaktdaten:** E-Mail-Adresse (öffentlich sichtbar, Pflicht), optional Website und Telefon. Die Adresse, die auch in der Datenschutzerklärung steht, verwenden.
 - [ ] **Texte:** Dateien aus `listings/` eintragen (de-DE als Standard). Keine Preisangaben, keine Superlative („beste“, „Nr. 1“), kein GROSSBUCHSTABEN-Spam, keine Stichwortlisten. Die vorhandenen Texte halten das ein; nach jeder Änderung selbst gegenlesen.
 - [ ] **Grafiken:** Symbol, Funktionsgrafik, mindestens 2, besser alle 8 Smartphone-Screenshots hochladen.
-- [ ] **Preis:** kostenlos, keine In-App-Käufe. Die Preisangabe steht in Play, nicht im Beschreibungstext.
+- [ ] **Preis:** kostenlos, mit Werbung und In-App-Kauf. Die Preisangabe steht in Play, nicht im Beschreibungstext.
+- [ ] **In-App-Produkt:** Play Console > Monetarisieren > Produkte > Einmalige Produkte: ID `remove_ads`, Name „Ohne Werbung“, Preis z. B. 2,99 €, aktivieren. Die ID muss exakt stimmen (`AdsBilling.kt`). Der Kauf funktioniert erst, wenn ein App-Bundle mit Billing-Berechtigung hochgeladen und das Produkt aktiv ist; zum Testen Lizenztester eintragen.
+- [ ] **AdMob:** App in AdMob anlegen, App-ID sowie je eine Anzeigeneinheit „Interstitial“ und „Rewarded“ erzeugen. Als GitHub-Secrets `ADMOB_APP_ID`, `ADMOB_INTERSTITIAL_ID`, `ADMOB_REWARDED_ID` hinterlegen (der Release-Workflow reicht sie durch). Ohne sie zeigen Release-Builds nur Testwerbung. In AdMob unter Datenschutz & Mitteilungen die EU-Einwilligungsmeldung (UMP) anlegen und veröffentlichen, sonst erscheint in der EU keine Werbung.
 - [ ] **Länder:** nach Wunsch; die App braucht keine regionalen Zusatzangaben.
 
 ### 6. Vor dem ersten Release
@@ -116,8 +118,8 @@ Wenn du bewusst auch Kinder erreichen willst, die Altersgruppen „6 bis 8“ us
 | Punkt | Stand im Code |
 |---|---|
 | Paketname | `com.robinrehbein.beveldevil` |
-| Berechtigungen | keine |
-| Werbung / In-App-Käufe | keine, keine Bibliotheken dafür |
+| Berechtigungen | `INTERNET`, `ACCESS_NETWORK_STATE`, `AD_ID` |
+| Werbung / In-App-Käufe | AdMob (Interstitial, Rewarded), Einmalkauf `remove_ads` über Play Billing |
 | Sensoren | Beschleunigung/Schwerkraft (Neigen, Schütteln), optional abschaltbar |
 | Speicherung | lokale SharedPreferences (Fortschritt, Einstellungen) |
 | Ausrichtung | Querformat (`sensorLandscape`) |

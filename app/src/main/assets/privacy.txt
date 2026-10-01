@@ -1,10 +1,14 @@
 # Privacy policy for Mephi the Daemon
 
-Last updated: 30 September 2026
+Last updated: 1 October 2026
 
-Mephi the Daemon (`com.robinrehbein.beveldevil`) is an offline Android game by Robin Rehbein. The game does not require an account and does not contain advertising, analytics, purchases, or a network connection.
+Mephi the Daemon (`com.robinrehbein.beveldevil`) is an Android game by Robin Rehbein. The game does not require an account and contains no analytics. It shows ads (Google AdMob) and offers a one-time purchase (Google Play Billing) that removes them.
 
-The game saves progress and preferences on your device. This includes unlocked levels, best death counts, discovered cards, and control, sound, and vibration settings. Motion sensor readings are used only while playing levels that need tilt or shake controls; they are not saved or transmitted. The game does not collect or share personal data with the developer or third parties.
+The game saves progress and preferences on your device. This includes unlocked levels, best death counts, discovered cards, and control, sound, and vibration settings. Motion sensor readings are used only while playing levels that need tilt or shake controls; they are not saved or transmitted. The developer does not collect personal data. Apart from the ads and the purchase described below, the game makes no network connections.
+
+Ads: The game shows a full-screen ad between two levels (at most every third cleared level and at most every two minutes, never during play, and none in the first five levels) and offers an optional ad that you can watch to skip a level you are stuck on. The ads are delivered by Google AdMob. For this, Google processes data such as your device's advertising ID, IP address, and how you interact with ads, and may use it for personalised ads. In the EU, the UK, and Switzerland, a consent form (Google User Messaging Platform) asks for your choice first, and no ad is requested before you allow it. You can change your choice later under Settings > Ad choices (shown where the law requires it) and reset or delete your advertising ID in Android's settings. Google's privacy policy: https://policies.google.com/privacy
+
+Purchase: "No ads" is a one-time purchase handled entirely by Google Play. The developer receives no payment data. The game stores on your device only whether the purchase exists and checks it with Google Play at start. With the purchase, the game requests no ads and skipping a level is free.
 
 Android may include the locally saved game data in your device backup if backup is enabled in your device settings. Such a backup is managed by your device and Google account settings, not by the game developer. You can remove the game's local data through Android's app settings or by uninstalling the app; backup copies may be managed through your device's backup settings.
 
@@ -14,9 +18,13 @@ Questions about this policy: [robdeerleg@gmail.com](mailto:robdeerleg@gmail.com)
 
 ## Datenschutzerklärung
 
-Mephi the Daemon (`com.robinrehbein.beveldevil`) ist ein Offline-Spiel für Android von Robin Rehbein. Es benötigt kein Konto und enthält keine Werbung, Analysewerkzeuge, Käufe oder Netzwerkverbindung.
+Mephi the Daemon (`com.robinrehbein.beveldevil`) ist ein Android-Spiel von Robin Rehbein. Es benötigt kein Konto und enthält keine Analysewerkzeuge. Es zeigt Werbung (Google AdMob) und bietet einen einmaligen Kauf (Google Play Billing) an, der sie entfernt.
 
-Das Spiel speichert Spielfortschritt und Einstellungen auf dem Gerät: freigeschaltete Level, Todeszähler, gefundene Karten sowie Steuerungs-, Ton- und Vibrationseinstellungen. Bewegungssensorwerte werden nur während der entsprechenden Level für Neigungs- oder Schüttelsteuerung verwendet; sie werden weder gespeichert noch übertragen. Die App erhebt oder teilt keine personenbezogenen Daten mit dem Entwickler oder Dritten.
+Das Spiel speichert Spielfortschritt und Einstellungen auf dem Gerät: freigeschaltete Level, Todeszähler, gefundene Karten sowie Steuerungs-, Ton- und Vibrationseinstellungen. Bewegungssensorwerte werden nur während der entsprechenden Level für Neigungs- oder Schüttelsteuerung verwendet; sie werden weder gespeichert noch übertragen. Der Entwickler erhebt keine personenbezogenen Daten. Abgesehen von Werbung und Kauf (siehe unten) baut das Spiel keine Netzwerkverbindungen auf.
+
+Werbung: Das Spiel zeigt zwischen zwei Leveln eine Vollbildwerbung (höchstens nach jedem dritten geschafften Level und höchstens alle zwei Minuten, nie während des Spielens, und keine in den ersten fünf Leveln) und bietet eine freiwillige Werbung an, nach der du ein Level überspringen kannst, an dem du feststeckst. Die Werbung liefert Google AdMob. Dabei verarbeitet Google Daten wie die Werbe-ID deines Geräts, die IP-Adresse und deine Interaktion mit Anzeigen und kann sie für personalisierte Werbung nutzen. In der EU, im Vereinigten Königreich und in der Schweiz fragt zuerst ein Einwilligungsformular (Google User Messaging Platform) nach deiner Entscheidung; vorher wird keine Werbung angefordert. Du kannst die Entscheidung später unter Einstellungen > Werbe-Wahl ändern (wird angezeigt, wo das Gesetz es verlangt) und die Werbe-ID in den Android-Einstellungen zurücksetzen oder löschen. Datenschutzerklärung von Google: https://policies.google.com/privacy
+
+Kauf: „Ohne Werbung“ ist ein einmaliger Kauf, der vollständig über Google Play abgewickelt wird. Der Entwickler erhält keine Zahlungsdaten. Das Spiel speichert auf dem Gerät nur, ob der Kauf besteht, und prüft ihn beim Start bei Google Play. Mit dem Kauf fordert das Spiel keine Werbung an, und das Überspringen eines Levels ist kostenlos.
 
 Android kann die lokal gespeicherten Spieldaten in die Gerätesicherung aufnehmen, wenn diese in den Geräteeinstellungen aktiviert ist. Diese Sicherung wird über die Geräte- und Google-Kontoeinstellungen verwaltet, nicht durch den Entwickler des Spiels. Lokale Daten können in den Android-App-Einstellungen oder durch Deinstallation gelöscht werden; Sicherungskopien lassen sich über die Sicherungseinstellungen des Geräts verwalten.
 

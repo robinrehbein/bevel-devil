@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -27,6 +28,10 @@ interface Progress {
     var introSeen: Boolean
     /** Tilt levels read the motion sensor; off: on-screen tilt and shake buttons. */
     var tiltSensor: Boolean
+    /** "Remove ads" was bought; a cache so it works offline, the store stays the authority. */
+    var adsRemoved: Boolean
+        get() = false
+        set(_) {}
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
     fun cardFound(card: Card): Boolean
@@ -61,7 +66,13 @@ object Ui {
     val sound = Hit(224, 6, 26, 12)
     val gear = Hit(196, 6, 24, 12)
     val pauseSettings = Hit(88, 110, 80, 16)
+    val pauseSkip = Hit(88, 128, 80, 12)
     val privacy = Hit(78, 128, 100, 11)
+    /** Settings: reopens the ad consent form, where the law asks for it. */
+    val adChoices = Hit(6, 128, 64, 11)
+    /** "No ads" purchase button on the title and the settings. */
+    val noAdsTitle = Hit(6, 6, 52, 12)
+    val noAdsSettings = Hit(196, 6, 54, 12)
     const val SET_ROWS = 7
     const val SET_STEP = 15
     const val SET_TOP = 22
@@ -109,7 +120,7 @@ class Particle(var x: Float, var y: Float, var vx: Float, var vy: Float, var lif
 }
 
 /** Everything above a single attempt: screens, Mephi, cards, progress. */
-class Game(private val progress: Progress, private val audio: Audio) {
+class Game(private val progress: Progress, private val audio: Audio, private val ads: Monetization = NoAds) {
     var screen = Screen.TITLE
         private set
     var levelIndex = 0
@@ -177,6 +188,26 @@ class Game(private val progress: Progress, private val audio: Audio) {
     val leftHanded get() = progress.leftHanded
     val tiltSensor get() = progress.tiltSensor
     private var settingsFrom = Screen.TITLE
+
+    // ---------- ads ----------
+
+    /** Work handed over from other threads (ad callbacks), run on the game thread at the next update. */
+    private val inbox = ConcurrentLinkedQueue<() -> Unit>()
+    fun post(job: () -> Unit) { inbox.add(job) }
+    private var clearsSinceAd = 0
+    private var lastAdAt = -AdRules.COOLDOWN
+    /** An ad is on screen; the tap that started it must not start a second one. */
+    private var adShowing = false
+    val adsRemoved get() = ads.adsRemoved
+    /** The "NO ADS" button is offered: the store is ready and the player has not bought yet. */
+    val noAdsOffered get() = ads.canPurchase && !ads.adsRemoved
+    val adChoicesOffered get() = ads.privacyOptionsRequired
+    /** The pause menu offers skipping this level: stuck for a while, and not the finale. */
+    val skipOffered get() = screen == Screen.PAUSE && deaths >= AdRules.SKIP_AFTER_DEATHS && levelIndex != Levels.all.lastIndex
+    /** The skip can start now: free after the purchase, otherwise needs a loaded rewarded ad. */
+    val skipReady get() = !adShowing && (ads.adsRemoved || ads.rewardedReady())
+    /** The skip costs watching an ad (drives the button's label). */
+    val skipNeedsAd get() = !ads.adsRemoved
 
     /** Intro page and seconds on it. */
     var introPage = 0
@@ -262,6 +293,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
     }
 
     fun update(dt: Float) {
+        while (true) (inbox.poll() ?: break)()
         audio.music(if (progress.music) tune() else null, screen == Screen.PAUSE || (screen == Screen.SETTINGS && settingsFrom == Screen.PAUSE))
         time += dt
         shake = (shake - dt * 3f).coerceAtLeast(0f)
@@ -466,9 +498,36 @@ class Game(private val progress: Progress, private val audio: Audio) {
     private fun finishLevel() {
         val best = progress.bestDeaths(levelIndex)
         if (best == null || deaths < best) progress.saveBest(levelIndex, deaths)
+        clearsSinceAd++
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
         if (levelIndex == Levels.all.lastIndex) endAge = 0f
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
+    }
+
+    /** The clear screen's NEXT: an interstitial first when one is due, then [next]. */
+    private fun advance() {
+        if (adShowing) return
+        val due = !ads.adsRemoved && AdRules.interstitialDue(levelIndex, clearsSinceAd, time - lastAdAt)
+        if (due && ads.showInterstitial { post { adShowing = false; next() } }) {
+            adShowing = true
+            clearsSinceAd = 0
+            lastAdAt = time
+        } else next()
+    }
+
+    /** The pause menu's SKIP: the level counts as cleared (without a best score) after a rewarded ad, or at once with "no ads". */
+    private fun skip() {
+        if (!skipOffered || adShowing) return
+        if (ads.adsRemoved) { skipLevel(); return }
+        if (ads.showRewarded { earned -> post { adShowing = false; if (earned) skipLevel() } }) adShowing = true
+    }
+
+    private fun skipLevel() {
+        if (screen != Screen.PAUSE) return
+        if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
+        clearsSinceAd = 0
+        lastAdAt = time
+        go(Screen.CLEAR)
     }
 
     /** From the clear screen: the next level, or first the transition screen when it opens a new world. */
@@ -509,6 +568,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.TITLE -> when {
                 p in Ui.sound -> { progress.sound = !progress.sound; click() }
                 p in Ui.gear -> openSettings()
+                p in Ui.noAdsTitle && noAdsOffered -> ads.purchaseRemoveAds()
                 p in Ui.titleStory -> { click(); startIntro() }
                 p in Ui.titleAlbum -> go(Screen.ALBUM)
                 else -> openSelect(progress.unlocked - 1)
@@ -519,9 +579,13 @@ class Game(private val progress: Progress, private val audio: Audio) {
                 p in (if (pauseSwapped) Ui.pauseResume else Ui.pauseLevels) -> openSelect(levelIndex)
                 p in Ui.pauseRestart -> restartFromPause()
                 p in Ui.pauseSettings -> openSettings()
+                p in Ui.pauseSkip && skipOffered -> if (skipReady) skip()
                 else -> { world?.resumed(); go(Screen.PLAY) }
             }
-            Screen.SETTINGS -> if (p in Ui.back) go(settingsFrom) else {
+            Screen.SETTINGS -> if (p in Ui.back) go(settingsFrom)
+            else if (p in Ui.noAdsSettings && noAdsOffered) ads.purchaseRemoveAds()
+            else if (p in Ui.adChoices && adChoicesOffered) ads.showPrivacyOptions()
+            else {
                 for (row in 0 until Ui.SET_ROWS) for (i in 0 until Ui.setCounts[row]) if (p in Ui.setOpt(row, i, Ui.setCounts[row])) { setOption(row, i); click() }
             }
             Screen.INTRO -> when {
@@ -533,7 +597,7 @@ class Game(private val progress: Progress, private val audio: Audio) {
             Screen.WORLD_INTRO -> if (worldAge > 0.4f) {
                 if (worldInfo.size > 0) { click(); startLevel(worldInfo.firstLevel) } else openSelect(progress.unlocked - 1)
             }
-            Screen.CLEAR -> if (p in Ui.clearNext) { click(); next() }
+            Screen.CLEAR -> if (p in Ui.clearNext) { click(); advance() }
             Screen.ALBUM -> {
                 val first = albumPage * Ui.ALBUM_PAGE
                 when {

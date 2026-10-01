@@ -48,6 +48,14 @@ Für den Workflow sind diese Repository-Secrets nötig:
 
 Die lokale Upload-Key-Datei und die Zugangsdaten liegen in `release/`, das von Git ignoriert wird. **Beide Dateien sicher sichern:** Ohne den Upload-Schlüssel lassen sich spätere Builds nicht mit demselben Schlüssel hochladen. Der erste signierte AAB muss über die Play Console hochgeladen werden, bevor die Google Play Developer API Updates für eine neue App übernehmen kann. Für den geschlossenen Alpha-Test muss die App-Einrichtung in der Play Console abgeschlossen sein; Tester werden dort verwaltet.
 
+## Werbung und Kauf
+
+- **Interstitial** (Google AdMob) nur auf dem Clear-Screen, wenn man „WEITER“ tippt: nie in den ersten 5 Leveln, höchstens nach jedem 3. geschafften Level und höchstens alle 120 s (`AdRules` in `game/Monetization.kt`). Nie beim Spielen, nach einem Tod oder im Pause-Menü.
+- **Rewarded**: Nach 6 Toden im Level erscheint im Pause-Menü „SKIP: WERBUNG“. Wer die Werbung zu Ende schaut, schaltet das Level frei (ohne Bestwert). Nicht im Finale.
+- **Einmalkauf „NO ADS“** (Play-Produkt `remove_ads`, Button auf Titel und in den Einstellungen): keine Interstitials, Skip kostenlos, es werden gar keine Anzeigen mehr angefordert. Der Kaufstatus wird beim Start mit Google Play abgeglichen (auch Neuinstallation und Rückerstattung).
+- **Einwilligung** (Google UMP) vor der ersten Anzeige; in den Einstellungen erscheint „WERBE-WAHL“, wo das Gesetz es verlangt.
+- Code: `ads/AdsBilling.kt` (Android), `game/Monetization.kt` (Schnittstelle und Regeln, in Tests durch `NoAds`/Fakes ersetzt). AdMob-IDs kommen aus den Gradle-Properties `admobAppId`, `admobInterstitialId`, `admobRewardedId` (oder den Umgebungsvariablen `ADMOB_APP_ID` usw.); Debug-Builds und Builds ohne IDs zeigen nur Googles Testwerbung. Einrichtung in Play Console und AdMob: `docs/play/README.md`.
+
 ## Aufbau
 
 ```

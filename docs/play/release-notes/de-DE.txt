@@ -3,3 +3,4 @@ Version 0.6.0
 • Musik und Sound überarbeitet
 • Feinschliff an Steuerung, Fallen und Darstellung
 • Kleine Fehler behoben, Mephi ist beleidigt
+• Kurze Werbung zwischen den Leveln und optional zum Überspringen eines Levels; ein Einmalkauf entfernt alle Werbung
