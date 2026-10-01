@@ -3,3 +3,4 @@ Version 0.6.0
 • Music and sound reworked
 • Polish for controls, traps and visuals
 • Small bugs fixed, Mephi is offended
+• Short ads between levels, plus an optional ad to skip a level; a one-time purchase removes all ads

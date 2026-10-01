@@ -42,5 +42,10 @@ object Txt {
     val story = T("STORY", "STORY")
     val tapContinue = T("Tap to continue", "Tippen: weiter")
     val tapDescend = T("Tap to descend", "Tippen zum Absteigen")
+    val noAds = T("NO ADS", "OHNE WERBUNG")
+    val skipLevel = T("SKIP LEVEL", "LEVEL ÜBERSPRINGEN")
+    val skipAd = T("SKIP: WATCH AD", "SKIP: WERBUNG")
+    val adLoading = T("AD LOADING...", "WERBUNG LÄDT...")
+    val adChoices = T("AD CHOICES", "WERBE-WAHL")
     val worldNo = T("WORLD %d", "WELT %d")
 }

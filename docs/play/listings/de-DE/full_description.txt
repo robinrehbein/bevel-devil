@@ -31,8 +31,8 @@ Look und Steuerung
 • Deutsch und Englisch, je nach Gerätesprache
 
 Fair und leicht
-• Keine Werbung
-• Keine In-App-Käufe
+• Kurze Werbung zwischen den Leveln, nie während des Spielens
+• Einmaliger Kauf entfernt jede Werbung
 • Keine Konten, keine Registrierung, keine Tracker
 • Der Spielstand bleibt auf deinem Gerät
 • Winzige App, schnell installiert

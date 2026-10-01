@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.window.OnBackInvokedDispatcher
+import com.robinrehbein.beveldevil.ads.AdsBilling
 import com.robinrehbein.beveldevil.audio.Music
 import com.robinrehbein.beveldevil.audio.Sfx
 import com.robinrehbein.beveldevil.game.Audio
@@ -16,6 +17,7 @@ class MainActivity : Activity() {
     private lateinit var view: GameView
     private lateinit var sfx: Sfx
     private lateinit var music: Music
+    private lateinit var ads: AdsBilling
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +27,8 @@ class MainActivity : Activity() {
         val audio = object : Audio by sfx {
             override fun music(tune: Tune?, duck: Boolean) = music.set(tune, duck)
         }
-        view = GameView(this, Game(progress, audio))
+        ads = AdsBilling(this, progress).also { it.start() }
+        view = GameView(this, Game(progress, audio, ads))
         setContentView(view)
         view.requestFocus()
         if (Build.VERSION.SDK_INT >= 33) {
@@ -79,5 +82,6 @@ class MainActivity : Activity() {
         super.onDestroy()
         sfx.release()
         music.release()
+        ads.destroy()
     }
 }

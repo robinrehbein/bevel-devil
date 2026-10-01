@@ -3,6 +3,17 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// AdMob ids come from Gradle properties (or the matching environment variables); without them, and always in debug
+// builds, Google's sample ids are used, which only ever show test ads.
+fun admob(property: String, env: String, test: String) =
+    providers.gradleProperty(property).orElse(providers.environmentVariable(env)).orNull ?: test
+val testAppId = "ca-app-pub-3940256099942544~3347511713"
+val testInterstitialId = "ca-app-pub-3940256099942544/1033173712"
+val testRewardedId = "ca-app-pub-3940256099942544/5224354917"
+val adAppId = admob("admobAppId", "ADMOB_APP_ID", testAppId)
+val adInterstitialId = admob("admobInterstitialId", "ADMOB_INTERSTITIAL_ID", testInterstitialId)
+val adRewardedId = admob("admobRewardedId", "ADMOB_REWARDED_ID", testRewardedId)
+
 android {
     namespace = "com.robinrehbein.beveldevil"
     compileSdk = 36
@@ -27,8 +38,20 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            manifestPlaceholders["admobAppId"] = testAppId
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$testInterstitialId\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"$testRewardedId\"")
+        }
         release {
+            manifestPlaceholders["admobAppId"] = adAppId
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$adInterstitialId\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"$adRewardedId\"")
             if (System.getenv("ANDROID_UPLOAD_KEYSTORE") != null) {
                 signingConfig = signingConfigs.getByName("upload")
             }
@@ -49,7 +72,18 @@ android {
     }
 }
 
+tasks.configureEach {
+    if (name == "bundleRelease" || name == "assembleRelease") {
+        doFirst {
+            if (adAppId == testAppId) logger.warn("WARNING: release build with AdMob TEST ids (set admobAppId, admobInterstitialId, admobRewardedId).")
+        }
+    }
+}
+
 dependencies {
+    implementation("com.google.android.gms:play-services-ads:24.5.0")
+    implementation("com.google.android.ump:user-messaging-platform:3.2.0")
+    implementation("com.android.billingclient:billing:8.0.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
 }

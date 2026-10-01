@@ -31,8 +31,8 @@ Look and controls
 • English and German, following your device language
 
 Fair and light
-• No ads
-• No in-app purchases
+• Short ads between levels, none while you play
+• One-time purchase removes all ads
 • No accounts, no sign-up, no trackers
 • Your progress stays on your device
 • A tiny app that installs fast

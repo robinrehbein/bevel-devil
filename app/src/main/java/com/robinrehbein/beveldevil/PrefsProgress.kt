@@ -50,6 +50,10 @@ class PrefsProgress(context: Context) : Progress {
         get() = prefs.getBoolean("tilt_sensor", true)
         set(v) = prefs.edit().putBoolean("tilt_sensor", v).apply()
 
+    override var adsRemoved: Boolean
+        get() = prefs.getBoolean("ads_removed", false)
+        set(v) = prefs.edit().putBoolean("ads_removed", v).apply()
+
     override fun bestDeaths(level: Int): Int? = prefs.getInt("best_$level", -1).takeIf { it >= 0 }
     override fun saveBest(level: Int, deaths: Int) = prefs.edit().putInt("best_$level", deaths).apply()
     override fun cardFound(card: Card) = prefs.getBoolean("card_${card.name}", false)
