@@ -319,6 +319,8 @@ class World1Test {
         .rightTo(13.3f).rightJump(0.35f).landRight()
         .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level29() = b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(21.3f).right(2f).expect(WorldState.WON)
+    /** Running past the stairs before they are built must not strand the player on the floor behind them. */
+    @Test fun level30RunningPastTheStairsDies() = b(30).right(3f).wait(5f).expect(WorldState.DEAD)
     @Test fun level30() = b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.0f).hopR(16.9f).hopR(19.7f).rightTo(24.8f).rightJump(0.35f).landRight().left(2f).expect(WorldState.WON)
     @Test fun level31() = b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }
         .rightTo(9.7f).rightJump(0.35f).landRight()
