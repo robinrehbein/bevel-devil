@@ -21,6 +21,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
 import com.robinrehbein.beveldevil.game.Trigger.Touch
+import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 /**
  * World 3, levels 17-32. Act 2, "Überhitzung": hot plates, chips under load, heatsinks, the overclocked floor and
@@ -39,6 +40,17 @@ object World3Part2 {
             traps = listOf(
                 trap(Touch('k'), Play(Card.THROTTLE), Heat('h', rise = 0.85f), say("Energy saving mode: off.", "Energiesparmodus: aus.")),
                 trap(PastX(25.3f), HeatSpike('f', 0.9f), say("Cooled down? Good. Now warm up the tail.", "Abgekühlt? Gut. Dann wärm den Schluss auf.")),
+            ),
+            // rematch: the heatsink that saved you is the hottest thing in the room; hop the whole stove instead
+            rematch = listOf(
+                Round(
+                    T("Cool-down round. For me, not for you.", "Abkühlrunde. Kühl bleibt nur einer: ich."),
+                    start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h")),
+                    traps = listOf(
+                        trap(Touch('k'), Play(Card.OVERCLOCKED), HeatSpike('k', 1f), say("Heatsink in reverse. Feature.", "Kühlkörper im Rückwärtsgang. Feature.")),
+                        trap(PastX(25.3f), HeatSpike('f', 0.9f), say("The tail is still warm.", "Der Schluss ist immer noch warm.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -115,6 +127,18 @@ object World3Part2 {
                 trap(PastX(19.2f), Heat('h', rise = 0.55f, cool = 1.4f), say("Last leg: sprint mode.", "Letzte Etappe: Sprintmodus.")),
                 trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4 is a plain floor. I counted.", "Platte 4 ist ein schlichter Boden. Ich hab mitgezählt.")),
             ),
+            // rematch: the leap off the second sink lands on an overclocked plate; the last leg is walkable now
+            rematch = listOf(
+                Round(
+                    T("Second lap. The baton is hot.", "Zweite Runde. Staffelübergabe mit Brandblase."),
+                    start = listOf(Heat('h', rise = 1f), Heatsink('k', cools = "h")),
+                    traps = listOf(
+                        trap(Touch('k'), Play(Card.THROTTLE), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates warmed up. Again.", "Platten warmgelaufen. Schon wieder.")),
+                        trap(Landed(19f, 25f), HeatSpike('h', 0.95f), say("Long jump? Hot landing.", "Weitsprung? Heiße Landung.")),
+                        trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4: still counted.", "Platte 4: immer noch mitgezählt.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(5..10, 15..15, 'h'); put(11, 15, 'k'); fill(12..17, 15..15, 'h'); put(18, 15, 'k'); fill(19..24, 15..15, 'h')
@@ -149,6 +173,19 @@ object World3Part2 {
                 trap(PastX(8.3f), Play(Card.SINKING), Heat('h', rise = 0.8f), say("Set to Sauna. Sitting not recommended.", "Stufe Sauna. Sitzen nicht empfohlen.")),
                 trap(Touch('a'), Clock('a', on = 2.2f, off = 2f), say("The rail got a new appointment schedule.", "Die Schiene hat einen neuen Terminplan.")),
                 trap(Airborne(24.3f, 28.5f), HeatSpike('f', 0.7f), say("Next appointment: preheated.", "Nächster Termin: vorgeheizt.")),
+            ),
+            // rematch: the spot where you waited in round 1 is overclocked; wait further back
+            rematch = listOf(
+                Round(
+                    T("Next patient, please. Same waiting room.", "Der Nächste, bitte. Wartenummer zwei."),
+                    start = listOf(Heat('h', rise = 3f), Clock('a', on = 2.4f, off = 2f, phase = 2f)),
+                    traps = listOf(
+                        trap(Zone(4.5f, 13f, 7.9f, 15f), Play(Card.OVERCLOCKED), HeatSpike('e', 0.5f), say("Waiting area now heated. Fee applies.", "Wartebereich jetzt beheizt. Gebührenpflichtig.")),
+                        trap(PastX(8.3f), Heat('h', rise = 0.8f), say("Sauna, as last time.", "Sauna, wie letztes Mal.")),
+                        trap(Touch('a'), Clock('a', on = 2.2f, off = 2f), say("Rail schedule: unchanged. Lucky you.", "Schienenplan: unverändert. Glück gehabt.")),
+                        trap(Airborne(24.3f, 28.5f), HeatSpike('f', 0.7f), say("Exit: preheated, as always.", "Ausgang: vorgeheizt, wie immer.")),
+                    ),
+                ) { fill(4..7, 15..15, 'e') },
             ),
         ) {
             border(); floor()
@@ -240,6 +277,18 @@ object World3Part2 {
                 trap(Touch('k'), Saw(-2f, 14.4f, 10f, 0f), say("Fans have more than one blade.", "Lüfter haben mehr als ein Blatt.")),
                 trap(Landed(18f, 27f), HeatSpike('h', 0.6f), say("Sorry, the landing strip is warm.", "Sorry, die Landebahn ist warm.")),
             ),
+            // rematch: the blade from the front now flies at head height: the hop that cleared it in round 1 runs into it,
+            // walking passes under it (and the one from behind still punishes a long rest)
+            rematch = listOf(
+                Round(
+                    T("Break's over. Second shift.", "Pause vorbei. Spätschicht."),
+                    start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h")),
+                    traps = listOf(
+                        trap(PastX(16.5f), Play(Card.DEVIL_SAW), Saw(33f, 12.9f, -7f, 0f), say("Fan blade, mounted higher. Ergonomics.", "Lüfterblatt, höher montiert. Ergonomie.")),
+                        trap(Touch('k'), Saw(-2f, 14.4f, 10f, 0f), say("The rear one is floor-mounted.", "Das hintere ist bodennah montiert.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(7..15, 15..15, 'h'); put(16, 15, 'k'); fill(17..25, 15..15, 'h')
@@ -277,6 +326,18 @@ object World3Part2 {
                 trap(PastX(7.2f), HeatSpike('e', 0.6f), say("Test profile 3: the waiting area burns in.", "Testprofil 3: der Wartebereich brennt ein.")),
                 trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, HeatSpike('f', 0.55f), DoorTo(17, 14), say("Stress test passed! ...Just kidding. Run.", "Stresstest bestanden! ...Scherz. Lauf."))),
             ),
+            // rematch: the gate floor is cool now, the spot a step back (where round 1 was safe) burns in
+            rematch = listOf(
+                Round(
+                    T("Burn-in, pass two. Different pixels.", "Einbrenntest, zweiter Lauf. Bildschirmschoner aus."),
+                    start = listOf(Clock('Z', on = 1.3f, off = 1.7f)),
+                    traps = listOf(
+                        trap(PastX(5.2f), Clock('Z', on = 0.9f, off = 1.5f), say("Test profile 2 again.", "Wieder Testprofil 2.")),
+                        trap(PastX(5.4f), HeatSpike('d', 0.6f), say("Test profile 3b: the back row burns in.", "Testprofil 3b: die hintere Reihe brennt ein.")),
+                        trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, HeatSpike('f', 0.55f), DoorTo(17, 14), say("Passed! ...You know the drill.", "Bestanden! ...Du kennst das schon."))),
+                    ),
+                ) { fill(5..6, 15..15, 'd') },
+            ),
         ) {
             border(); floor()
             fill(7..9, 15..15, 'e')
@@ -294,6 +355,18 @@ object World3Part2 {
                 trap(Touch('l'), Play(Card.SINKING), HeatSpike('l', 1f), say("Heatsink 2 runs hotter than advertised.", "Kühlkörper 2 ist heißer als beworben.")),
                 trap(Landed(21f, 25.5f), HeatSpike('h', 0.6f), say("Pit stop tires: preheated.", "Boxenstopp-Reifen: vorgeheizt.")),
                 trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Pit lane exit: hot.", "Boxenausfahrt: heiß.")),
+            ),
+            // rematch: the crew swapped the heatsinks: the first one burns now, the second one is fine
+            rematch = listOf(
+                Round(
+                    T("Pit crew swapped the parts. Guess which.", "Die Boxencrew hat getauscht. Rate mal, was."),
+                    start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h"), Heatsink('l', cools = "h")),
+                    traps = listOf(
+                        trap(Touch('k'), Play(Card.SINKING), HeatSpike('k', 1f), say("Heatsink 1: now the hot one.", "Kühlkörper 1: jetzt der heiße.")),
+                        trap(Landed(21f, 25.5f), HeatSpike('h', 0.6f), say("Tires: preheated again.", "Reifen: wieder vorgeheizt.")),
+                        trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Pit lane exit: still hot.", "Boxenausfahrt: immer noch heiß.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -314,6 +387,20 @@ object World3Part2 {
                 trap(PastX(6.5f), Heat('c', rise = 1.9f, load = true), say("Core voltage: raised.", "Kernspannung: erhöht.")),
                 trap(Pressed('1'), Clock('Z', on = 0.7f, off = 2.2f, phase = 0.7f), say("The breaker was a clock all along.", "Die Sicherung war die ganze Zeit ein Taktgeber.")),
                 trap(PastX(25.8f), Play(Card.GRAND_FINALE), HeatSpike('f', 1f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
+            ),
+            // rematch: the breaker now switches the wall ON; hop the button (or press it twice)
+            rematch = listOf(
+                Round(
+                    T("Thermal reset. Everything is still hot.", "Thermischer Reset. Lüfter weiterhin optional."),
+                    start = listOf(
+                        Heat('c', rise = 2.2f, load = true), Heatsink('k', cools = "c"),
+                        Circuit('Z', on = false), Pad('1', at = 23 to 14, circuits = "Z"),
+                    ),
+                    traps = listOf(
+                        trap(PastX(6.5f), Heat('c', rise = 1.9f, load = true), say("Core voltage: raised. Tradition.", "Kernspannung: erhöht. Tradition.")),
+                        trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Breaker firmware 2.0: ON means ON.", "Sicherungs-Firmware 2.0: AN heißt AN.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()

@@ -104,6 +104,31 @@ sealed interface Action {
     data class Play(val card: Card) : Action
 
     /**
+     * Mephi bluffs: [card] flies in like a real trap, but nothing comes of it (the real trap, if any, is another
+     * one). While it flies he has a tell (sweat, darting eyes); then the card flips over and shows BLUFF.
+     * Use it sparingly: only in a rematch round where the same card was honest in round 1.
+     *
+     *     trap(PastX(9f), Bluff(Card.COLLAPSE))
+     *     trap(Landed(10f, 14f), Show('B'))           // the real trap: spikes where the reflex jump lands
+     */
+    data class Bluff(val card: Card) : Action
+
+    /**
+     * Ctrl+Z: Bevel is put back where he was [seconds] ago (at most [World.HISTORY] seconds), standing still.
+     *
+     *     trap(PastX(24f), Play(Card.UNDO), Undo(2f), Say(T("Undo.", "Rückgängig.")))
+     */
+    data class Undo(val seconds: Float) : Action
+
+    /**
+     * The group starts stalking the player sideways at [speed] tiles/s: it slides so its middle stays under (or
+     * over) Bevel, at most [left] tiles left and [right] tiles right of where it was built.
+     *
+     *     trap(PastX(8f), Play(Card.STALKER), Chase('S', speed = 4f, left = 3f, right = 18f))
+     */
+    data class Chase(val group: Char, val speed: Float, val left: Float = 32f, val right: Float = 32f) : Action
+
+    /**
      * The group is solid for [on] seconds, then gone for [off], counted from when this runs; [phase] seconds
      * are skipped at the start. It flickers for [telegraph] seconds before vanishing, and waits while the player
      * stands where it would reappear.
@@ -363,6 +388,21 @@ class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0
 
 fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f) = Trap(trigger, actions.toList(), delay)
 
+/**
+ * A rematch: after the door, Mephi deals a new hand in the same room ("Revanche!"). The map is the level's own,
+ * changed by [edit]; [legend] adds to the level's. Dying restarts this round, not the whole level.
+ *
+ *     rematch = listOf(Round(T("Again. Same room.", "Nochmal. Gleicher Raum."), traps = listOf(…)) { fill(9..10, 15..17, 'x') })
+ */
+class Round(
+    val intro: T,
+    val traps: List<Trap> = emptyList(),
+    val start: List<Action> = emptyList(),
+    val legend: Map<Char, Glyph> = emptyMap(),
+    val hint: T? = null,
+    val edit: MapBuilder.() -> Unit = {},
+)
+
 /** Mutable char grid used to lay out a level. '#' solid, '^v<>' spikes, 'P' spawn, 'D' door. */
 class MapBuilder(val cols: Int = 32, val rows: Int = 18) {
     val grid: Array<CharArray> = Array(rows) { CharArray(cols) { '.' } }
@@ -396,9 +436,20 @@ class Level(
     val traps: List<Trap> = emptyList(),
     /** Actions that run as the attempt starts: blinking platforms, path saws, tilt. */
     val start: List<Action> = emptyList(),
-    build: MapBuilder.() -> Unit,
+    /** Further rounds in the same room, played after the door; see [Round]. */
+    val rematch: List<Round> = emptyList(),
+    /** What Mephi lets slip when the player is stuck for [Game.HINT_AFTER] seconds without dying (once per level). */
+    val hint: T? = null,
+    private val build: MapBuilder.() -> Unit,
 ) {
     val map: MapBuilder = MapBuilder().apply(build)
+
+    /** This level and its rematches, each a level of its own: round 1 is this level. */
+    val rounds: List<Level> by lazy {
+        listOf(this) + rematch.map { r ->
+            Level(name, r.intro, legend + r.legend, r.traps, r.start, hint = r.hint) { build(); r.edit(this) }
+        }
+    }
     val cols get() = map.cols
     val rows get() = map.rows
 

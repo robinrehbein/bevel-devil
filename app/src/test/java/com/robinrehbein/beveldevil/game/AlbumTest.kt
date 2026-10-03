@@ -32,7 +32,7 @@ class AlbumTest {
 
     @Test
     fun theAlbumHasTwoPages() {
-        assertEquals(18, Card.entries.size)
+        assertEquals(21, Card.entries.size)
         assertEquals(2, album(Prog()).albumPages())
     }
 
@@ -90,7 +90,8 @@ class AlbumTest {
         // the saved keys are built from the enum names, and the twelve old cards keep their names and places
         val old = listOf("COLLAPSE", "SPIKE_SEED", "SHY_DOOR", "HEADBUTT", "UPSIDE_DOWN", "TWISTED", "DEVIL_SAW", "GHOST_BLOCK", "SINKING", "DECOY", "CRUMBLE", "GRAND_FINALE")
         assertEquals(old, Card.entries.take(12).map { it.name })
-        assertEquals(listOf("SHORT_CIRCUIT", "OVERCLOCKED", "BIT_FLIP", "BACKDRAFT", "THROTTLE", "BIOS"), Card.entries.drop(12).map { it.name })
+        assertEquals(listOf("SHORT_CIRCUIT", "OVERCLOCKED", "BIT_FLIP", "BACKDRAFT", "THROTTLE", "BIOS"), Card.entries.drop(12).take(6).map { it.name })
+        assertEquals(listOf("UNDO", "STALKER", "BLUFF"), Card.entries.drop(18).map { it.name })
     }
 
     @Test

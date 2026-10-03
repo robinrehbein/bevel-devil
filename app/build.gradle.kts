@@ -22,8 +22,8 @@ android {
         applicationId = "com.robinrehbein.beveldevil"
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 6
-        versionName = providers.gradleProperty("releaseVersionName").orNull ?: "0.6.0"
+        versionCode = providers.gradleProperty("releaseVersionCode").orNull?.toInt() ?: 7
+        versionName = providers.gradleProperty("releaseVersionName").orNull ?: "2.0.0"
     }
 
     signingConfigs {

@@ -28,4 +28,10 @@ enum class Card(val title: T, val flavor: T, val rarity: Rarity) {
     BACKDRAFT(T("Backdraft", "Gegenwind"), T("Wind is free. Direction is not.", "Wind ist gratis. Die Richtung nicht."), Rarity.COMMON),
     THROTTLE(T("Throttle", "Drosselung"), T("Slow down. Or I will.", "Werd langsamer. Sonst mach ich es."), Rarity.RARE),
     BIOS(T("BIOS", "BIOS"), T("Press DEL to lose.", "ENTF drücken zum Verlieren."), Rarity.LEGENDARY),
+
+    // V2; appended for the same reason
+    UNDO(T("Ctrl+Z", "Strg+Z"), T("Progress was just a draft.", "Fortschritt war nur ein Entwurf."), Rarity.RARE),
+    STALKER(T("Stalker", "Verfolger"), T("It only wants to be close.", "Er will nur in deiner Nähe sein."), Rarity.COMMON),
+    /** Found when a bluff ([Action.Bluff]) first turns over; counts the deaths after one. */
+    BLUFF(T("Bluff", "Bluff"), T("I never had that card. You believed me.", "Die Karte hatte ich nie. Du glaubtest mir."), Rarity.LEGENDARY),
 }

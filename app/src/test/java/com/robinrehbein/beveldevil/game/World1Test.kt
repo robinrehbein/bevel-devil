@@ -58,10 +58,13 @@ class World1Test {
 
     @Test
     fun everyTrapLevelPlaysExactlyOneCard() {
+        // in every round, rematches included (a bluff counts)
         World1.levels.forEachIndexed { i, l ->
-            if (l.traps.isNotEmpty()) {
-                val plays = l.traps.sumOf { t -> t.actions.count { it is Action.Play } }
-                assertEquals("level ${i + 1} should play exactly one card", 1, plays)
+            l.rounds.forEachIndexed { k, r ->
+                if (r.traps.isNotEmpty()) {
+                    val plays = r.traps.sumOf { t -> t.actions.count { it is Action.Play || it is Action.Bluff } }
+                    assertEquals("level ${i + 1} round ${k + 1} should play exactly one card", 1, plays)
+                }
             }
         }
     }
@@ -466,8 +469,8 @@ class World1Test {
     /** A dropped floor falls out of the world: nothing solid of another group lies below it to stand on afterwards. */
     @Test
     fun noTrapDropsThePlayerOntoAFloorBelow() {
-        (World1Part2.levels + World1Part3.levels).forEachIndexed { i, l ->
-            if (i + 17 == 30) return@forEachIndexed   // the tetrominoes are meant to land
+        (World1Part2.levels + World1Part3.levels).withIndex().flatMap { (i, lv) -> lv.rounds.map { i to it } }.forEach { (i, l) ->
+            if (i + 17 == 30) return@forEach   // the tetrominoes are meant to land
             val falling = l.traps.flatMap { it.actions }.filterIsInstance<Action.Fall>().map { it.group }.toSet()
             for (g in falling) for (y in 0 until l.rows) for (x in 0 until l.cols) {
                 if (l.map.grid[y][x] != g || l.glyph(g)?.spike == true) continue

@@ -46,7 +46,7 @@ class LayoutTest {
             val l = Layout()
             l.controls.mirror = mirror
             l.update(w, h, 2.75f)
-            Levels.all.forEachIndexed { i, level ->
+            Levels.all.forEachIndexed { i, base -> for (level in base.rounds) {
                 val spots = ArrayList<Triple<String, Int, Int>>()
                 for (y in 0 until level.rows) for (x in 0 until level.cols) when (level.map.grid[y][x]) {
                     'P' -> spots += Triple("spawn", x, y)
@@ -56,7 +56,7 @@ class LayoutTest {
                 for ((what, cx, cy) in spots) {
                     if (covered(l, cx, cy, if (what == "spawn") 1f else 1.6f)) offenders += "level ${i + 1} $what ($cx,$cy) at ${w}x$h mirror=$mirror"
                 }
-            }
+            } }
         }
         assertTrue("under the controls (${offenders.size}):\n" + offenders.joinToString("\n"), offenders.isEmpty())
     }

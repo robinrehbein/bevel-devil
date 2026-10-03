@@ -31,7 +31,8 @@ class UiPainter(px: Pixels) : Painter(px) {
 
     // ---------- Mephi ----------
 
-    fun devilFrame(x: Float, y: Float, size: Float, mood: Mood, t: Float, spriteScale: Int = 1) {
+    /** Mephi in his frame. [tell]: he is bluffing and gives himself away (darting eyes, a bead of sweat). */
+    fun devilFrame(x: Float, y: Float, size: Float, mood: Mood, t: Float, spriteScale: Int = 1, tell: Boolean = false) {
         rect(x + 2, y + 2, size, size, SHADOW)
         val inner = size - 6
         for (yy in 0 until inner.toInt()) {
@@ -41,13 +42,13 @@ class UiPainter(px: Pixels) : Painter(px) {
             rect(x + 3, y + 3 + yy, inner, 1f, if (dark) VELVET_LO else VELVET)
         }
         val blink = mood != Mood.LAUGH && (t % 3.1f) < 0.13f
-        val look = if (mood == Mood.GRIN) sin(t * 0.9f).roundToInt() else 0
+        val look = if (tell) (if ((t * 7f).toInt() % 2 == 0) -1 else 1) else if (mood == Mood.GRIN) sin(t * 0.9f).roundToInt() else 0
         val bob = when (mood) {
             Mood.LAUGH -> (abs(sin(t * 14f)) * 2f).roundToInt()
             else -> (sin(t * 2.2f) * 0.6f).roundToInt()
         }
         val jit = if (mood == Mood.SHOCK) sin(t * 50f).roundToInt() else 0
-        val sprite = Mephi.sprite(mood, blink, look)
+        val sprite = Mephi.sprite(if (tell) Mood.GRIN else mood, blink && !tell, look)
         val n = Mephi.N * spriteScale
         lc.save()
         lc.clipRect(x + 3, y + 3, x + size - 3, y + size - 3)
@@ -56,6 +57,13 @@ class UiPainter(px: Pixels) : Painter(px) {
         dst.set(x + (size - n) / 2f + jit, top - bob * spriteScale, 0f, 0f)
         dst.right = dst.left + n; dst.bottom = dst.top + n
         lc.drawBitmap(sprite, null, dst, blit)
+        if (tell) {
+            // a bead of sweat runs down from under the right horn, again and again
+            val u = spriteScale.toFloat()
+            val dx = dst.left + 21 * u
+            val dy = dst.top + (9 + (t * 9f) % 6f) * u
+            rect(dx, dy, u, u, SWEAT_HI); rect(dx - u, dy + u, 3 * u, u, SWEAT); rect(dx - u, dy + 2 * u, 3 * u, u, SWEAT); rect(dx, dy + 3 * u, u, u, SWEAT_LO)
+        }
         lc.restore()
         rect(x - 1, y - 1, size + 2, 1, INK); rect(x - 1, y + size, size + 2, 1, INK); rect(x - 1, y, 1, size, INK); rect(x + size, y, 1, size, INK)
         rect(x, y, size, 3, GOLD); rect(x, y + size - 3, size, 3, GOLD); rect(x, y, 3, size, GOLD); rect(x + size - 3, y, 3, size, GOLD)
@@ -133,11 +141,24 @@ class UiPainter(px: Pixels) : Painter(px) {
         pauseButton(game, l)
         if (l.hud == HudMode.SIDE) sidePills(game, l.pills) else pillRow(game, l)
         val f = l.frame
-        devilFrame(f.x.toFloat(), f.y.toFloat(), f.w.toFloat(), game.mood, t)
+        devilFrame(f.x.toFloat(), f.y.toFloat(), f.w.toFloat(), game.mood, t, tell = game.bluffTell)
         game.bubble?.let {
             if (l.hud == HudMode.SIDE) bubbleBelow(it, game.bubbleAge, f.x + f.w / 2f, l.bubble)
             else bubble(it, game.bubbleAge, l.bubble.x.toFloat(), l.bubble.y.toFloat(), l.bubble.w.toFloat())
         }
+        if (game.rematchAge < REMATCH_BANNER) rematchBanner(game, l)
+    }
+
+    /** "REMATCH!" slams in over the room for a moment when Mephi deals another round. */
+    private fun rematchBanner(game: Game, l: Layout) = stage(l, Screen.PLAY) {
+        val a = game.rematchAge
+        // slam in big, settle, then blink out
+        val size = if (a < 0.12f) 22f - a / 0.12f * 8f else 14f
+        if (a > REMATCH_BANNER - 0.3f && ((a * 12).toInt() % 2 == 0)) return@stage
+        rect(0f, 46f, 256f, 30f, 0xC0100818.toInt())
+        rect(0f, 46f, 256f, 1f, GOLD); rect(0f, 75f, 256f, 1f, GOLD_LO)
+        say(Txt.rematch.toString(), 128f, 57f, size, GOLD_HI, Paint.Align.CENTER, DEVIL_RED_LO)
+        say("${Txt.newHand} · ${Txt.round} ${game.round + 1}", 128f, 69f, 5f, CREAM, Paint.Align.CENTER)
     }
 
     /** The HUD pause button, unless a [PauseTrick] makes it dodge or grow spikes. */
@@ -175,7 +196,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     private fun pillRow(game: Game, l: Layout) {
         val x = l.pills.x.toFloat()
         val y = l.pills.y.toFloat()
-        val name = "${game.levelLabel} · ${game.level.name.toString().uppercase()}"
+        val name = "${game.levelLabel} · ${game.roundTag?.let { "$it · " } ?: ""}${game.level.name.toString().uppercase()}"
         val dLabel = game.deaths.toString()
         val dw = textWidth(dLabel, 5f) + 18
         val maxW = l.frame.x - 4 - x - 6 - dw
@@ -209,7 +230,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val hx = cx.roundToInt().toFloat()
         rect(hx - 6, y - 3, 2f, 3f, INK); rect(hx - 5, y - 4, 1f, 2f, INK); rect(hx - 5, y - 2, 1f, 2f, BONE)
         rect(hx + 4, y - 3, 2f, 3f, INK); rect(hx + 4, y - 4, 1f, 2f, INK); rect(hx + 4, y - 2, 1f, 2f, BONE)
-        val label = game.levelLabel
+        val label = game.levelLabel + (game.roundTag?.let { " $it" } ?: "")
         var ls = 9f
         while (ls > 6f && textWidth(label, ls) > w - 6) ls -= 0.5f
         say(label, cx, y + 8.5f, ls, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
@@ -299,24 +320,32 @@ class UiPainter(px: Pixels) : Painter(px) {
         val sc = l.sc.toFloat()
         val age = game.cardAge
         val f = min(1f, age / 0.55f)
-        val out = age > Game.CARD_LIFE - 0.4f
-        val fade = if (out) max(0f, (Game.CARD_LIFE - age) / 0.4f) else 1f
+        // a bluff stays a little longer: it turns over at BLUFF_FLIP and the BLUFF side gets its moment
+        val life = Game.CARD_LIFE + if (game.cardBluff) Game.BLUFF_FLIP else 0f
+        val out = age > life - 0.4f
+        val fade = if (out) max(0f, (life - age) / 0.4f) else 1f
         val fr = l.frame
         val sx = fr.x + fr.w / 2f
         val sy = fr.y + fr.h / 2f
+        // settle high and to the side of the player, then fade to a ghost: the trap below must stay readable
         val tx = l.fx + 128f + game.cardSide * 64f
-        val ty = l.fy + 66f
+        val ty = l.fy + 52f
         val k = min(1f, f * 1.4f)
         val cx = (sx + (tx - sx) * k) * sc
         val cy = (sy + (ty - sy) * k - sin(k * PI.toFloat()) * 18f) * sc
-        val angle = PI.toFloat() * (1 - f)
+        // the flip in: back to front; a bluff flips once more, front to back, at BLUFF_FLIP
+        val turn = if (game.cardBluff) ((age - Game.BLUFF_FLIP) / FLIP_TIME).coerceIn(0f, 1f) else 0f
+        val angle = PI.toFloat() * (1 - f) + PI.toFloat() * turn
         val front = angle < PI.toFloat() / 2
-        val s = if (out) 1f + (1f - fade) * 0.3f else 0.4f + 0.6f * k
+        val revealed = turn >= 0.5f
+        val s = (if (out) 1f + (1f - fade) * 0.3f else 0.4f + 0.6f * k) * CARD_SCALE
+        val solid = if (game.cardBluff) Game.BLUFF_FLIP + FLIP_TIME + 0.5f else CARD_SOLID
+        val ghost = if (age < solid) 1f else max(CARD_GHOST, 1f - (age - solid) / 0.25f * (1f - CARD_GHOST))
         canvas.save()
         canvas.translate(cx, cy)
         canvas.rotate(((sin(game.time * 2.4f) * 0.05f - 0.05f + (1 - f) * 0.6f) * 180f / PI.toFloat()))
         canvas.scale(max(0.03f, abs(cos(angle))) * s, s)
-        drawCardFace(canvas, sc, card, front, (fade * 255).toInt(), game.cardDeaths(card), compact = true)
+        drawCardFace(canvas, sc, card, front, (fade * ghost * 255).toInt(), game.cardDeaths(card), compact = true, stamp = if (revealed) Txt.bluff.toString() else null)
         canvas.restore()
     }
 
@@ -332,7 +361,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     }
 
     /** Card centered at the origin, 44×60 logical pixels. */
-    private fun drawCardFace(canvas: Canvas, sc: Float, card: Card, front: Boolean, alpha: Int, deaths: Int, compact: Boolean) {
+    private fun drawCardFace(canvas: Canvas, sc: Float, card: Card, front: Boolean, alpha: Int, deaths: Int, compact: Boolean, stamp: String? = null) {
         val cw = 44 * sc
         val ch = 60 * sc
         fun r(x: Float, y: Float, w: Float, h: Float, color: Int, rad: Float = 0f) {
@@ -369,6 +398,17 @@ class UiPainter(px: Pixels) : Painter(px) {
             fill.style = Paint.Style.FILL
             dst.set(-10 * sc, -10 * sc, 10 * sc, 10 * sc)
             canvas.drawBitmap(Icons.back, null, dst, blit)
+            if (stamp != null) {
+                // a red rubber stamp across the back
+                canvas.save()
+                canvas.rotate(-14f)
+                r(-cw / 2 - 2 * sc, -6 * sc, cw + 4 * sc, 12 * sc, INK)
+                r(-cw / 2 - 1 * sc, -5 * sc, cw + 2 * sc, 10 * sc, RED_BTN)
+                text.textAlign = Paint.Align.CENTER
+                text.color = CARD_CREAM; text.alpha = alpha; text.textSize = 8f * sc
+                canvas.drawText(stamp, 0f, 3f * sc, text)
+                canvas.restore()
+            }
         }
         blit.alpha = 255
         text.alpha = 255
@@ -728,5 +768,16 @@ class UiPainter(px: Pixels) : Painter(px) {
     private companion object {
         /** Where the dodging pause button hops to, in logical pixels from home. */
         val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
+        /** Seconds the rematch banner stays up. */
+        const val REMATCH_BANNER = 1.5f
+        /** The flying trap card's size, and after [CARD_SOLID] seconds the alpha it fades to. */
+        const val CARD_SCALE = 0.8f
+        const val CARD_SOLID = 0.7f
+        const val CARD_GHOST = 0.35f
+        /** Seconds a bluff card takes to turn over. */
+        const val FLIP_TIME = 0.22f
+        const val SWEAT = 0xFF8FD8FF.toInt()
+        const val SWEAT_HI = 0xFFE6F8FF.toInt()
+        const val SWEAT_LO = 0xFF4A9BD0.toInt()
     }
 }

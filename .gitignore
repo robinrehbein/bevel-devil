@@ -13,3 +13,4 @@ captures/
 *.keystore
 /release/
 .kotlin/
+.claude/worktrees/

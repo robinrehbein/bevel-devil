@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Laser
@@ -35,6 +36,17 @@ object World2Part2 {
                 trap(Landed(14.2f, 18.6f), Play(Card.TWISTED), Belt('b', -6f), say("Packet reordering: the bus runs the other way.", "Paket-Umsortierung: Der Bus fährt andersrum.")),
                 trap(Landed(21.4f, 25f), Belt('b', -10f), say("Congestion control: even faster.", "Staukontrolle: noch schneller.")),
             ),
+            // rematch: the bus starts backwards, and the landing that turned it against you now throws you forward
+            rematch = listOf(
+                Round(
+                    T("Out of order. Resending the bus.", "Falsche Reihenfolge. Schienenersatzverkehr."),
+                    start = listOf(Belt('b', -3.5f)),
+                    traps = listOf(
+                        trap(Landed(14.2f, 18.6f), Play(Card.TWISTED), Belt('b', 7f), say("Now with the flow. Full throttle.", "Jetzt mit dem Strom. Tempolimit? Nie gehört.")),
+                        trap(Landed(21.4f, 25f), Belt('b', 2f), say("Delivered. Probably.", "Zugestellt. Beim Nachbarn.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(5..26, 15..15, 'b')
@@ -50,6 +62,17 @@ object World2Part2 {
             traps = listOf(
                 trap(Landed(10.6f, 14.4f), Play(Card.GHOST_BLOCK), Laser('M', 14 to 1, 14 to 14, on = 0.6f, off = 40f, delay = 0.9f), say("Port scan detected.", "Portscan erkannt.")),
                 trap(PastX(15.6f), Laser('N', 20 to 1, 20 to 14, on = 0.7f, off = 40f, delay = 0.35f), say("Rule 2 of 2: no running in the data center.", "Regel 2 von 2: Im Rechenzentrum wird nicht gerannt.")),
+            ),
+            // rematch: no scan in front of the gate; behind it, the beam waits for whoever waits
+            rematch = listOf(
+                Round(
+                    T("Rules reloaded. Your move.", "Firewall-Regel aktualisiert. Rate mal, welche."),
+                    start = listOf(Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f, phase = 1.4f)),
+                    traps = listOf(
+                        trap(Landed(10.6f, 14.4f), say("Port scan detected. Probably.", "Portscan erkannt. Vielleicht.")),
+                        trap(PastX(15.6f), Play(Card.GHOST_BLOCK), Laser('N', 19 to 1, 19 to 14, on = 0.7f, off = 40f, delay = 0.8f), say("New rule: no standing in the data center.", "Neue Regel: Wer steht, wird gelöscht.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -90,6 +113,21 @@ object World2Part2 {
                 trap(PastX(15.6f), Play(Card.DECOY), Show('A'), say("Hidden rule: no landing after port 15.", "Versteckte Regel: Keine Landung nach Port 15.")),
                 trap(Landed(16f, 19.8f), Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0f), say("Firewall rules reloaded.", "Firewall-Regeln neu geladen.")),
                 trap(PastX(20.8f), Laser('K', 25 to 1, 25 to 14, on = 0.7f, off = 40f, delay = 0.45f), say("Session limit reached.", "Sitzungslimit erreicht.")),
+            ),
+            // rematch: the landing behind the spike is safe now (bluff), but the beam comes for whoever waits behind the gate
+            rematch = listOf(
+                Round(
+                    T("Stateless now. I forgot everything. Almost.", "Zustandslos jetzt. Ich merk mir nur noch dich."),
+                    start = listOf(
+                        Laser('L', 10 to 1, 10 to 14, on = 1f, off = 2f, phase = 2f),
+                        Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
+                    ),
+                    traps = listOf(
+                        trap(PastX(15.6f), Bluff(Card.DECOY)),
+                        trap(Landed(16f, 19.8f), Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0f)),
+                        trap(PastX(20.8f), Laser('K', 22 to 1, 22 to 14, on = 0.7f, off = 40f, delay = 0.9f), say("Loitering is logged.", "Wer rumsteht, landet im Log.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -196,6 +234,19 @@ object World2Part2 {
                 trap(Touch('c'), Fall('c'), delay = 0.9f),
                 trap(Touch('d'), Fall('d'), delay = 0.9f),
             ),
+            // rematch: rebalanced, every belt runs the other way, so round 1's timing throws you off
+            rematch = listOf(
+                Round(
+                    T("Rebalanced. Same nodes, other way round.", "Neu verteilt. Gleiche Knoten, andersrum."),
+                    start = listOf(Belt('a', -4f), Belt('b', 4f), Belt('c', -4f), Belt('d', 4f)),
+                    traps = listOf(
+                        trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1: overloaded backwards.", "Knoten 1: rückwärts überlastet."), delay = 0.9f),
+                        trap(Touch('b'), Fall('b'), delay = 0.9f),
+                        trap(Touch('c'), Fall('c'), delay = 0.9f),
+                        trap(Touch('d'), Fall('d'), delay = 0.9f),
+                    ),
+                ),
+            ),
         ) {
             border()
             fill(0..4, 15..17); fill(28..31, 15..17)
@@ -215,6 +266,18 @@ object World2Part2 {
                 trap(PastX(15.4f), Fall('b'), say("Session expired.", "Sitzung abgelaufen.")),
                 trap(Airborne(18.2f, 21f), Show('A'), say("Re-login required.", "Erneute Anmeldung nötig.")),
             ),
+            // rematch: idling is fine now; the hops you kept the line alive with are what drops the floor
+            rematch = listOf(
+                Round(
+                    T("Your number was called. Take a new one.", "Nummer 2, bitte. Ach, du schon wieder."),
+                    start = listOf(Laser('L', 15 to 1, 15 to 14, on = 3.5f, off = 1.6f)),
+                    traps = listOf(
+                        trap(Airborne(8.6f, 14f), Play(Card.CRUMBLE), Fall('a'), say("Flood detected. Floor dropped.", "Flut erkannt. Boden verworfen.")),
+                        trap(PastX(15.4f), Fall('b')),
+                        trap(Airborne(18.2f, 21f), Show('A'), say("Please wait quietly.", "Bitte leise warten.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(9..13, 15..17, 'a'); fill(18..20, 15..17, 'b')
@@ -229,12 +292,20 @@ object World2Part2 {
             start = listOf(Belt('b', -3f)),
             traps = listOf(
                 trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("10,000 blocks per second.", "10.000 Blöcke pro Sekunde.")),
-                trap(PastX(4f), Fall('d'), delay = 0.35f),
-                trap(PastX(4f), Fall('e'), delay = 0.7f),
-                trap(PastX(4f), Fall('f'), delay = 1.05f),
-                trap(PastX(4f), Fall('g'), delay = 1.4f),
-                trap(PastX(4f), Fall('h'), delay = 1.75f),
+            ) + "defgh".mapIndexed { i, g -> trap(PastX(4f), Fall(g), delay = 0.35f * (i + 1)) } + listOf(
                 trap(Landed(14f, 22f), Belt('b', -7f), say("Rate limit: the belt says no.", "Ratenbegrenzung: Das Band sagt nein.")),
+            ),
+            // rematch: the flood comes from the far end, last block first, so running into the stairs runs into the falling ones
+            rematch = listOf(
+                Round(
+                    T("Second wave. From the other side.", "Zweite Welle. Von der anderen Seite."),
+                    start = listOf(Belt('b', -3f)),
+                    traps = listOf(
+                        trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("Botnet reversed.", "Botnetz umgedreht.")),
+                    ) + "hgfed".mapIndexed { i, g -> trap(PastX(4f), Fall(g), delay = 0.35f * i) } + listOf(
+                        trap(Landed(14f, 22f), Belt('b', -7f)),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -254,6 +325,18 @@ object World2Part2 {
                 trap(Zone(9.6f, 12.5f, 10.8f, 15f), Reroute('1', 22 to 14), say("Split tunnel: your exit has moved.", "Split Tunnel: Dein Ausgang ist umgezogen.")),
                 trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 23 to 14, 26 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
                 trap(PastX(24.6f), Show('A'), say("Intrusion logged.", "Eindringen protokolliert.")),
+            ),
+            // rematch: the exit is not re-pointed, the tunnel drops you where it always did, and the IPS moved up to meet you
+            rematch = listOf(
+                Round(
+                    T("Tunnel collapsed. Digging a new one.", "Tunnel eingestürzt. Baustelle bis 2031."),
+                    start = listOf(Laser('L', 15 to 1, 15 to 14), Portal('1', 11 to 14, 19 to 14)),
+                    traps = listOf(
+                        trap(Zone(9.6f, 12.5f, 10.8f, 15f), say("Exit moved. Trust me.", "Ausgang verlegt. Großes Teufelsehrenwort.")),
+                        trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 21 to 14, 24 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: I moved closer.", "IPS: Ich hab mich näher gesetzt.")),
+                        trap(PastX(25.2f), Show('A')),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -275,6 +358,23 @@ object World2Part2 {
                 trap(PastX(6f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6f, 0f), say("Thread 3 joins the race.", "Thread 3 steigt ins Rennen ein.")),
                 trap(Landed(12f, 15f), Belt('b', -4f), say("Mutex acquired: by the belt.", "Mutex gesperrt: vom Band.")),
                 trap(Airborne(23f, 25.6f), Show('A'), say("Deadlock.", "Deadlock.")),
+            ),
+            // rematch: no saw behind you; thread 3 starts at the finish and runs against you
+            rematch = listOf(
+                Round(
+                    T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
+                    start = listOf(
+                        Belt('b', 5f),
+                        PathSaw(5f, 16f to 14.4f, 16f to 11.6f),
+                        PathSaw(5f, 21f to 14.4f, 21f to 11.6f, delay = 0.56f),
+                    ),
+                    traps = listOf(
+                        trap(PastX(6f), say("Thread 3 joins the race. Somewhere.", "Thread 3 ist auch im Rennen. Irgendwo.")),
+                        trap(Landed(12f, 15f), Belt('b', -4f)),
+                        trap(PastX(22.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 14.4f, -4f, 0f), say("Found it. It found you.", "Gefunden. Er dich auch.")),
+                        trap(Airborne(23f, 25.6f), Show('A')),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -312,7 +412,7 @@ object World2Part2 {
         Level(
             name = T("Detention", "Nachsitzen"),
             intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('A' to hidden, 'C' to hidden),
             start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
             traps = listOf(
                 trap(After(0.2f), Play(Card.SINKING), say("408: the server waited for you. Not anymore.", "408: Der Server hat auf dich gewartet. Nicht mehr.")),
@@ -321,10 +421,24 @@ object World2Part2 {
                 // the gate closes for good at 5.2 s: whoever still stands in front of it loses the connection
                 trap(After(5.6f), Fall('b'), say("Timeout: connection closed.", "Zeitüberschreitung: Verbindung getrennt.")),
             ),
+            // rematch: the first hop is safe now; the spikes wait where the second one lands
+            rematch = listOf(
+                Round(
+                    T("Detention, day two. Seats were moved.", "Nachsitzen, Tag zwei. Die Plätze sind getauscht."),
+                    start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
+                    traps = listOf(
+                        trap(After(0.2f), say("408 again. I'm keeping count.", "Wieder 408. Ich führe Strichliste.")),
+                        trap(Airborne(15f, 18.5f), Show('C'), say("Retry-After: later.", "Retry-After: später.")),
+                        trap(Landed(16f, 22f), Belt('b', -9f)),
+                        trap(After(5.6f), Play(Card.SINKING), Fall('b'), say("Timeout. The floor logged off.", "Timeout. Der Boden hat sich abgemeldet.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(3..26, 15..17, 'b')
             put(15, 14, 'A'); put(16, 14, 'A')
+            put(20, 14, 'C'); put(21, 14, 'C')
             spawn(); door()
         },
 

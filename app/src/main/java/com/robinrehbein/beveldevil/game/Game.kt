@@ -133,6 +133,15 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var world: World? = null
         private set
     val level get() = sandbox ?: Levels.all[levelIndex]
+    /** The round being played (0 = the level itself, then its rematches, see [Level.rounds]). */
+    var round = 0
+        private set
+    /** The room as dealt in this round. */
+    val stage get() = level.rounds[round]
+    val roundCount get() = level.rounds.size
+    /** Seconds since Mephi called a rematch (large when none). */
+    var rematchAge = 99f
+        private set
     /** Plays this level instead of the registered one (tests and screenshots of levels outside the register). */
     internal var sandbox: Level? = null
     var deaths = 0
@@ -153,10 +162,19 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var card: Card? = null
         private set
     var cardAge = 0f
+    /** The flying card is a bluff ([Action.Bluff]): it flips over to BLUFF at [BLUFF_FLIP]. */
+    var cardBluff = false
+        private set
+    /** Mephi gives himself away: a bluff card is flying and has not flipped yet. */
+    val bluffTell get() = card != null && cardBluff && cardAge < BLUFF_FLIP
     /** Where the flying card settles: -1 left, 0 stage center, 1 right. Center unless the player stands in its way. */
     var cardSide = 0
         private set
     private var survivalCheck = -1f
+    /** [time] the clear screen opened. */
+    private var clearAt = 0f
+    /** Mephi already nudged the player stuck in this attempt ([Level.hint]). */
+    private var hinted = false
 
     var shake = 0f
         private set
@@ -262,6 +280,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     /** "2-17" for the current level. */
     val levelLabel get() = Worlds.label(levelIndex)
+    /** "#2" from the first rematch on; never the total, so round 1 gives nothing away. */
+    val roundTag get() = if (round > 0) "#${round + 1}" else null
     fun worldOpen(w: WorldInfo) = w.size > 0 && w.firstLevel < progress.unlocked
     fun pages(w: WorldInfo = selWorld) = (w.size + Ui.PAGE - 1) / Ui.PAGE
     /** Global index of the level on tile [slot] of the shown page, or -1 past the world's end. */
@@ -310,6 +330,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         shake = (shake - dt * 3f).coerceAtLeast(0f)
         heat = (heat - dt * 0.8f).coerceAtLeast(0f)
         glitch = (glitch - dt).coerceAtLeast(0f)
+        rematchAge += dt
         introAge += dt
         worldAge += dt
         endAge += dt
@@ -320,8 +341,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             if (moodTimer <= 0f) mood = Mood.GRIN
         }
         if (card != null) {
+            val before = cardAge
             cardAge += dt
-            if (cardAge > CARD_LIFE) card = null
+            if (cardBluff && before < BLUFF_FLIP && cardAge >= BLUFF_FLIP) bluffRevealed()
+            if (cardAge > CARD_LIFE + (if (cardBluff) BLUFF_FLIP else 0f)) card = null
         }
         updateParticles(dt)
         if (screen != Screen.PLAY) return
@@ -329,6 +352,13 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         val w = world ?: return
         w.step(dt, input)
         handleEvents(w)
+        // stuck for a while without dying: Mephi can't resist a hint (only once per level)
+        val hint = stage.hint
+        if (hint != null && !hinted && w.state == WorldState.PLAYING && w.time > HINT_AFTER) {
+            hinted = true
+            say(hint.toString(), 3.5f)
+            setMood(Mood.SULK, 1.5f)
+        }
         if (survivalCheck >= 0f) {
             survivalCheck -= dt
             if (survivalCheck < 0f && w.state == WorldState.PLAYING) setMood(Mood.SULK, 1.6f)
@@ -336,11 +366,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         when (w.state) {
             WorldState.DEAD -> {
                 deadTimer += dt
-                if (deadTimer > 0.9f) restartAttempt()
+                if (deadTimer > RESPAWN) restartAttempt()
             }
             WorldState.WON -> {
                 deadTimer += dt
-                if (deadTimer > WIN_DELAY) finishLevel()
+                if (deadTimer > WIN_DELAY) { if (round < level.rounds.lastIndex) nextRound() else finishLevel() }
             }
             WorldState.PLAYING -> {}
         }
@@ -354,6 +384,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
             Event.Hop -> audio.play(Sound.FLIP)
+            Event.Rewind -> { audio.play(Sound.FLIP); glitch = maxOf(glitch, GLITCH_TIME * 1.5f) }
             Event.Switch -> audio.play(Sound.SWITCH)
             Event.Sizzle -> audio.play(Sound.SIZZLE)
             Event.Hum -> audio.play(Sound.HUM)
@@ -361,6 +392,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             is Event.Say -> { say(e.text.toString(), 2.6f); bubbleIsTrap = bubble != null }
             is Event.Played -> {
                 card = e.card
+                cardBluff = e.bluff
                 cardAge = 0f
                 cardSide = world?.player?.box?.let { p ->
                     // the card is about 5.5×7.5 tiles around (16, 8.25); keep a margin for the player walking on
@@ -369,16 +401,22 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 } ?: 0
                 heat = 1f
                 glitch = GLITCH_TIME
-                progress.findCard(e.card)
+                if (!e.bluff) progress.findCard(e.card)
                 audio.play(Sound.CARD)
                 setMood(Mood.LAUGH, 1.2f)
                 survivalCheck = 2.2f
             }
             is Event.Died -> {
+                // fell for it: the bluff shows at once, Mephi's laugh says the rest
+                if (card != null && cardBluff && cardAge < BLUFF_FLIP) { cardAge = BLUFF_FLIP; progress.findCard(Card.BLUFF) }
                 countDeath()
                 w.lastCard?.let { progress.addCardDeath(it) }
                 survivalCheck = -1f
-                burst(e.x, e.y)
+                // a fall out of the room still shatters where it can be seen: on the edge it left through
+                val rows = (world?.rows ?: 18).toFloat()
+                val offscreen = e.y > rows - 0.6f || e.y < 0.6f
+                burst(e.x, e.y.coerceIn(0.6f, rows - 0.6f))
+                if (offscreen) shake = maxOf(shake, 1f)
                 audio.play(Sound.DIE)
                 audio.play(Sound.LAUGH)
                 setMood(Mood.LAUGH, 1.6f)
@@ -492,7 +530,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         levelIndex = i
         deaths = 0
         particles.clear()
-        world = World(level)
+        round = 0
+        rematchAge = 99f
+        hinted = false
+        world = World(stage)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -508,7 +549,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     private fun restartAttempt() {
-        world = World(level, world?.trail)
+        world = World(stage, world?.trail)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -526,6 +567,35 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         go(Screen.PLAY)
     }
 
+    /** The bluff card turned over while Bevel is still alive: he didn't fall for it, and Mephi takes it badly. */
+    private fun bluffRevealed() {
+        progress.findCard(Card.BLUFF)
+        if (world?.state != WorldState.PLAYING) return
+        setMood(Mood.SULK, 1.4f)
+        // a level's own line (a hint, say) wins over the sulking
+        if (!(bubbleIsTrap && bubble != null)) say(BLUFF_LINES[rng.nextInt(BLUFF_LINES.size)].toString(), 1.6f)
+    }
+
+    /** Through the door, but Mephi deals another hand in the same room: the next round. */
+    private fun nextRound() {
+        round++
+        world = World(stage)
+        deadTimer = 0f
+        card = null
+        survivalCheck = -1f
+        particles.clear()
+        input.jumpPressed = false
+        input.shake = false
+        rematchAge = 0f
+        glitch = GLITCH_TIME * 1.4f
+        heat = 1f
+        shake = maxOf(shake, 0.6f)
+        audio.play(Sound.CARD)
+        audio.play(Sound.LAUGH)
+        setMood(Mood.LAUGH, 1.6f)
+        say(stage.intro.toString(), 2.8f)
+    }
+
     private fun finishLevel() {
         val best = progress.bestDeaths(levelIndex)
         if (best == null || deaths < best) progress.saveBest(levelIndex, deaths)
@@ -533,6 +603,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
         if (levelIndex == Levels.all.lastIndex) endAge = 0f
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
+        clearAt = time
     }
 
     /** The clear screen's NEXT: an interstitial first when one is due, then [next]. */
@@ -628,7 +699,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Screen.WORLD_INTRO -> if (worldAge > 0.4f) {
                 if (worldInfo.size > 0) { click(); startLevel(worldInfo.firstLevel) } else openSelect(progress.unlocked - 1)
             }
-            Screen.CLEAR -> if (p in Ui.clearNext) { click(); advance() }
+            // after a beat, a tap anywhere moves on (a jump still mashed from the win must not skip the screen)
+            Screen.CLEAR -> if (p in Ui.clearNext || time - clearAt > CLEAR_ANYWHERE) { click(); advance() }
             Screen.ALBUM -> {
                 val first = albumPage * Ui.ALBUM_PAGE
                 when {
@@ -735,13 +807,27 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     companion object {
-        const val CARD_LIFE = 2.4f
+        const val CARD_LIFE = 1.9f
         /** Base life of a devil quip; [say] adds reading time, so it hangs about two seconds. */
         const val QUIP_LIFE = 0.4f
         /** Length of the CRT glitch when Mephi plays a card. */
-        const val GLITCH_TIME = 0.32f
+        const val GLITCH_TIME = 0.2f
         /** Seconds between touching the door and the clear screen, for the win animation. */
         const val WIN_DELAY = 0.8f
+        /** Seconds until a bluff card flips over and shows BLUFF. */
+        const val BLUFF_FLIP = 0.9f
+        /** Mephi when a bluff didn't work. */
+        val BLUFF_LINES = listOf(
+            T("Pff. Lucky.", "Pff. Glück gehabt."),
+            T("I was bluffing. Obviously.", "War natürlich ein Bluff."),
+            T("Poker face: offline.", "Pokerface: offline."),
+        )
+        /** Seconds from a death to the next attempt. */
+        const val RESPAWN = 0.7f
+        /** Seconds in one attempt before Mephi gives a level's [Level.hint]. */
+        const val HINT_AFTER = 9f
+        /** Seconds before a tap anywhere leaves the clear screen. */
+        const val CLEAR_ANYWHERE = 0.5f
 
         val TAUNTS = listOf(
             T("Segmentation fault. Yours.", "Segmentation Fault. Deiner."),

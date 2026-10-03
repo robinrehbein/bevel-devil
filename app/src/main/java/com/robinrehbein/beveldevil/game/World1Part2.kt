@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Blink
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Move
@@ -42,6 +43,28 @@ object World1Part2 {
                 trap(Touch('c'), Fall('c'), delay = 0.1f),
             ),
             start = listOf(Blink('a', on = 2.2f, off = 1f)),
+            // round 2: the ledge is safe now (the card bluffs), and walking off the bridge's end meets spikes: jump it.
+            // round 3: the ledge crumbles again, and now the jump off the bridge's end is the one that lands on spikes
+            rematch = listOf(
+                Round(
+                    T("Rematch. The ledge got a building permit.", "Revanche. Der Sims hat jetzt eine Baugenehmigung."),
+                    legend = mapOf('B' to hiddenSpike),
+                    start = listOf(Blink('a', on = 2.2f, off = 1f, phase = 1f)),
+                    traps = listOf(
+                        trap(Touch('e'), Bluff(Card.CRUMBLE)),
+                        trap(PastX(21.2f), Show('B')),
+                    ),
+                ) { put(22, 14, 'B'); put(23, 14, 'B') },
+                Round(
+                    T("Third shift. The permit expired.", "Dritte Schicht. Genehmigung abgelaufen."),
+                    legend = mapOf('C' to hiddenSpike),
+                    start = listOf(Blink('a', on = 2.2f, off = 1f, phase = 1f)),
+                    traps = listOf(
+                        trap(Touch('e'), Play(Card.CRUMBLE), Fall('e'), Say(T("Demolition day.", "Abrisstag.")), delay = 1.1f),
+                        trap(Airborne(19f, 23f), Show('C')),
+                    ),
+                ) { put(24, 14, 'C'); put(25, 14, 'C') },
+            ),
         ) {
             border(); floor(); pit(11..20)
             fill(11..20, 15..15, 'a')
@@ -63,6 +86,20 @@ object World1Part2 {
                     PathSaw(5f, 21.5f to 14.4f, 21.5f to 7f, delay = 0.5f)),
                 trap(Touch('b'), Fall('b'), delay = 0.6f),
                 trap(PastX(23.4f), Saw(33.5f, 14.4f, -5f, 0f, 0.62f), Say(T("Not everyone works the same shift.", "Nicht alle haben dieselbe Schicht."))),
+            ),
+            // rematch: the last saw comes from behind; whoever stops to wait for it from the front is caught
+            rematch = listOf(
+                Round(
+                    T("Rematch. Shift change.", "Revanche. Schichtwechsel."),
+                    traps = listOf(
+                        trap(PastX(2.6f), Play(Card.DEVIL_SAW),
+                            PathSaw(6.5f, 9f to 14.4f, 9f to 7f, delay = 1f),
+                            PathSaw(7.5f, 15f to 7f, 15f to 14.4f),
+                            PathSaw(5f, 21.5f to 14.4f, 21.5f to 7f, delay = 0.5f)),
+                        trap(Touch('b'), Fall('b'), delay = 0.6f),
+                        trap(PastX(23.4f), Saw(17.5f, 14.4f, 6f, 0f, 0.62f), Say(T("Night shift comes in the back door.", "Die Nachtschicht kommt durch den Hintereingang."))),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -125,6 +162,18 @@ object World1Part2 {
                 trap(Touch('e'), Fall('g'), delay = 0.3f),
                 trap(Touch('f'), Fall('h'), delay = 0.3f),
             ),
+            // rematch: "patched": now each segment deletes the very next one
+            rematch = listOf(
+                Round(
+                    T("Rematch. I patched the floor. Mostly.", "Revanche. Boden gepatcht. Größtenteils."),
+                    traps = listOf(
+                        trap(Touch('a'), Play(Card.COLLAPSE), Fall('b'), Say(T("Hotfix deployed. On a Friday.", "Hotfix eingespielt. Freitags.")), delay = 0.3f),
+                        trap(Touch('c'), Fall('d'), delay = 0.3f),
+                        trap(Touch('e'), Fall('f'), delay = 0.3f),
+                        trap(Touch('g'), Fall('h'), delay = 0.3f),
+                    ),
+                ),
+            ),
         ) {
             border(); floor(); pit(4..19)
             ('a'..'h').forEachIndexed { i, g -> fill(4 + i * 2..5 + i * 2, 15..17, g) }
@@ -159,7 +208,7 @@ object World1Part2 {
         Level(
             name = T("Carpentry", "Zimmerei"),
             intro = T("Everything here is still handmade.", "Hier ist noch alles Handarbeit."),
-            legend = mapOf('A' to hiddenSpike),
+            legend = mapOf('A' to hiddenSpike, 'C' to hiddenSpike),
             traps = listOf(
                 trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.6f),
                 trap(Touch('m'), Fall('m'), delay = 0.25f),
@@ -169,10 +218,25 @@ object World1Part2 {
                 Blink('a', on = 4.4f, off = 1f),
                 PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
             ),
+            // rematch: the gap in the bridge is mended, and jumping it anyway lands on spikes
+            rematch = listOf(
+                Round(
+                    T("Rematch. I fixed the bridge. You're welcome.", "Revanche. Brücke repariert. Bitte sehr."),
+                    start = listOf(
+                        Blink('a', on = 4.4f, off = 1f),
+                        PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
+                    ),
+                    traps = listOf(
+                        trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.6f),
+                        trap(Airborne(13f, 17f), Show('C'), Say(T("You jumped. The bridge felt insulted.", "Du bist gesprungen. Die Brücke ist beleidigt."))),
+                    ),
+                ),
+            ),
         ) {
             border(); floor(); pit(9..22)
             fill(9..13, 15..15, 'a'); fill(14..16, 15..15, 'm'); fill(17..22, 15..15, 'a')
             fill(7..8, 15..17, 'e')
+            put(17, 14, 'C'); put(18, 14, 'C')
             put(24, 14, 'A'); put(25, 14, 'A')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
@@ -188,6 +252,16 @@ object World1Part2 {
                     Say(T(">>>>>>> feature/squash-bevel", ">>>>>>> feature/bevel-plattmachen"))),
                 trap(Landed(17.5f, 24f), Fall('c')),
                 trap(Airborne(21f, 26f), Show('A')),
+            ),
+            // rematch: the wall you learned to wait for and jump stays put; the one behind you comes, and faster
+            rematch = listOf(
+                Round(
+                    T("Rematch. Rebased onto your mistakes.", "Revanche. Auf deine Fehler rebased."),
+                    traps = listOf(
+                        trap(After(2.4f), Play(Card.DEVIL_SAW), Move('L', 25f, 0f, 3.4f), Say(T("Fast-forward. From behind.", "Fast-Forward. Von hinten."))),
+                        trap(Airborne(21f, 26f), Show('A')),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -273,6 +347,26 @@ object World1Part2 {
                 trap(PastX(2.6f), Play(Card.DEVIL_SAW), PathSaw(6f, 12f to 14.4f, 6f to 14.4f), PathSaw(8f, 25f to 14.4f, 20f to 14.4f)),
                 trap(Touch('f'), Fall('f'), delay = 0.08f),
                 trap(Airborne(18.5f, 27.5f), Show('A')),
+            ),
+            // round 2: the saws take a rest day; the pit is still there and the door end grows a spike for walkers.
+            // round 3: still no saws; the pit holds now, and jumping it anyway makes the spike after it slide under the landing
+            rematch = listOf(
+                Round(
+                    T("Rematch. The saws called in sick.", "Revanche. Die Sägen haben sich krankgemeldet."),
+                    traps = listOf(
+                        trap(PastX(2.6f), Say(T("Rest day. For them, not you.", "Ruhetag. Für die, nicht für dich."))),
+                        trap(Touch('f'), Fall('f'), delay = 0.08f),
+                        trap(PastX(26.5f), Play(Card.SPIKE_SEED), Show('A')),
+                    ),
+                ),
+                Round(
+                    T("Round three. Still on sick leave.", "Dritte Runde. Immer noch krankgeschrieben."),
+                    traps = listOf(
+                        trap(PastX(2.6f), Say(T("Doctor's note. Forged.", "Attest. Gefälscht."))),
+                        trap(Airborne(12.5f, 16.5f), Play(Card.SPIKE_SEED), Move('K', -2f, 0f, 14f)),
+                        trap(PastX(26.5f), Show('A')),
+                    ),
+                ) { put(19, 14, 'K') },
             ),
         ) {
             border(); floor()

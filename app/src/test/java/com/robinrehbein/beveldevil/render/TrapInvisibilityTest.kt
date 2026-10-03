@@ -100,8 +100,7 @@ class TrapInvisibilityTest {
 
     private fun checkTraps(range: IntRange, fixed: Theme? = null): Int {
         var checked = 0
-        for (i in range) {
-            val level = Levels.all[i]
+        for (i in range) for ((k, level) in Levels.all[i].rounds.withIndex()) {
             val theme = fixed ?: Themes.forLevel(i)
             val trapWorld = World(level)
             if (trapWorld.groups.isEmpty()) continue
@@ -110,7 +109,7 @@ class TrapInvisibilityTest {
             val plainWorld = World(plain(level))
             assertTrue(plainWorld.groups.isEmpty())
             for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) {
-                diff(render(trapWorld, t, theme), render(plainWorld, t, theme))?.let { throw AssertionError("Level ${i + 1} (${level.name.en}) at t=$t: $it") }
+                diff(render(trapWorld, t, theme), render(plainWorld, t, theme))?.let { throw AssertionError("Level ${i + 1} round ${k + 1} (${level.name.en}) at t=$t: $it") }
             }
             checked++
         }
