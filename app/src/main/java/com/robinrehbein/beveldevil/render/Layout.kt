@@ -44,6 +44,8 @@ class Layout {
     private companion object {
         /** First ground row of the standard level, in logical px from the playfield's top. */
         const val GROUND_TOP = 15 * TS
+        /** How far (dp) the move buttons and the jump button sit further in from their edge. */
+        const val INWARD = 16f
     }
 
     var w = 0; private set
@@ -138,8 +140,8 @@ class Layout {
         val minR = min(26f * dp, cap)
         var r = min(min(34f * dp * c.sizeScale, h * 0.14f), cap)
         val pair = 2.3f
-        val mv: Float // x of the left arrow
-        val jx: Float
+        var mv: Float // x of the left arrow
+        var jx: Float
         if (hud == HudMode.SIDE) {
             val colL0 = cutL.toFloat(); val colL1 = fx * sc.toFloat()
             val colR0 = (fx + Ui.W) * sc.toFloat(); val colR1 = (w - cutR).toFloat()
@@ -154,6 +156,14 @@ class Layout {
             mv = if (c.mirror) w - cutR - margin - r - pair * r else cutL + margin + r
             jx = if (c.mirror) cutL + margin + r else w - cutR - margin - r
         }
+        // pulled a little toward the middle: thumbs rest further in than the screen edge
+        val inward = INWARD * dp
+        val dir = if (c.mirror) -1f else 1f
+        // only where the screen has room for it (never pushes a button off screen)
+        val mvIn = mv + dir * inward
+        if (mvIn - r - pad >= cutL && mvIn + pair * r + r + pad <= w - cutR) mv = mvIn
+        val jxIn = jx - dir * inward
+        if (jxIn - r - pad >= cutL && jxIn + r + pad <= w - cutR) jx = jxIn
         c.r = r
         c.leftX = mv
         c.rightX = mv + pair * r
