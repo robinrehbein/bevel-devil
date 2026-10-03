@@ -224,7 +224,7 @@ class World3Test {
     fun landingOnTheFloorBelowTheWiringDiagramCanBeRetried() {
         // walking off the ledge cuts the bridge and lands on the floor; the fan and the pad still work: up again, jump
         b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(17.5f).landRight().wait(0.3f)
-            .leftTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().right(6f).expect(WorldState.WON)
+            .leftTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().rightTo(24.8f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
     }
 
     @Test
@@ -481,17 +481,17 @@ class World3Test {
     // ---------- Act 3: Lüfter ----------
     @Test fun level33() = b(33).rightTo(12.6f).waitFor { it.player.box.cy < 5.6f }.rightTo(21.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level34() = b(34).hopR(8f).rightTo(21.6f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
-    @Test fun level35() = b(35).rightTo(22f).waitFor { it.fans[0].wind == 0f }.rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level35() = b(35).rightTo(22f).waitFor { it.fans[0].wind == 0f }.rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level36() = b(36).hopR(8f).rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
     @Test fun level37() = b(37).rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().rightTo(22.4f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
     @Test fun level38() = b(38).rightTo(6f).rightTo(10f).waitFor { it.player.box.cy < 7f }.rightTo(16.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level39() = b(39).rightTo(14.2f).waitFor { it.fans[0].wind == 0f }.rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight().rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
+    @Test fun level39() = b(39).rightTo(14.2f).leftTo(10.3f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight().rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
     @Test fun level40() = b(40).rightTo(11.35f).waitFor { it.player.grounded }.waitFor { it.fans[0].wind > 5f }.rightTo(25.5f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level41() = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight().rightTo(21.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level42() = b(42).rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level43() = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().right(6f).expect(WorldState.WON)
+    @Test fun level43() = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().rightTo(24.8f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level44() = b(44).rightTo(6.5f).waitWhile(1f) { it.viewTurn() < 1f }.leftKeyRightTo(15f).waitWhile(5f) { it.viewTurn() > 0f }.rightTo(22.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level45() = b(45).rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level45() = b(45).rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h').rightTo(15.6f).rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level46() = b(46).hopR(8.4f).rightTo(16.5f).waitCooled('c').rightTo(26.8f).waitFor { it.player.box.cy < 6.6f }.right(3f).expect(WorldState.WON)
     @Test fun level47() = b(47).rightTo(8.5f).waitPowered('Z').waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
         .waitWhile(2f) { !it.player.grounded || it.door.moving }
