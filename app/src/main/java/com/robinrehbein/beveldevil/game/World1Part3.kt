@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Blink
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.FakeWin
 import com.robinrehbein.beveldevil.game.Action.Fall
@@ -358,7 +359,7 @@ object World1Part3 {
                     T("Rematch. I moved the button.", "Revanche. Ich hab den Knopf versetzt."),
                     legend = mapOf('g' to ghost),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.DECOY), Say(T("That button retired. Think higher.", "Der Knopf ist in Rente. Denk höher."))),
+                        trap(Touch('k'), Bluff(Card.DECOY), Say(T("That button retired. Think higher.", "Der Knopf ist in Rente. Denk höher."))),
                         trap(Touch('g'), Hide('w'), Say(T("Fine. Up there.", "Na gut. Da oben."))),
                         trap(PastX(20.5f), Show('A')),
                     ),

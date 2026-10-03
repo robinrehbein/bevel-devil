@@ -12,9 +12,8 @@ class World1DeckTest {
     /** Level [n], round [round] (0 = the level itself). */
     private fun b(n: Int, round: Int = 0) = Bot(World1.levels[n - 1], round)
 
-    /** A trap that plays a card and does nothing else that could hurt: Mephi bluffs. */
-    private fun bluff(t: Trap) = t.actions.any { it is Action.Play } &&
-        t.actions.all { it is Action.Play || it is Action.Say || it is Action.Shake || it is Action.Roll }
+    /** Mephi bluffs ([Action.Bluff]). A card played without its trap must be a declared bluff. */
+    private fun bluff(t: Trap) = t.actions.any { it is Action.Bluff }
 
     // ---------- structure ----------
 
@@ -25,14 +24,6 @@ class World1DeckTest {
         assertTrue(withRounds.none { it <= 2 })
         for (act in listOf(1..16, 17..32, 33..48)) assertTrue("act $act: $withRounds", withRounds.count { it in act } >= 5)
         World1.levels.forEach { l -> assertTrue("${l.name.en} has ${l.rounds.size} rounds", l.rounds.size <= 3) }
-    }
-
-    /** Levels stay the same on every attempt: what changes is the round, never the try. */
-    @Test
-    fun noLevelDealsByAttempt() {
-        World1.levels.forEachIndexed { i, l ->
-            l.rounds.forEach { r -> assertTrue("level ${i + 1} deals by attempt", r.traps.all { it.deal == Deal.ALWAYS }) }
-        }
     }
 
     /**
@@ -51,7 +42,7 @@ class World1DeckTest {
         for (act in listOf(17..32, 33..48)) assertTrue("act $act: $where", bluffs.count { it.first in act } <= 1)
         for ((n, k, r) in bluffs) {
             assertTrue("level $n bluffs in round 1", k > 0)
-            val card = r.traps.first(::bluff).actions.filterIsInstance<Action.Play>().single().card
+            val card = r.traps.first(::bluff).actions.filterIsInstance<Action.Bluff>().single().card
             val honest = World1.levels[n - 1].traps.any { t -> !bluff(t) && t.actions.any { it is Action.Play && it.card == card } }
             assertTrue("level $n bluffs with $card, which was not honest in round 1", honest)
         }

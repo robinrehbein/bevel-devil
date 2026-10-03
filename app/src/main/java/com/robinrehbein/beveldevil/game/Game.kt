@@ -572,7 +572,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         progress.findCard(Card.BLUFF)
         if (world?.state != WorldState.PLAYING) return
         setMood(Mood.SULK, 1.4f)
-        say(BLUFF_LINES[rng.nextInt(BLUFF_LINES.size)].toString(), 1.6f)
+        // a level's own line (a hint, say) wins over the sulking
+        if (!(bubbleIsTrap && bubble != null)) say(BLUFF_LINES[rng.nextInt(BLUFF_LINES.size)].toString(), 1.6f)
     }
 
     /** Through the door, but Mephi deals another hand in the same room: the next round. */

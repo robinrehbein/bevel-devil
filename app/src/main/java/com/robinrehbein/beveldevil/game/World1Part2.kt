@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Blink
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Move
@@ -50,7 +51,7 @@ object World1Part2 {
                     legend = mapOf('B' to hiddenSpike),
                     start = listOf(Blink('a', on = 2.2f, off = 1f, phase = 1f)),
                     traps = listOf(
-                        trap(Touch('e'), Play(Card.CRUMBLE), Say(T("Renovated. Wait all you like.", "Saniert. Warte ruhig."))),
+                        trap(Touch('e'), Bluff(Card.CRUMBLE)),
                         trap(PastX(21.2f), Show('B')),
                     ),
                 ) { put(22, 14, 'B'); put(23, 14, 'B') },
