@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Laser
@@ -122,7 +123,7 @@ object World2Part2 {
                         Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
                     ),
                     traps = listOf(
-                        trap(PastX(15.6f), Play(Card.DECOY), say("Hidden rule. Or not.", "Versteckte Regel. Oder auch nicht.")), // BLUFF
+                        trap(PastX(15.6f), Bluff(Card.DECOY)),
                         trap(Landed(16f, 19.8f), Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0f)),
                         trap(PastX(20.8f), Laser('K', 22 to 1, 22 to 14, on = 0.7f, off = 40f, delay = 0.9f), say("Loitering is logged.", "Wer rumsteht, landet im Log.")),
                     ),

@@ -4,10 +4,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Plays scripted inputs through a level with the real physics. */
 /** Plays [level], or [round] of it (see [Level.rounds]). */
-class Bot(private val level: Level, round: Int = 0) {
-    var world = World(level.rounds[round])
+class Bot(level: Level, round: Int = 0) {
+    private val stage = level.rounds[round]
+    var world = World(stage)
         private set
     private val input = Controls()
     private val trace = StringBuilder()
@@ -157,13 +157,13 @@ class Bot(private val level: Level, round: Int = 0) {
 
     /** Next attempt after a death, carrying this attempt's trail for a ghost, as the game does. */
     fun retry(): Bot {
-        world = World(level, world.trail)
+        world = World(stage, world.trail)
         trace.append("--- retry\n")
         return this
     }
 
     fun expect(state: WorldState) {
-        assertEquals("${level.name.en}\n$trace", state, world.state)
+        assertEquals("${stage.name.en}\n$trace", state, world.state)
     }
 
     companion object {

@@ -58,7 +58,7 @@ class World2Test {
         World2.levels.forEachIndexed { i, l ->
             l.rounds.forEachIndexed { r, round ->
                 if (round.traps.isNotEmpty()) {
-                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play } }
+                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play || it is Action.Bluff } }
                     assertEquals("level ${i + 1} round ${r + 1} should play exactly one card", 1, plays)
                 }
             }

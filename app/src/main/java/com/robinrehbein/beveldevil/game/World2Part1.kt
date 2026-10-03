@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
@@ -42,7 +43,7 @@ object World2Part1 {
                     T("Retransmit. Same text, new bugs.", "Nochmal gesendet. Diesmal mit Bonus-Bugs."),
                     legend = mapOf('C' to hidden),
                     traps = listOf(
-                        trap(PastX(10.6f), Play(Card.COLLAPSE), say("Hello, World! (from cache)", "Hallo, Welt! (aus dem Cache)")), // BLUFF
+                        trap(PastX(10.6f), Bluff(Card.COLLAPSE)),
                         trap(Airborne(11.2f, 14.6f), Show('C'), say("Jumped to conclusions.", "Voreilig gesprungen.")),
                         trap(PastX(19.2f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
                         trap(Airborne(20f, 23.5f), Show('A')),

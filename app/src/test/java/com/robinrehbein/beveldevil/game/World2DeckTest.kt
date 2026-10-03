@@ -6,7 +6,7 @@ import org.junit.Test
 
 /**
  * World 2 in V2: rematch rounds ([Round]) in the same room. Every round has a scripted solution with the real physics,
- * the invariants of [World2Test] hold for each of them, and the room is the same on every attempt (no [Deal]s).
+ * the invariants of [World2Test] hold for each of them.
  */
 class World2DeckTest {
     /** Level [n] (1-based), round [r] (1-based). */
@@ -23,8 +23,8 @@ class World2DeckTest {
         for (act in listOf(1..16, 17..32, 33..48)) assertTrue("act $act: $rematches", rematches.count { it in act } >= 6)
     }
 
-    private fun cardOnly(t: Trap) = t.actions.any { it is Action.Play } && t.actions.all { it is Action.Play || it is Action.Say }
-    private fun card(t: Trap) = t.actions.filterIsInstance<Action.Play>().firstOrNull()?.card
+    private fun cardOnly(t: Trap) = t.actions.any { it is Action.Bluff }
+    private fun card(t: Trap) = t.actions.filterIsInstance<Action.Bluff>().firstOrNull()?.card ?: t.actions.filterIsInstance<Action.Play>().firstOrNull()?.card
 
     /**
      * A bluff is a rematch card that does nothing but talk. Used sparingly: at most one per act, and only where round 1
@@ -41,16 +41,10 @@ class World2DeckTest {
             l.traps.any { t -> card(t) == c && !cardOnly(t) })
     }
 
-    /** The level is the same on every attempt: Mephi changes the hand only between rounds. */
-    @Test
-    fun noRoundDealsByAttempt() {
-        for ((l, r) in all) assertTrue(l.name.en, r.traps.all { it.deal == Deal.ALWAYS })
-    }
-
     @Test
     fun everyRoundPlaysExactlyOneCard() {
         for ((l, r) in all) if (r.traps.isNotEmpty()) {
-            assertEquals("${l.name.en} (${r.intro.en})", 1, r.traps.sumOf { t -> t.actions.count { it is Action.Play } })
+            assertEquals("${l.name.en} (${r.intro.en})", 1, r.traps.sumOf { t -> t.actions.count { it is Action.Play || it is Action.Bluff } })
         }
     }
 

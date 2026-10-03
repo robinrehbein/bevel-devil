@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
@@ -50,7 +51,7 @@ object World2Part3 {
                 Round(
                     T("sudo !!  Same room, root this time.", "sudo !!  Passwort war richtig. Leider."),
                     traps = listOf(
-                        trap(PastX(9f), Play(Card.SPIKE_SEED), say("Command 1: permission denied.", "Befehl 1: Zugriff verweigert.")), // BLUFF
+                        trap(PastX(9f), Bluff(Card.SPIKE_SEED)),
                         trap(Airborne(18f, 21.5f), Move('E', 1.5f, 0f, 12f), say("mv spikes ./your-landing", "mv spikes ./deine-landung")),
                         trap(PastX(24f), Fall('a'), say("rm -rf floor", "rm -rf boden")),
                     ),
