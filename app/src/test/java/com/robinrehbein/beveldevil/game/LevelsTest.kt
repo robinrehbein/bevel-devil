@@ -5,9 +5,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Plays scripted inputs through a level with the real physics. */
-/** Plays [level] ([round] of it, see [Level.rounds]) on [attempt] (which decides the traps Mephi deals, see [Deal]). */
-class Bot(private val level: Level, round: Int = 0, attempt: Int = 1) {
-    var world = World(level.rounds[round], attempt = attempt)
+/** Plays [level], or [round] of it (see [Level.rounds]). */
+class Bot(private val level: Level, round: Int = 0) {
+    var world = World(level.rounds[round])
         private set
     private val input = Controls()
     private val trace = StringBuilder()

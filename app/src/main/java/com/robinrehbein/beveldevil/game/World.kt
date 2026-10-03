@@ -157,11 +157,8 @@ sealed interface Event {
 
 enum class WorldState { PLAYING, DEAD, WON }
 
-/**
- * One attempt at a level (or at one of its rounds, see [Level.rounds]). Pure game logic, no Android. [attempt] counts
- * from 1 within the round and decides which traps Mephi deals ([Deal]).
- */
-class World(val level: Level, private val past: Trail? = null, val attempt: Int = 1) {
+/** One attempt at a level (or at one of its rounds, see [Level.rounds]). Pure game logic, no Android. */
+class World(val level: Level, private val past: Trail? = null) {
     val cols = level.cols
     val rows = level.rows
     val pieces = ArrayList<Piece>()
@@ -217,7 +214,7 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
         var timer = 0f
     }
 
-    private val traps = level.traps.filter { it.deal.dealt(attempt) }.map { TrapState(it) }
+    private val traps = level.traps.map { TrapState(it) }
 
     // ---------- meta twists (see Twists.kt) ----------
 

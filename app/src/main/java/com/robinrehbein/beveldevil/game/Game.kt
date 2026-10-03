@@ -136,9 +136,6 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     /** The round being played (0 = the level itself, then its rematches, see [Level.rounds]). */
     var round = 0
         private set
-    /** Attempt in this round, from 1; Mephi deals by it ([Deal]). */
-    var attempt = 1
-        private set
     /** The room as dealt in this round. */
     val stage get() = level.rounds[round]
     val roundCount get() = level.rounds.size
@@ -524,7 +521,6 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         deaths = 0
         particles.clear()
         round = 0
-        attempt = 1
         rematchAge = 99f
         hinted = false
         world = World(stage)
@@ -543,14 +539,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     private fun restartAttempt() {
-        val before = stage.traps.filter { it.deal.dealt(attempt) }
-        attempt++
-        world = World(stage, world?.trail, attempt)
-        // Mephi reshuffled: the room flickers, so a changed trap is the player's own fault, not a bug
-        if (stage.traps.filter { it.deal.dealt(attempt) } != before) {
-            glitch = maxOf(glitch, GLITCH_TIME)
-            setMood(Mood.LAUGH, 0.8f)
-        }
+        world = World(stage, world?.trail)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -568,10 +557,9 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         go(Screen.PLAY)
     }
 
-    /** Through the door, but Mephi deals another hand in the same room: the next round, first attempt. */
+    /** Through the door, but Mephi deals another hand in the same room: the next round. */
     private fun nextRound() {
         round++
-        attempt = 1
         world = World(stage)
         deadTimer = 0f
         card = null

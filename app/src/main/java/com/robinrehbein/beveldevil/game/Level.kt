@@ -374,33 +374,9 @@ sealed interface Action {
     data class Ghost(val delay: Float = 1f) : Action
 }
 
-/**
- * Which attempts (1, 2, 3, … since the round started) a trap is dealt in. Mephi reshuffles after every death, so the
- * room stays the same while the trap moves. [every] attempts form one cycle and the trap is dealt in slot [at] of it
- * (0-based); [from] holds it back until that attempt.
- *
- *     trap(PastX(17f), Fall('a'), deal = Deal.odd)        // attempts 1, 3, 5, …
- *     trap(PastX(11f), Fall('b'), deal = Deal.even)       // attempts 2, 4, 6, …
- *     trap(PastX(20f), Show('C'), deal = Deal.from(3))    // Mephi learned: from the third try on
- */
-data class Deal(val every: Int = 1, val at: Int = 0, val from: Int = 1) {
-    init { require(every >= 1 && at in 0 until every && from >= 1) }
+class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0f)
 
-    fun dealt(attempt: Int): Boolean = attempt >= from && (attempt - 1) % every == at
-
-    companion object {
-        val ALWAYS = Deal()
-        val odd = Deal(2, 0)
-        val even = Deal(2, 1)
-        fun from(attempt: Int) = Deal(from = attempt)
-        /** Slot [at] of a [every]-card cycle. */
-        fun cycle(every: Int, at: Int) = Deal(every, at)
-    }
-}
-
-class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0f, val deal: Deal = Deal.ALWAYS)
-
-fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f, deal: Deal = Deal.ALWAYS) = Trap(trigger, actions.toList(), delay, deal)
+fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f) = Trap(trigger, actions.toList(), delay)
 
 /**
  * A rematch: after the door, Mephi deals a new hand in the same room ("Revanche!"). The map is the level's own,
