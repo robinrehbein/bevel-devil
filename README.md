@@ -13,6 +13,7 @@ Ein nativer Android-Troll-Platformer im „Höllen-CRT“-Look. Der kleine Würf
 - **48 Level** in Welt 1 „Höllenkeller“, drei Akte à 16: **Die Karten** (die zwölf klassischen Tricks: Einsturz, Stachelsaat, fliehende Tür, Kopfnuss, Schwerkraft-Flip, vertauschte Steuerung, Teufelssäge, Geisterblock, Sinkflug, Attrappe, Wackelboden, Finale), **Neue Regeln** (blinkende Plattformen, Pfad-Sägen, der Idle-Trigger, erst einzeln, dann mit den Klassikern) und **Mephi schummelt** (Meta-Twists wie Fake-Abspann, ausweichender Pause-Knopf, Rahmenbruch, Kopfstand, Geister-Versuch; nur zwei Level nutzen Handy-Neigung und Schütteln; Finale „Abspann“). Dazu Nerd-Anspielungen von Segfault bis sudo.
 - **48 Level** in Welt 2 „Höllen-Rechenzentrum“ (Schicht 2: Netzwerk und Server), wieder drei Akte à 16: **Handshake** (die besten Nerd-Witze von Hello World bis 404, erste Portale, der DNS-Trick), **Traffic** (Förderbänder als Datenbus und Laser als Firewall, erst einzeln, dann mit Portalen und Klassikern) und **Root** (Kombinationen, drei Meta-Twists in neuer Verkleidung: Replay-Angriff, Pause als Lösung, Lag-Spitze; ein Level mit Schütteln; Finale „shutdown -h now“, bei dem Mephi nach Schicht 3 flieht).
 - **48 Level** in Welt 3 „Platine“ (Schicht 3: Hardware, grünes Board in Akt 1 und 2, blaues in Akt 3), drei Akte à 16: **Stromkreise** (Kupferbahnen, Schaltknöpfe, Takte, Leiterbahnen unter Strom, Mephi kappt den Strom unter dir, Bit-Flip), **Überhitzung** (Herdplatten, Chips unter Last, Kühlkörper, übertakteter Boden, Schmelzplatten, dann mit den Stromkreisen kombiniert) und **Lüfter** (Aufwind, Seitenwind, Gegenwind im Takt, Schubumkehr, Kombinationen; Finale in drei Stufen: Selbsttest, Boot-Reihenfolge, BIOS-Setup). Meta-Twists: falsche Tür, verkehrter Monitor, Bildrollen. Nach 3-48 folgt ein echtes Ende: `kill -9` auf Mephi, das Netz läuft wieder.
+- **V2 „Mephi mischt“:** Revanche-Runden im selben Raum mit neuer Hand, Fallen, die nach jedem Tod neu gemischt werden, Bluff-Karten und Tipps für Festgefahrene (siehe „Mephi mischt“ unten). Der Stand davor ist als `V1` getaggt.
 - **Mephi** im goldenen Rahmen mit fünf Stimmungen (lauert, lacht, schmollt, entsetzt). Er kommentiert jeden Tod und jede Falle, auf Deutsch oder Englisch je nach Gerätesprache.
 - **Teufelskarten:** Jede Falle wird als Karte ausgespielt, die aus Mephis Rahmen ins Bild fliegt. Gefundene Karten landen im Album, zusammen mit einem Zähler, wie oft sie dich erwischt haben.
 - **Höllen-CRT-Look:** 256×144-Spielfeld (8 px pro Tile) in einem Pixelpuffer, der mit ganzzahliger Skalierung jedes Seitenverhältnis ohne Balken füllt, Farbstrudel mit Dithering, Bevel-Kanten, harte Schlagschatten, Scanlines und Vignette.
@@ -150,6 +151,34 @@ trap(PastX(9f), FanSet('f', -8f))                 // dreht langsam über null um
 Im `Bot` gibt es dafür `waitPowered(id)`, `waitCooled(id)` und `rightUntil { … }` (z. B. im Aufwind, bis hoch genug).
 
 Neigung und Schütteln liest `GameView` nur in Leveln, die sie nutzen (Schwerkraftsensor, sonst Beschleunigungssensor). Ohne Sensor oder mit Einstellung „Neigung: Aus“ erscheinen unten zwei Neige-Tasten (einrastend) und eine Schütteltaste; Tastatur Q/E neigen, S schüttelt. Im `Bot` gibt es dafür `tilt(v)` und `shake()`. Mini-Level für jede Mechanik liegen in den Tests (`Demo.kt`).
+
+### Mephi mischt (V2)
+
+Ab V2 ist ein Raum nicht mehr nach einem Versuch gelernt. Drei Werkzeuge, alle im Croupier-Bild:
+
+```kotlin
+// Revanche: nach der Tür derselbe Raum mit neuer Hand ("REVANCHE! · NEUES BLATT · 2/3").
+// Ein Tod startet nur die aktuelle Runde neu. edit {} ändert die Karte nur für diese Runde.
+rematch = listOf(
+    Round(T("Again. Same table.", "Revanche. Gleicher Tisch."), traps = listOf(…), legend = mapOf(…)) { put(16, 14, 'C') },
+)
+
+// Gemischt: welche Falle in welchem Versuch (Zähler pro Runde, ab 1) ausgeteilt wird.
+trap(PastX(8f), Fall('a'), deal = Deal.odd)          // Versuch 1, 3, 5 …
+trap(PastX(19f), Fall('b'), deal = Deal.even)        // Versuch 2, 4, 6 …
+trap(PastX(12f), Show('C'), deal = Deal.cycle(3, 2)) // jeder dritte, ab dem dritten
+trap(PastX(20f), Hide('d'), deal = Deal.from(4))     // Mephi hat dazugelernt
+
+// Bluff: Play() ist nur die Karte. Ohne passende Aktion passiert nichts, die echte Falle kommt woanders.
+trap(PastX(10f), Play(Card.COLLAPSE), Say(T("Kidding.", "Spaß.")))
+
+// Tipp: Mephi verrät ihn einmal, wenn man 9 s ohne Tod feststeckt.
+hint = T("Ceilings are overrated.", "Decken werden überschätzt."),
+```
+
+- Ändert sich die Hand nach einem Tod, flackert der Raum kurz: Der Spieler soll sehen, dass Mephi neu gemischt hat.
+- Jede Runde spielt genau eine Karte (ein Bluff zählt mit).
+- Jede Runde und jeder Deal-Slot hat im Test einen Bot, der ihn löst: `Bot(level, round = 1, attempt = 2)`.
 
 ### Meta-Twists
 
