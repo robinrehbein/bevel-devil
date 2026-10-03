@@ -20,6 +20,7 @@ object Txt {
     val trap = T("TRAP", "FALLE")
     val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
     val caught = T("crashed you %d×", "%d× abgestürzt")
+    val soulsSacrificed = T("SOULS SACRIFICED", "SEELEN GEOPFERT")
     val tapCard = T("Tap a card to inspect it.", "Tippe eine Karte an.")
     val endTitle = T("PROCESS KILLED.", "PROZESS BEENDET.")
     val endSub = T("Bevel pulled the plug. The net is back.", "Bevel zog den Stecker. Das Netz lebt.")

@@ -32,6 +32,10 @@ interface Progress {
     var adsRemoved: Boolean
         get() = false
         set(_) {}
+    /** Lifetime deaths over all levels (restarts count, skips don't); shown in the album. */
+    var totalDeaths: Int
+        get() = 0
+        set(_) {}
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
     fun cardFound(card: Card): Boolean
@@ -168,6 +172,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private val rng = Random(7)
     private val fx = Random(11)
     private var lastTaunt = -1
+    private var lastQuip: String? = null
+    /** The bubble shows a level's own [Event.Say] line, which a quip must not cover. */
+    private var bubbleIsTrap = false
+    val totalDeaths get() = progress.totalDeaths
 
     val soundOn get() = progress.sound
     fun unlocked() = progress.unlocked
@@ -347,7 +355,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Event.Sizzle -> audio.play(Sound.SIZZLE)
             Event.Hum -> audio.play(Sound.HUM)
             is Event.Shake -> shake = maxOf(shake, e.amount)
-            is Event.Say -> say(e.text.toString(), 2.6f)
+            is Event.Say -> { say(e.text.toString(), 2.6f); bubbleIsTrap = bubble != null }
             is Event.Played -> {
                 card = e.card
                 cardAge = 0f
@@ -359,14 +367,15 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 survivalCheck = 2.2f
             }
             is Event.Died -> {
-                deaths++
+                countDeath()
                 w.lastCard?.let { progress.addCardDeath(it) }
                 survivalCheck = -1f
                 burst(e.x, e.y)
                 audio.play(Sound.DIE)
                 audio.play(Sound.LAUGH)
                 setMood(Mood.LAUGH, 1.6f)
-                say(taunt(), 1.8f)
+                val quip = if (bubbleIsTrap && bubble != null) null else quip()
+                if (quip != null) say(quip, QUIP_LIFE) else say(taunt(), 1.8f)
                 hapticPulse = true
                 deadTimer = 0f
             }
@@ -442,7 +451,21 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         return TAUNTS[i].toString().replace("%d", deaths.toString())
     }
 
+    private fun countDeath() {
+        deaths++
+        progress.totalDeaths = progress.totalDeaths + 1
+    }
+
+    /** Mephi's quip for the death just counted when it is the 3rd, 6th or 10th in this level; never in the finale. */
+    private fun quip(): String? {
+        if (sandbox == null && levelIndex == Levels.all.lastIndex) return null
+        val line = DevilQuips.pick(levelIndex, deaths, lastQuip) ?: return null
+        lastQuip = line
+        return line
+    }
+
     private fun say(text: String, life: Float) {
+        bubbleIsTrap = false
         // an empty line is Mephi saying nothing: no bubble (the layout can't wrap "")
         if (text.isBlank()) { bubble = null; return }
         bubble = text
@@ -487,7 +510,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     /** The pause menu's RESTART: a fresh attempt like after a death, counted as one, but instant and without resuming traps. */
     private fun restartFromPause() {
-        deaths++
+        countDeath()
         particles.clear()
         restartAttempt()
         setMood(Mood.GRIN, 0f)
@@ -705,6 +728,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     companion object {
         const val CARD_LIFE = 2.4f
+        /** Base life of a devil quip; [say] adds reading time, so it hangs about two seconds. */
+        const val QUIP_LIFE = 0.4f
         /** Length of the CRT glitch when Mephi plays a card. */
         const val GLITCH_TIME = 0.32f
         /** Seconds between touching the door and the clear screen, for the win animation. */
