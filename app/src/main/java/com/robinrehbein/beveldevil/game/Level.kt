@@ -104,6 +104,21 @@ sealed interface Action {
     data class Play(val card: Card) : Action
 
     /**
+     * Ctrl+Z: Bevel is put back where he was [seconds] ago (at most [World.HISTORY] seconds), standing still.
+     *
+     *     trap(PastX(24f), Play(Card.UNDO), Undo(2f), Say(T("Undo.", "Rückgängig.")))
+     */
+    data class Undo(val seconds: Float) : Action
+
+    /**
+     * The group starts stalking the player sideways at [speed] tiles/s: it slides so its middle stays under (or
+     * over) Bevel, at most [left] tiles left and [right] tiles right of where it was built.
+     *
+     *     trap(PastX(8f), Play(Card.STALKER), Chase('S', speed = 4f, left = 3f, right = 18f))
+     */
+    data class Chase(val group: Char, val speed: Float, val left: Float = 32f, val right: Float = 32f) : Action
+
+    /**
      * The group is solid for [on] seconds, then gone for [off], counted from when this runs; [phase] seconds
      * are skipped at the start. It flickers for [telegraph] seconds before vanishing, and waits while the player
      * stands where it would reappear.

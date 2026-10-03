@@ -91,6 +91,26 @@ object Icons {
                 p(MINT, 3, 4, 6, 1); p(MINT, 3, 6, 9, 1); p(MINT, 3, 8, 4, 1); p(MINT_HI, 8, 8, 2, 2)
                 p(GOLD_LO, 6, 12, 4, 2); p(GOLD, 3, 14, 10, 1)
             }
+            Card.UNDO -> {
+                // a counter-clockwise arrow around a little Bevel
+                art(listOf(
+                    "....xxxxxx......",
+                    "..xx......xx....",
+                    ".x..........x...",
+                    "x............x..",
+                    "x.............x.",
+                    "x.............x.",
+                    ".x............x.",
+                    "xxx...........x.",
+                    ".x...........x..",
+                ), mapOf('x' to GOLD_HI), 0, 1)
+                hero(5, 9)
+            }
+            Card.STALKER -> {
+                tile(9, 10); p(BONE, 10, 7, 1, 3); p(BONE, 13, 7, 1, 3); p(RED, 10, 12, 1, 1); p(RED, 12, 12, 1, 1)
+                hero(1, 9); for (y in listOf(10, 12, 14)) p(INK, 7, y, 1, 1)
+                p(GOLD_LO, 0, 15, 16, 1)
+            }
             Card.GRAND_FINALE -> { horns(); p(RED, 6, 9, 4, 3); p(GOLD_HI, 7, 10, 2, 1) }
         }
     }

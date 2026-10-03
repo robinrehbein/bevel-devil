@@ -380,6 +380,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Event.Flip -> audio.play(Sound.FLIP)
             Event.Crash -> audio.play(Sound.CRASH)
             Event.Hop -> audio.play(Sound.FLIP)
+            Event.Rewind -> { audio.play(Sound.FLIP); glitch = maxOf(glitch, GLITCH_TIME * 1.5f) }
             Event.Switch -> audio.play(Sound.SWITCH)
             Event.Sizzle -> audio.play(Sound.SIZZLE)
             Event.Hum -> audio.play(Sound.HUM)

@@ -36,7 +36,7 @@ class Box(var x: Float, var y: Float, var w: Float, var h: Float) {
         x < ox + ow - EPS && r > ox + EPS && y < oy + oh - EPS && b > oy + EPS
 }
 
-enum class GroupMode { IDLE, FALL, MOVE }
+enum class GroupMode { IDLE, FALL, MOVE, CHASE }
 
 class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
     val pieces = ArrayList<Piece>()
@@ -63,6 +63,10 @@ class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
     val beltSpeed get() = if (beltOn && visible) belt ?: 0f else 0f
     /** The group is a circuit ([Action.Circuit]): drawn as copper, [visible] is its power. */
     var circuit: Circuit? = null
+    /** Stalking the player ([Action.Chase]). */
+    var chase: Action.Chase? = null
+    /** Middle of the group as built, in tiles. */
+    val homeX get() = if (pieces.isEmpty()) 0f else (pieces.minOf { it.hx } + pieces.maxOf { it.hx } + 1f) / 2f
 }
 
 class Piece(val spike: Boolean, val dir: Dir, val hx: Float, val hy: Float, val group: Group?) {
@@ -141,6 +145,8 @@ sealed interface Event {
     data object Unfaked : Event
     /** The player went through a portal. */
     data object Hop : Event
+    /** Ctrl+Z: Bevel was put back ([Action.Undo]). */
+    data object Rewind : Event
     /** The player stepped on a pressure pad. */
     data object Switch : Event
     /** A heated group got hot enough to hurt soon, or melted. */
@@ -214,6 +220,10 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
     private val traps = level.traps.filter { it.deal.dealt(attempt) }.map { TrapState(it) }
 
     // ---------- meta twists (see Twists.kt) ----------
+
+    /** Where Bevel stood in the last [HISTORY] seconds, one entry per step: what [Action.Undo] goes back to. */
+    private val history = ArrayDeque<Long>()
+    private val undoable = level.traps.any { t -> t.actions.any { it is Action.Undo } }
 
     /** This attempt's path, recorded only in levels with a ghost: the next attempt's ghost. */
     val trail = Trail()
@@ -330,6 +340,10 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
             return
         }
         if (recording) trail.add(player.box.x, player.box.y)
+        if (undoable) {
+            history.addLast((player.box.x.toRawBits().toLong() shl 32) or (player.box.y.toRawBits().toLong() and 0xFFFFFFFFL))
+            while (history.size > HISTORY * Twists.HZ) history.removeFirst()
+        }
         updateGhost()
         if (fake != null) {
             input.jumpPressed = false
@@ -480,6 +494,8 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
             is Action.Show -> group(a.group).visible = true
             is Action.Hide -> group(a.group).visible = false
             is Action.Move -> group(a.group).apply { tx = ox + a.dx; ty = oy + a.dy; speed = a.speed; mode = GroupMode.MOVE }
+            is Action.Chase -> group(a.group).apply { chase = a; mode = GroupMode.CHASE }
+            is Action.Undo -> undo(a.seconds)
             is Action.DoorTo -> {
                 door.tx = a.col - 0.1f
                 door.ty = if (a.hanging) a.row.toFloat() else a.row + 1f - 1.6f
@@ -745,7 +761,37 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
                     }
                     shift(g, mx, my)
                 }
+                GroupMode.CHASE -> {
+                    val c = g.chase ?: continue
+                    val target = (player.box.cx - g.homeX).coerceIn(-c.left, c.right)
+                    val d = target - g.ox
+                    if (abs(d) > EPS) shift(g, sign(d) * min(abs(d), c.speed * dt), 0f, soft = true)
+                }
             }
+        }
+    }
+
+    /** Puts Bevel back [seconds] into the [history], at the latest spot that is free now. */
+    private fun undo(seconds: Float) {
+        if (history.isEmpty()) return
+        val back = (seconds * Twists.HZ).toInt().coerceIn(0, history.size - 1)
+        var i = history.size - 1 - back
+        while (i < history.size) {
+            val v = history[i]
+            val x = Float.fromBits((v ushr 32).toInt())
+            val y = Float.fromBits(v.toInt())
+            val probe = Box(x, y, player.box.w, player.box.h)
+            if (pieces.none { it.solid && probe.overlaps(it.box) }) {
+                player.box.x = x
+                player.box.y = y
+                player.vx = 0f
+                player.vy = 0f
+                history.clear()
+                events += Event.Rewind
+                events += Event.Shake(0.3f)
+                return
+            }
+            i++
         }
     }
 
@@ -982,6 +1028,8 @@ class World(val level: Level, private val past: Trail? = null, val attempt: Int 
         /** Groups made for [Action.FrameCrack] pieces get ids from the private use area, clear of map letters. */
         const val CRACK_ID = '\uE000'
         const val GHOST_INSET = 0.12f
+        /** Seconds of position history kept for [Action.Undo]. */
+        const val HISTORY = 4f
         val SPIKE_LINE = T("Pause? Ours come with spikes.", "Pause? Gibt's hier nur mit Stacheln.")
     }
 }
