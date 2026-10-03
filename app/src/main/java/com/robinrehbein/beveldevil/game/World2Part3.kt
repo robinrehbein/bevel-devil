@@ -19,6 +19,7 @@ import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.After
+import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
@@ -44,6 +45,17 @@ object World2Part3 {
                 trap(PastX(17.5f), Show('B'), say("sudo !!  (three spikes, this time as root)", "sudo !!  (drei Spikes, diesmal als root)")),
                 trap(PastX(24f), Fall('a'), say("sudo !!  (and the floor)", "sudo !!  (und der Boden)")),
             ),
+            // rematch: the first spike is a bluff; the LED pair you see slides onto your landing spot while you jump it
+            rematch = listOf(
+                Round(
+                    T("sudo !!  Same room, root this time.", "sudo !!  Passwort war richtig. Leider."),
+                    traps = listOf(
+                        trap(PastX(9f), Play(Card.SPIKE_SEED), say("Command 1: permission denied.", "Befehl 1: Zugriff verweigert.")), // BLUFF
+                        trap(Airborne(18f, 21.5f), Move('E', 1.5f, 0f, 12f), say("mv spikes ./your-landing", "mv spikes ./deine-landung")),
+                        trap(PastX(24f), Fall('a'), say("rm -rf floor", "rm -rf boden")),
+                    ),
+                ) { put(20, 14, 'E'); put(21, 14, 'E') },
+            ),
         ) {
             border(); floor()
             put(12, 14, 'A')
@@ -56,7 +68,7 @@ object World2Part3 {
         Level(
             name = T("Reverse Proxy", "Reverse Proxy"),
             intro = T("Everything goes through me here. Everything.", "Hier läuft alles über mich. Alles."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('A' to hidden, 'C' to Glyph(spike = true, dir = Dir.DOWN, hidden = true)),
             start = listOf(
                 Portal('1', 9 to 14, 16 to 1, twoWay = false),
                 Portal('2', 26 to 1, 27 to 14, twoWay = false),
@@ -66,10 +78,25 @@ object World2Part3 {
                 trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Proxying your gravity.", "Deine Schwerkraft wird weitergeleitet.")),
                 trap(Zone(26.5f, 12f, 29f, 15f), Gravity(false), say("Reverse, reverse.", "Rückwärts, rückwärts.")),
             ),
+            // rematch: the cache is cold at the start, and the ceiling spike gets a twin where you land up there
+            rematch = listOf(
+                Round(
+                    T("Cache cleared. Please reload.", "Cache geleert. Bitte neu laden."),
+                    start = listOf(
+                        Portal('1', 9 to 14, 16 to 1, twoWay = false),
+                        Portal('2', 26 to 1, 27 to 14, twoWay = false),
+                    ),
+                    traps = listOf(
+                        trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Gravity proxied. Again.", "Schwerkraft weitergeleitet. Schon wieder.")),
+                        trap(Landed(20.5f, 23f), Show('C'), say("Cache miss. Spike hit.", "Cache-Miss. Spike-Treffer.")),
+                        trap(Zone(26.5f, 12f, 29f, 15f), Gravity(false)),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(12..13, 1..14)
-            fill(19..20, 1..2); put(23, 1, 'v')
+            fill(19..20, 1..2); put(23, 1, 'v'); put(24, 1, 'C')
             put(6, 14, 'A')
             spawn(); door()
         },
@@ -125,6 +152,17 @@ object World2Part3 {
                 trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Factor 1 accepted. Now factor 2.", "Faktor 1 akzeptiert. Jetzt Faktor 2.")),
                 trap(Touch('B'), Hide('w'), Saw(-1.5f, 14.4f, 6f, 0f), say("Code valid for 30 seconds. Actually 3.", "Code 30 Sekunden gültig. Eigentlich 3.")),
                 trap(PastX(21f), Show('A')),
+            ),
+            // rematch: the saw comes through the opened wall instead of from behind: running ahead is running into it
+            rematch = listOf(
+                Round(
+                    T("Code expired. A new one is on its way.", "Code abgelaufen. Der neue kommt per Fax."),
+                    traps = listOf(
+                        trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Factor 1 again. You know the drill.", "Nochmal Faktor 1. Kennst du ja.")),
+                        trap(Touch('B'), Hide('w'), Saw(33.5f, 14.4f, -7f, 0f), say("Your code is coming. Fast.", "Dein Code ist da. Mit Klinge.")),
+                        trap(PastX(21f), Show('A')),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -204,6 +242,17 @@ object World2Part3 {
                 trap(Touch('d'), Hide('d'), delay = 0.4f),
                 trap(Touch('e'), Move('e', -3f, 0f, 6f), say("Stone 5: session hijacked.", "Stein 5: Sitzung entführt."), delay = 0.3f),
             ),
+            // rematch: re-audit, the lies moved one stone on: the spike stone is honest, the last stone runs ahead
+            rematch = listOf(
+                Round(
+                    T("Audit failed. Re-audit. Same stones.", "Audit durchgefallen. Nachprüfung. Gleiche Steine."),
+                    traps = listOf(
+                        trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Stone 1: still revoked.", "Stein 1: immer noch widerrufen."), delay = 0.25f),
+                        trap(Touch('b'), Move('b', 0f, 12f, 9f), delay = 0.1f),
+                        trap(Touch('d'), Hide('d'), Move('e', 1f, 0f, 3f), say("Stone 5: moving on without you.", "Stein 5: zieht ohne dich weiter."), delay = 0.4f),
+                    ),
+                ),
+            ),
         ) {
             border()
             fill(0..5, 15..17); fill(27..31, 15..17)
@@ -221,6 +270,17 @@ object World2Part3 {
                 trap(Touch('h'), Play(Card.SPIKE_SEED), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
                 trap(Touch('x'), Fall('x'), delay = 0.3f),
                 trap(Touch('y'), Fall('y'), delay = 0.3f),
+            ),
+            // rematch: the honeypot is harmless now, and the high road you learned is the trap
+            rematch = listOf(
+                Round(
+                    T("Honeypot refilled. Help yourself.", "Honeypot nachgefüllt. Bärenhunger?"),
+                    traps = listOf(
+                        trap(Touch('h'), say("Honeypot! Or just honey?", "Honeypot! Oder nur Honig?")),
+                        trap(Touch('x'), Play(Card.SPIKE_SEED), Show('A'), Fall('x'), say("High road, low blow.", "Wer hoch steigt, fällt in Spikes."), delay = 0.12f),
+                        trap(Touch('y'), Fall('y'), delay = 0.12f),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -279,6 +339,16 @@ object World2Part3 {
                 trap(After(2.2f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
                 trap(PastX(16f), Fall('c')),
             ),
+            // rematch: policy updated, the sandbox shrinks sooner, and the ceiling block behind the pit drops early
+            rematch = listOf(
+                Round(
+                    T("Sandbox updated. Smaller, for your safety.", "Sandbox aktualisiert. Kleiner, zu deiner Sicherheit."),
+                    traps = listOf(
+                        trap(After(1.3f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("Policy updated: shrinking sooner.", "Richtlinie aktualisiert: Es wird schneller eng.")),
+                        trap(PastX(16f), Fall('c')),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(3..3, 12..14, 'l'); fill(10..10, 12..14, 'r'); put(6, 13, 'b')
@@ -295,6 +365,18 @@ object World2Part3 {
                 trap(Touch('a'), Play(Card.CRUMBLE), say("user: permission denied.", "user: Zugriff verweigert.")),
                 trap(Touch('b'), say("admin: sudo required.", "admin: sudo nötig.")),
                 trap(Touch('c'), say("root: you shall not pass. (Jump.)", "root: Du kommst hier nicht durch. (Spring.)")),
+            ),
+            // rematch: demoted, the belts run with you now and throw you at the next step's spikes
+            rematch = listOf(
+                Round(
+                    T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt mit."),
+                    start = listOf(Belt('a', 3f), Belt('b', 5f), Belt('c', 7f)),
+                    traps = listOf(
+                        trap(Touch('a'), Play(Card.TWISTED), Belt('a', 4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig.")),
+                        trap(Touch('b'), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte.")),
+                        trap(Touch('c'), say("root: express delivery.", "root: Same-Day-Delivery.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -340,6 +422,22 @@ object World2Part3 {
                 trap(PastX(3f), Play(Card.GRAND_FINALE), say("shutdown -h now. All services are stopping.", "shutdown -h now. Alle Dienste werden beendet.")),
                 trap(PastX(20.5f), Swap(true), say("chown -R mephi /controls", "chown -R mephi /steuerung")),
                 trap(PastX(25.5f), Swap(false), DoorTo(28, 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
+            ),
+            // rematch: the controls are twisted the moment you leave the tunnel, in front of the gate, not behind it
+            rematch = listOf(
+                Round(
+                    T("Shutdown aborted. One last hand.", "shutdown abgebrochen. Revanche, allerletzte Runde."),
+                    start = listOf(
+                        Belt('a', -3f),
+                        Portal('1', 11 to 14, 15 to 14, twoWay = false),
+                        Laser('G', 18 to 1, 18 to 14, on = 1f, off = 1.8f, phase = 1f),
+                    ),
+                    traps = listOf(
+                        trap(PastX(3f), say("shutdown -c. Not so fast.", "shutdown -c. Nicht so schnell.")),
+                        trap(PastX(15.6f), Play(Card.GRAND_FINALE), Swap(true), say("chown, earlier this time.", "chown, diesmal früher.")),
+                        trap(PastX(25.5f), Swap(false), DoorTo(28, 16, speed = 20f), say("Fine. Go. Layer 3 awaits.", "Na gut. Ab mit dir in Schicht 3.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()

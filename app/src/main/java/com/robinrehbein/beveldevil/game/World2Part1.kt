@@ -21,6 +21,8 @@ object World2Part1 {
     private val hidden = Glyph(spike = true, hidden = true)
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
+    /** Two-tile pieces of the raised floor that erodes behind you in level 11, round 2. */
+    private const val ERODE = "fghijkmn"
 
     val levels: List<Level> = listOf(
 
@@ -34,6 +36,19 @@ object World2Part1 {
                 trap(Landed(14.6f, 18.5f), Fall('b'), say("Hello again, World.", "Hallo nochmal, Welt.")),
                 trap(Airborne(20f, 23.5f), Show('A'), say("Warning: 2 new spikes installed.", "Warnung: 2 neue Spikes installiert.")),
             ),
+            // rematch: the first pit is a bluff now; whoever hops it anyway lands in fresh spikes, the second pit drops early
+            rematch = listOf(
+                Round(
+                    T("Retransmit. Same text, new bugs.", "Nochmal gesendet. Diesmal mit Bonus-Bugs."),
+                    legend = mapOf('C' to hidden),
+                    traps = listOf(
+                        trap(PastX(10.6f), Play(Card.COLLAPSE), say("Hello, World! (from cache)", "Hallo, Welt! (aus dem Cache)")), // BLUFF
+                        trap(Airborne(11.2f, 14.6f), Show('C'), say("Jumped to conclusions.", "Voreilig gesprungen.")),
+                        trap(PastX(19.2f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
+                        trap(Airborne(20f, 23.5f), Show('A')),
+                    ),
+                ) { put(15, 14, 'C'); put(16, 14, 'C') },
+            ),
         ) {
             border(); floor()
             fill(12..14, 15..17, 'a'); fill(20..22, 15..17, 'b')
@@ -46,17 +61,29 @@ object World2Part1 {
         Level(
             name = T("Open Port", "Offener Port"),
             intro = T("The firewall is in a bad mood today. Like me.", "Die Firewall hat heute schlechte Laune. Wie ich."),
-            legend = mapOf('A' to hidden, 'B' to hidden),
+            legend = mapOf('A' to hidden, 'B' to hidden, 'C' to hidden),
             start = listOf(Portal('1', 10 to 14, 19 to 14)),
             traps = listOf(
                 trap(Airborne(4.6f, 7.4f), Play(Card.SPIKE_SEED), Show('A'), say("Port 80 open. Port 9: a spike.", "Port 80 offen. Port 9: ein Spike.")),
                 trap(Landed(23.5f, 27.6f), Show('B'), say("Packet loss: two spikes in transit.", "Paketverlust: zwei Spikes unterwegs.")),
+            ),
+            // rematch: the way to the portal stays clean; the spikes grow right behind the port, where round 1 landed safely
+            rematch = listOf(
+                Round(
+                    T("Port closed. Knocking on another one.", "Port zu. Ich klopf an einem anderen."),
+                    start = listOf(Portal('1', 10 to 14, 19 to 14)),
+                    traps = listOf(
+                        trap(Airborne(4.6f, 7.4f), say("Port 9? Closed for lunch.", "Port 9? Mittagspause.")),
+                        trap(Airborne(20f, 23.4f), Play(Card.SPIKE_SEED), Show('C'), say("Port scan. Different port.", "Portscan. Falscher Port, richtige Spikes.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
             fill(14..15, 1..14)
             put(6, 14, '^'); put(23, 14, '^')
             put(9, 14, 'A')
+            put(26, 14, 'C'); put(27, 14, 'C')
             put(28, 14, 'B'); put(29, 14, 'B')
             spawn(); door(30); bits(2)
         },
@@ -91,6 +118,19 @@ object World2Part1 {
                 trap(PastX(11.6f), Play(Card.SPIKE_SEED), Show('A'), say("Off by one. Classic.", "Um eins daneben. Klassiker.")),
                 trap(Airborne(20.4f, 22.6f), Show('B'), say("Buffer overflow: two more.", "Pufferüberlauf: noch zwei.")),
                 trap(PastX(24.8f), DoorTo(28, 14, speed = 30f), say("You counted from zero, I counted from one.", "Du hast bei null angefangen, ich bei eins.")),
+            ),
+            // rematch: gap 14 stays open this time, the other gap gets plugged while you fly at it
+            rematch = listOf(
+                Round(
+                    T("Packet lost. Sending it again.", "Paket verloren, nochmal. Wie bei der Post."),
+                    legend = mapOf('C' to hidden),
+                    traps = listOf(
+                        trap(PastX(11.6f), say("Off by one. Again?", "Um eins daneben. Schon wieder?")),
+                        trap(Airborne(12.6f, 15.4f), Play(Card.SPIKE_SEED), Show('C'), say("Now I count from two.", "Jetzt zähle ich ab zwei.")),
+                        trap(Airborne(20.4f, 22.6f), Show('B')),
+                        trap(PastX(24.8f), DoorTo(28, 14, speed = 30f)),
+                    ),
+                ) { put(16, 14, 'C') },
             ),
         ) {
             border(); floor()
@@ -131,6 +171,18 @@ object World2Part1 {
                 trap(Touch('s'), Reroute('1', 17 to 14), say("ipconfig /flushdns: cache cleared. Try again.", "ipconfig /flushdns: Cache geleert. Versuch's nochmal.")),
                 trap(PastX(19.5f), Show('A'), say("Cache poisoned.", "Cache vergiftet.")),
             ),
+            // rematch: the DNS stays put, and flushing the cache is what poisons it now
+            rematch = listOf(
+                Round(
+                    T("New lease. Same address. Probably.", "DHCP sagt: gleiche Adresse. DHCP lügt gern."),
+                    start = listOf(Portal('1', 8 to 14, 17 to 14)),
+                    traps = listOf(
+                        trap(PastX(6f), say("DNS changed. Or did it?", "DNS geändert. Oder doch nicht?")),
+                        trap(Touch('s'), Play(Card.DECOY), Reroute('1', 5 to 3), say("Flushed. Into the spikes.", "Geleert. Direkt in die Spikes.")),
+                        trap(PastX(19.5f), Show('A'), say("TTL expired: spikes.", "TTL abgelaufen: Spikes.")),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(12..12, 1..14)
@@ -148,6 +200,17 @@ object World2Part1 {
                 trap(PastX(7.4f), Play(Card.HEADBUTT), Fall('c'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt.")),
                 trap(PastX(14.3f), Fall('d')),
                 trap(PastX(21.6f), Fall('e'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt.")),
+            ),
+            // rematch: the first ceiling comes down late, on whoever waits for it under it
+            rematch = listOf(
+                Round(
+                    T("Rebooting. Your ceiling is up to date.", "Neustart. Deine Decke ist auf dem neuesten Stand."),
+                    traps = listOf(
+                        trap(PastX(9.3f), Play(Card.HEADBUTT), Fall('c'), say("Delayed write failed.", "Verzögertes Schreiben. Auf dich.")),
+                        trap(PastX(14.3f), Fall('d')),
+                        trap(PastX(21.6f), Fall('e')),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -181,6 +244,17 @@ object World2Part1 {
                 trap(PastX(23f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
                 trap(Airborne(21.8f, 24.4f), Show('A'), say("Driver signed by nobody.", "Treiber von niemandem signiert.")),
             ),
+            // rematch: the cable stays put before the LEDs and comes loose while you land on the second stone
+            rematch = listOf(
+                Round(
+                    T("Unplugged it. Plugged it back in. Mostly.", "Ausgesteckt, wieder eingesteckt. Größtenteils."),
+                    traps = listOf(
+                        trap(Airborne(13.8f, 15.4f), Play(Card.TWISTED), Swap(true), say("Plug and pray.", "Plug and Pray.")),
+                        trap(PastX(23f), Swap(false)),
+                        trap(Airborne(21.8f, 24.4f), Show('A')),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             leds(8..23)
@@ -193,15 +267,27 @@ object World2Part1 {
         Level(
             name = T("VPN Tunnel", "VPN-Tunnel"),
             intro = T("Your connection is secure. Really secure.", "Deine Verbindung ist sicher. Wirklich sicher."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('A' to hidden, 'C' to hidden),
             start = listOf(Portal('1', 10 to 12, 21 to 12)),
             traps = listOf(
                 trap(Landed(21f, 23.8f), Play(Card.SPIKE_SEED), Show('A'), say("Tunnel established. Spikes included.", "Tunnel steht. Spikes inklusive.")),
                 trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f), say("Packet loss. Incoming.", "Paketverlust. Kommt rein.")),
             ),
+            // rematch: the spikes grow right where the tunnel drops you, while you are still falling
+            rematch = listOf(
+                Round(
+                    T("Tunnel rebuilt. Shorter. Pointier.", "Tunnel neu gebaut. Kürzer. Spitzer."),
+                    start = listOf(Portal('1', 10 to 12, 21 to 12)),
+                    traps = listOf(
+                        trap(Airborne(20.8f, 23.5f), Play(Card.SPIKE_SEED), Show('C'), say("Split tunnel. Split spikes.", "Geteilter Tunnel. Geteilte Spikes.")),
+                        trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f)),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             leds(9..20)
+            put(24, 14, 'C'); put(25, 14, 'C')
             put(26, 14, 'A'); put(27, 14, 'A')
             spawn(); door(); bits(10)
         },
@@ -214,6 +300,17 @@ object World2Part1 {
                 trap(PastX(9.5f), Play(Card.DEVIL_SAW), Saw(15.5f, 2f, 0f, 9f), say("Fan 1 of 3 spinning. Rather fast.", "Lüfter 1 von 3 dreht. Ziemlich schnell.")),
                 trap(PastX(15.2f), Saw(20.5f, 19f, 0f, -9f), say("Fan 2 spins from below. It's a feature.", "Lüfter 2 dreht von unten. Ist ein Feature.")),
                 trap(PastX(21.6f), Saw(26.5f, 2f, 0f, 9f), say("Fan 3: REPLACE. (I meant it.)", "Lüfter 3: TAUSCHEN. (Ernst gemeint.)")),
+            ),
+            // rematch: same fans, but the raised floor erodes right behind you: backing off to let a saw pass is no longer an option
+            rematch = listOf(
+                Round(
+                    T("Fans replaced. The floor was in the way.", "Lüfter getauscht. Der Boden war im Weg."),
+                    traps = listOf(
+                        trap(PastX(9.5f), Play(Card.DEVIL_SAW), Saw(15.5f, 2f, 0f, 9f), say("Raised floor, lowered expectations.", "Doppelboden, einfacher Abgang.")),
+                        trap(PastX(15.2f), Saw(20.5f, 19f, 0f, -9f)),
+                        trap(PastX(21.6f), Saw(26.5f, 2f, 0f, 9f), say("No way back. Only forward.", "Kein Zurück. Nur noch vorwärts.")),
+                    ) + ERODE.mapIndexed { i, g -> trap(PastX(12.6f + 2 * i), Fall(g), delay = 0.1f) },
+                ) { ERODE.forEachIndexed { i, g -> fill(10 + 2 * i..11 + 2 * i, 15..17, g) } },
             ),
         ) {
             border(); floor()
@@ -270,6 +367,18 @@ object World2Part1 {
                 trap(Landed(12f, 15f), Show('A'), say("The loopback has a guest book.", "Das Loopback hat ein Gästebuch.")),
                 trap(PastX(17.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 14.4f, -6f, 0f), say("ping 127.0.0.1: reply from 127.0.0.1. That was me.", "ping 127.0.0.1: Antwort von 127.0.0.1. Das war ich.")),
             ),
+            // rematch: the loopback now forwards to the door side, and jumping over it (last round's `break`) is what spikes you
+            rematch = listOf(
+                Round(
+                    T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
+                    start = listOf(Portal('1', 15 to 14, 22 to 14, twoWay = false)),
+                    legend = mapOf('C' to hidden),
+                    traps = listOf(
+                        trap(Airborne(14.6f, 16.8f), Play(Card.SPIKE_SEED), Show('C'), say("break; is deprecated.", "break; ist veraltet.")),
+                        trap(PastX(23f), say("Port forwarding. You're welcome.", "Portweiterleitung. Gern geschehen.")),
+                    ),
+                ) { put(18, 14, 'C'); put(19, 14, 'C') },
+            ),
         ) {
             border(); floor()
             rack(10, 1, 2)
@@ -286,6 +395,18 @@ object World2Part1 {
                 trap(Touch('p'), Play(Card.GHOST_BLOCK), Show('q'), say("SYN. (Go back.)", "SYN. (Geh zurück.)")),
                 trap(Touch('q'), Show('B'), say("SYN-ACK. Now the bridge.", "SYN-ACK. Jetzt die Brücke.")),
                 trap(Touch('B'), Show('A'), say("ACK. Connection established. And spiked.", "ACK. Verbindung steht. Und bespikt.")),
+            ),
+            // rematch: TCP Fast Open, the bridge comes at once; no spike on it, but the old hop over the spike lands in new ones
+            rematch = listOf(
+                Round(
+                    T("Handshake failed. Your palms were sweaty.", "Handshake fehlgeschlagen, neuer Versuch. Hände waschen."),
+                    legend = mapOf('C' to hidden),
+                    traps = listOf(
+                        trap(Touch('p'), Play(Card.GHOST_BLOCK), Show('B'), say("Fast open. No time for manners.", "Fast Open. Keine Zeit für Manieren.")),
+                        trap(Touch('B'), say("ACK. Spikes? Who said spikes?", "ACK. Spikes? Wer redet von Spikes?")),
+                        trap(Airborne(13.4f, 16.6f), Show('C'), say("Duplicate ACK.", "Doppeltes ACK.")),
+                    ),
+                ) { put(17, 14, 'C'); put(18, 14, 'C') },
             ),
         ) {
             border()
@@ -304,6 +425,17 @@ object World2Part1 {
                 trap(PastX(15.8f), Play(Card.HEADBUTT), Fall('l'), Fall('r'), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür.")),
                 trap(Touch('b'), say("Certificate valid. (It isn't.)", "Zertifikat gültig. (Ist es nicht.)")),
                 trap(Landed(23f, 26.4f), Show('A'), say("Man in the middle: spikes.", "Man in the Middle: Spikes.")),
+            ),
+            // rematch: no cell this time; the right wall comes down late, on whoever runs under it
+            rematch = listOf(
+                Round(
+                    T("Session expired. The cookies were delicious.", "Sitzung abgelaufen. Bitte nochmal Ausweis zeigen."),
+                    traps = listOf(
+                        trap(PastX(15.8f), say("Man in the middle? Never met him.", "Man in the Middle? Kenn ich nicht.")),
+                        trap(PastX(19.4f), Play(Card.HEADBUTT), Fall('r'), say("Late binding.", "Spätes Binden.")),
+                        trap(Landed(23f, 26.4f), Show('A')),
+                    ),
+                ) { fill(21..22, 3..4, '.') },
             ),
         ) {
             border(); floor()

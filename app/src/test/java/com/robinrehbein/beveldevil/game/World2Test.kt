@@ -52,12 +52,15 @@ class World2Test {
         }
     }
 
+    /** Every round of a trap level plays exactly one card (a bluff counts). */
     @Test
     fun everyTrapLevelPlaysExactlyOneCard() {
         World2.levels.forEachIndexed { i, l ->
-            if (l.traps.isNotEmpty()) {
-                val plays = l.traps.sumOf { t -> t.actions.count { it is Action.Play } }
-                assertEquals("level ${i + 1} should play exactly one card", 1, plays)
+            l.rounds.forEachIndexed { r, round ->
+                if (round.traps.isNotEmpty()) {
+                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play } }
+                    assertEquals("level ${i + 1} round ${r + 1} should play exactly one card", 1, plays)
+                }
             }
         }
     }
