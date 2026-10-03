@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -148,6 +149,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var card: Card? = null
         private set
     var cardAge = 0f
+    /** Where the flying card settles: -1 left, 0 stage center, 1 right. Center unless the player stands in its way. */
+    var cardSide = 0
         private set
     private var survivalCheck = -1f
 
@@ -351,6 +354,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             is Event.Played -> {
                 card = e.card
                 cardAge = 0f
+                cardSide = world?.player?.box?.let { p ->
+                    // the card is about 5.5×7.5 tiles around (16, 8.25); keep a margin for the player walking on
+                    val hits = abs(p.cx - 16f) < 2.75f + 2f + p.w / 2 && abs(p.cy - 8.25f) < 3.75f + 1f + p.h / 2
+                    if (!hits) 0 else if (p.cx > 16f) -1 else 1
+                } ?: 0
                 heat = 1f
                 glitch = GLITCH_TIME
                 progress.findCard(e.card)

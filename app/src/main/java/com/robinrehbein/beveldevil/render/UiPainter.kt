@@ -304,9 +304,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val fr = l.frame
         val sx = fr.x + fr.w / 2f
         val sy = fr.y + fr.h / 2f
-        // settle on the half of the stage the player is not in, so the card never hides them or the platform they stand on
-        val px = game.world?.player?.box?.cx ?: 16f
-        val tx = l.fx + if (px > 16f) 64f else 192f
+        val tx = l.fx + 128f + game.cardSide * 64f
         val ty = l.fy + 66f
         val k = min(1f, f * 1.4f)
         val cx = (sx + (tx - sx) * k) * sc
