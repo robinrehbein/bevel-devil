@@ -359,9 +359,47 @@ sealed interface Action {
     data class Ghost(val delay: Float = 1f) : Action
 }
 
-class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0f)
+/**
+ * Which attempts (1, 2, 3, … since the round started) a trap is dealt in. Mephi reshuffles after every death, so the
+ * room stays the same while the trap moves. [every] attempts form one cycle and the trap is dealt in slot [at] of it
+ * (0-based); [from] holds it back until that attempt.
+ *
+ *     trap(PastX(17f), Fall('a'), deal = Deal.odd)        // attempts 1, 3, 5, …
+ *     trap(PastX(11f), Fall('b'), deal = Deal.even)       // attempts 2, 4, 6, …
+ *     trap(PastX(20f), Show('C'), deal = Deal.from(3))    // Mephi learned: from the third try on
+ */
+data class Deal(val every: Int = 1, val at: Int = 0, val from: Int = 1) {
+    init { require(every >= 1 && at in 0 until every && from >= 1) }
 
-fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f) = Trap(trigger, actions.toList(), delay)
+    fun dealt(attempt: Int): Boolean = attempt >= from && (attempt - 1) % every == at
+
+    companion object {
+        val ALWAYS = Deal()
+        val odd = Deal(2, 0)
+        val even = Deal(2, 1)
+        fun from(attempt: Int) = Deal(from = attempt)
+        /** Slot [at] of a [every]-card cycle. */
+        fun cycle(every: Int, at: Int) = Deal(every, at)
+    }
+}
+
+class Trap(val trigger: Trigger, val actions: List<Action>, val delay: Float = 0f, val deal: Deal = Deal.ALWAYS)
+
+fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f, deal: Deal = Deal.ALWAYS) = Trap(trigger, actions.toList(), delay, deal)
+
+/**
+ * A rematch: after the door, Mephi deals a new hand in the same room ("Revanche!"). The map is the level's own,
+ * changed by [edit]; [legend] adds to the level's. Dying restarts this round, not the whole level.
+ *
+ *     rematch = listOf(Round(T("Again. Same room.", "Nochmal. Gleicher Raum."), traps = listOf(…)) { fill(9..10, 15..17, 'x') })
+ */
+class Round(
+    val intro: T,
+    val traps: List<Trap> = emptyList(),
+    val start: List<Action> = emptyList(),
+    val legend: Map<Char, Glyph> = emptyMap(),
+    val edit: MapBuilder.() -> Unit = {},
+)
 
 /** Mutable char grid used to lay out a level. '#' solid, '^v<>' spikes, 'P' spawn, 'D' door. */
 class MapBuilder(val cols: Int = 32, val rows: Int = 18) {
@@ -396,9 +434,18 @@ class Level(
     val traps: List<Trap> = emptyList(),
     /** Actions that run as the attempt starts: blinking platforms, path saws, tilt. */
     val start: List<Action> = emptyList(),
-    build: MapBuilder.() -> Unit,
+    /** Further rounds in the same room, played after the door; see [Round]. */
+    val rematch: List<Round> = emptyList(),
+    private val build: MapBuilder.() -> Unit,
 ) {
     val map: MapBuilder = MapBuilder().apply(build)
+
+    /** This level and its rematches, each a level of its own: round 1 is this level. */
+    val rounds: List<Level> by lazy {
+        listOf(this) + rematch.map { r ->
+            Level(name, r.intro, legend + r.legend, r.traps, r.start) { build(); r.edit(this) }
+        }
+    }
     val cols get() = map.cols
     val rows get() = map.rows
 

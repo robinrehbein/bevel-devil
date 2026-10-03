@@ -15,6 +15,9 @@ object Txt {
     val levels = T("LEVELS", "LEVELS")
     val cleared = T("CLEARED!", "GESCHAFFT!")
     val next = T("NEXT", "WEITER")
+    /** Banner when Mephi deals another round in the same room. */
+    val rematch = T("REMATCH!", "REVANCHE!")
+    val newHand = T("NEW HAND", "NEUES BLATT")
     val deaths = T("DEATHS", "TODE")
     val best = T("BEST", "BESTWERT")
     val trap = T("TRAP", "FALLE")

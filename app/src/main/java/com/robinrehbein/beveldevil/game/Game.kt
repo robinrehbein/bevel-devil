@@ -133,6 +133,18 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var world: World? = null
         private set
     val level get() = sandbox ?: Levels.all[levelIndex]
+    /** The round being played (0 = the level itself, then its rematches, see [Level.rounds]). */
+    var round = 0
+        private set
+    /** Attempt in this round, from 1; Mephi deals by it ([Deal]). */
+    var attempt = 1
+        private set
+    /** The room as dealt in this round. */
+    val stage get() = level.rounds[round]
+    val roundCount get() = level.rounds.size
+    /** Seconds since Mephi called a rematch (large when none). */
+    var rematchAge = 99f
+        private set
     /** Plays this level instead of the registered one (tests and screenshots of levels outside the register). */
     internal var sandbox: Level? = null
     var deaths = 0
@@ -262,6 +274,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     /** "2-17" for the current level. */
     val levelLabel get() = Worlds.label(levelIndex)
+    /** "2/3" while a level has rematch rounds, null otherwise. */
+    val roundTag get() = if (roundCount > 1) "${round + 1}/$roundCount" else null
     fun worldOpen(w: WorldInfo) = w.size > 0 && w.firstLevel < progress.unlocked
     fun pages(w: WorldInfo = selWorld) = (w.size + Ui.PAGE - 1) / Ui.PAGE
     /** Global index of the level on tile [slot] of the shown page, or -1 past the world's end. */
@@ -310,6 +324,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         shake = (shake - dt * 3f).coerceAtLeast(0f)
         heat = (heat - dt * 0.8f).coerceAtLeast(0f)
         glitch = (glitch - dt).coerceAtLeast(0f)
+        rematchAge += dt
         introAge += dt
         worldAge += dt
         endAge += dt
@@ -336,11 +351,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         when (w.state) {
             WorldState.DEAD -> {
                 deadTimer += dt
-                if (deadTimer > 0.9f) restartAttempt()
+                if (deadTimer > RESPAWN) restartAttempt()
             }
             WorldState.WON -> {
                 deadTimer += dt
-                if (deadTimer > WIN_DELAY) finishLevel()
+                if (deadTimer > WIN_DELAY) { if (round < level.rounds.lastIndex) nextRound() else finishLevel() }
             }
             WorldState.PLAYING -> {}
         }
@@ -492,7 +507,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         levelIndex = i
         deaths = 0
         particles.clear()
-        world = World(level)
+        round = 0
+        attempt = 1
+        rematchAge = 99f
+        world = World(stage)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -508,7 +526,14 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     private fun restartAttempt() {
-        world = World(level, world?.trail)
+        val before = stage.traps.filter { it.deal.dealt(attempt) }
+        attempt++
+        world = World(stage, world?.trail, attempt)
+        // Mephi reshuffled: the room flickers, so a changed trap is the player's own fault, not a bug
+        if (stage.traps.filter { it.deal.dealt(attempt) } != before) {
+            glitch = maxOf(glitch, GLITCH_TIME * 0.6f)
+            setMood(Mood.LAUGH, 0.8f)
+        }
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -524,6 +549,27 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         setMood(Mood.GRIN, 0f)
         bubble = null
         go(Screen.PLAY)
+    }
+
+    /** Through the door, but Mephi deals another hand in the same room: the next round, first attempt. */
+    private fun nextRound() {
+        round++
+        attempt = 1
+        world = World(stage)
+        deadTimer = 0f
+        card = null
+        survivalCheck = -1f
+        particles.clear()
+        input.jumpPressed = false
+        input.shake = false
+        rematchAge = 0f
+        glitch = GLITCH_TIME * 1.4f
+        heat = 1f
+        shake = maxOf(shake, 0.6f)
+        audio.play(Sound.CARD)
+        audio.play(Sound.LAUGH)
+        setMood(Mood.LAUGH, 1.6f)
+        say(stage.intro.toString(), 2.8f)
     }
 
     private fun finishLevel() {
@@ -742,6 +788,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         const val GLITCH_TIME = 0.32f
         /** Seconds between touching the door and the clear screen, for the win animation. */
         const val WIN_DELAY = 0.8f
+        /** Seconds from a death to the next attempt. */
+        const val RESPAWN = 0.7f
 
         val TAUNTS = listOf(
             T("Segmentation fault. Yours.", "Segmentation Fault. Deiner."),

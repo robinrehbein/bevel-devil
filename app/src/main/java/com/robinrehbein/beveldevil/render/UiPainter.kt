@@ -138,6 +138,19 @@ class UiPainter(px: Pixels) : Painter(px) {
             if (l.hud == HudMode.SIDE) bubbleBelow(it, game.bubbleAge, f.x + f.w / 2f, l.bubble)
             else bubble(it, game.bubbleAge, l.bubble.x.toFloat(), l.bubble.y.toFloat(), l.bubble.w.toFloat())
         }
+        if (game.rematchAge < REMATCH_BANNER) rematchBanner(game, l)
+    }
+
+    /** "REMATCH!" slams in over the room for a moment when Mephi deals another round. */
+    private fun rematchBanner(game: Game, l: Layout) = stage(l, Screen.PLAY) {
+        val a = game.rematchAge
+        // slam in big, settle, then blink out
+        val size = if (a < 0.12f) 22f - a / 0.12f * 8f else 14f
+        if (a > REMATCH_BANNER - 0.3f && ((a * 12).toInt() % 2 == 0)) return@stage
+        rect(0f, 46f, 256f, 30f, 0xC0100818.toInt())
+        rect(0f, 46f, 256f, 1f, GOLD); rect(0f, 75f, 256f, 1f, GOLD_LO)
+        say(Txt.rematch.toString(), 128f, 57f, size, GOLD_HI, Paint.Align.CENTER, DEVIL_RED_LO)
+        say("${Txt.newHand} · ${game.roundTag ?: ""}", 128f, 69f, 5f, CREAM, Paint.Align.CENTER)
     }
 
     /** The HUD pause button, unless a [PauseTrick] makes it dodge or grow spikes. */
@@ -175,7 +188,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     private fun pillRow(game: Game, l: Layout) {
         val x = l.pills.x.toFloat()
         val y = l.pills.y.toFloat()
-        val name = "${game.levelLabel} · ${game.level.name.toString().uppercase()}"
+        val name = "${game.levelLabel} · ${game.roundTag?.let { "$it · " } ?: ""}${game.level.name.toString().uppercase()}"
         val dLabel = game.deaths.toString()
         val dw = textWidth(dLabel, 5f) + 18
         val maxW = l.frame.x - 4 - x - 6 - dw
@@ -209,7 +222,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val hx = cx.roundToInt().toFloat()
         rect(hx - 6, y - 3, 2f, 3f, INK); rect(hx - 5, y - 4, 1f, 2f, INK); rect(hx - 5, y - 2, 1f, 2f, BONE)
         rect(hx + 4, y - 3, 2f, 3f, INK); rect(hx + 4, y - 4, 1f, 2f, INK); rect(hx + 4, y - 2, 1f, 2f, BONE)
-        val label = game.levelLabel
+        val label = game.levelLabel + (game.roundTag?.let { " $it" } ?: "")
         var ls = 9f
         while (ls > 6f && textWidth(label, ls) > w - 6) ls -= 0.5f
         say(label, cx, y + 8.5f, ls, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
@@ -728,5 +741,7 @@ class UiPainter(px: Pixels) : Painter(px) {
     private companion object {
         /** Where the dodging pause button hops to, in logical pixels from home. */
         val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
+        /** Seconds the rematch banner stays up. */
+        const val REMATCH_BANNER = 1.5f
     }
 }
