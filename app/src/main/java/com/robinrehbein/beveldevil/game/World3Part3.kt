@@ -66,13 +66,15 @@ object World3Part3 {
             spawn(); door()
         },
 
-        // 35 — a headwind that takes breaks: no jump clears the spikes against it; it gusts harder once you are close, and the landing is warm
+        // 35 — a headwind that takes breaks: no jump clears the spikes against it; it gusts harder once you are close, the first lull ends early under your jump (leap from the very edge), and the landing is warm
         Level(
             name = T("Headwind", "Gegenwind"),
             intro = T("Breezy today.", "Heute ist es windig."),
             start = listOf(Fan('w', at = 31 to 11, dir = Dir.LEFT, reach = 12, speed = 5.5f, width = 4, on = 2.2f, off = 2f)),
             traps = listOf(
                 trap(PastX(18.5f), Play(Card.BACKDRAFT), FanSet('w', 7f), say("Gusts upgraded. No charge.", "Böen aufgerüstet. Kostenlos.")),
+                // the lull ends early under the first jump: only a leap from the very edge still clears the spikes
+                trap(Airborne(22.5f, 25f), Fan('w', at = 31 to 11, dir = Dir.LEFT, reach = 12, speed = 5.5f, width = 4, on = 2.2f, off = 2f), say("Break's over. Early shift.", "Pause vorbei. Frühschicht."), delay = 0.15f),
                 trap(Airborne(23.5f, 27f), HeatSpike('g', 0.7f), say("Landing strip: warm.", "Landebahn: warm.")),
             ),
         ) {
@@ -135,18 +137,19 @@ object World3Part3 {
             spawn(); door(28, 7)
         },
 
-        // 39 — a downdraft over a short pit: you cannot jump against it, only between its gusts; the plates behind it are warm, and a blade rolls in
+        // 39 — a downdraft over a short pit: you cannot jump against it, only between its gusts; the edge where you wait for them warms up (wait further back, sprint), the plates behind it are warm, and a blade rolls in
         Level(
             name = T("Downdraft", "Fallwind"),
             intro = T("Gravity, but with a motor.", "Schwerkraft, aber mit Motor."),
             start = listOf(Fan('d', at = 15 to 0, dir = Dir.DOWN, reach = 14, speed = 9f, width = 4, on = 2f, off = 2.4f)),
             traps = listOf(
+                trap(Zone(13f, 13f, 15f, 15f), HeatSpike('w', 0.45f), say("The waiting room is heated. You're welcome.", "Der Warteraum ist beheizt. Gern geschehen.")),
                 trap(Landed(18.5f, 21.5f), Play(Card.OVERCLOCKED), HeatSpike('g', 0.7f), say("Made it across. The plates are warm.", "Drüben. Die Platten sind warm.")),
                 trap(Landed(25.5f, 28f), Saw(33f, 14.4f, -6f, 0f), say("And a fan blade for the road.", "Und ein Lüfterblatt für unterwegs.")),
             ),
         ) {
             border(); floor(); pit(15..18)
-            fill(23..25, 15..15, 'g')
+            fill(11..14, 15..15, 'w'); fill(23..25, 15..15, 'g')
             spawn(); door()
         },
 
@@ -168,21 +171,26 @@ object World3Part3 {
             spawn(); door()
         },
 
-        // 41 — two updrafts, one above the other: ledge, ledge, door; the first ledge is warm, the top one breaks
+        // 41 — two updrafts, one above the other: ledge, ledge, door; the first ledge is warm, live ceiling wiring talks you out of jumping (it switches off when you do), and the top ledge breaks under a walk
         Level(
             name = T("Air Bridge", "Luftbrücke"),
             intro = T("Two fans, one door. The door is very high.", "Zwei Lüfter, eine Tür. Die Tür ist sehr hoch."),
+            legend = mapOf('Z' to Glyph(spike = true, dir = Dir.DOWN)),
             start = listOf(
                 Fan('f', at = 6 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2),
                 Fan('g', at = 13 to 8, dir = Dir.UP, reach = 6, speed = 9f, width = 2),
+                Circuit('Z'),
             ),
             traps = listOf(
                 trap(Landed(8.5f, 11.5f), HeatSpike('p', 0.7f), say("Ledge one: freshly heated.", "Kante eins: frisch beheizt.")),
                 trap(PastX(22f), Play(Card.GHOST_BLOCK), Fall('x'), say("Turbulence on the top floor.", "Turbulenzen im Obergeschoss."), delay = 0.1f),
+                // the live ceiling wiring talks you out of jumping; it switches off the moment you do
+                trap(Airborne(21.5f, 24f), Power('Z', false), say("Ceiling wiring: off. It was only there to scare you.", "Deckenleitung: aus. Die war nur zum Erschrecken da.")),
             ),
         ) {
             border(); floor()
             fill(9..15, 8..8); fill(9..10, 8..8, 'p'); fill(16..30, 4..4); fill(23..24, 4..4, 'x')
+            fill(22..25, 1..1, 'Z')
             spawn(); door(28, 3)
         },
 
@@ -205,22 +213,24 @@ object World3Part3 {
             spawn(); door(28, 7)
         },
 
-        // 43 — the pad on the high ledge powers the bridge on a clock; the power is cut if you land on the floor instead of on the bridge
+        // 43 — the pad on the high ledge powers the bridge on a clock; the power is cut if you land on the floor instead of on the bridge, and a dead cable on the bridge goes live as you land on it
         Level(
             name = T("Wiring Diagram", "Schaltplan"),
             intro = T("Follow the wiring diagram.", "Folge dem Schaltplan."),
             start = listOf(
                 Fan('f', at = 7 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2),
                 Circuit('a', on = false), Pad('1', at = 12 to 7, circuits = "a"),
+                Circuit('Z', on = false),
             ),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('a', on = 3.2f, off = 2f), say("Wiring diagram, page 1: a timer.", "Schaltplan, Seite 1: ein Timer.")),
                 trap(Landed(15.5f, 21.6f), Power('a', false), say("Wiring diagram, page 2: the floor is not on it.", "Schaltplan, Seite 2: der Boden steht nicht drin.")),
+                trap(Landed(21.6f, 28f), Power('Z', true), say("Page 3: this cable is live now.", "Seite 3: dieses Kabel ist jetzt live.")),
             ),
         ) {
             border(); floor()
             fill(10..15, 8..8)
-            bridge(22..27, 'a')
+            bridge(22..27, 'a'); put(26, 14, 'Z')
             spawn(); door()
         },
 
@@ -240,7 +250,7 @@ object World3Part3 {
             spawn(); door(28, 6)
         },
 
-        // 45 — the hot floor, the cool ledge: the updraft takes you to the heatsink, then sprint; the plates now heat faster
+        // 45 — the hot floor, the cool ledge: the updraft takes you to the heatsink; the plates now heat faster, the floor is overclocked where you drop onto it (leap far or hop), and the landing is warm
         Level(
             name = T("Cold Air", "Kaltluft"),
             intro = T("Plenty of hot air here. Mostly mine.", "Hier gibt es viel heiße Luft. Meist meine."),
@@ -250,6 +260,7 @@ object World3Part3 {
             ),
             traps = listOf(
                 trap(Landed(11f, 16f), Play(Card.THROTTLE), Heat('h', rise = 1.25f), say("Hot air, now with more heat.", "Heiße Luft, jetzt mit mehr Hitze.")),
+                trap(Landed(16.2f, 24.6f), HeatSpike('h', 0.7f), say("Floor: overclocked on arrival.", "Boden: bei Ankunft übertaktet.")),
                 trap(Airborne(24.5f, 28.5f), HeatSpike('f', 0.7f), say("Cold air, hot plate, warm finish.", "Kalte Luft, heiße Platte, warmes Ende.")),
             ),
         ) {

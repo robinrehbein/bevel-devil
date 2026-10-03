@@ -667,6 +667,8 @@ class UiPainter(px: Pixels) : Painter(px) {
                 }
             }
             say(Txt.tapCard.toString(), 128f, 136f - 3f, 4.5f, CREAM, Paint.Align.CENTER)
+            // lifetime deaths, bottom right under the cards (clear of the page arrows)
+            say("${Txt.soulsSacrificed} ${game.totalDeaths}", 250f, 136f - 3f, 4.5f, GOLD_HI, Paint.Align.RIGHT)
         }
     }
 
