@@ -68,10 +68,13 @@ class World3Test {
 
     @Test
     fun everyTrapLevelPlaysExactlyOneCard() {
+        // every round counts: a rematch deals exactly one card too (a bluff card counts)
         World3.levels.forEachIndexed { i, l ->
-            if (l.traps.isNotEmpty()) {
-                val plays = l.traps.sumOf { t -> t.actions.count { it is Action.Play } }
-                assertEquals("level ${i + 1} should play exactly one card", 1, plays)
+            l.rounds.forEachIndexed { r, round ->
+                if (round.traps.isNotEmpty()) {
+                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play } }
+                    assertEquals("level ${i + 1} round ${r + 1} should play exactly one card", 1, plays)
+                }
             }
         }
     }
