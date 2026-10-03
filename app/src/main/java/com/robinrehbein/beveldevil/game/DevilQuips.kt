@@ -22,7 +22,7 @@ object DevilQuips {
             ),
             listOf(
                 T("Ten! I'm almost impressed. Almost.", "Zehn! Ich bin fast beeindruckt. Fast."),
-                T("Ten deaths. You'd make a fine demon.", "Zehn Tode. Du gäbst einen feinen Dämon ab."),
+                T("Ten deaths. You'd make a fine demon.", "Zehn Tode. Aus dir wird noch ein feiner Dämon."),
                 T("Ten times! Stubborn. I like that.", "Zehnmal! Stur. Das mag ich an dir."),
             ),
         ),
