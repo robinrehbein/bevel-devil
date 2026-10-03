@@ -21,6 +21,8 @@ import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.Twists
 import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
+import com.robinrehbein.beveldevil.game.Round
+import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
 import com.robinrehbein.beveldevil.game.WorldState
@@ -145,6 +147,49 @@ class ScreenshotTest {
             game.tap(Ui.titlePlay.x + 2f, Ui.titlePlay.y + 2f)
             play(0.16f); save("22-wipe")
         }
+    }
+
+    /** V2: the rematch banner, a trap card fading to a ghost, a pit death on the edge and the new album cards. */
+    @Test
+    fun v2() {
+        Lang.german = true
+        val big = sizes[0]
+        val room = Level(
+            name = T("Rematch", "Revanche"),
+            intro = T("Short one.", "Kurzer Weg."),
+            traps = listOf(trap(Trigger.PastX(4f), Action.Play(Card.UNDO))),
+            rematch = listOf(Round(T("Again. Same table.", "Revanche. Gleicher Tisch."), traps = listOf(trap(Trigger.PastX(4f), Action.Play(Card.STALKER))))),
+        ) { border(); floor(); fill(12..14, 15..17, 'a'); put(2, 14, 'P'); put(8, 14, 'D') }
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.sandbox = room; game.startLevel(0)
+            game.input.right = true
+            play(0.45f); save("60-v2-card-fly")
+            play(0.7f); save("61-v2-card-ghost")
+            play(3f) { game.round == 1 }
+            game.input.right = false
+            play(0.3f); save("62-v2-rematch-banner")
+        }
+        val pit = Level(T("Pit", "Grube"), T("Mind the gap.", "Vorsicht, Lücke."),
+            traps = listOf(trap(Trigger.PastX(9f), Action.Fall('a')))) {
+            border(); floor(); fill(10..13, 15..17, 'a'); put(2, 14, 'P'); put(28, 14, 'D')
+        }
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.sandbox = pit; game.startLevel(0)
+            game.input.right = true
+            play(5f) { game.world!!.state == WorldState.DEAD }
+            game.input.right = false
+            play(0.08f); save("63-v2-pit-death")
+        }
+        val all = MemoryProgress().apply { Card.entries.forEach { findCard(it) } }
+        val g = Game(all, silent)
+        run(g, 0.5f)
+        g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.6f)
+        g.tap(Ui.pageNext.x + 2f, Ui.pageNext.y + 2f); run(g, 0.4f)
+        check(g.screen == Screen.ALBUM)
+        shoot("64-v2-album-p2", g, sizes.take(1))
+        val undo = Card.entries.indexOf(Card.UNDO)
+        Ui.albumCard(undo).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("65-v2-card-undo", g, sizes.take(1))
     }
 
     private fun run(game: Game, seconds: Float, right: Boolean = false, jumpAt: Float = -1f) {

@@ -99,7 +99,7 @@ class DeckTest {
     @Test
     fun gameAdvancesAttemptsAndRounds() {
         val g = sandbox(demo)
-        assertEquals(0, g.round); assertEquals(1, g.attempt); assertEquals("1/2", g.roundTag)
+        assertEquals(0, g.round); assertEquals(1, g.attempt); assertEquals(null, g.roundTag)
         g.hold(3f, right = true)
         assertEquals(1, g.deaths)
         g.run(1.2f)
@@ -121,7 +121,7 @@ class DeckTest {
         assertEquals(Screen.PLAY, g.screen)
         assertEquals(1, g.round)
         assertEquals(1, g.attempt)
-        assertEquals("2/2", g.roundTag)
+        assertEquals("#2", g.roundTag)
         assertTrue(g.rematchAge < 0.5f)
         assertEquals(1, g.deaths)
 

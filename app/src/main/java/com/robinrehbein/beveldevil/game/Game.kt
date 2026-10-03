@@ -278,8 +278,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     /** "2-17" for the current level. */
     val levelLabel get() = Worlds.label(levelIndex)
-    /** "2/3" while a level has rematch rounds, null otherwise. */
-    val roundTag get() = if (roundCount > 1) "${round + 1}/$roundCount" else null
+    /** "#2" from the first rematch on; never the total, so round 1 gives nothing away. */
+    val roundTag get() = if (round > 0) "#${round + 1}" else null
     fun worldOpen(w: WorldInfo) = w.size > 0 && w.firstLevel < progress.unlocked
     fun pages(w: WorldInfo = selWorld) = (w.size + Ui.PAGE - 1) / Ui.PAGE
     /** Global index of the level on tile [slot] of the shown page, or -1 past the world's end. */

@@ -150,7 +150,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         rect(0f, 46f, 256f, 30f, 0xC0100818.toInt())
         rect(0f, 46f, 256f, 1f, GOLD); rect(0f, 75f, 256f, 1f, GOLD_LO)
         say(Txt.rematch.toString(), 128f, 57f, size, GOLD_HI, Paint.Align.CENTER, DEVIL_RED_LO)
-        say("${Txt.newHand} · ${game.roundTag ?: ""}", 128f, 69f, 5f, CREAM, Paint.Align.CENTER)
+        say("${Txt.newHand} · ${Txt.round} ${game.round + 1}", 128f, 69f, 5f, CREAM, Paint.Align.CENTER)
     }
 
     /** The HUD pause button, unless a [PauseTrick] makes it dodge or grow spikes. */
