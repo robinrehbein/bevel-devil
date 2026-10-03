@@ -100,14 +100,17 @@ object World3Part1 {
             spawn(); door()
         },
 
-        // 5 — a hold pad: the wall is open only while the button is down; pressing it also drops a ceiling slab in your way
+        // 5 — a hold pad: the wall is open only while the button is down; pressing it also drops a ceiling slab in your way;
+        // the landing behind the spikes is hot, so you run on, and the dark trace before the door wakes up as you land
         Level(
             name = T("Turnstile", "Drehkreuz"),
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
-            start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD)),
+            start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD), Circuit('Z', on = false)),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke.")),
                 trap(Airborne(20f, 24.5f), HeatSpike('f', 0.7f), say("Landing gear: preheated.", "Fahrwerk: vorgeheizt.")),
+                // the hot plate says "keep running"; the doorway says "wait". Stop short of the plate, let the pulse pass
+                trap(Landed(24f, 28f), Clock('Z', on = 0.9f, off = 1.6f), say("Door frame: now with doorbell.", "Türrahmen: jetzt mit Klingel.")),
             ),
         ) {
             border(); floor()
@@ -115,10 +118,12 @@ object World3Part1 {
             fill(16..17, 9..10, 'c')
             put(22, 14, '^'); put(23, 14, '^')
             fill(26..27, 15..15, 'f')
+            wire(28, 'Z')
             spawn(); door()
         },
 
-        // 6 — two identical pads, the second undoes the first: hop over it; then the bridge starts to flicker
+        // 6 — two identical pads, the second undoes the first: hop over it; then the bridge starts to flicker, so you hurry
+        // across, and the floor after it gives way under the hurry: leave the bridge with a jump
         Level(
             name = T("Two Buttons", "Zwei Knöpfe"),
             intro = T("Press whichever you like.", "Drück, welchen du willst."),
@@ -130,14 +135,17 @@ object World3Part1 {
             traps = listOf(
                 trap(Pressed('2'), Play(Card.DECOY), say("Button 2 undoes button 1. It's called a toggle.", "Knopf 2 macht Knopf 1 rückgängig. Nennt sich Toggle.")),
                 trap(Touch('a'), Clock('a', on = 1.0f, off = 1.0f), say("Loose contact. Keep walking.", "Wackelkontakt. Lauf weiter.")),
+                trap(Touch('e'), Fall('e'), say("Walking was the right idea. Here, though?", "Weiterlaufen war richtig. Nur nicht hier."), delay = 0.08f),
             ),
         ) {
             border(); floor()
             bridge(12..17, 'a')
+            fill(18..20, 15..17, 'e')
             spawn(); door()
         },
 
-        // 7 — flickering live traces: wait at the gate until it goes dark; waiting too long gets noticed, the second gate changes rhythm
+        // 7 — flickering live traces: wait at the gate until it goes dark; waiting too long gets noticed, hopping on the spot
+        // to look busy brings the slab above down (pace instead), and the second gate changes rhythm
         Level(
             name = T("Loose Contact", "Wackelkontakt"),
             intro = T("It's not a bug, it's a flicker.", "Das ist kein Fehler, das ist ein Flimmern."),
@@ -147,11 +155,13 @@ object World3Part1 {
             ),
             traps = listOf(
                 trap(Idle(0.9f), Play(Card.COLLAPSE), Fall('e'), say("Observed. Collapsed.", "Beobachtet. Kollabiert.")),
+                trap(Airborne(8.4f, 11.7f), Fall('c'), say("Hopping on the spot? The ceiling felt that.", "Auf der Stelle hüpfen? Die Decke hat's gespürt.")),
                 trap(PastX(12.6f), Clock('Y', on = 1.0f, off = 2.0f), say("Gate 2 runs on another schedule.", "Tor 2 hat einen anderen Fahrplan.")),
             ),
         ) {
             border(); floor()
             wire(12, 'Z'); wire(20, 'Y')
+            fill(9..11, 9..9, 'c')
             fill(14..17, 15..17, 'e')
             spawn(); door()
         },
@@ -195,12 +205,14 @@ object World3Part1 {
             spawn(); door()
         },
 
-        // 10 — stepping stones on clocks: hop over on the beat; the last stone speeds up once you stand on the middle one
+        // 10 — stepping stones on clocks: hop over on the beat; the first stone goes on a short shift once you land on it, so
+        // waiting there for the next beat is out (watch it from the floor); the last stone speeds up once you stand on the middle one
         Level(
             name = T("Metronome", "Metronom"),
             intro = T("Step to the beat. Mine.", "Tritt im Takt. In meinem."),
             start = listOf(Clock('a', on = 2.4f, off = 1f), Clock('b', on = 2.4f, off = 1f, phase = 1.8f), Clock('c', on = 2.4f, off = 1f)),
             traps = listOf(
+                trap(Landed(7.6f, 13f), Clock('a', on = 1.2f, off = 1.0f), say("Stone one: clocked in, short shift.", "Stein eins: eingestempelt, Kurzschicht.")),
                 trap(Landed(14f, 20.5f), Clock('c', on = 1.4f, off = 1.2f), say("Stone three went up-tempo.", "Stein drei ist auf Allegro umgestiegen.")),
                 trap(Touch('e'), Play(Card.SINKING), Fall('e'), say("The last tile was on a timer too.", "Die letzte Kachel hatte auch einen Timer."), delay = 0.3f),
             ),
@@ -245,18 +257,21 @@ object World3Part1 {
             spawn(); door()
         },
 
-        // 13 — the fuse box is on top of the hill: climb it to switch the live wall off, but it only slows the current
+        // 13 — the fuse box is on top of the hill: climb it to switch the live wall off, but it only slows the current;
+        // waiting for the dark beat on the rail in front of the wall cuts the rail (wait on the hill instead), and the floor behind the wall drops
         Level(
             name = T("Fuse Box", "Sicherungskasten"),
             intro = T("The fuse box is upstairs. Naturally.", "Der Sicherungskasten ist oben. Natürlich."),
-            start = listOf(Circuit('Z'), Pad('1', at = 11 to 11, circuits = "Z", mode = PadMode.OFF)),
+            start = listOf(Circuit('Z'), Pad('1', at = 11 to 11, circuits = "Z", mode = PadMode.OFF), Circuit('a')),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('Z', on = 0.8f, off = 2.8f, phase = 0.8f), say("Fuse box: the fuse is a clock now.", "Sicherungskasten: die Sicherung ist jetzt ein Taktgeber.")),
+                trap(Touch('a'), Power('a', false), say("Waiting room closed. Should have waited upstairs.", "Wartezimmer geschlossen. Oben warten wäre klüger gewesen."), delay = 0.8f),
                 trap(PastX(22.6f), Fall('x'), say("Load-bearing floor is optional.", "Tragender Boden ist optional."), delay = 0.15f),
             ),
         ) {
             border(); floor()
             chip(6, 2, 1); chip(8, 2, 2); chip(10, 4, 3); chip(14, 2, 2); chip(16, 2, 1)
+            bridge(18..21, 'a')
             wire(22, 'Z')
             fill(24..26, 15..17, 'x')
             spawn(); door()
@@ -298,7 +313,8 @@ object World3Part1 {
             spawn(); door()
         },
 
-        // 16 — act finale: a timed pad bridge, a flickering gate that changes rhythm, and a bit flip, in one go
+        // 16 — act finale: a timed pad bridge, a flickering gate that changes rhythm, and a bit flip, in one go; the flip
+        // comes back a moment after you land on the rail it saved you with, so do not stop on it
         Level(
             name = T("Motherboard", "Hauptplatine"),
             intro = T("Act one finale. All the parts, all the ways to die.", "Finale, Akt eins. Alle Teile, alle Wege zu sterben."),
@@ -311,6 +327,7 @@ object World3Part1 {
                 trap(Pressed('1'), Power('a', false), say("The bridge is on a timer. Again.", "Die Brücke hat einen Timer. Schon wieder."), delay = 2.8f),
                 trap(PastX(14.2f), Clock('Z', on = 0.9f, off = 1.6f), say("Gate firmware updated.", "Tor-Firmware aktualisiert.")),
                 trap(PastX(21.5f), Play(Card.GRAND_FINALE), BitFlip('b', 'c'), say("Motherboard: 3 of 3 components hostile.", "Hauptplatine: 3 von 3 Bauteilen feindlich.")),
+                trap(Landed(23.6f, 28f), BitFlip('b', 'c'), say("Component 4 of 3. I never could count.", "Bauteil 4 von 3. Zählen war nie meins."), delay = 0.5f),
             ),
         ) {
             border(); floor()
