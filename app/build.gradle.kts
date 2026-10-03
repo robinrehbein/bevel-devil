@@ -5,8 +5,10 @@ plugins {
 
 // AdMob ids come from Gradle properties (or the matching environment variables); without them, and always in debug
 // builds, Google's sample ids are used, which only ever show test ads.
+// Blank counts as missing: GitHub Actions passes an unset secret as an empty string, and an empty
+// APPLICATION_ID makes the Mobile Ads SDK crash the app on launch.
 fun admob(property: String, env: String, test: String) =
-    providers.gradleProperty(property).orElse(providers.environmentVariable(env)).orNull ?: test
+    providers.gradleProperty(property).orElse(providers.environmentVariable(env)).orNull?.takeIf { it.isNotBlank() } ?: test
 val testAppId = "ca-app-pub-3940256099942544~3347511713"
 val testInterstitialId = "ca-app-pub-3940256099942544/1033173712"
 val testRewardedId = "ca-app-pub-3940256099942544/5224354917"
