@@ -47,14 +47,16 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 18 — a chip under load heats all the time: cool it on the heatsink first, but the sink warms up under you
+        // 18 — a chip under load heats all the time: cool it on the heatsink first, but the sink warms up under you; once you
+        // are down on the chip it runs hotter, so the last tiles are only safe in the air, and the landing after them is hot
         Level(
             name = T("Full Load", "Volllast"),
             intro = T("Chips get hot when they think. This one never stops.", "Chips werden heiß, wenn sie denken. Der hier hört nie auf."),
             start = listOf(Heat('c', rise = 2.2f, load = true), Heatsink('k', cools = "c")),
             traps = listOf(
                 trap(Landed(4.8f, 7.2f), Play(Card.OVERCLOCKED), HeatSpike('k', 0.55f), say("The heatsink has a fever.", "Der Kühlkörper hat Fieber.")),
-                trap(Airborne(24.3f, 28f), HeatSpike('f', 0.7f), say("Bonus round: the landing is lava. Mildly.", "Bonusrunde: Die Landung ist Lava. Mild.")),
+                trap(Landed(7f, 16f), Heat('c', rise = 1.6f, load = true), say("Turbo boost. For the chip, not for you.", "Turbo-Boost. Für den Chip, nicht für dich.")),
+                trap(PastX(24.3f), HeatSpike('f', 1f), say("Bonus round: the landing is lava. Mildly.", "Bonusrunde: Die Landung ist Lava. Mild.")),
             ),
         ) {
             border(); floor()
@@ -80,14 +82,20 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 20 — the plate that glows is cool; the plain floor is what burns
+        // 20 — the plate that glows is cool; the plain floor is what burns; as you land behind the last plate the door flies home
+        // to the cool plate, and the floor on the way back is overclocked again: wait for it to cool
         Level(
             name = T("Cold Start", "Kaltstart"),
             intro = T("Nice and cool here. Take your time.", "Schön kühl hier. Lass dir Zeit."),
             start = listOf(Heat('h', rise = 14f, cool = 1f)),
             traps = listOf(
                 trap(PastX(13.2f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.7f), say("Overclocked! Factory settings: mine.", "Übertaktet! Werkseinstellung: meine.")),
-                trap(Airborne(23.4f, 26f), HeatSpike('g', 0.75f), say("Twice! It's a feature.", "Nochmal! Ist ein Feature.")),
+                trap(Airborne(23.4f, 26f), HeatSpike('g', 0.75f), DoorTo(29, 12, speed = 20f), say("Twice! It's a feature.", "Nochmal! Ist ein Feature.")),
+                // the door hovers within jumping reach until you land, then flies over your head to the glowing plate
+                trap(
+                    Landed(25.5f, 28.6f), DoorTo(7, 14, speed = 30f), HeatSpike('f', 1f), Heat('f', rise = 1.5f, cool = 3f),
+                    say("The door prefers the cool plate. The way back is overclocked.", "Die Tür mag die kühle Platte. Der Rückweg ist übertaktet."),
+                ),
             ),
         ) {
             border(); floor()
@@ -96,13 +104,15 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 21 — three plates that share their heat and two sinks between them; the sinks make the plates nervous
+        // 21 — three plates that share their heat and two sinks between them; the sinks make the plates nervous, the last leg
+        // turns up as you leave the second sink (leap from the sink), and the floor after it is overclocked
         Level(
             name = T("Relay Race", "Staffellauf"),
             intro = T("Three plates, two heatsinks. Do the math.", "Drei Platten, zwei Kühlkörper. Rechne nach."),
             start = listOf(Heat('h', rise = 1f), Heatsink('k', cools = "h")),
             traps = listOf(
                 trap(Touch('k'), Play(Card.THROTTLE), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates are warmed up. So to speak.", "Platten sind warmgelaufen. Sozusagen.")),
+                trap(PastX(19.2f), Heat('h', rise = 0.55f, cool = 1.4f), say("Last leg: sprint mode.", "Letzte Etappe: Sprintmodus.")),
                 trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4 is a plain floor. I counted.", "Platte 4 ist ein schlichter Boden. Ich hab mitgezählt.")),
             ),
         ) {
@@ -112,13 +122,15 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 22 — the chip warms up; linger on it and it goes to full load, run and the floor behind it is the problem
+        // 22 — the chip warms up; linger on it and it goes to full load; a fan blade rolls in, so hop it without slowing down;
+        // run on and the floor behind it is the problem
         Level(
             name = T("Warm-up", "Warmlaufen"),
             intro = T("A warm chip is a happy chip.", "Ein warmer Chip ist ein glücklicher Chip."),
             start = listOf(Heat('c', rise = 4f, load = true)),
             traps = listOf(
                 trap(Heated('c', 0.7f), HeatSpike('c', 1f), say("Thermal throttling: the chip throttles YOU.", "Thermische Drosselung: der Chip drosselt DICH.")),
+                trap(PastX(6f), Saw(33f, 14.4f, -9f, 0f), say("Fan blade. Stopping is not an option.", "Lüfterblatt. Anhalten ist keine Option.")),
                 trap(PastX(23.4f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.8f), say("Overclocked on the far side, too.", "Auch auf der anderen Seite übertaktet.")),
             ),
         ) {
@@ -163,13 +175,15 @@ object World3Part2 {
             spawn(); door(29, 4)
         },
 
-        // 25 — a hot floor and one cool spot, two tiles up; the cool spot warms up once you land on it
+        // 25 — a hot floor and one cool spot, two tiles up; the cool spot warms up once you land on it; climb down and the floor
+        // turns up (leap off the tower instead), and the exit is not load-bearing
         Level(
             name = T("Cooling Tower", "Kühlturm"),
             intro = T("The only cool spot is upstairs.", "Der einzige kühle Ort liegt oben."),
             start = listOf(Heat('h', rise = 1.4f), Heatsink('k', cools = "h")),
             traps = listOf(
                 trap(Landed(12f, 16f), Play(Card.GHOST_BLOCK), HeatSpike('k', 0.55f), say("Upstairs is warming up. Hurry.", "Oben wird es warm. Beeil dich.")),
+                trap(Landed(16f, 22f), Heat('h', rise = 0.55f), say("Ground floor: now with floor heating.", "Erdgeschoss: jetzt mit Fußbodenheizung.")),
                 trap(PastX(24f), Fall('x'), say("Exit: load-bearing? No.", "Ausgang: tragend? Nein."), delay = 0.1f),
             ),
         ) {
@@ -215,13 +229,15 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 28 — rest on the heatsink, and a fan blade rolls in along the floor; the plates behind it warm up as you land
+        // 28 — rest on the heatsink, and a fan blade rolls in along the floor; wait there for it and a second, faster blade comes
+        // from behind; the plates behind the first blade warm up as you land
         Level(
             name = T("Break Time", "Pause"),
             intro = T("Take a seat on the heatsink. Relax.", "Setz dich auf den Kühlkörper. Entspann dich."),
             start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h")),
             traps = listOf(
                 trap(PastX(16.5f), Play(Card.DEVIL_SAW), Saw(33f, 14.4f, -7f, 0f), say("Fan blade! It's rotating. On the floor.", "Lüfterblatt! Es dreht sich. Am Boden.")),
+                trap(Touch('k'), Saw(-2f, 14.4f, 10f, 0f), say("Fans have more than one blade.", "Lüfter haben mehr als ein Blatt.")),
                 trap(Landed(18f, 27f), HeatSpike('h', 0.6f), say("Sorry, the landing strip is warm.", "Sorry, die Landebahn ist warm.")),
             ),
         ) {
@@ -230,7 +246,8 @@ object World3Part2 {
             spawn(); door()
         },
 
-        // 29 — the wall opens when the plate reaches 55 degrees: sit on it, then run; the floor behind the wall is overclocked
+        // 29 — the wall opens when the plate reaches 55 degrees: sit on it, then run; the floor behind the wall is overclocked,
+        // and running on from the warm landing finds the floor before the door gone
         Level(
             name = T("Thermostat", "Thermostat"),
             intro = T("The wall has a thermostat. Somewhere.", "Die Wand hat ein Thermostat. Irgendwo."),
@@ -238,26 +255,31 @@ object World3Part2 {
             traps = listOf(
                 trap(Heated('h', 0.55f), Play(Card.GHOST_BLOCK), Hide('w'), say("Thermostat reached. Wall removed. Nothing suspicious.", "Thermostat erreicht. Wand entfernt. Nichts Verdächtiges.")),
                 trap(PastX(17f), HeatSpike('g', 0.7f), say("Nothing suspicious. Except the floor.", "Nichts Verdächtiges. Außer dem Boden.")),
+                trap(Landed(19f, 25f), Fall('x'), say("Solder joint: cold. Floor: gone.", "Lötstelle: kalt. Boden: weg.")),
             ),
         ) {
             border(); floor()
             fill(8..12, 15..15, 'h')
             wire(16, 'w')
             fill(20..23, 15..15, 'g')
+            fill(26..27, 15..17, 'x')
             spawn(); door()
         },
 
-        // 30 — burn-in test: the gate changes rhythm, the door is a fake, the floor around it is overclocked and the real door ran off
+        // 30 — burn-in test: the gate changes rhythm, the floor right before it burns in under whoever waits there, the door is
+        // a fake, the floor around it is overclocked and the real door ran off
         Level(
             name = T("Burn-in Test", "Einbrenntest"),
             intro = T("Stress test: walk to the door. Easy.", "Stresstest: lauf zur Tür. Ganz leicht."),
             start = listOf(Clock('Z', on = 1.3f, off = 1.7f)),
             traps = listOf(
-                trap(PastX(6f), Clock('Z', on = 0.9f, off = 1.5f), say("Test profile 2: shorter gaps.", "Testprofil 2: kürzere Pausen.")),
+                trap(PastX(5.2f), Clock('Z', on = 0.9f, off = 1.5f), say("Test profile 2: shorter gaps.", "Testprofil 2: kürzere Pausen.")),
+                trap(PastX(7.2f), HeatSpike('e', 0.6f), say("Test profile 3: the waiting area burns in.", "Testprofil 3: der Wartebereich brennt ein.")),
                 trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, HeatSpike('f', 0.55f), DoorTo(17, 14), say("Stress test passed! ...Just kidding. Run.", "Stresstest bestanden! ...Scherz. Lauf."))),
             ),
         ) {
             border(); floor()
+            fill(7..9, 15..15, 'e')
             wire(10, 'Z')
             fill(23..30, 15..15, 'f')
             spawn(); door()
