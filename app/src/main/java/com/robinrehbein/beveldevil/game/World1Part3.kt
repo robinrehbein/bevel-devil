@@ -45,6 +45,20 @@ object World1Part3 {
                 trap(Touch('c'), Fall('c'), delay = 0.06f),
                 trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14))),
             ),
+            // rematch: no fake this time, but the floor erodes behind the landing and drops right before the door
+            rematch = listOf(
+                Round(
+                    T("Rematch. This time the door is real. Honest.", "Revanche. Diesmal ist die Tür echt. Ehrlich."),
+                    traps = listOf(
+                        trap(Touch('c'), Fall('c'), delay = 0.06f),
+                        trap(PastX(23.5f), Say(T("Same trick twice? Please.", "Zweimal derselbe Trick? Ich bitte dich."))),
+                        // the floor erodes behind you, tile by tile, toward the door: nobody waits for a fake here
+                        trap(Landed(21.8f, 25f), Fall('h'), delay = 0.35f),
+                        trap(Landed(21.8f, 25f), Fall('i'), delay = 0.6f),
+                        trap(Touch('g'), Play(Card.COLLAPSE), Fall('g'), delay = 0.06f),
+                    ),
+                ) { fill(22..23, 15..17, 'h'); fill(24..24, 15..17, 'i'); fill(25..26, 15..17, 'g') },
+            ),
         ) {
             border(); floor()
             fill(20..21, 15..17, 'c')
@@ -98,6 +112,17 @@ object World1Part3 {
                 trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack."))),
                 trap(Airborne(14f, 20f), Show('A')),
             ),
+            // rematch: the frame holds, the spot you waited on drops, and the spikes come for walkers
+            rematch = listOf(
+                Round(
+                    T("Rematch. New exhibition, same thief.", "Revanche. Neue Ausstellung, gleicher Dieb."),
+                    traps = listOf(
+                        trap(PastX(4f), Shake(0.3f), Say(T("Mind the frame.", "Vorsicht, Rahmen."))),
+                        trap(Touch('w'), Play(Card.COLLAPSE), Fall('w'), delay = 1f),
+                        trap(PastX(19.4f), Show('A'), Say(T("Looking up was the wrong idea.", "Nach oben schauen war falsch."))),
+                    ),
+                ) { fill(9..11, 15..17, 'w') },
+            ),
         ) {
             border(); floor()
             put(21, 14, 'A'); put(22, 14, 'A')
@@ -113,6 +138,17 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(29, 0, speed = 25f), Show('A'), Say(T("History rewritten. You're welcome.", "Historie umgeschrieben. Gern geschehen."))),
                 trap(PastX(23f), DoorTo(2, 14, speed = 20f), delay = 0.8f),
+            ),
+            // rematch: the force push comes early, halfway; whoever runs on to wait at the old spot meets spikes
+            rematch = listOf(
+                Round(
+                    T("Rematch. I pushed first this time.", "Revanche. Diesmal hab ich zuerst gepusht."),
+                    legend = mapOf('B' to hiddenSpike),
+                    traps = listOf(
+                        trap(PastX(14f), Play(Card.SHY_DOOR), DoorTo(2, 14, speed = 20f), Show('A'), Say(T("Early push. Pull faster.", "Früh gepusht. Zieh schneller."))),
+                        trap(PastX(22f), Show('B')),
+                    ),
+                ) { put(24, 14, 'B'); put(25, 14, 'B') },
             ),
         ) {
             border(); floor(); pit(11..12)
@@ -130,6 +166,16 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
                 trap(Airborne(10f, 16.5f), Show('A')),
+            ),
+            // rematch: no flip where it came before; it comes in mid-jump over the spikes
+            rematch = listOf(
+                Round(
+                    T("Rematch. I'll hold the picture still. Promise.", "Revanche. Ich halte das Bild still. Versprochen."),
+                    traps = listOf(
+                        trap(PastX(6f), Shake(0.3f), Say(T("See? Upright.", "Siehst du? Aufrecht."))),
+                        trap(Airborne(11f, 13.5f), Play(Card.UPSIDE_DOWN), Flip(2.5f), Say(T("Promise expired.", "Versprechen abgelaufen."))),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -166,6 +212,16 @@ object World1Part3 {
                 trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
                 trap(Airborne(15f, 20.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
             ),
+            // rematch: the keys stay sane on the ceiling and only swap over the hole
+            rematch = listOf(
+                Round(
+                    T("Rematch. Rebooted in safe mode. Ha.", "Revanche. Im abgesicherten Modus. Haha."),
+                    traps = listOf(
+                        trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Shake(1.5f), Say(T("Panic, but gently.", "Panik, aber sanft."))),
+                        trap(Airborne(15f, 20.5f), Swap(true), Say(T("Rebooted. Into a different panic.", "Neu gestartet. In eine andere Panik."))),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(6..27, 14..14, '^')
@@ -182,6 +238,16 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Technical difficulties.", "Bildstörung."))),
                 trap(PastX(20.5f), Fall('T'), Roll(2f, 2)),
+            ),
+            // rematch: the second wave waits until you have walked on from where it fell before
+            rematch = listOf(
+                Round(
+                    T("Rematch. Same channel, later broadcast.", "Revanche. Gleicher Sender, spätere Ausstrahlung."),
+                    traps = listOf(
+                        trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Rerun.", "Wiederholung."))),
+                        trap(PastX(21.1f), Fall('T'), Roll(2f, 2), Say(T("Now with a delay.", "Jetzt zeitversetzt."))),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -252,16 +318,27 @@ object World1Part3 {
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
-            legend = mapOf('A' to hiddenSpike),
+            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
             traps = listOf(
                 trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
                 trap(Airborne(2.5f, 7f), Show('A')),
+            ),
+            // rematch: no spikes behind the climb; the hop you learned over them lands on new ones
+            rematch = listOf(
+                Round(
+                    T("Rematch. Root again. Same password.", "Revanche. Wieder root. Gleiches Passwort."),
+                    traps = listOf(
+                        trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), Say(T("rm -rf ./habits", "rm -rf ./gewohnheiten"))),
+                        trap(Airborne(8.5f, 11.5f), Show('B')),
+                    ),
+                ),
             ),
         ) {
             border()
             fill(1..30, 15..17, 'f')
             fill(4..30, 13..13)
             put(9, 12, 'A'); put(10, 12, 'A')
+            put(12, 12, 'B'); put(13, 12, 'B')
             put(20, 12, '^')
             put(2, 14, 'P'); put(29, 12, 'D')
         },
@@ -274,6 +351,18 @@ object World1Part3 {
             traps = listOf(
                 trap(Touch('k'), Play(Card.DECOY), Hide('w'), Say(T("Oh, you found the button. Boo.", "Oh, du hast den Knopf gefunden. Buh."))),
                 trap(PastX(20.5f), Show('A')),
+            ),
+            // rematch: the old button is a bluff; the real one hides in the air above the start
+            rematch = listOf(
+                Round(
+                    T("Rematch. I moved the button.", "Revanche. Ich hab den Knopf versetzt."),
+                    legend = mapOf('g' to ghost),
+                    traps = listOf(
+                        trap(Touch('k'), Play(Card.DECOY), Say(T("That button retired. Think higher.", "Der Knopf ist in Rente. Denk höher."))),
+                        trap(Touch('g'), Hide('w'), Say(T("Fine. Up there.", "Na gut. Da oben."))),
+                        trap(PastX(20.5f), Show('A')),
+                    ),
+                ) { put(10, 12, 'g') },
             ),
         ) {
             border(); floor()
@@ -288,15 +377,27 @@ object World1Part3 {
         Level(
             name = T("sudo make me a sandwich", "sudo mach mir ein Sandwich"),
             intro = T("I'm hungry. Make me a sandwich.", "Ich habe Hunger. Mach mir ein Sandwich."),
-            legend = mapOf('k' to ghost, 'A' to hiddenSpike),
+            legend = mapOf('k' to ghost, 'A' to hiddenSpike, 'C' to hiddenSpike),
             traps = listOf(
                 trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Say(T("Okay.", "Okay."))),
                 trap(PastX(13.5f), Show('A')),
                 trap(Landed(19f, 22f), Fall('f')),
             ),
+            // rematch: Mephi learned: whoever stands under the sandwich to fetch it lands on spikes; take it on the run
+            rematch = listOf(
+                Round(
+                    T("Rematch. I'm hungry again.", "Revanche. Ich hab schon wieder Hunger."),
+                    traps = listOf(
+                        trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Show('C'), Say(T("Sandwich comes with a side of spikes.", "Sandwich mit Beilage. Spitzer Beilage."))),
+                        trap(PastX(13.5f), Show('A')),
+                        trap(Landed(19f, 22f), Fall('f')),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             put(17, 14, 'A'); put(18, 14, 'A')
+            put(10, 14, 'C')
             fill(23..23, 15..17, 'f')
             fill(20..21, 3..14, 'w')
             put(10, 12, 'k')
@@ -316,6 +417,28 @@ object World1Part3 {
                 trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8), Roll(3f, 2))),
             ),
             start = listOf(Blink('a', on = 2.4f, off = 1f)),
+            // round 2 (encore): no fake, but the floor after the bridge drops: jump off its end this time.
+            // round 3 (second encore): the door goes home, back over the bridge
+            rematch = listOf(
+                Round(
+                    T("Encore! Nobody leaves before the encore.", "Zugabe! Keiner geht vor der Zugabe."),
+                    start = listOf(Blink('a', on = 2.4f, off = 1f, phase = 1.2f)),
+                    traps = listOf(
+                        trap(After(0.4f), Say(T("Same song. New ending.", "Gleiches Lied. Neues Ende."))),
+                        trap(Touch('e'), Play(Card.GRAND_FINALE), Fall('e'), delay = 0.08f),
+                    ),
+                ) { fill(17..18, 15..17, 'e') },
+                Round(
+                    T("Second encore. The crowd insists. I'm the crowd.", "Zweite Zugabe. Das Publikum will es. Ich bin das Publikum."),
+                    start = listOf(Blink('a', on = 2.4f, off = 1f, phase = 1.2f)),
+                    traps = listOf(
+                        trap(After(0.4f), Say(T("From the top!", "Da capo!"))),
+                        // up and over your head first, then home to the start
+                        trap(PastX(23f), Play(Card.GRAND_FINALE), DoorTo(28, 4, speed = 20f), Say(T("Encore means from the top.", "Zugabe heißt: von vorn."))),
+                        trap(PastX(23f), DoorTo(3, 14, speed = 14f), delay = 0.6f),
+                    ),
+                ),
+            ),
         ) {
             border(); floor(); pit(10..16)
             put(19, 14, 'A'); put(20, 14, 'A')

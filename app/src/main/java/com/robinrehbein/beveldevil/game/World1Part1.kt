@@ -88,6 +88,16 @@ object World1Part1 {
                 trap(Landed(17f, 20.6f), Fall('d'), Say(T("Again? Again.", "Nochmal? Nochmal."))),
                 trap(Airborne(22f, 24f), Fall('e')),
             ),
+            // rematch: the slab you learned to wait for only rattles, the one you run under next falls
+            rematch = listOf(
+                Round(
+                    T("Rematch. Same ceiling, new grudge.", "Revanche. Gleiche Decke, frischer Groll."),
+                    traps = listOf(
+                        trap(PastX(13.1f), Shake(0.5f), Say(T("Flinched. Cute.", "Gezuckt. Niedlich."))),
+                        trap(PastX(18.2f), Play(Card.HEADBUTT), Fall('d'), Say(T("This one means it.", "Die hier meint es ernst."))),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(1..30, 1..6)
@@ -118,14 +128,26 @@ object World1Part1 {
         Level(
             name = T("Cozy", "Gemütlich"),
             intro = T("Take your time.", "Lass dir ruhig Zeit."),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.5f, 0f, 0.62f), Say(T("It only wants a hug!", "Sie will nur kuscheln!"))),
                 trap(Touch('a'), Fall('a'), delay = 0.12f),
                 trap(Landed(23.4f, 27f), Saw(33.5f, 14.4f, -4.5f, 0f, 0.62f), Say(T("And its brother wants one too.", "Und ihr Bruder will auch eine."))),
             ),
+            // rematch: the floor holds now, and jumping the spot where it fell lands on spikes
+            rematch = listOf(
+                Round(
+                    T("Rematch. Same saw, new manners.", "Revanche. Gleiche Säge, neue Manieren."),
+                    traps = listOf(
+                        trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.5f, 0f, 0.62f), Say(T("Back for seconds.", "Nachschlag gefällig?"))),
+                        trap(Airborne(19.5f, 23f), Show('A'), Say(T("Jumped over nothing. Landed on something.", "Über nichts gesprungen. Auf was gelandet."))),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             put(14, 14, '#')
+            put(23, 14, 'A'); put(24, 14, 'A')
             fill(21..22, 15..17, 'a')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
@@ -160,6 +182,16 @@ object World1Part1 {
                 trap(Landed(24.5f, 29f), Gravity(true)),
                 trap(PastX(29.6f), Gravity(false)),
             ),
+            // rematch: walking in no longer flips you, only a jump does
+            rematch = listOf(
+                Round(
+                    T("Rematch. Gravity is opt-in now.", "Revanche. Schwerkraft nur noch auf Antrag."),
+                    traps = listOf(
+                        trap(Airborne(8f, 11.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur für Springer."))),
+                        trap(PastX(22.8f), Gravity(false)),
+                    ),
+                ),
+            ),
         ) {
             border(); floor()
             fill(11..24, 14..14, '^')
@@ -174,6 +206,16 @@ object World1Part1 {
             traps = listOf(
                 trap(Airborne(12.2f, 14f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."))),
                 trap(Airborne(21.4f, 23f), Swap(false), Say(T("Or is it?", "Oder doch nicht?"))),
+            ),
+            // rematch: nothing happens over the first hole, the swap waits for the second
+            rematch = listOf(
+                Round(
+                    T("Round two. Same holes, new wiring.", "Zweite Runde. Gleiche Löcher, neu verkabelt."),
+                    traps = listOf(
+                        trap(Airborne(12.2f, 14f), Say(T("Twisted? Not yet.", "Verdreht? Noch nicht."))),
+                        trap(Airborne(21.4f, 23f), Play(Card.TWISTED), Swap(true), Say(T("Now.", "Jetzt."))),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -222,15 +264,26 @@ object World1Part1 {
         Level(
             name = T("Return Trip", "Rückreise"),
             intro = T("The door is on the left. I know. Unusual.", "Die Tür ist links. Ich weiß. Ungewohnt."),
-            legend = mapOf('A' to hiddenSpike),
+            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
             traps = listOf(
                 trap(Airborne(19f, 21.6f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Spikes read right to left too.", "Spikes lesen auch von rechts nach links."))),
                 trap(Airborne(16.4f, 18f), Fall('c')),
+            ),
+            // rematch: no spikes behind the first landing this time, but the second hop lands on some
+            rematch = listOf(
+                Round(
+                    T("Rematch. Same trip, other luggage.", "Revanche. Gleiche Reise, anderes Gepäck."),
+                    traps = listOf(
+                        trap(Airborne(19f, 21.6f), Say(T("Spikes! Somewhere.", "Spikes! Irgendwo."))),
+                        trap(Airborne(13.5f, 18.8f), Play(Card.SPIKE_SEED), Show('B'), Say(T("There.", "Da."))),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
             put(22, 14, '^')
             put(15, 14, 'A'); put(16, 14, 'A')
+            put(13, 14, 'B'); put(14, 14, 'B')
             fill(11..12, 15..17, 'c')
             put(29, 14, 'P'); put(2, 14, 'D')
         },
@@ -244,6 +297,17 @@ object World1Part1 {
                 trap(PastX(11.5f), Shake(0.6f), Say(T("Incoming!", "Achtung, Einschlag!"))),
                 trap(Touch('a'), Play(Card.COLLAPSE), Fall('a'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte.")), delay = 0.1f),
                 trap(Landed(24.5f, 27f), Show('A')),
+            ),
+            // rematch: the ceiling spikes that bluffed are real now; the floor that fell holds, and whoever jumps it anyway
+            // sees the spike before the door slide under the landing
+            rematch = listOf(
+                Round(
+                    T("Rematch. Still Wednesday. Still grumpy.", "Revanche. Immer noch Mittwoch. Immer noch sauer."),
+                    traps = listOf(
+                        trap(PastX(8.2f), Play(Card.HEADBUTT), Fall('S'), Say(T("Bluffs expire.", "Bluffs haben ein Verfallsdatum."))),
+                        trap(Airborne(20.5f, 23.5f), Move('K', -2f, 0f, 14f)),
+                    ),
+                ) { put(27, 14, 'K') },
             ),
         ) {
             border(); floor()
@@ -284,6 +348,17 @@ object World1Part1 {
             traps = listOf(
                 trap(Touch('a'), Fall('a'), delay = 0.06f),
                 trap(Airborne(24.3f, 26.2f), Play(Card.DECOY), DoorTo(30, 13, speed = 20f), Say(T("Index out of bounds. One tile to the right.", "Index außerhalb. Ein Feld weiter rechts."))),
+            ),
+            // rematch: everything moved one tile to the right, the hole in the floor too: the old jump lands in it
+            rematch = listOf(
+                Round(
+                    T("Rematch. I shifted everything by one.", "Revanche. Alles um eins verschoben."),
+                    traps = listOf(
+                        trap(Touch('g'), Fall('g'), delay = 0.06f),
+                        trap(Landed(14.5f, 17.8f), Fall('g')),
+                        trap(Airborne(24.3f, 26.2f), Play(Card.DECOY), DoorTo(30, 13, speed = 20f), Say(T("Consistently off by one. That's a feature.", "Konsequent um eins daneben. Ist ein Feature."))),
+                    ),
+                ) { fill(15..17, 15..17, 'g') },
             ),
         ) {
             border(); floor()
