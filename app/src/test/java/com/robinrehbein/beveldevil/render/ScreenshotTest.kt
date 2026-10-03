@@ -180,6 +180,18 @@ class ScreenshotTest {
             game.input.right = false
             play(0.08f); save("63-v2-pit-death")
         }
+        val bluff = Level(T("Bluff", "Bluff"), T("Watch the floor.", "Achte auf den Boden."),
+            traps = listOf(trap(Trigger.PastX(6f), Action.Bluff(Card.COLLAPSE)))) {
+            border(); floor(); put(2, 14, 'P'); put(28, 14, 'D')
+        }
+        Film(Game(MemoryProgress(), silent), big).apply {
+            game.sandbox = bluff; game.startLevel(0)
+            game.input.right = true
+            play(3f) { game.card != null }
+            game.input.right = false
+            play(0.55f); save("66-v2-bluff-tell")
+            play(0.6f); save("67-v2-bluff-flipped")
+        }
         val all = MemoryProgress().apply { Card.entries.forEach { findCard(it) } }
         val g = Game(all, silent)
         run(g, 0.5f)
@@ -190,6 +202,9 @@ class ScreenshotTest {
         val undo = Card.entries.indexOf(Card.UNDO)
         Ui.albumCard(undo).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
         shoot("65-v2-card-undo", g, sizes.take(1))
+        g.tap(4f, 4f); run(g, 0.3f)
+        Ui.albumCard(Card.entries.indexOf(Card.BLUFF)).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("68-v2-card-bluff", g, sizes.take(1))
     }
 
     private fun run(game: Game, seconds: Float, right: Boolean = false, jumpAt: Float = -1f) {

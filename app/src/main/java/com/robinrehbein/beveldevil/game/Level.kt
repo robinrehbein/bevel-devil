@@ -104,6 +104,16 @@ sealed interface Action {
     data class Play(val card: Card) : Action
 
     /**
+     * Mephi bluffs: [card] flies in like a real trap, but nothing comes of it (the real trap, if any, is another
+     * one). While it flies he has a tell (sweat, darting eyes); then the card flips over and shows BLUFF.
+     * Use it sparingly: only in a rematch round where the same card was honest in round 1.
+     *
+     *     trap(PastX(9f), Bluff(Card.COLLAPSE))
+     *     trap(Landed(10f, 14f), Show('B'))           // the real trap: spikes where the reflex jump lands
+     */
+    data class Bluff(val card: Card) : Action
+
+    /**
      * Ctrl+Z: Bevel is put back where he was [seconds] ago (at most [World.HISTORY] seconds), standing still.
      *
      *     trap(PastX(24f), Play(Card.UNDO), Undo(2f), Say(T("Undo.", "Rückgängig.")))

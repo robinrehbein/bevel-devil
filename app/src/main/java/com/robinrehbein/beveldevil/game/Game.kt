@@ -162,6 +162,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var card: Card? = null
         private set
     var cardAge = 0f
+    /** The flying card is a bluff ([Action.Bluff]): it flips over to BLUFF at [BLUFF_FLIP]. */
+    var cardBluff = false
+        private set
+    /** Mephi gives himself away: a bluff card is flying and has not flipped yet. */
+    val bluffTell get() = card != null && cardBluff && cardAge < BLUFF_FLIP
     /** Where the flying card settles: -1 left, 0 stage center, 1 right. Center unless the player stands in its way. */
     var cardSide = 0
         private set
@@ -336,8 +341,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             if (moodTimer <= 0f) mood = Mood.GRIN
         }
         if (card != null) {
+            val before = cardAge
             cardAge += dt
-            if (cardAge > CARD_LIFE) card = null
+            if (cardBluff && before < BLUFF_FLIP && cardAge >= BLUFF_FLIP) bluffRevealed()
+            if (cardAge > CARD_LIFE + (if (cardBluff) BLUFF_FLIP else 0f)) card = null
         }
         updateParticles(dt)
         if (screen != Screen.PLAY) return
@@ -385,6 +392,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             is Event.Say -> { say(e.text.toString(), 2.6f); bubbleIsTrap = bubble != null }
             is Event.Played -> {
                 card = e.card
+                cardBluff = e.bluff
                 cardAge = 0f
                 cardSide = world?.player?.box?.let { p ->
                     // the card is about 5.5×7.5 tiles around (16, 8.25); keep a margin for the player walking on
@@ -393,12 +401,14 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 } ?: 0
                 heat = 1f
                 glitch = GLITCH_TIME
-                progress.findCard(e.card)
+                if (!e.bluff) progress.findCard(e.card)
                 audio.play(Sound.CARD)
                 setMood(Mood.LAUGH, 1.2f)
                 survivalCheck = 2.2f
             }
             is Event.Died -> {
+                // fell for it: the bluff shows at once, Mephi's laugh says the rest
+                if (card != null && cardBluff && cardAge < BLUFF_FLIP) { cardAge = BLUFF_FLIP; progress.findCard(Card.BLUFF) }
                 countDeath()
                 w.lastCard?.let { progress.addCardDeath(it) }
                 survivalCheck = -1f
@@ -555,6 +565,14 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         setMood(Mood.GRIN, 0f)
         bubble = null
         go(Screen.PLAY)
+    }
+
+    /** The bluff card turned over while Bevel is still alive: he didn't fall for it, and Mephi takes it badly. */
+    private fun bluffRevealed() {
+        progress.findCard(Card.BLUFF)
+        if (world?.state != WorldState.PLAYING) return
+        setMood(Mood.SULK, 1.4f)
+        say(BLUFF_LINES[rng.nextInt(BLUFF_LINES.size)].toString(), 1.6f)
     }
 
     /** Through the door, but Mephi deals another hand in the same room: the next round. */
@@ -795,6 +813,14 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         const val GLITCH_TIME = 0.2f
         /** Seconds between touching the door and the clear screen, for the win animation. */
         const val WIN_DELAY = 0.8f
+        /** Seconds until a bluff card flips over and shows BLUFF. */
+        const val BLUFF_FLIP = 0.9f
+        /** Mephi when a bluff didn't work. */
+        val BLUFF_LINES = listOf(
+            T("Pff. Lucky.", "Pff. Glück gehabt."),
+            T("I was bluffing. Obviously.", "War natürlich ein Bluff."),
+            T("Poker face: offline.", "Pokerface: offline."),
+        )
         /** Seconds from a death to the next attempt. */
         const val RESPAWN = 0.7f
         /** Seconds in one attempt before Mephi gives a level's [Level.hint]. */

@@ -22,6 +22,7 @@ object Txt {
     val deaths = T("DEATHS", "TODE")
     val best = T("BEST", "BESTWERT")
     val trap = T("TRAP", "FALLE")
+    val bluff = T("BLUFF", "BLUFF")
     val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
     val caught = T("crashed you %d×", "%d× abgestürzt")
     val soulsSacrificed = T("SOULS SACRIFICED", "SEELEN GEOPFERT")

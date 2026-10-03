@@ -138,7 +138,7 @@ sealed interface Event {
     data object Won : Event
     data class Say(val text: T) : Event
     data class Shake(val amount: Float) : Event
-    data class Played(val card: Card) : Event
+    data class Played(val card: Card, val bluff: Boolean = false) : Event
     /** A [Action.FakeWin] started: looks exactly like [Won] but grants nothing. */
     data object FakeWon : Event
     /** The fake win is over: Mephi glitches back in. */
@@ -512,6 +512,10 @@ class World(val level: Level, private val past: Trail? = null) {
             is Action.Saw -> saws += Saw(a.x, a.y, a.vx, a.vy, a.r)
             is Action.Say -> events += Event.Say(a.text)
             is Action.Shake -> events += Event.Shake(a.amount)
+            is Action.Bluff -> {
+                lastCard = Card.BLUFF
+                events += Event.Played(a.card, bluff = true)
+            }
             is Action.Play -> {
                 lastCard = a.card
                 events += Event.Played(a.card)

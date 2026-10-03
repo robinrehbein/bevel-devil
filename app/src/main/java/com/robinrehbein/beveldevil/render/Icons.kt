@@ -111,6 +111,11 @@ object Icons {
                 hero(1, 9); for (y in listOf(10, 12, 14)) p(INK, 7, y, 1, 1)
                 p(GOLD_LO, 0, 15, 16, 1)
             }
+            Card.BLUFF -> {
+                // a card back with a red stamp across it
+                p(INK, 3, 1, 10, 14); p(0xFF46295F.toInt(), 4, 2, 8, 12); p(GOLD, 5, 3, 6, 10); p(0xFF46295F.toInt(), 6, 4, 4, 8)
+                for (i in 0 until 14) p(RED, 1 + i, 10 - i / 2, 1, 2)
+            }
             Card.GRAND_FINALE -> { horns(); p(RED, 6, 9, 4, 3); p(GOLD_HI, 7, 10, 2, 1) }
         }
     }
