@@ -169,6 +169,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     var cardSide = 0
         private set
     private var survivalCheck = -1f
+    /** [time] the clear screen opened. */
+    private var clearAt = 0f
+    /** Mephi already nudged the player stuck in this attempt ([Level.hint]). */
+    private var hinted = false
 
     var shake = 0f
         private set
@@ -344,6 +348,13 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         val w = world ?: return
         w.step(dt, input)
         handleEvents(w)
+        // stuck for a while without dying: Mephi can't resist a hint (only once per level)
+        val hint = stage.hint
+        if (hint != null && !hinted && w.state == WorldState.PLAYING && w.time > HINT_AFTER) {
+            hinted = true
+            say(hint.toString(), 3.5f)
+            setMood(Mood.SULK, 1.5f)
+        }
         if (survivalCheck >= 0f) {
             survivalCheck -= dt
             if (survivalCheck < 0f && w.state == WorldState.PLAYING) setMood(Mood.SULK, 1.6f)
@@ -393,7 +404,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 countDeath()
                 w.lastCard?.let { progress.addCardDeath(it) }
                 survivalCheck = -1f
-                burst(e.x, e.y)
+                // a fall out of the room still shatters where it can be seen: on the edge it left through
+                val rows = (world?.rows ?: 18).toFloat()
+                val offscreen = e.y > rows - 0.6f || e.y < 0.6f
+                burst(e.x, e.y.coerceIn(0.6f, rows - 0.6f))
+                if (offscreen) shake = maxOf(shake, 1f)
                 audio.play(Sound.DIE)
                 audio.play(Sound.LAUGH)
                 setMood(Mood.LAUGH, 1.6f)
@@ -510,6 +525,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         round = 0
         attempt = 1
         rematchAge = 99f
+        hinted = false
         world = World(stage)
         deadTimer = 0f
         card = null
@@ -531,7 +547,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         world = World(stage, world?.trail, attempt)
         // Mephi reshuffled: the room flickers, so a changed trap is the player's own fault, not a bug
         if (stage.traps.filter { it.deal.dealt(attempt) } != before) {
-            glitch = maxOf(glitch, GLITCH_TIME * 0.6f)
+            glitch = maxOf(glitch, GLITCH_TIME)
             setMood(Mood.LAUGH, 0.8f)
         }
         deadTimer = 0f
@@ -579,6 +595,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
         if (levelIndex == Levels.all.lastIndex) endAge = 0f
         screen = if (levelIndex == Levels.all.lastIndex) Screen.END else Screen.CLEAR
+        clearAt = time
     }
 
     /** The clear screen's NEXT: an interstitial first when one is due, then [next]. */
@@ -674,7 +691,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Screen.WORLD_INTRO -> if (worldAge > 0.4f) {
                 if (worldInfo.size > 0) { click(); startLevel(worldInfo.firstLevel) } else openSelect(progress.unlocked - 1)
             }
-            Screen.CLEAR -> if (p in Ui.clearNext) { click(); advance() }
+            // after a beat, a tap anywhere moves on (a jump still mashed from the win must not skip the screen)
+            Screen.CLEAR -> if (p in Ui.clearNext || time - clearAt > CLEAR_ANYWHERE) { click(); advance() }
             Screen.ALBUM -> {
                 val first = albumPage * Ui.ALBUM_PAGE
                 when {
@@ -781,15 +799,19 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     companion object {
-        const val CARD_LIFE = 2.4f
+        const val CARD_LIFE = 1.9f
         /** Base life of a devil quip; [say] adds reading time, so it hangs about two seconds. */
         const val QUIP_LIFE = 0.4f
         /** Length of the CRT glitch when Mephi plays a card. */
-        const val GLITCH_TIME = 0.32f
+        const val GLITCH_TIME = 0.2f
         /** Seconds between touching the door and the clear screen, for the win animation. */
         const val WIN_DELAY = 0.8f
         /** Seconds from a death to the next attempt. */
         const val RESPAWN = 0.7f
+        /** Seconds in one attempt before Mephi gives a level's [Level.hint]. */
+        const val HINT_AFTER = 9f
+        /** Seconds before a tap anywhere leaves the clear screen. */
+        const val CLEAR_ANYWHERE = 0.5f
 
         val TAUNTS = listOf(
             T("Segmentation fault. Yours.", "Segmentation Fault. Deiner."),

@@ -398,6 +398,7 @@ class Round(
     val traps: List<Trap> = emptyList(),
     val start: List<Action> = emptyList(),
     val legend: Map<Char, Glyph> = emptyMap(),
+    val hint: T? = null,
     val edit: MapBuilder.() -> Unit = {},
 )
 
@@ -436,6 +437,8 @@ class Level(
     val start: List<Action> = emptyList(),
     /** Further rounds in the same room, played after the door; see [Round]. */
     val rematch: List<Round> = emptyList(),
+    /** What Mephi lets slip when the player is stuck for [Game.HINT_AFTER] seconds without dying (once per level). */
+    val hint: T? = null,
     private val build: MapBuilder.() -> Unit,
 ) {
     val map: MapBuilder = MapBuilder().apply(build)
@@ -443,7 +446,7 @@ class Level(
     /** This level and its rematches, each a level of its own: round 1 is this level. */
     val rounds: List<Level> by lazy {
         listOf(this) + rematch.map { r ->
-            Level(name, r.intro, legend + r.legend, r.traps, r.start) { build(); r.edit(this) }
+            Level(name, r.intro, legend + r.legend, r.traps, r.start, hint = r.hint) { build(); r.edit(this) }
         }
     }
     val cols get() = map.cols

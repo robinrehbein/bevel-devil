@@ -317,19 +317,21 @@ class UiPainter(px: Pixels) : Painter(px) {
         val fr = l.frame
         val sx = fr.x + fr.w / 2f
         val sy = fr.y + fr.h / 2f
+        // settle high and to the side of the player, then fade to a ghost: the trap below must stay readable
         val tx = l.fx + 128f + game.cardSide * 64f
-        val ty = l.fy + 66f
+        val ty = l.fy + 52f
         val k = min(1f, f * 1.4f)
         val cx = (sx + (tx - sx) * k) * sc
         val cy = (sy + (ty - sy) * k - sin(k * PI.toFloat()) * 18f) * sc
         val angle = PI.toFloat() * (1 - f)
         val front = angle < PI.toFloat() / 2
-        val s = if (out) 1f + (1f - fade) * 0.3f else 0.4f + 0.6f * k
+        val s = (if (out) 1f + (1f - fade) * 0.3f else 0.4f + 0.6f * k) * CARD_SCALE
+        val ghost = if (age < CARD_SOLID) 1f else max(CARD_GHOST, 1f - (age - CARD_SOLID) / 0.25f * (1f - CARD_GHOST))
         canvas.save()
         canvas.translate(cx, cy)
         canvas.rotate(((sin(game.time * 2.4f) * 0.05f - 0.05f + (1 - f) * 0.6f) * 180f / PI.toFloat()))
         canvas.scale(max(0.03f, abs(cos(angle))) * s, s)
-        drawCardFace(canvas, sc, card, front, (fade * 255).toInt(), game.cardDeaths(card), compact = true)
+        drawCardFace(canvas, sc, card, front, (fade * ghost * 255).toInt(), game.cardDeaths(card), compact = true)
         canvas.restore()
     }
 
@@ -743,5 +745,9 @@ class UiPainter(px: Pixels) : Painter(px) {
         val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
         /** Seconds the rematch banner stays up. */
         const val REMATCH_BANNER = 1.5f
+        /** The flying trap card's size, and after [CARD_SOLID] seconds the alpha it fades to. */
+        const val CARD_SCALE = 0.8f
+        const val CARD_SOLID = 0.7f
+        const val CARD_GHOST = 0.35f
     }
 }

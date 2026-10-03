@@ -140,4 +140,30 @@ class DeckTest {
         assertNotEquals(Screen.CLEAR, g.screen)
         assertFalse(g.rematchAge < 1f)
     }
+
+    @Test
+    fun aStuckPlayerGetsTheHintOnce() {
+        val l = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke.")) {
+            border(); floor(); fill(10..10, 5..14); put(2, 14, 'P'); put(28, 14, 'D')
+        }
+        val g = sandbox(l)
+        g.run(Game.HINT_AFTER - 0.5f)
+        assertNotEquals(l.hint.toString(), g.bubble)
+        g.run(1f)
+        assertEquals(l.hint.toString(), g.bubble)
+    }
+
+    @Test
+    fun theClearScreenTakesATapAnywhereAfterABeat() {
+        val l = Level(T("x", "x"), T("x", "x")) { border(); floor(); put(2, 14, 'P'); put(5, 14, 'D') }
+        val g = sandbox(l)
+        g.hold(2f, right = true)
+        g.run(1.2f)
+        assertEquals(Screen.CLEAR, g.screen)
+        g.tap(4f, 4f)
+        assertEquals(Screen.CLEAR, g.screen)
+        g.run(Game.CLEAR_ANYWHERE + 0.1f)
+        g.tap(4f, 4f)
+        assertNotEquals(Screen.CLEAR, g.screen)
+    }
 }
