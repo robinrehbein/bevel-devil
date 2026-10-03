@@ -72,7 +72,7 @@ class World3Test {
         World3.levels.forEachIndexed { i, l ->
             l.rounds.forEachIndexed { r, round ->
                 if (round.traps.isNotEmpty()) {
-                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play } }
+                    val plays = round.traps.sumOf { t -> t.actions.count { it is Action.Play || it is Action.Bluff } }
                     assertEquals("level ${i + 1} round ${r + 1} should play exactly one card", 1, plays)
                 }
             }
@@ -122,8 +122,8 @@ class World3Test {
 
     @Test
     fun theHardwareCardsAreDealtHereFirst() {
-        val hardware = Card.entries.drop(12)
-        assertEquals(6, hardware.size)
+        val hardware = Card.entries.drop(12).take(6)
+        assertEquals(listOf(Card.SHORT_CIRCUIT, Card.OVERCLOCKED, Card.BIT_FLIP, Card.BACKDRAFT, Card.THROTTLE, Card.BIOS), hardware)
         // each new card is played somewhere in world 3, and nowhere in the other worlds
         val here = World3.levels.flatMap { l -> actions(l).filterIsInstance<Action.Play>().map { it.card } }.toSet()
         assertTrue(here.containsAll(hardware))

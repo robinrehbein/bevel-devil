@@ -188,7 +188,9 @@ class LevelsTest {
 
     @Test
     fun everyLevelPlaysACard() {
-        val played = Levels.all.flatMap { l -> l.traps.flatMap { it.actions }.filterIsInstance<Action.Play>().map { it.card } }
+        // a bluff deals the Bluff card
+        val played = Levels.all.flatMap { it.rounds }.flatMap { l -> l.traps.flatMap { it.actions } }
+            .mapNotNull { a -> if (a is Action.Play) a.card else if (a is Action.Bluff) Card.BLUFF else null }
         assertEquals(Card.entries.toSet(), played.toSet())
     }
 

@@ -11,11 +11,10 @@ import org.junit.Test
  */
 class World3DeckTest {
     private fun level(n: Int) = World3.levels[n - 1]
-    private fun bot(n: Int, round: Int = 0, attempt: Int = 1) = Bot(level(n), round, attempt)
+    private fun bot(n: Int, round: Int = 0) = Bot(level(n), round)
 
-    private val bluffy = setOf(Action.Play::class, Action.Say::class)
     /** A card played with nothing behind it: the real trap is somewhere else. Pads that switch by themselves do not count. */
-    private fun bluff(t: Trap) = t.trigger !is Trigger.Pressed && t.actions.any { it is Action.Play } && t.actions.all { it::class in bluffy }
+    private fun bluff(t: Trap) = t.actions.any { it is Action.Bluff }
 
     // ---------- the solutions ----------
 
@@ -101,12 +100,6 @@ class World3DeckTest {
         rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
     }
 
-    /** The room is the same on every attempt: Mephi changes the hand between rounds, never between tries. */
-    @Test
-    fun noTrapDependsOnTheAttempt() {
-        World3.levels.forEachIndexed { i, l -> l.rounds.forEach { r -> assertTrue("level ${i + 1}", r.traps.all { it.deal == Deal.ALWAYS }) } }
-    }
-
     /**
      * Bluffs are rare: at most one per act, only in a rematch, and only with a card that was honest in round 1 of the same
      * level (the player learned to fear it there).
@@ -114,7 +107,7 @@ class World3DeckTest {
     @Test
     fun bluffCardsAreRareAndWereHonestInRoundOne() {
         val bluffs = World3.levels.withIndex().flatMap { (i, l) ->
-            l.rounds.drop(1).flatMap { r -> r.traps.filter(::bluff).map { t -> Triple(i + 1, l, t.actions.filterIsInstance<Action.Play>().single().card) } }
+            l.rounds.drop(1).flatMap { r -> r.traps.filter(::bluff).map { t -> Triple(i + 1, l, t.actions.filterIsInstance<Action.Bluff>().single().card) } }
         }
         assertTrue("bluffs in ${bluffs.map { it.first }}", bluffs.size in 1..3)
         for (act in 0..2) assertTrue("act ${act + 1}: ${bluffs.map { it.first }}", bluffs.count { (it.first - 1) / 16 == act } <= 1)

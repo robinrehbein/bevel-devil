@@ -220,4 +220,10 @@ class World1DeckTest {
         val stuck = bridge48(2).rightTo(16.6f).rightJump(0.35f).landRight().right(3f)
         assertTrue(stuck.world.state != WorldState.WON)
     }
+
+    /** Tailwind, round 2: the stalking teeth are slower than Bevel. Keep running and every jump clears them. */
+    @Test fun level42RematchKeepRunning() = b(42, 1).hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
+
+    /** Stop to aim at the pit and the teeth catch up overhead: the jump goes into them. */
+    @Test fun level42RematchStoppingJumpsIntoTheStalker() = b(42, 1).rightTo(9.4f).wait(1.2f).rightJump(0.35f).landRight().expect(WorldState.DEAD)
 }

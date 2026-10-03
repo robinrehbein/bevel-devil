@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.DoorTo
@@ -320,6 +321,15 @@ object World2Part3 {
             traps = listOf(
                 trap(PastX(16f), Play(Card.SINKING), Move('w', -7f, 0f, 6f), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen.")),
                 trap(PastX(24f), Fall('c'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig.")),
+            ),
+            // rematch: the wall stays, the block holds; right before the door Mephi hits Ctrl+Z and you do it all again
+            rematch = listOf(
+                Round(
+                    T("Rematch. Force-pushed.", "Revanche. Force-Push."),
+                    traps = listOf(
+                        trap(PastX(25.5f), Play(Card.UNDO), Undo(1.6f), say("git reset --hard HEAD~1", "git reset --hard HEAD~1")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()

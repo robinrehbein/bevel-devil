@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.BitFlip
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Clock
@@ -395,7 +396,7 @@ object World3Part1 {
                     T("Same button. Different mood.", "Gleicher Knopf. Er hat heute Montag."),
                     start = listOf(Pad('1', at = 8 to 14)),
                     traps = listOf(
-                        trap(PastX(16.5f), Play(Card.HEADBUTT), say("Ceiling incoming! ...Rescheduled.", "Decke kommt! ...Verschoben.")), // BLUFF
+                        trap(PastX(16.5f), Bluff(Card.HEADBUTT)),
                         trap(PastX(21.5f), Saw(33f, 14.4f, -7f, 0f), say("Express delivery.", "Expresslieferung.")),
                     ),
                 ),

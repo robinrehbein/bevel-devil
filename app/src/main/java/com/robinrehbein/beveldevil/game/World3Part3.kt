@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.BitFlip
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Clock
@@ -267,7 +268,7 @@ object World3Part3 {
                     ),
                     traps = listOf(
                         trap(Landed(8.5f, 11.5f), HeatSpike('p', 0.7f), say("Ledge one: still heated.", "Kante eins: immer noch beheizt.")),
-                        trap(PastX(22f), Play(Card.GHOST_BLOCK), say("Turbulence on the top floor! ...Forecast only.", "Turbulenzen im Obergeschoss! ...Nur Vorhersage.")), // BLUFF
+                        trap(PastX(22f), Bluff(Card.GHOST_BLOCK)),
                     ),
                 ),
             ),

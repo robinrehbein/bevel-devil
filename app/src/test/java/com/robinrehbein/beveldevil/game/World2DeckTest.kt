@@ -152,4 +152,10 @@ class World2DeckTest {
     @Test fun l46r2TheOldClimbOvershoots() = b(46, 2).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.03f).expect(WorldState.DEAD)
     @Test fun l48r2() = b(48, 2).right(0.60f).rightJump(0.12f).right(0.5f).rightTo(15.7f).wait(0.3f).waitFor { it.beams[0].lit }.waitFor { !it.beams[0].lit }
         .hopS(21.4f).right(1.5f).expect(WorldState.WON)
+
+    /** Rebase, round 2: Ctrl+Z on the wall throws Bevel back past the spikes; the second climb is the real one. */
+    @Test fun l44r2() = b(44, 2).right(0.60f).rightJump(0.55f).left(0.03f).left(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f)
+        .right(0.03f).right(0.03f).leftJump(0.12f).rightJump(0.55f).wait(0.3f).rightJump(0.4f).landRight().wait(0.1f).right(0.1f).wait(0.6f)
+        .also { assertTrue("undone to x=${it.world.player.box.cx}", it.world.player.box.cx < 21f) }
+        .rightTo(23f).rightJump(0.4f).landRight().right(2f).expect(WorldState.WON)
 }

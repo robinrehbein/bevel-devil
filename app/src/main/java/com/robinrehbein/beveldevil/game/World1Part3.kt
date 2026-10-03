@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.DoorTo
@@ -268,6 +269,18 @@ object World1Part3 {
                 trap(PastX(7f), Play(Card.SPIKE_SEED), Move('W', 30f, 0f, 7.4f), PauseTrap(PauseTrick.SPIKE),
                     Say(T("Hungry wall! Need a break? Tap pause.", "Hungrige Wand! Pause? Tipp auf Pause."))),
                 trap(Airborne(9.5f, 12.6f), Show('A')),
+            ),
+            // rematch: the wall stays put, but a row of ceiling teeth stalks you overhead; it is slower than you, so
+            // whoever keeps running jumps out from under it, and whoever stops to aim at a pit jumps into it
+            rematch = listOf(
+                Round(
+                    T("Rematch. This time it follows you up top.", "Revanche. Diesmal folgt er dir von oben."),
+                    legend = mapOf('S' to Glyph(spike = true, dir = Dir.DOWN, hidden = true)),
+                    traps = listOf(
+                        trap(PastX(6.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 5f, left = 0f, right = 24f),
+                            Say(T("Don't stop. It hates that.", "Nicht stehen bleiben. Das hasst er."))),
+                    ),
+                ) { put(3, 12, 'S'); put(4, 12, 'S') },
             ),
         ) {
             border(); floor()
