@@ -16,6 +16,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Idle
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Touch
+import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 /**
  * World 1, levels 17-32. Act 2, "Neue Regeln": blinking platforms, path saws and the Idle trigger. Each level keeps its
@@ -312,6 +313,9 @@ object World1Part2 {
                 trap(After(6.4f), Fall('t')),
                 trap(After(7.4f), Fall('u'), Say(T("Line clear! You're welcome.", "Reihe voll! Gern geschehen."))),
                 trap(Landed(21.5f, 25.9f), Show('A')),
+                // ran past the pit before the stairs stood: the floor right of them is a dead end, so it kills instead of stranding
+                trap(Zone(20.5f, 12f, 31f, 16f), Saw(32f, 14.4f, -8f, 0f), Say(T("Wrong side of the stairs. Tough luck.", "Falsche Seite der Treppe. Pech gehabt."))),
+                trap(Zone(20.5f, 12f, 31f, 16f), Saw(32f, 14.4f, -8f, 0f), delay = 1.2f),
             ),
         ) {
             border(); floor()

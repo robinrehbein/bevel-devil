@@ -79,14 +79,19 @@ class UiPainter(px: Pixels) : Painter(px) {
     }
 
     /** Speech bubble whose right edge (with tail) ends at [right]. Wraps to two lines. */
-    private fun bubble(text: String, age: Float, right: Float, top: Float, maxW: Float = 118f) {
+    private fun bubble(text: String, age: Float, right: Float, top: Float, maxW: Float = 118f, tailLeft: Boolean = false) {
         val size = 5.5f
         val lines = wrap(text, size, maxW - 10)
         val w = lines.maxOf { textWidth(it, size) } + 12
         val h = 6f + lines.size * 7f
-        val x = right - 5 - w
+        // tailLeft: [right] is the bubble's left edge incl. tail (Mephi sits to its left)
+        val x = if (tailLeft) right + 5 else right - 5 - w
         box(x, top, w, h, CREAM, WHITE)
-        rect(x + w, top + 4, 3, 3, CREAM); rect(x + w + 3, top + 5, 2, 2, CREAM)
+        if (tailLeft) {
+            rect(x - 3, top + 4, 3, 3, CREAM); rect(x - 5, top + 5, 2, 2, CREAM)
+        } else {
+            rect(x + w, top + 4, 3, 3, CREAM); rect(x + w + 3, top + 5, 2, 2, CREAM)
+        }
         bubbleText(lines, age, x + 5, top + 6.5f, size, 7f)
     }
 
@@ -299,7 +304,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val fr = l.frame
         val sx = fr.x + fr.w / 2f
         val sy = fr.y + fr.h / 2f
-        val tx = l.fx + 128f
+        val tx = l.fx + 128f + game.cardSide * 64f
         val ty = l.fy + 66f
         val k = min(1f, f * 1.4f)
         val cx = (sx + (tx - sx) * k) * sc
@@ -703,7 +708,7 @@ class UiPainter(px: Pixels) : Painter(px) {
             val best = game.bestDeaths(game.levelIndex)
             say("${game.levelLabel}   ${Txt.deaths} ${game.deaths}   ${Txt.best} ${best ?: game.deaths}", 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
             devilFrame(70f, 52f, 44f, Mood.SHOCK, game.time)
-            game.bubble?.let { bubble(it, game.bubbleAge + 10f, 232f, 64f, 110f) }
+            game.bubble?.let { bubble(it, game.bubbleAge + 10f, 114f, 64f, 110f, tailLeft = true) }
             button(Ui.clearNext, Txt.next.toString(), true)
         }
     }
