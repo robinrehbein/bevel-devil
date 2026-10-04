@@ -549,3 +549,6 @@ class Level(
         else -> null
     }
 }
+
+/** This action and, for a [Action.FakeWin], everything it goes on with (nested). */
+fun Action.flat(): List<Action> = if (this is Action.FakeWin) listOf(this) + then.flatMap { it.flat() } else listOf(this)

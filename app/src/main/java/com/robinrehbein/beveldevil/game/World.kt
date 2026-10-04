@@ -268,14 +268,16 @@ class World(val level: Level, private val past: Trail? = null) {
         val crumble get() = extend != null
     }
     val cracks = ArrayList<Crack>()
-    private val crackRects = level.traps.flatMap { it.actions }.filterIsInstance<Action.FrameCrack>().distinct()
+    /** Every action the level can run: its start, its traps, and what fake endings go on with. */
+    private val allActions = (level.start + level.traps.flatMap { it.actions }).flatMap { it.flat() }
+    private val crackRects = allActions.filterIsInstance<Action.FrameCrack>().distinct()
     private val crackGroups = HashMap<Action.FrameCrack, Group>()
 
     // ---------- rooms and camera ([Level.rooms], [Action.Extend]) ----------
 
     /** Rooms side by side; the camera shows exactly one of them, or pans between two. */
     val rooms = level.map.rooms
-    private val breachRects = level.traps.flatMap { it.actions }.filterIsInstance<Action.Extend>()
+    private val breachRects = allActions.filterIsInstance<Action.Extend>()
         .onEach { require(it.into < rooms) { "Level ${level.name.en} extends into room ${it.into} but has only $rooms rooms" } }.map { Triple(it.into, it.top, it.bottom) }.distinct()
     private val breachGroups = HashMap<Triple<Int, Int, Int>, Group>()
     /** The room the camera shows (or pans to). */
@@ -290,6 +292,8 @@ class World(val level: Level, private val past: Trail? = null) {
         private set
     /** The camera is moving to another room: nothing else moves (see [step]). */
     val panning get() = panAge < PAN
+    /** Global x of the room edge the camera last panned across (-1 before any): going back over it needs [ROOM_SLACK]. */
+    private var lastSeam = -1
     /** +1 when the last pan went right, -1 left, 0 before any. */
     var panDir = 0
         private set
@@ -421,21 +425,28 @@ class World(val level: Level, private val past: Trail? = null) {
                 events += Event.Won
             }
         }
-        if (state == WorldState.PLAYING && fake == null) followPlayer()
+        // also on the step the player died, so a death just past a room's edge is shown, not hidden off-screen
+        if (fake == null && (state == WorldState.PLAYING || (state == WorldState.DEAD && stateTime == time))) followPlayer()
     }
 
     // ---------- camera ----------
 
-    /** Starts a pan when the player's center is clearly inside another room (walked, hopped or was put there). */
+    /**
+     * Starts a pan as soon as the player's center is inside another room (walked, hopped or was put there).
+     * Only going back over the edge just panned across needs [ROOM_SLACK], so standing in the doorway can't flicker.
+     */
     private fun followPlayer() {
         if (rooms == 1) return
         val cx = player.box.cx
-        val lo = room * ROOM_COLS - ROOM_SLACK
-        val hi = (room + 1) * ROOM_COLS + ROOM_SLACK
+        val left = room * ROOM_COLS
+        val right = (room + 1) * ROOM_COLS
+        val lo = left - if (left == lastSeam) ROOM_SLACK else 0f
+        val hi = right + if (right == lastSeam) ROOM_SLACK else 0f
         if (cx in lo..hi) return
         val to = roomOf(cx)
         if (to == room) return
         panDir = if (to > room) 1 else -1
+        lastSeam = if (to > room) right else left
         panFrom = camX
         room = to
         panAge = 0f
@@ -456,7 +467,8 @@ class World(val level: Level, private val past: Trail? = null) {
     /** The HUD pause button was tapped. True if the game should really pause. */
     fun pausePressed(): Boolean = when (pauseTrick) {
         PauseTrick.HONEST, PauseTrick.SWAP -> true
-        PauseTrick.SPIKE -> if (state == WorldState.PLAYING && fake == null) {
+        // during a pan the world is frozen: a real pause, no spike
+        PauseTrick.SPIKE -> if (state == WorldState.PLAYING && fake == null && !panning) {
             events += Event.Say(SPIKE_LINE)
             die()
             false
@@ -1139,7 +1151,7 @@ class World(val level: Level, private val past: Trail? = null) {
         /** Seconds a pan from one room to the next takes; the world is frozen meanwhile. */
         const val PAN = 0.5f
         /** How far (tiles) the player's center must be past a room's edge before the camera follows. */
-        const val ROOM_SLACK = 0.25f
+        const val ROOM_SLACK = 0.15f
         /** Groups made for [Action.FrameCrack] pieces get ids from the private use area, clear of map letters. */
         private const val CRACK_ID = '\uE000'
         /** Groups made for [Action.Extend] breaches, likewise. */

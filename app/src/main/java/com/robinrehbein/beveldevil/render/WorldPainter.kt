@@ -134,7 +134,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
 
     /**
      * Rock everywhere outside the playfield, except where the edge of the room in view is open: there the pit
-     * continues. (A room of a wider level counts on its own; during a pan, the room it goes to.)
+     * continues. (A room of a wider level counts on its own; during a pan, the room it goes to, with closed sides.)
      */
     private fun surroundings(w: World, l: Layout, t: Float, heat: Float) {
         if (l.lw == PW && l.lh == PH) return
@@ -153,6 +153,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
             if (cx == 0) open[64 + cy] = false
             if (cx == cols - 1) open[82 + cy] = false
         }
+        // mid-pan the picture slides between two rooms: the side rock stays closed until the camera rests
+        if (w.panning) open.fill(false, 64, 100)
         if (rockBmp == null || rockFor[0] != l.lw || rockFor[1] != l.lh || rockFor[2] != l.fx || rockFor[3] != l.fy || !open.contentEquals(rockOpen)) {
             buildRock(l, cols, rows)
             rockFor[0] = l.lw; rockFor[1] = l.lh; rockFor[2] = l.fx; rockFor[3] = l.fy

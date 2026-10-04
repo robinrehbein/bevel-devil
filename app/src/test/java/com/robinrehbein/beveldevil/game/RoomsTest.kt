@@ -122,7 +122,8 @@ class RoomsTest {
         val b = throughTheDoor()
         val w = b.world
         b.rightUntil(3f) { it.panning }
-        assertTrue(w.player.box.cx > 32f)
+        // as soon as the center is past the seam: the player is never mostly off-screen
+        assertTrue(w.player.box.cx > 32f && w.player.box.cx < 32.1f)
         assertEquals(1, w.room)
         assertEquals(1, w.panDir)
         assertTrue(w.events.any { it is Event.Pan && it.dir == 1 })
@@ -188,6 +189,43 @@ class RoomsTest {
         assertEquals(0f, fresh.camX)
         assertFalse(fresh.panning)
         assertEquals(1, g.deaths)
+    }
+
+    @Test
+    fun theFakeClearGoesOnIntoTheNextRoom() {
+        // the door is a fake end: the clear screen, then Mephi breaks the wall open behind it
+        val l = Level(
+            T("x", "x"), T("x", "x"), rooms = 2,
+            traps = listOf(trap(Trigger.AtDoor, Action.FakeWin(FakeEnd.CLEAR, null, listOf(Extend(into = 1, door = roomX(1, 28) to 14))))),
+        ) { border(); floor(); room(0) { spawn(); door() } }
+        val b = Bot(l).rightUntil(6f) { it.fake != null }.waitFor(10f) { it.cracks.isNotEmpty() }
+        b.waitFor(4f) { !it.door.moving && !it.cracks[0].group.visible }.expect(WorldState.PLAYING)
+        assertEquals(roomX(1, 28) - 0.1f, b.world.door.box.x, 1e-4f)
+        b.rightUntil(3f) { it.panning }.waitWhile(1f) { it.panning }.rightTo(roomX(1, 30f)).expect(WorldState.WON)
+    }
+
+    @Test
+    fun aRoomCanStartOpen() {
+        val l = Level(T("x", "x"), T("x", "x"), rooms = 2, start = listOf(Extend(into = 1, line = null))) {
+            border(); floor(); room(0) { spawn() }; room(1) { door() }
+        }
+        val b = Bot(l).wait(1f)
+        assertFalse(b.world.cracks.single().group.visible)
+        b.rightUntil(4f) { it.panning }.waitWhile(1f) { it.panning }.rightTo(roomX(1, 30f)).expect(WorldState.WON)
+    }
+
+    @Test
+    fun theSpikePauseDoesNotFireDuringAPan() {
+        val l = Level(
+            T("x", "x"), T("x", "x"), rooms = 2,
+            start = listOf(Extend(into = 1, line = null), Action.PauseTrap(PauseTrick.SPIKE)),
+        ) { border(); floor(); room(0) { spawn() }; room(1) { door() } }
+        val b = Bot(l).rightUntil(4f) { it.panning }
+        assertTrue(b.world.pausePressed())
+        assertEquals(WorldState.PLAYING, b.world.state)
+        b.waitWhile(1f) { it.panning }
+        assertFalse(b.world.pausePressed())
+        assertEquals(WorldState.DEAD, b.world.state)
     }
 
     @Test
