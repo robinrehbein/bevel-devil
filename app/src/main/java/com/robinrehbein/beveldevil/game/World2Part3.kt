@@ -47,14 +47,14 @@ object World2Part3 {
                 trap(PastX(17.5f), Show('B'), say("sudo !!  (three spikes, this time as root)", "sudo !!  (drei Spikes, diesmal als root)")),
                 trap(PastX(24f), Fall('a'), say("sudo !!  (and the floor)", "sudo !!  (und der Boden)")),
             ),
-            // rematch: the first spike is a bluff; the LED pair you see slides onto your landing spot while you jump it
+            // rematch: the first spike is a bluff; the LED pair you see slides away while you jump it, right onto where a full
+            // jump comes down. A short hop lands in front of it, then hop the pair where it stopped (the floor stays this time)
             rematch = listOf(
                 Round(
                     T("sudo !!  Same room, root this time.", "sudo !!  Passwort war richtig. Leider."),
                     traps = listOf(
                         trap(PastX(9f), Bluff(Card.SPIKE_SEED)),
-                        trap(Airborne(18f, 21.5f), Move('E', 1.5f, 0f, 12f), say("mv spikes ./your-landing", "mv spikes ./deine-landung")),
-                        trap(PastX(24f), Fall('a'), say("rm -rf floor", "rm -rf boden")),
+                        trap(Airborne(18f, 21.5f), Move('E', 2.5f, 0f, 12f), say("mv spikes ./your-landing", "mv spikes ./deine-landung")),
                     ),
                 ) { put(20, 14, 'E'); put(21, 14, 'E') },
             ),
@@ -80,16 +80,15 @@ object World2Part3 {
                 trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Proxying your gravity.", "Deine Schwerkraft wird weitergeleitet.")),
                 trap(Zone(26.5f, 12f, 29f, 15f), Gravity(false), say("Reverse, reverse.", "Rückwärts, rückwärts.")),
             ),
-            // rematch: the cache is cold at the start, and the ceiling spike gets a twin where you land up there
+            // rematch: the cache is cold at the start, and the backend sits behind a firewall now: a gate wakes up between the
+            // exit of the second portal and the door. Round 1's dash from the exit runs into it; stop after the portal and wait
             rematch = listOf(
                 Round(
                     T("Cache cleared. Please reload.", "Cache geleert. Bitte neu laden."),
-                    start = listOf(
-                        Portal('1', 9 to 14, 16 to 1, twoWay = false),
-                        Portal('2', 26 to 1, 27 to 14, twoWay = false),
-                    ),
                     traps = listOf(
-                        trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Gravity proxied. Again.", "Schwerkraft weitergeleitet. Schon wieder.")),
+                        trap(Zone(15.5f, 0.5f, 17.5f, 2.5f), Play(Card.DECOY), Gravity(true),
+                            Laser('F', 28 to 1, 28 to 14, on = 1f, off = 1.4f, delay = 0.9f),
+                            say("Firewall upstream. The door is just a frontend.", "Firewall vorm Backend. Die Tür ist nur Frontend.")),
                         trap(Landed(20.5f, 23f), Show('C'), say("Cache miss. Spike hit.", "Cache-Miss. Spike-Treffer.")),
                         trap(Zone(26.5f, 12f, 29f, 15f), Gravity(false)),
                     ),
@@ -233,16 +232,19 @@ object World2Part3 {
                 trap(Touch('d'), Hide('d'), delay = 0.4f),
                 trap(Touch('e'), Move('e', -3f, 0f, 6f), say("Stone 5: session hijacked.", "Stein 5: Sitzung entführt."), delay = 0.3f),
             ),
-            // rematch: re-audit, the lies moved one stone on: the spike stone is honest, the last stone runs ahead
+            // rematch: re-audit. The last stone is honest now, and the ground behind it is not: round 1's leap from stone 4
+            // onto solid ground lands on a floor that sinks. Take the last stone and jump from there to the door
             rematch = listOf(
                 Round(
                     T("Audit failed. Re-audit. Same stones.", "Audit durchgefallen. Nachprüfung. Gleiche Steine."),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Stone 1: still revoked.", "Stein 1: immer noch widerrufen."), delay = 0.25f),
+                        trap(Touch('a'), Fall('a'), delay = 0.25f),
                         trap(Touch('b'), Move('b', 0f, 12f, 9f), delay = 0.1f),
-                        trap(Touch('d'), Hide('d'), Move('e', 1f, 0f, 3f), say("Stone 5: moving on without you.", "Stein 5: zieht ohne dich weiter."), delay = 0.4f),
+                        trap(Touch('d'), Hide('d'), delay = 0.4f),
+                        trap(Landed(26f, 28.9f), Play(Card.SINKING), Move('g', 0f, 12f, 8f),
+                            say("Ground revoked. Zero trust, zero floor.", "Boden widerrufen. Zero Trust, null Boden.")),
                     ),
-                ),
+                ) { fill(27..28, 15..17, 'g') },
             ),
         ) {
             border()

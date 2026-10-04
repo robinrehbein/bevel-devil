@@ -87,19 +87,21 @@ object World1Part2 {
                 trap(Touch('b'), Fall('b'), delay = 0.6f),
                 trap(PastX(23.4f), Saw(33.5f, 14.4f, -5f, 0f, 0.62f), Say(T("Not everyone works the same shift.", "Nicht alle haben dieselbe Schicht."))),
             ),
-            // rematch: the last saw comes from behind; whoever stops to wait for it from the front is caught
+            // rematch: the same three saws, but no fourth one: whoever runs on to meet it and jump it runs onto the
+            // floor before the door, and that floor collapses. Jump it from its edge
             rematch = listOf(
                 Round(
                     T("Rematch. Shift change.", "Revanche. Schichtwechsel."),
                     traps = listOf(
-                        trap(PastX(2.6f), Play(Card.DEVIL_SAW),
+                        trap(PastX(2.6f),
                             PathSaw(6.5f, 9f to 14.4f, 9f to 7f, delay = 1f),
                             PathSaw(7.5f, 15f to 7f, 15f to 14.4f),
                             PathSaw(5f, 21.5f to 14.4f, 21.5f to 7f, delay = 0.5f)),
                         trap(Touch('b'), Fall('b'), delay = 0.6f),
-                        trap(PastX(23.4f), Saw(17.5f, 14.4f, 6f, 0f, 0.62f), Say(T("Night shift comes in the back door.", "Die Nachtschicht kommt durch den Hintereingang."))),
+                        trap(Touch('w'), Play(Card.COLLAPSE), Fall('w'), delay = 0.12f),
+                        trap(Touch('w'), Say(T("The fourth saw has the day off. So does the floor.", "Die vierte Säge hat frei. Der Boden auch."))),
                     ),
-                ),
+                ) { fill(24..26, 15..17, 'w') },
             ),
         ) {
             border(); floor()

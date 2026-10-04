@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
+import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
@@ -22,8 +23,6 @@ object World2Part1 {
     private val hidden = Glyph(spike = true, hidden = true)
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
-    /** Two-tile pieces of the raised floor that erodes behind you in level 11, round 2. */
-    private const val ERODE = "fghijkmn"
 
     val levels: List<Level> = listOf(
 
@@ -179,12 +178,15 @@ object World2Part1 {
                 trap(PastX(14.3f), Fall('d')),
                 trap(PastX(21.6f), Fall('e'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt.")),
             ),
-            // rematch: the first ceiling comes down late, on whoever waits for it under it
+            // rematch: the first ceiling no longer drops in front of you; it slides over to hover above you and drops at the
+            // same spot as in round 1, now on your head. Waiting for it like in round 1 is fatal: run through at full speed
             rematch = listOf(
                 Round(
-                    T("Rebooting. Your ceiling is up to date.", "Neustart. Deine Decke ist auf dem neuesten Stand."),
+                    T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
                     traps = listOf(
-                        trap(PastX(9.3f), Play(Card.HEADBUTT), Fall('c'), say("Delayed write failed.", "Verzögertes Schreiben. Auf dich.")),
+                        trap(PastX(5f), Play(Card.STALKER), Chase('c', speed = 6f, left = 6f, right = 3f),
+                            say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(PastX(7.4f), Fall('c'), say("Ceiling synced to your position.", "Decke mit deiner Position synchronisiert.")),
                         trap(PastX(14.3f), Fall('d')),
                         trap(PastX(21.6f), Fall('e')),
                     ),
@@ -257,16 +259,16 @@ object World2Part1 {
                 trap(PastX(15.2f), Saw(20.5f, 19f, 0f, -9f), say("Fan 2 spins from below. It's a feature.", "Lüfter 2 dreht von unten. Ist ein Feature.")),
                 trap(PastX(21.6f), Saw(26.5f, 2f, 0f, 9f), say("Fan 3: REPLACE. (I meant it.)", "Lüfter 3: TAUSCHEN. (Ernst gemeint.)")),
             ),
-            // rematch: same fans, but the raised floor erodes right behind you: backing off to let a saw pass is no longer an option
+            // rematch: the fans are fixed (only the first one still spins); instead a raised-floor tile drops out in front of
+            // whoever runs through like in round 1. Stop at the edge and jump the hole
             rematch = listOf(
                 Round(
-                    T("Fans replaced. The floor was in the way.", "Lüfter getauscht. Der Boden war im Weg."),
+                    T("Fans fixed. The floor is next on the ticket.", "Lüfter repariert. Der Boden steht als Nächstes im Ticket."),
                     traps = listOf(
-                        trap(PastX(9.5f), Play(Card.DEVIL_SAW), Saw(15.5f, 2f, 0f, 9f), say("Raised floor, lowered expectations.", "Doppelboden, einfacher Abgang.")),
-                        trap(PastX(15.2f), Saw(20.5f, 19f, 0f, -9f)),
-                        trap(PastX(21.6f), Saw(26.5f, 2f, 0f, 9f), say("No way back. Only forward.", "Kein Zurück. Nur noch vorwärts.")),
-                    ) + ERODE.mapIndexed { i, g -> trap(PastX(12.6f + 2 * i), Fall(g), delay = 0.1f) },
-                ) { ERODE.forEachIndexed { i, g -> fill(10 + 2 * i..11 + 2 * i, 15..17, g) } },
+                        trap(PastX(9.5f), Saw(15.5f, 2f, 0f, 9f), say("Fan 1 still spins. Out of habit.", "Lüfter 1 dreht noch. Aus Gewohnheit.")),
+                        trap(PastX(14.4f), Play(Card.COLLAPSE), Fall('x'), say("Raised floor: tile lifted for maintenance.", "Doppelboden: Platte zur Wartung entnommen.")),
+                    ),
+                ) { fill(18..20, 15..17, 'x') },
             ),
         ) {
             border(); floor()

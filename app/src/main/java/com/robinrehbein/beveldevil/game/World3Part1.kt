@@ -137,6 +137,7 @@ object World3Part1 {
         Level(
             name = T("Turnstile", "Drehkreuz"),
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
+            hint = T("The ceiling is on the floor now. Floors can be jumped.", "Die Decke liegt jetzt am Boden. Über Böden kann man springen."),
             start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD), Circuit('Z', on = false)),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke.")),
@@ -144,18 +145,20 @@ object World3Part1 {
                 // the hot plate says "keep running"; the doorway says "wait". Stop short of the plate, let the pulse pass
                 trap(Landed(24f, 28f), Clock('Z', on = 0.9f, off = 1.6f), say("Door frame: now with doorbell.", "Türrahmen: jetzt mit Klingel.")),
             ),
-            // rematch: the slab stays up at the button and comes down on whoever jumps under it: walk under it
+            // rematch: the slab stays up, and a dark cable lies where the jump over it used to land; it goes live under
+            // whoever jumps there out of habit: walk under the slab and over the cable
             rematch = listOf(
                 Round(
                     T("Turnstile, serviced. Mostly.", "Drehkreuz frisch gewartet. Von mir."),
-                    start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD), Circuit('Z', on = false)),
+                    start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD), Circuit('Z', on = false), Circuit('X', on = false)),
+                    hint = T("Not every cable is asleep. Some just wait for a jump.", "Nicht jedes Kabel schläft. Manche warten auf einen Sprung."),
                     traps = listOf(
                         trap(Pressed('1'), say("Revolving door: ceiling on standby.", "Drehtür: Decke im Standby.")),
-                        trap(Airborne(13.5f, 17.5f), Play(Card.HEADBUTT), Fall('c'), say("Standby over.", "Standby beendet.")),
+                        trap(Airborne(13.5f, 17.5f), Play(Card.SHORT_CIRCUIT), Power('X', true), say("Habits are hardwired. So is this cable.", "Gewohnheiten sind fest verdrahtet. Das Kabel auch.")),
                         trap(Airborne(20f, 24.5f), HeatSpike('f', 0.7f), say("Landing gear: preheated, again.", "Fahrwerk: wieder vorgeheizt.")),
                         trap(Landed(24f, 28f), Clock('Z', on = 0.9f, off = 1.6f), say("The doorbell stayed.", "Die Klingel ist geblieben.")),
                     ),
-                ),
+                ) { fill(18..20, 14..14, 'X') },
             ),
         ) {
             border(); floor()

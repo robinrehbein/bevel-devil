@@ -127,14 +127,15 @@ object World3Part2 {
                 trap(PastX(19.2f), Heat('h', rise = 0.55f, cool = 1.4f), say("Last leg: sprint mode.", "Letzte Etappe: Sprintmodus.")),
                 trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4 is a plain floor. I counted.", "Platte 4 ist ein schlichter Boden. Ich hab mitgezählt.")),
             ),
-            // rematch: the leap off the second sink lands on an overclocked plate; the last leg is walkable now
+            // rematch: the throttle is old news; the card is the landing: the leap off the second sink lands on an
+            // overclocked plate. The last leg is walkable now
             rematch = listOf(
                 Round(
                     T("Second lap. The baton is hot.", "Zweite Runde. Staffelübergabe mit Brandblase."),
                     start = listOf(Heat('h', rise = 1f), Heatsink('k', cools = "h")),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.THROTTLE), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates warmed up. Again.", "Platten warmgelaufen. Schon wieder.")),
-                        trap(Landed(19f, 25f), HeatSpike('h', 0.95f), say("Long jump? Hot landing.", "Weitsprung? Heiße Landung.")),
+                        trap(Touch('k'), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates warmed up. Again.", "Platten warmgelaufen. Schon wieder.")),
+                        trap(Landed(19f, 25f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.95f), say("Long jump? Hot landing.", "Weitsprung? Heiße Landung.")),
                         trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4: still counted.", "Platte 4: immer noch mitgezählt.")),
                     ),
                 ),

@@ -66,6 +66,7 @@ object World1Part1 {
         Level(
             name = T("Stairwell", "Treppenhaus"),
             intro = T("Take the stairs. The elevator is broken. Again.", "Nimm die Treppe. Der Aufzug ist kaputt. Schon wieder."),
+            hint = T("Stairs go up. So did the door.", "Treppen führen nach oben. Die Tür auch."),
             traps = listOf(
                 trap(PastX(26.4f), Play(Card.SHY_DOOR), DoorTo(29, 6, speed = 18f), Say(T("Whoops. Up there now.", "Hoppla. Jetzt ist sie da oben."))),
                 trap(Touch('b'), Fall('b'), delay = 0.7f),
@@ -109,6 +110,7 @@ object World1Part1 {
         Level(
             name = T("Obstacle Course", "Hindernislauf"),
             intro = T("That wall is too high. Giving up is the only option.", "Die Wand ist zu hoch. Da hilft nur Aufgeben."),
+            hint = T("Ever headbutted thin air? Try it just before the wall.", "Schon mal mit dem Kopf gegen Luft gesprungen? Kurz vor der Wand."),
             legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true), 'A' to hiddenSpike, 'f' to Glyph(spike = false)),
             traps = listOf(
                 trap(Touch('b'), Play(Card.GHOST_BLOCK), Say(T("Hey! That one was secret.", "Hey! Der war geheim."))),
@@ -254,18 +256,20 @@ object World1Part1 {
         Level(
             name = T("Return Trip", "Rückreise"),
             intro = T("The door is on the left. I know. Unusual.", "Die Tür ist links. Ich weiß. Ungewohnt."),
-            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(Airborne(19f, 21.6f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Spikes read right to left too.", "Spikes lesen auch von rechts nach links."))),
                 trap(Airborne(16.4f, 18f), Fall('c')),
             ),
-            // rematch: no spikes behind the first landing this time, but the second hop lands on some
+            // rematch: no spikes this time; the first landing swaps the controls, so the hop-hop rhythm of round 1
+            // jumps back the way you came. Walk on, pressing right
             rematch = listOf(
                 Round(
                     T("Rematch. Same trip, other luggage.", "Revanche. Gleiche Reise, anderes Gepäck."),
                     traps = listOf(
-                        trap(Airborne(19f, 21.6f), Say(T("Spikes! Somewhere.", "Spikes! Irgendwo."))),
-                        trap(Airborne(13.5f, 18.8f), Play(Card.SPIKE_SEED), Show('B'), Say(T("There.", "Da."))),
+                        trap(Landed(16.5f, 21.6f), Play(Card.TWISTED), Swap(true),
+                            Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
+                        trap(Airborne(16.4f, 18f), Fall('c')),
                     ),
                 ),
             ),
@@ -273,7 +277,6 @@ object World1Part1 {
             border(); floor()
             put(22, 14, '^')
             put(15, 14, 'A'); put(16, 14, 'A')
-            put(13, 14, 'B'); put(14, 14, 'B')
             fill(11..12, 15..17, 'c')
             put(29, 14, 'P'); put(2, 14, 'D')
         },
