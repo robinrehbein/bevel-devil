@@ -130,16 +130,16 @@ object World1Part3 {
                 trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(29, 0, speed = 25f), Show('A'), Say(T("History rewritten. You're welcome.", "Historie umgeschrieben. Gern geschehen."))),
                 trap(PastX(23f), DoorTo(2, 14, speed = 20f), delay = 0.8f),
             ),
-            // rematch: the force push comes early, halfway; whoever runs on to wait at the old spot meets spikes
+            // rematch: the door stays this time. Whoever stops where it fled in round 1 to wait for the push stands on a
+            // floor that gives way under loiterers: run through to the door
             rematch = listOf(
                 Round(
                     T("Rematch. I pushed first this time.", "Revanche. Diesmal hab ich zuerst gepusht."),
-                    legend = mapOf('B' to hiddenSpike),
                     traps = listOf(
-                        trap(PastX(14f), Play(Card.SHY_DOOR), DoorTo(2, 14, speed = 20f), Show('A'), Say(T("Early push. Pull faster.", "Früh gepusht. Zieh schneller."))),
-                        trap(PastX(22f), Show('B')),
+                        trap(Touch('w'), Play(Card.CRUMBLE), Say(T("Merge pending. Floor deprecated.", "Merge läuft. Boden veraltet."))),
+                        trap(Touch('w'), Fall('w'), delay = 0.8f),
                     ),
-                ) { put(24, 14, 'B'); put(25, 14, 'B') },
+                ) { fill(22..25, 15..17, 'w') },
             ),
         ) {
             border(); floor(); pit(11..12)
@@ -229,17 +229,17 @@ object World1Part3 {
                     Say(T("Hungry wall! Need a break? Tap pause.", "Hungrige Wand! Pause? Tipp auf Pause."))),
                 trap(Airborne(9.5f, 12.6f), Show('A')),
             ),
-            // rematch: the wall stays put, but a row of ceiling teeth stalks you overhead; it is slower than you, so
-            // whoever keeps running jumps out from under it, and whoever stops to aim at a pit jumps into it
+            // rematch: the wall stays put, and a row of ceiling teeth waits over the first pit. Running on as in round 1
+            // jumps right into it. Let it come to you at the start, then outrun it: it is slower than you
             rematch = listOf(
                 Round(
-                    T("Rematch. This time it follows you up top.", "Revanche. Diesmal folgt er dir von oben."),
+                    T("Rematch. Someone up there likes you.", "Revanche. Da oben mag dich wer."),
                     legend = mapOf('S' to Glyph(spike = true, dir = Dir.DOWN, hidden = true)),
                     traps = listOf(
-                        trap(PastX(6.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 5f, left = 0f, right = 24f),
-                            Say(T("Don't stop. It hates that.", "Nicht stehen bleiben. Das hasst er."))),
+                        trap(After(0.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 4f, left = 10f, right = 16f),
+                            Say(T("Personal space is a myth.", "Abstand halten? Nie gehört."))),
                     ),
-                ) { put(3, 12, 'S'); put(4, 12, 'S') },
+                ) { put(12, 12, 'S'); put(13, 12, 'S') },
             ),
         ) {
             border(); floor()
@@ -380,15 +380,15 @@ object World1Part3 {
                 trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8), Roll(3f, 2))),
             ),
             start = listOf(Blink('a', on = 2.4f, off = 1f)),
-            // round 2 (encore): no fake, but the floor after the bridge drops: jump off its end this time.
-            // round 3 (second encore): the door goes home, back over the bridge
+            // round 2 (encore, a collapse): no fake, but the floor after the bridge drops: jump off its end this time.
+            // round 3 (second encore, a shy door): the door goes home, back over the bridge
             rematch = listOf(
                 Round(
                     T("Encore! Nobody leaves before the encore.", "Zugabe! Keiner geht vor der Zugabe."),
                     start = listOf(Blink('a', on = 2.4f, off = 1f, phase = 1.2f)),
                     traps = listOf(
                         trap(After(0.4f), Say(T("Same song. New ending.", "Gleiches Lied. Neues Ende."))),
-                        trap(Touch('e'), Play(Card.GRAND_FINALE), Fall('e'), delay = 0.08f),
+                        trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.08f),
                     ),
                 ) { fill(17..18, 15..17, 'e') },
                 Round(
@@ -397,7 +397,7 @@ object World1Part3 {
                     traps = listOf(
                         trap(After(0.4f), Say(T("From the top!", "Da capo!"))),
                         // up and over your head first, then home to the start
-                        trap(PastX(23f), Play(Card.GRAND_FINALE), DoorTo(28, 4, speed = 20f), Say(T("Encore means from the top.", "Zugabe heißt: von vorn."))),
+                        trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(28, 4, speed = 20f), Say(T("Encore means from the top.", "Zugabe heißt: von vorn."))),
                         trap(PastX(23f), DoorTo(3, 14, speed = 14f), delay = 0.6f),
                     ),
                 ),
