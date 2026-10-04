@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import com.robinrehbein.beveldevil.game.T
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Hit
@@ -224,19 +225,22 @@ class UiPainter(px: Pixels) : Painter(px) {
         // a word too long even at the smallest size breaks with a hyphen
         val lines = wrapFine(name, size, maxW).flatMap { line -> if (px.fineWidth(line, size) <= maxW) listOf(line) else hyphenate(line, size, maxW) }
         val lh = size * 1.3f
-        val bh = (17f + lines.size * lh + 3).roundToInt().toFloat()
+        // a rematch round gets its own line under the name, so the level number keeps its full width
+        val roundLine = if (game.round > 0) T("ROUND ${game.round + 1}", "RUNDE ${game.round + 1}").toString() else null
+        val bh = (17f + lines.size * lh + 3 + (if (roundLine != null) 7 else 0)).roundToInt().toFloat()
         var y = col.y.toFloat()
         plaque(x, y, w, bh)
         // little horns on top of the plaque
         val hx = cx.roundToInt().toFloat()
         rect(hx - 6, y - 3, 2f, 3f, INK); rect(hx - 5, y - 4, 1f, 2f, INK); rect(hx - 5, y - 2, 1f, 2f, BONE)
         rect(hx + 4, y - 3, 2f, 3f, INK); rect(hx + 4, y - 4, 1f, 2f, INK); rect(hx + 4, y - 2, 1f, 2f, BONE)
-        val label = game.levelLabel + (game.roundTag?.let { " $it" } ?: "")
+        val label = game.levelLabel
         var ls = 9f
         while (ls > 6f && textWidth(label, ls) > w - 6) ls -= 0.5f
         say(label, cx, y + 8.5f, ls, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
         rect(x + 5, y + 15, w - 10, 1f, GOLD_LO2)
         lines.forEachIndexed { i, s -> say(s, cx, y + 17.5f + lh / 2 + i * lh, size, CREAM, Paint.Align.CENTER) }
+        roundLine?.let { say(it, cx, y + 17.5f + lines.size * lh + 3, 3.5f, DEVIL_RED, Paint.Align.CENTER) }
         y += bh + 6
         val dLabel = game.deaths.toString()
         val cw = 9 + textWidth(dLabel, 5f)

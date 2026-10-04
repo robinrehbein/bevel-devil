@@ -19,6 +19,13 @@ import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Touch
 import com.robinrehbein.beveldevil.game.Trigger.Zone
 import com.robinrehbein.beveldevil.game.Action.Reroute
+import com.robinrehbein.beveldevil.game.Action.DoorTo
+import com.robinrehbein.beveldevil.game.Action.Hide
+import com.robinrehbein.beveldevil.game.Action.Move
+import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.Swap
+import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.Pressed
 
 /** World 2, levels 17-32. Act 2, "Traffic": conveyor belts (the data bus) and lasers (the firewall), first alone, then with portals and the classics. */
 object World2Part2 {
@@ -28,189 +35,220 @@ object World2Part2 {
 
     val levels: List<Level> = listOf(
 
-        // 17 — the first conveyor belt: standing still rides you into the spikes; landing after the first hop turns the belt around, and again after the second
+        // 17 — the first conveyor belt, as a puzzle room. The data bus runs in a cable duct, against you and faster than
+        // you run, and the duct has spikes on its ceiling: no hopping through. Over the duct and up the stairs to the shelf;
+        // a loose piece of the shelf drops on whoever runs under it (and leaves a hole up there). The pad at the far end of
+        // the shelf turns the bus around: drop down and ride it to the door
         Level(
             name = T("Data Bus", "Datenbus"),
             intro = T("Timetable: every ten seconds. Roughly.", "Fahrplan: alle zehn Sekunden. Ungefähr."),
-            start = listOf(Belt('b', 3.5f)),
+            start = listOf(Belt('b', -9f), Pad('1', at = 4 to 7)),
             traps = listOf(
-                trap(Landed(14.2f, 18.6f), Play(Card.TWISTED), Belt('b', -6f), say("Packet reordering: the bus runs the other way.", "Paket-Umsortierung: Der Bus fährt andersrum.")),
-                trap(Landed(21.4f, 25f), Belt('b', -10f), say("Congestion control: even faster.", "Staukontrolle: noch schneller.")),
+                trap(Zone(10f, 9f, 17f, 12.2f), Play(Card.HEADBUTT), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
+                trap(Pressed('1'), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
             ),
+            hint = T("The bus turns around somewhere. Not down here.", "Irgendwo dreht der Bus um. Nicht hier unten."),
         ) {
             border(); floor()
-            fill(5..26, 15..15, 'b')
-            put(13, 14, '^'); put(20, 14, '^'); put(21, 14, '^')
+            fill(3..4, 14..14)
+            fill(7..26, 12..12); fill(8..25, 13..13, 'v'); fill(7..26, 15..15, 'b')
+            fill(27..27, 1..12)
+            fill(24..26, 10..11)
+            fill(3..22, 8..8); fill(12..14, 8..8, 'c')
             spawn(); door(); bits(17)
         },
 
-        // 18 — the first laser: a firewall gate that opens now and then; waiting in front of it is a bad idea, and so is running behind it
+        // 18 — the first laser, as a puzzle room. The door hangs high on the left, and the stairs to it are cut by a firewall
+        // beam. The pad that drops the beam lies on the rack behind the blinking gate. Pressing it starts a port scan along
+        // the floor (stay up on the rack until it has passed), and the beam over the stairs comes back once you stand on the
+        // middle step: keep climbing
         Level(
             name = T("Firewall", "Firewall"),
             intro = T("I configured the firewall myself. Nice pattern, right?", "Die Firewall habe ich selbst eingestellt. Schönes Muster, oder?"),
-            start = listOf(Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f, phase = 1.4f)),
-            traps = listOf(
-                trap(Landed(10.6f, 14.4f), Play(Card.GHOST_BLOCK), Laser('M', 14 to 1, 14 to 14, on = 0.6f, off = 40f, delay = 0.9f), say("Port scan detected.", "Portscan erkannt.")),
-                trap(PastX(15.6f), Laser('N', 20 to 1, 20 to 14, on = 0.7f, off = 40f, delay = 0.35f), say("Rule 2 of 2: no running in the data center.", "Regel 2 von 2: Im Rechenzentrum wird nicht gerannt.")),
+            start = listOf(
+                Laser('L', 16 to 1, 16 to 14, on = 1f, off = 1.6f, phase = 1.6f),
+                Laser('W', 1 to 10, 10 to 10),
+                Pad('1', at = 26 to 12),
             ),
-            // rematch: no scan in front of the gate; behind it, the beam waits for whoever waits
+            traps = listOf(
+                trap(Pressed('1'), Play(Card.GHOST_BLOCK), Power('W', false), Laser('S', 17 to 14, 23 to 14, on = 0.8f, off = 40f, delay = 0.9f),
+                    say("Rule 1 disabled. Running a port scan.", "Regel 1 deaktiviert. Starte Portscan.")),
+                trap(Zone(7.3f, 9.9f, 10.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 1f), say("Rule 1 restarted. Climb faster.", "Regel 1 neu gestartet. Kletter schneller.")),
+            ),
+            // rematch: the door moved down behind a beam of its own, the pad is up where the door was; coming down, a saw
+            // inspects the floor
             rematch = listOf(
                 Round(
                     T("Rules reloaded. Your move.", "Firewall-Regel aktualisiert. Rate mal, welche."),
-                    start = listOf(Laser('L', 15 to 1, 15 to 14, on = 1f, off = 1.4f, phase = 1.4f)),
-                    traps = listOf(
-                        trap(Landed(10.6f, 14.4f), say("Port scan detected. Probably.", "Portscan erkannt. Vielleicht.")),
-                        trap(PastX(15.6f), Play(Card.GHOST_BLOCK), Laser('N', 19 to 1, 19 to 14, on = 0.7f, off = 40f, delay = 0.8f), say("New rule: no standing in the data center.", "Neue Regel: Wer steht, wird gelöscht.")),
+                    start = listOf(
+                        Laser('L', 16 to 1, 16 to 14, on = 1f, off = 1.6f, phase = 1.6f),
+                        Laser('V', 28 to 1, 28 to 14),
+                        Pad('2', at = 2 to 6),
                     ),
-                ),
+                    traps = listOf(
+                        trap(Pressed('2'), Power('V', false), say("Port 29 open. Come on down.", "Port 29 offen. Komm runter.")),
+                        trap(Pressed('2'), Play(Card.DEVIL_SAW), Saw(31f, 14.4f, -5f, 0f), say("Deep packet inspection.", "Deep Packet Inspection."), delay = 1f),
+                    ),
+                ) { put(2, 6, '.'); put(29, 14, 'D') },
             ),
         ) {
             border(); floor()
-            rack(9, 1, 2)
-            spawn(); door(); bits(18)
+            fill(11..12, 13..14); fill(8..9, 11..11); fill(5..6, 9..9); fill(1..3, 7..7)
+            fill(24..27, 13..14)
+            spawn(3); put(2, 6, 'D'); bits(18)
         },
 
-        // 19 — the belt carries you along, then reverses faster than you run; the hops out of it land in spikes, then before a pit
+        // 19 — three floors, snake-shaped. The ground bus carries you to a pit, the stairs on the right lead to a shelf whose
+        // bus runs back left. On the shelf the packets get reordered: left and right swap (jump the spikes, climb to the top
+        // floor with swapped hands). On the top floor, right after the gap, the order is restored: whoever keeps pressing the
+        // swapped key walks back into the gap
         Level(
             name = T("Delivery", "Zustellung"),
             intro = T("Packets arrive in order. Guaranteed.", "Pakete kommen der Reihe nach an. Garantiert."),
-            legend = mapOf('A' to hidden),
-            start = listOf(Belt('b', 2f)),
+            start = listOf(Belt('a', 3f), Belt('u', -3f)),
             traps = listOf(
-                trap(PastX(10f), Play(Card.TWISTED), Belt('b', -10f), say("Packet reordering! Everything arrives backwards.", "Paket-Umsortierung! Alles kommt rückwärts an.")),
-                trap(Airborne(15f, 16.6f), Show('A'), say("Checksum mismatch.", "Prüfsumme stimmt nicht.")),
-                trap(Landed(24f, 26.9f), Fall('f'), say("Connection dropped.", "Verbindung getrennt."), delay = 0.05f),
+                trap(Zone(9f, 8.4f, 26f, 8.75f), Play(Card.TWISTED), Swap(true), say("Packet reordering! Left and right arrive swapped.", "Paket-Umsortierung! Links und rechts kommen vertauscht an.")),
+                trap(Zone(18.6f, 3.5f, 30f, 5f), Swap(false), say("In-order delivery restored. You're welcome.", "Reihenfolge wiederhergestellt. Gern geschehen.")),
             ),
         ) {
             border(); floor()
-            fill(1..25, 15..15, 'b')
-            put(1, 13, '>'); put(1, 14, '>')
-            put(20, 14, 'A'); put(21, 14, 'A')
-            fill(27..28, 15..17, 'f')
-            spawn(5); door()
+            fill(7..8, 14..14, '^')
+            fill(10..14, 15..15, 'a')
+            pit(16..18); fill(16..18, 17..17, '^')
+            fill(26..30, 13..14); fill(28..30, 11..12)
+            fill(9..25, 9..9, 'u'); put(16, 8, '^')
+            fill(6..8, 7..7)
+            fill(10..30, 5..5); put(16, 5, '.')
+            spawn(); put(29, 4, 'D')
         },
 
-        // 20 — two gates that are never open together: wait on the island between them. A spike grows behind the hop, the landing resets the second gate, and a third gate warms up for runners
+        // 20 — two firewall gates that are never open together, an island between them, a third gate in front of the door.
+        // The ID scanner (a pad on the island's rack) opens gate 3, and passing gate 1 makes gate 2 remember you: it
+        // reloads its rhythm. The second check behind gate 2 is the trap: stepping on it closes gate 3 again
         Level(
             name = T("Stateful Inspection", "Zustandsprüfung"),
             intro = T("Please have your ID ready.", "Bitte Ausweis bereithalten."),
-            legend = mapOf('A' to hidden),
             start = listOf(
-                Laser('L', 10 to 1, 10 to 14, on = 1f, off = 2f, phase = 2f),
-                Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
+                Laser('L', 8 to 1, 8 to 14, on = 2.4f, off = 1.2f),
+                Laser('M', 21 to 1, 21 to 14, on = 2.2f, off = 1.2f, phase = 0.4f),
+                Laser('K', 26 to 1, 26 to 14),
+                Pad('1', at = 15 to 10), Pad('2', at = 24 to 14),
             ),
             traps = listOf(
-                trap(PastX(15.6f), Play(Card.DECOY), Show('A'), say("Hidden rule: no landing after port 15.", "Versteckte Regel: Keine Landung nach Port 15.")),
-                trap(Landed(16f, 19.8f), Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0f), say("Firewall rules reloaded.", "Firewall-Regeln neu geladen.")),
-                trap(PastX(20.8f), Laser('K', 25 to 1, 25 to 14, on = 0.7f, off = 40f, delay = 0.45f), say("Session limit reached.", "Sitzungslimit erreicht.")),
+                trap(PastX(8.8f), Laser('M', 21 to 1, 21 to 14, on = 3.2f, off = 1.2f, delay = 0.7f), say("Stateful firewall: I remember you.", "Zustandsbehaftete Firewall: Ich merk mir dich.")),
+                trap(Pressed('1'), Power('K', false), say("ID scanned. Gate 3 open.", "Ausweis gescannt. Tor 3 offen.")),
+                trap(Pressed('2'), Play(Card.GHOST_BLOCK), Laser('K', 26 to 1, 26 to 14, on = 3f, off = 60f, delay = 0.05f), say("Second check: your ID just expired.", "Zweite Kontrolle: Dein Ausweis ist gerade abgelaufen.")),
             ),
-            // rematch: the landing behind the spike is safe now (bluff), but the beam comes for whoever waits behind the gate
+            // rematch: the second check is all talk now (bluff), but whoever jumps the queue crosses a fresh beam
             rematch = listOf(
                 Round(
                     T("Stateless now. I forgot everything. Almost.", "Zustandslos jetzt. Ich merk mir nur noch dich."),
-                    start = listOf(
-                        Laser('L', 10 to 1, 10 to 14, on = 1f, off = 2f, phase = 2f),
-                        Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0.4f),
-                    ),
                     traps = listOf(
-                        trap(PastX(15.6f), Bluff(Card.DECOY)),
-                        trap(Landed(16f, 19.8f), Laser('M', 20 to 1, 20 to 14, on = 1f, off = 2f, phase = 0f)),
-                        trap(PastX(20.8f), Laser('K', 22 to 1, 22 to 14, on = 0.7f, off = 40f, delay = 0.9f), say("Loitering is logged.", "Wer rumsteht, landet im Log.")),
+                        trap(PastX(8.8f), Laser('M', 21 to 1, 21 to 14, on = 3.2f, off = 1.2f, delay = 0.7f)),
+                        trap(Pressed('1'), Power('K', false), say("ID scanned. Same procedure.", "Ausweis gescannt. Wie gehabt.")),
+                        trap(Pressed('2'), Bluff(Card.GHOST_BLOCK), say("Second check. Your ID is... fine.", "Zweite Kontrolle. Dein Ausweis ist ... gültig.")),
+                        trap(Airborne(22.2f, 25.6f), Laser('J', 22 to 13, 25 to 13, on = 0.8f, off = 60f, delay = 0.05f), say("Queue jumpers get logged.", "Vordrängler werden protokolliert.")),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            put(15, 14, '^')
-            put(18, 14, 'A'); put(19, 14, 'A')
+            fill(11..12, 13..14); fill(14..16, 11..14)
             spawn(); door(); bits(20)
         },
 
-        // 21 — EASTER EGG: bandwidth (a beam as a low ceiling: only short hops fit through); spikes before the door, and a portal in front of them
+        // 21 — EASTER EGG: the flat rate. The portal at the end of the lower floor comes out right next to the door, until you
+        // come close: then it is a captive portal, a cage up on the left. Accepting the terms (the pad) opens the cage after a
+        // while, and the small print throttles the upper floor: a beam just over your head, so no jumping. Not even over the
+        // hole. Just before it the door moves down below (301), and the portal is in the way down there: hop it
         Level(
             name = T("Flat Rate", "Flatrate"),
             intro = T("Unlimited flat rate. There is no small print.", "Unbegrenzte Flatrate. Ein Kleingedrucktes gibt es nicht."),
-            legend = mapOf('A' to hidden),
-            start = listOf(Laser('H', 5 to 12, 26 to 12)),
-            traps = listOf(
-                trap(PastX(22.4f), Play(Card.SPIKE_SEED), Show('A'), say("Throttled to 56k. Also: spikes.", "Auf 56k gedrosselt. Und: Spikes.")),
-                trap(Airborne(23.5f, 25.8f), Portal('1', 27 to 14, 3 to 14, twoWay = false), say("301 Moved Permanently. The door, too.", "301 Moved Permanently. Die Tür auch.")),
+            start = listOf(
+                Portal('p', 27 to 14, 28 to 7, twoWay = false),
+                Pad('1', at = 2 to 7),
             ),
+            traps = listOf(
+                trap(Zone(22.6f, 13f, 26.6f, 15f), Play(Card.DECOY), Reroute('p', 4 to 7), say("Captive portal. Please accept the terms.", "Captive Portal. Bitte AGB akzeptieren.")),
+                trap(Pressed('1'), Laser('U', 1 to 6, 27 to 6, delay = 1.6f), say("Loading terms and conditions...", "Lade AGB ...")),
+                trap(Pressed('1'), Hide('w'), say("Accepted. Throttled to 56k, as agreed: no jumping.", "Akzeptiert. Gedrosselt auf 56k, wie vereinbart: kein Springen."), delay = 1.6f),
+                trap(Zone(18.5f, 5.5f, 23.5f, 7.6f), DoorTo(29, 14), say("301 Moved Permanently. The door, too.", "301 Moved Permanently. Die Tür auch.")),
+            ),
+            hint = T("The small print says: no jumping. It says nothing about falling.", "Im Kleingedruckten steht: nicht springen. Von Fallen steht da nichts."),
         ) {
             border(); floor()
-            put(9, 14, '^'); put(10, 14, '^'); put(14, 14, '^'); put(15, 14, '^'); put(19, 14, '^'); put(20, 14, '^')
-            put(24, 14, 'A'); put(25, 14, 'A')
-            spawn(); door(); bits(21)
+            fill(1..30, 8..8); fill(24..25, 8..8, '.')
+            put(8, 14, '^'); put(9, 14, '^'); put(14, 14, '^'); put(15, 14, '^'); put(20, 14, '^'); put(21, 14, '^')
+            fill(6..6, 1..7, 'w')
+            spawn(); put(29, 7, 'D'); bits(21)
         },
 
-        // 22 — a hidden block is the switch for the firewall: knock by jumping. Then the firewall has a new rule for runners, and a last pair of spikes
+        // 22 — the bouncer: a wall between you and the door that steps in front of you wherever you go. Go back left, knock on
+        // the hidden step (port knocking) to climb to the shelf, drop onto the bouncer's head and keep walking: whoever
+        // stands still up there is walked out, into the edge of the shelf
         Level(
             name = T("Bouncer", "Türsteher"),
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
-            legend = mapOf('k' to ghost, 'A' to hidden),
-            start = listOf(
-                Laser('L', 15 to 1, 15 to 14),
-                Laser('M', 23 to 1, 23 to 14, on = 0.9f, off = 1.6f, phase = 0.5f),
-            ),
+            legend = mapOf('k' to ghost),
             traps = listOf(
-                trap(Touch('k'), Play(Card.GHOST_BLOCK), Power('L', false), say("Knock-knock-knock. Port 22 is open. (It was hidden.)", "Klopf-klopf-klopf. Port 22 ist offen. (Er war versteckt.)")),
-                trap(PastX(15.6f), Laser('N', 19 to 1, 19 to 14, on = 0.7f, off = 40f, delay = 0.35f), say("Bouncer: new rule, same face.", "Türsteher: neue Regel, gleiches Gesicht.")),
-                trap(PastX(24.2f), Show('A'), say("VIP list: spikes only.", "VIP-Liste: nur Spikes.")),
+                trap(BeforeX(24.4f), Play(Card.STALKER), Chase('w', speed = 6f, left = 5f, right = 0.5f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
+                trap(Touch('k'), say("Knock-knock-knock. Port 22 is open. (It was hidden.)", "Klopf-klopf-klopf. Port 22 ist offen. (Er war versteckt.)")),
+                trap(Zone(21.6f, 7.2f, 30f, 8.3f), Move('w', -4f, 0f, 2.5f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus."), delay = 0.6f),
             ),
+            hint = T("Bouncers hate knocking. Knock anyway. From below.", "Türsteher hassen Klopfen. Klopf trotzdem. Von unten."),
         ) {
             border(); floor()
-            put(8, 11, 'k')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            spawn(); door(); bits(22)
+            fill(27..28, 8..14, 'w')
+            fill(2..3, 13..14); fill(5..6, 11..11); fill(6..7, 9..9, 'k'); fill(8..21, 7..7)
+            fill(22..30, 4..4); fill(22..30, 5..5, 'v')
+            spawn(25); door(); bits(22)
         },
 
-        // 23 — a ride through three belts and two one-way portals: the express lane turns around under you, and so does the last one
+        // 23 — three express lanes, each running right, joined by one-way on-ramps (portals). Lane 2 jams and runs backwards
+        // into the spikes you hopped coming in; lane 3 is closed for works ahead of you, its hole drops onto lane 2's spikes
         Level(
             name = T("Information Superhighway", "Datenautobahn"),
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
-            legend = mapOf('A' to hidden),
             start = listOf(
-                Belt('a', 4.5f), Belt('b', 4.5f), Belt('c', 4.5f),
-                Portal('1', 15 to 14, 4 to 8, twoWay = false),
-                Portal('2', 15 to 8, 20 to 14, twoWay = false),
+                Belt('a', 4f), Belt('b', 4f), Belt('c', 4f), Belt('d', 4f),
+                Portal('1', 30 to 14, 1 to 9, twoWay = false),
+                Portal('2', 30 to 9, 1 to 4, twoWay = false),
             ),
             traps = listOf(
-                trap(Touch('b'), Play(Card.SINKING), Belt('b', -6f), say("Traffic jam on the express lane.", "Stau auf der Überholspur.")),
-                trap(Touch('c'), Belt('c', -6f), say("Load shedding: lane 3 runs backwards.", "Lastabwurf: Spur 3 läuft rückwärts.")),
-                trap(Airborne(23f, 25.6f), Show('A'), say("Packet dropped.", "Paket verworfen.")),
+                trap(Zone(10f, 7.5f, 14f, 10f), Belt('b', -6f), say("Traffic jam. Lane 2 now runs backwards.", "Stau. Spur 2 läuft jetzt rückwärts.")),
+                trap(Zone(9f, 2.5f, 12f, 5f), Play(Card.SINKING), Hide('d'), say("Lane closed for maintenance.", "Spur wegen Wartung gesperrt.")),
             ),
         ) {
             border(); floor()
-            fill(3..13, 15..15, 'a'); fill(19..27, 15..15, 'c')
-            fill(16..17, 1..14)
-            fill(3..14, 9..9, 'b'); put(15, 9, '#')
-            put(8, 14, '^'); put(9, 8, '^'); put(12, 8, '^'); put(23, 14, '^'); put(24, 14, '^')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            spawn(); door()
+            fill(2..29, 15..15, 'a'); put(12, 14, '^'); put(13, 14, '^')
+            fill(1..30, 10..10); fill(2..29, 10..10, 'b'); put(6, 9, '^'); put(7, 9, '^'); fill(15..16, 9..9, '^')
+            fill(1..30, 5..5); fill(2..27, 5..5, 'c'); fill(15..16, 5..5, 'd')
+            spawn(); put(29, 4, 'D')
         },
 
-        // 24 — climb the racks: every jump crosses a timed beam, a beam warms up where you wait on the second rack, the last rack crumbles and grows spikes
+        // 24 — climb the racks to the uplink; every rack has a timed beam across it, and the second rack is a hot aisle (a beam
+        // warms up where you land and would wait). At the top the door sinks through the racks to the bottom (downlink): climb back
+        // down, each beam in its turn
         Level(
             name = T("Uplink", "Uplink"),
             intro = T("The uplink is at the top. I'm taking the elevator.", "Der Uplink ist ganz oben. Ich nehme den Aufzug."),
-            legend = mapOf('A' to hidden),
             start = listOf(
-                Laser('1', 8 to 1, 8 to 12, on = 1f, off = 1.8f, phase = 1.4f),
-                Laser('2', 14 to 1, 14 to 10, on = 1f, off = 1.8f, phase = 0.4f),
-                Laser('3', 20 to 1, 20 to 8, on = 1f, off = 1.8f, phase = 2.2f),
+                Laser('1', 7 to 1, 7 to 12, on = 1f, off = 1.8f, phase = 1.4f),
+                Laser('2', 12 to 1, 12 to 10, on = 1f, off = 1.8f, phase = 0.4f),
+                Laser('3', 17 to 1, 17 to 8, on = 1f, off = 1.8f, phase = 2.2f),
+                Laser('4', 22 to 1, 22 to 6, on = 1f, off = 1.8f, phase = 1.0f),
             ),
             traps = listOf(
-                trap(Landed(10f, 13.9f), Laser('W', 13 to 1, 13 to 10, on = 0.6f, off = 40f, delay = 0.9f), say("Rack 2: hot aisle. Do not linger.", "Rack 2: Heißgang. Nicht verweilen.")),
-                trap(Touch('c'), Play(Card.CRUMBLE), Fall('c'), say("Thermal throttling: this rack is going down.", "Thermische Drosselung: Dieses Rack fährt herunter."), delay = 1.2f),
-                trap(Landed(22f, 23.9f), Show('A'), say("Uplink established. Spikes included.", "Uplink steht. Spikes inklusive.")),
+                trap(Landed(9f, 12f), Laser('W', 10 to 1, 10 to 10, on = 0.6f, off = 60f, delay = 0.9f), say("Rack 2: hot aisle. Do not linger.", "Rack 2: Heißgang. Nicht verweilen.")),
+            ) + doorTrail(
+                Zone(25.5f, 1f, 31f, 5f), 28, 4,
+                listOf(DoorTo(28, 13, speed = 16f), DoorTo(2, 14, speed = 14f)),
+                first = listOf(Play(Card.SHY_DOOR), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
             ),
         ) {
             border(); floor()
-            pit(16..19)
-            fill(4..7, 13..14); fill(10..13, 11..14); fill(16..19, 9..13, 'c'); fill(22..29, 7..14)
-            for (x in listOf(8, 9, 14, 15, 16, 17, 18, 19, 20, 21)) put(x, 14, '^')
-            put(24, 6, 'A'); put(25, 6, 'A')
-            spawn(); put(28, 6, 'D')
+            fill(4..8, 13..14); fill(9..13, 11..14); fill(14..18, 9..14); fill(19..23, 7..14); fill(24..30, 5..14)
+            spawn(); put(28, 4, 'D')
         },
 
         // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it

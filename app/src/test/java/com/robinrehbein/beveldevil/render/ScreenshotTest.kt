@@ -21,6 +21,7 @@ import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.Twists
 import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
+import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.Round
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Sound
@@ -191,6 +192,13 @@ class ScreenshotTest {
             game.input.right = false
             play(0.55f); save("66-v2-bluff-tell")
             play(0.6f); save("67-v2-bluff-flipped")
+        }
+        // a two-digit level in its rematch round: the plaque fits "2-14" and the "#2" sticker
+        val i = Levels.all.indexOfFirst { it.name.en == "127.0.0.1" }
+        val resumed = object : Progress by MemoryProgress() { override fun checkpoint(level: Int) = 1 to 3 }
+        Film(Game(resumed, silent), big).apply {
+            game.startLevel(i)
+            play(2f); save("6a-v2-round-plaque")
         }
         val all = MemoryProgress().apply { Card.entries.forEach { findCard(it) } }
         val g = Game(all, silent)
@@ -537,6 +545,36 @@ class ScreenshotTest {
             val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
             val big = Bitmap.createScaledBitmap(field, PW * 4, PH * 4, false)
             File(dir, "155-hw-$name-$board.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
+    /** World 2, levels 17-24 (the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
+    @Test
+    fun worldTwoPuzzleRooms() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val w2 = com.robinrehbein.beveldevil.game.World2.levels
+        fun at(n: Int, round: Int = 0, script: Bot.() -> Bot = { wait(0.5f) }) = Bot(w2[n - 1], round).script().world
+        val rooms = com.robinrehbein.beveldevil.game.World2Rooms
+        val scenes = listOf(
+            "11" to at(11), "12" to at(12), "13" to at(13), "14" to at(14), "14-r2" to at(14, 1), "15" to at(15), "16" to at(16),
+            "17" to at(17), "17-ceiling" to at(17) { rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().rightTo(10.2f).wait(0.6f) },
+            "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.0f) }, "18-r2" to at(18, 1),
+            "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
+            "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) },
+            "21" to at(21), "21-cage" to at(21) { rooms.l21ToCage(this).wait(1.1f) },
+            "21-moved" to at(21) { rooms.l21ToCage(this).waitFor { !it.group('w').visible }.rightTo(23.8f).wait(0.3f) },
+            "22" to at(22), "22-shelf" to at(22) { rooms.l22ToShelf(this).wait(0.2f) },
+            "23" to at(23), "23-jam" to at(23) { hopR(10.2f).rightUntil { it.links[0].hopTime > 0f }.hopR(4.3f).rightTo(11f).wait(0.2f) },
+            "24" to at(24), "24-downlink" to at(24) { rooms.l24Up(this).wait(0.6f) },
+        )
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((name, w) in scenes) {
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, Themes.DATA_CENTER)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "140-w2-room-$name.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 
