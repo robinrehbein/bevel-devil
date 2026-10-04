@@ -290,22 +290,19 @@ class World2Test {
     @Test fun level09() = b(9).right(0.60f).leftJump(0.55f).leftJump(0.55f).leftJump(0.55f).left(0.25f)
         .rightJump(0.25f).left(0.10f).right(0.03f).left(0.03f).left(0.10f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level10() = b(10).right(0.60f).rightJump(0.55f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level11() = rooms.getValue(11)(b(11)).expect(WorldState.WON)
-    @Test fun level12() = rooms.getValue(12)(b(12)).expect(WorldState.WON)
-    @Test fun level13() = rooms.getValue(13)(b(13)).expect(WorldState.WON)
-    @Test fun level14() = rooms.getValue(14)(b(14)).expect(WorldState.WON)
-    @Test fun level15() = rooms.getValue(15)(b(15)).expect(WorldState.WON)
-    @Test fun level16() = rooms.getValue(16)(b(16)).expect(WorldState.WON)
+    @Test fun level11() { World2DesignTest.play(11) }
+    @Test fun level12() { World2DesignTest.play(12) }
+    @Test fun level13() { World2DesignTest.play(13) }
+    @Test fun level14() { World2DesignTest.play(14) }
+    @Test fun level15() { World2DesignTest.play(15) }
+    @Test fun level16() { World2DesignTest.play(16) }
 
-    // ---------- Act 1, levels 11-16: one-screen puzzle rooms ----------
+    // ---------- Act 1, levels 11-16: rebuilt after recipe v2 (the rules are checked by World2DesignTest, rounds by World2DeckTest) ----------
 
-    /** The rooms take a while even when you know them, and running right (hopping now and then) gets nowhere. */
+    /** Running right and hopping now and then gets nowhere in the rebuilt rooms. */
     @Test
-    fun theRoomsAreNoSprints() {
-        for ((n, solve) in rooms) {
-            val won = solve(b(n))
-            won.expect(WorldState.WON)
-            assertTrue("level $n is solved in ${won.world.time} s", won.world.time >= 8f)
+    fun theRoomsFallToNoRunner() {
+        for (n in 11..16) {
             val runner = b(n)
             repeat(40) { runner.right(0.3f).rightJump(0.25f) }
             assertTrue("level $n falls to running right and hopping", runner.world.state != WorldState.WON)
@@ -323,58 +320,15 @@ class World2Test {
         assertTrue("$shows", shows.values.all { it <= 1 } && shows.values.count { it == 0 } >= 3)
     }
 
-    /** Server Room: fan 1 circles the mezzanine, rushing at the switch runs into it. */
-    @Test fun level11RushingAtTheSwitchMeetsFanOne() = b(11).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f)
-        .leftJump(0.45f).landLeft().leftTo(2.5f).expect(WorldState.DEAD)
-    /** Server Room: the switch opens the rack, but running straight to the door puts you under fan 3's housing. */
-    @Test fun level11TheHousingComesDownInFrontOfTheDoor() = upstairsAndBack(b(11))
-        .rightTo(19.4f).waitFor { fan2(it) < 12f }.waitFor { fan2(it) > 15.6f }.right(2f).expect(WorldState.DEAD)
-    @Test fun level11TheRackStaysShutWithoutTheSwitch() {
-        val bot = b(11).hopR(14.2f).rightTo(23f).right(1f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 24f)
-    }
-
     /** Address Space: each page you step on is freed, standing on one is a fall. */
-    @Test fun level12StandingOnAPageIsUseAfterFree() = b(12).rightTo(5.2f).rightJump(0.35f).landRight().wait(1.5f).expect(WorldState.DEAD)
-    /** Address Space: jumping straight at the next page upstairs: it is realloc'ed away under you. */
-    @Test fun level12JumpingStraightAtTheMovingPageFalls() = acrossTheHeap(b(12)).leftTo(21f).leftJump(0.35f).landLeft().wait(1f)
-        .expect(WorldState.DEAD)
-
-    /** Works on My Machine: holding right in production walks into the ceiling spikes. */
-    @Test fun level13HoldingRightUpsideDownDies() = b(13).right(5f).expect(WorldState.DEAD)
-    /** Works on My Machine: the flaky test is red when you get there without counting. */
-    @Test fun level13NotWaitingForTheFlakyTestFallsUp() = b(13).rightTo(6.5f).wait(0.5f).rightTo(9.8f).rightJump(0.3f).landRight()
-        .right(1f).expect(WorldState.DEAD)
-    @Test fun level13TheDoorFleesHome() {
-        val bot = b(13).rightTo(6.5f).wait(0.5f).rightTo(9.8f).rightJump(0.3f).landRight()
-            .rightTo(13.2f).waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.rightTo(18.6f).rightJump(0.3f).landRight().wait(1.5f)
-        assertTrue("door at ${bot.world.door.box.x}", bot.world.door.box.x < 4f && bot.world.door.hanging)
-        assertEquals(1f, bot.world.gravity)
-    }
-
-    /** 127.0.0.1: running under the top right ceiling of the last hop gets you a headbutt. */
-    @Test fun level14RunningUnderHopFourDies() = upToHopThree(b(14)).leftUntil { it.player.box.cx > 20f }.left(2f).expect(WorldState.DEAD)
-    /** 127.0.0.1: the bridge of the last subnet drops packets: jumping on while it flickers falls through. */
-    @Test fun level14TheBlinkingBridgeDropsYou() = upToHopThree(b(14)).leftUntil { it.player.box.cx > 20f }.leftTo(24.1f).wait(0.6f)
-        .leftJump(0.35f).landLeft().leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).waitFor { it.group('k').warn > 0.3f }
-        .leftJump(0.3f).landLeft().wait(0.5f).expect(WorldState.DEAD)
-
+    @Test fun level12StandingOnAPageIsUseAfterFree() = b(12).rightTo(8f).wait(1.5f).expect(WorldState.DEAD)
     /** Greeting: the right pit is too wide until the client says SYN. */
     @Test fun level15WithoutSynThePitWins() = b(15).right(3f).expect(WorldState.DEAD)
-    /** Greeting: after SYN-ACK the bridge rotates out right away; running back at once falls in. */
-    @Test fun level15RunningBackAtOnceFallsThroughTheCookie() = b(15).leftTo(10.6f).leftJump(0.35f).landLeft().leftTo(4.5f).wait(0.1f)
-        .rightTo(5.6f).rightJump(0.35f).landRight().rightTo(29.4f).leftTo(10.6f).expect(WorldState.DEAD)
-
-    /** Through Traffic: sprinting on between the pillars gets you crushed by the far one. */
-    @Test fun level16SprintingThroughTheMiddleIsCrushed() = b(16).hopR(4.6f).right(2f).expect(WorldState.DEAD)
-    /** Through Traffic: inside the cell left and right are swapped. */
+    /** Through Traffic: stepping into the cell encrypts the connection. */
     @Test fun level16TheCellIsEncrypted() {
-        val bot = b(16).hopR(4.6f).rightTo(15.4f).wait(0.8f).right(0.3f)
-        assertTrue(bot.world.swapped && bot.world.player.box.cx < 15.4f)
+        val bot = b(16).hopR(5.6f).right(0.85f).waitFor { it.swapped }
+        assertTrue(bot.world.swapped)
     }
-    /** Through Traffic: stepping off the left wall on the way home lands in the LEDs. */
-    @Test fun level16SteppingOffTheWallLandsInTheLeds() = backOverTheLeftWall(b(16)).left(2f).expect(WorldState.DEAD)
 
     // ---------- Act 2: Traffic ----------
     @Test fun level17() = World2Rooms.l17(b(17)).expect(WorldState.WON)
@@ -496,50 +450,4 @@ class World2Test {
     @Test fun level46() = b(46).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.03f).expect(WorldState.WON)
     @Test fun level47() = b(47).right(0.60f).leftJump(0.40f).leftJump(0.25f).leftJump(0.12f).left(0.10f).left(0.03f) .left(0.03f).rightJump(0.12f).left(0.03f).rightJump(0.12f).right(0.03f).leftJump(0.40f) .leftJump(0.55f).right(1.20f).expect(WorldState.WON)
     @Test fun level48() = b(48).right(0.60f).rightJump(0.12f).right(1.20f).left(0.10f).leftJump(0.55f).right(0.60f).expect(WorldState.WON)
-
-    companion object {
-        /** Fan 2 of the Server Room: its height. */
-        fun fan2(w: World) = w.saws.firstOrNull { it.x > 21f }?.y ?: 99f
-        /** Fan 1 of the Server Room is on its way up the right side of its lap. */
-        private fun fan1Away(w: World) = w.saws.any { it.x > 9.9f && it.y < 9f }
-
-        /** Server Room: up the rack onto the mezzanine, around fan 1 to the switch and back down. */
-        fun upstairsAndBack(b: Bot) = b.rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f).leftJump(0.45f).landLeft()
-            .waitFor(cond = ::fan1Away).leftTo(2.5f).wait(0.1f).waitFor(cond = ::fan1Away).rightTo(14.5f).landRight().wait(0.2f)
-
-        /** Address Space: over the freed pages and through the pointer, up to the first page of kernel space. */
-        fun acrossTheHeap(b: Bot) = b.rightTo(5.2f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
-            .rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight()
-            .right(1f).leftTo(26.4f).leftJump(0.35f).landLeft()
-
-        /** 127.0.0.1: through the link in the air, over the LEDs to the flapping hop 3. */
-        fun upToHopThree(b: Bot) = b.rightTo(10.3f).rightJump(0.3f).landRight().leftTo(9f).leftJump(0.3f).landLeft().leftTo(1.5f)
-
-        /** Through Traffic: into the cell, up the forged certificate onto the right wall, back in and onto the left wall. */
-        fun backOverTheLeftWall(b: Bot) = b.hopR(4.6f).rightTo(15.4f).wait(0.8f).jump(0.3f).wait(0.3f)
-            .rightKeyLeftTo(13.6f).waitFor { !it.group('b').visible }.waitFor { it.group('b').visible }.leftJump(0.35f).landLeft().wait(0.05f)
-            .leftJump(0.4f).landLeft().wait(0.3f).leftTo(17f).landLeft().leftTo(14.2f).waitFor { !it.group('b').visible }
-            .waitFor { it.group('b').visible }.rightJump(0.35f).landRight().leftTo(15.3f).leftJump(0.45f).landLeft()
-
-        /** The solutions of the puzzle rooms (levels 11-16); 11 and 14 are also the round-1 scripts of [World2DeckTest]. */
-        val rooms: Map<Int, (Bot) -> Bot> = mapOf(
-            11 to { b -> upstairsAndBack(b).rightTo(19.4f).waitFor { fan2(it) < 12f }.waitFor { fan2(it) > 15.6f }
-                .rightTo(25f).wait(0.6f).rightJump(0.4f).landRight().right(0.3f) },
-            12 to { b -> acrossTheHeap(b).leftTo(19.6f).wait(0.1f).jump(0.2f).wait(2.8f).leftJump(0.35f).landLeft()
-                .leftJump(0.35f).landLeft().left(1f) },
-            13 to { b -> b.rightTo(6.5f).wait(0.5f).rightTo(9.8f).rightJump(0.3f).landRight()
-                .rightTo(13.2f).waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.rightTo(18.6f).rightJump(0.3f).landRight()
-                .right(0.5f).landRight().rightTo(30.3f).wait(0.5f)
-                .leftTo(22.3f).leftJump(0.2f).landLeft().leftTo(18.6f).waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }
-                .leftTo(14.3f).leftJump(0.3f).landLeft().left(2f) },
-            14 to { b -> upToHopThree(b).waitFor(3f) { it.player.box.cx > 20f }.leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft()
-                .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).waitFor { !it.group('k').visible }.waitFor { it.group('k').visible }
-                .leftJump(0.3f).landLeft().leftTo(22.6f).leftJump(0.35f).landLeft().left(0.5f) },
-            15 to { b -> b.leftTo(10.6f).leftJump(0.35f).landLeft().leftTo(4.5f).wait(0.1f)
-                .rightTo(5.6f).rightJump(0.35f).landRight().rightTo(29.4f).wait(0.05f)
-                .waitFor { !it.group('r').visible }.waitFor { it.group('r').visible }
-                .leftTo(10.6f).leftJump(0.35f).landLeft().left(1f) },
-            16 to { b -> backOverTheLeftWall(b).leftTo(11.3f).leftJump(0.35f).landLeft().left(1f) },
-        )
-    }
 }

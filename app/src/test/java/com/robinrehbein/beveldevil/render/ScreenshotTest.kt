@@ -591,7 +591,7 @@ class ScreenshotTest {
         }
     }
 
-    /** World 2, levels 17-24 (the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
+    /** World 2, levels 11-24 (the act 1 rebuilt rooms and the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
     @Test
     fun worldTwoPuzzleRooms() {
         val layout = Layout().apply { update(2400, 1080, 2.75f) }
@@ -599,7 +599,12 @@ class ScreenshotTest {
         fun at(n: Int, round: Int = 0, script: Bot.() -> Bot = { wait(0.5f) }) = Bot(w2[n - 1], round).script().world
         val rooms = com.robinrehbein.beveldevil.game.World2Rooms
         val scenes = listOf(
-            "11" to at(11), "12" to at(12), "13" to at(13), "14" to at(14), "14-r2" to at(14, 1), "15" to at(15), "16" to at(16),
+            "11" to at(11), "11-saw" to at(11) { rightTo(8f).wait(0.9f) }, "11-r2" to at(11, 1),
+            "12" to at(12), "12-pages" to at(12) { rightTo(8f).wait(0.4f) },
+            "13" to at(13), "13-flipped" to at(13) { rightTo(8.3f).landRight().wait(0.6f) },
+            "14" to at(14), "14-r2" to at(14, 1),
+            "15" to at(15), "15-bridge" to at(15) { leftTo(10.2f).leftTo(4.2f).wait(0.5f) },
+            "16" to at(16), "16-cell" to at(16) { hopR(5.6f).right(0.85f).waitFor { it.swapped }.wait(0.3f) },
             "17" to at(17), "17-ceiling" to at(17) { rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().rightTo(10.2f).wait(0.6f) },
             "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.0f) }, "18-r2" to at(18, 1),
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },

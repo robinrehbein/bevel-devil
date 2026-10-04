@@ -418,8 +418,8 @@ object World2Part1 {
                     bridgeTiles.map { Show(it) }).toTypedArray()),
                 trap(Pressed('1'), Move('i', 0f, 12f, 20f), say("The client socket closes behind you. Politely.", "Der Client-Socket schließt hinter dir. Höflich."), delay = 0.9f),
                 trap(Pressed('1'), *bridgeTiles.map { Move(it, 0f, 12f, 30f) }.toTypedArray(), say("SYN cookie expired.", "SYN-Cookie abgelaufen."), delay = 8f),
-                trap(PastX(14f), Move('h', 0f, 12f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt.")),
-                trap(PastX(14f), Move('h', 0f, -12f, 40f), delay = 0.55f),
+                trap(PastX(14f), Move('h', 0f, 11f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt.")),
+                trap(PastX(14f), Move('h', 0f, -11f, 40f), delay = 0.55f),
                 trap(Pressed('2'), Show('a'), say("SYN-ACK. The server is building you a staircase. ACK it.", "SYN-ACK. Der Server baut dir eine Treppe. Bestätige sie."), delay = 0.5f),
                 trap(Pressed('2'), Show('b'), delay = 1f),
                 trap(Zone(28.8f, 8f, 31f, 11f), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
@@ -430,35 +430,40 @@ object World2Part1 {
             fill(0..6, 15..17, 'i'); pit(7..9); pit(20..25)
             for (n in 0 until 6) put(20 + n, 15, bridgeTiles[n])
             fill(28..29, 13..14, 'a'); fill(30..30, 11..14, 'b')
-            fill(17..18, 1..2, 'h')
+            fill(17..18, 1..3, 'h')
             spawn(13); door(30, 10); bits(15)
         },
 
         // 16 — EASTER EGG: man in the middle. Two pillars hang from the ceiling; step between them and they drop into a cell
-        // (sprinting on gets you crushed by the far one). Inside, Mephi "encrypts" the connection: left and right swap. The way
-        // out is an invisible block (a forged certificate) to climb on, and once found it rotates (blinks). On top of the wall, the packet is intercepted: the
-        // door is forwarded to the far left, so back through the cell and over the other wall
+        // (sprinting on gets you crushed by the far one). Inside, Mephi "encrypts" the connection: left and right swap. The
+        // only way out is the cell's portal, which wakes up after a moment and forwards your packet to the top right, where
+        // it is decrypted. The whole upper lane back to the left is a field of freed pages; at its end sits the server's
+        // switch, and when its port opens it leads to the door
         Level(
             name = T("Through Traffic", "Durchgangsverkehr"),
             intro = T("Your connection is encrypted. Mostly by me.", "Deine Verbindung ist verschlüsselt. Größtenteils von mir."),
-            legend = mapOf('b' to ghost),
-            traps = listOf(
-                trap(PastX(15.2f), Fall('l'), Fall('r'), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür.")),
-                trap(PastX(15.2f), Play(Card.TWISTED), Swap(true),
-                    say("Connection encrypted. By me. Left is right now.", "Verbindung verschlüsselt. Von mir. Links ist jetzt rechts."), delay = 0.6f),
-                trap(Touch('b'), Blink('b', on = 1.4f, off = 0.9f), say("Certificate valid. Rotating every second. (It isn't valid.)", "Zertifikat gültig. Rotiert sekündlich. (Gültig ist es nicht.)")),
-            ) + doorTrail(
-                Zone(18.5f, 7f, 21.5f, 11f), 29, 14,
-                listOf(DoorTo(29, 1, 26f, hanging = true), DoorTo(2, 1, 26f, hanging = true), DoorTo(2, 14, 26f)),
-                first = listOf(Swap(false), say("Packet intercepted. Forwarded to the left. Decrypted, too.", "Paket abgefangen. Nach links weitergeleitet. Und entschlüsselt.")),
+            start = listOf(
+                Portal('1', 13 to 14, 28 to 7, twoWay = false), Portal('2', 3 to 7, 22 to 14, twoWay = false),
+                Power('1', false), Power('2', false),
             ),
-            hint = T("Jump around in the cell. Something is forged.", "Spring in der Zelle herum. Irgendwas ist gefälscht."),
+            traps = listOf(
+                trap(PastX(12.7f), Play(Card.HEADBUTT), Move('l', 0f, 2f, 8f), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür."), delay = 0.3f),
+                trap(PastX(12.7f), Move('r', 0f, 2f, 8f), delay = 0.5f),
+                trap(PastX(12.7f), Swap(true), say("Connection encrypted. By me. Left is right now.", "Verbindung verschlüsselt. Von mir. Links ist jetzt rechts."), delay = 0.6f),
+                trap(PastX(12.7f), Power('1', true), say("Packet forwarded. Eventually.", "Paket weitergeleitet. Irgendwann."), delay = 2.55f),
+                trap(Zone(24f, 3f, 31f, 8.5f), Swap(false), say("Decrypted. You have the plaintext now. Don't lose it.", "Entschlüsselt. Du hast jetzt den Klartext. Verlier ihn nicht.")),
+                trap(Touch('s'), Power('2', true), say("Port 443 opens in a moment. Courtesy of the server.", "Port 443 öffnet gleich. Mit freundlichen Grüßen vom Server."), delay = 1.45f),
+            ) + "abcd".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) } + "efgj".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) } +
+                "qtuw".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) },
+            hint = T("The way out of the cell is the portal. It needs a moment. Everything upstairs is freed.", "Der Weg aus der Zelle ist das Portal. Es braucht einen Moment. Oben wird alles freigegeben."),
         ) {
             border(); floor()
-            fill(11..12, 1..4, 'l'); fill(19..20, 1..4, 'r')
-            put(15, 13, 'b')
-            leds(6..7); leds(21..23)
-            spawn(); door(); bits(16, x0 = 23)
+            fill(11..12, 9..12, 'l'); fill(19..20, 9..12, 'r')
+            fill(1..30, 8..8)
+            for (n in 0 until 4) { put(23 + n, 8, "abcd"[n]); put(16 + n, 8, "efgj"[n]); put(4 + n, 8, "qtuw"[n]) }
+            put(21, 7, '^'); put(9, 7, '^'); put(1, 7, 's'); put(14, 7, '^'); fill(7..8, 13..14)
+            put(27, 14, '^')
+            spawn(); door(30); bits(16, x0 = 23)
         },
 
     )

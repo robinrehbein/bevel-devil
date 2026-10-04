@@ -94,7 +94,8 @@ class World2DeckTest {
      */
     @Test
     fun theRoundOneSolutionLosesRoundTwo() {
-        val rematches = World2.levels.withIndex().filter { it.value.rematch.isNotEmpty() }.map { it.index + 1 }
+        // the rebuilt rooms (World2DesignTest.REBUILT) are checked by the kit (H9 rematch rule) with their registered solutions
+        val rematches = World2.levels.withIndex().filter { it.value.rematch.isNotEmpty() }.map { it.index + 1 }.filter { it !in World2DesignTest.REBUILT }
         assertEquals("every rematch level has its round-1 script here", rematches.toSet(), roundOne.keys)
         for ((n, script) in roundOne) {
             assertEquals("level $n: the round-1 script must win round 1", WorldState.WON, script(b(n)).world.state)
@@ -130,31 +131,6 @@ class World2DeckTest {
         assertTrue("the ceiling hovers over Bevel", bot.world.group('c').ox < -2.5f)
     }
     @Test fun l07r2WaitingForTheFirstCeilingIsFatal() = b(7, 2).rightTo(7.6f).wait(1f).expect(WorldState.DEAD)
-    /**
-     * Server Room, round 2: two-factor auth. A second rail sits behind the first and its switch is next to the spawn; the
-     * switch upstairs only opens the outer one. Behind the rack the raised floor drops: jump it.
-     */
-    @Test fun l11r2() = World2Rooms.l11r2(b(11, 2)).expect(WorldState.WON)
-    @Test fun l11r2RunningOverTheRaisedFloorFallsIn() = b(11, 2).leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f)
-        .leftJump(0.45f).landLeft().leftTo(2.5f).rightTo(14.5f).landRight().right(3f).expect(WorldState.DEAD)
-    @Test fun l11r2TheOldSwitchAloneLeavesTheInnerRailShut() {
-        val bot = World2Test.upstairsAndBack(b(11, 2)).rightTo(22f).right(1f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.player.box.cx < 23f)
-    }
-    /**
-     * 127.0.0.1, round 2: the links at home swapped (the floor one leads on now, the one in the air is the loopback), and a
-     * firewall follows the packet into the last subnet: no time to wait for the bridge there, so wait in the top right.
-     */
-    @Test fun l14r2() = World2Rooms.l14r2(b(14, 2)).expect(WorldState.WON)
-    @Test fun l14r2TheLinkInTheAirIsTheLoopbackNow() {
-        val bot = b(14, 2).rightTo(10.3f).rightJump(0.3f).landRight().wait(0.3f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 6f && bot.world.player.box.b > 14f)
-    }
-    @Test fun l14r2WaitingForTheBridgeDownstairsMeetsTheFirewall() = b(14, 2).right(1.6f).leftTo(9f).leftJump(0.3f).landLeft()
-        .leftUntil { it.player.box.cx > 20f }.leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft()
-        .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).wait(3f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
     /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; a saw inspects the floor after it. */
@@ -215,9 +191,7 @@ class World2DeckTest {
                 .rightJump(0.55f).right(0.25f).right(0.10f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
                 .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f)
                 .right(0.03f).right(0.03f).left(0.10f).rightJump(0.55f).right(0.60f) },
-            11 to World2Test.rooms.getValue(11),
-            14 to World2Test.rooms.getValue(14),
-            18 to World2Rooms::l18,
+                        18 to World2Rooms::l18,
             20 to World2Rooms::l20,
             25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },

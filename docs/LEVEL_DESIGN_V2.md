@@ -320,7 +320,7 @@ Korrekturen für Rezept v2:
 
 Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter Routenwahl (R3 oder R4). Schalter (R1, R2, R4) gibt es wegen der Rotation (H12) höchstens 3 pro Akt, den Pilot eingerechnet.
 
-**Akt 1 „Handshake“** (11–16: Pilot, wird nach Rezept v2 neu gebaut. Rotation im Akt: Die Tür-Flucht hat schon 3, ein Schalter steht in 6. Der Pilot bekommt also keinen `DoorTo`, höchstens 2 Pad-Level, höchstens 3 Blink-Level, etwa 3 Rätsel- und 3 Fallenräume.)
+**Akt 1 „Handshake“** (11–16: Pilot, nach Rezept v2 neu gebaut; 11 und 14 haben eine Revanche. Rotation im Akt: Die Tür-Flucht hat schon 3, ein Schalter steht in 6. Der Pilot bekommt also keinen `DoorTo`, höchstens 2 Pad-Level, höchstens 3 Blink-Level, etwa 3 Rätsel- und 3 Fallenräume.)
 
 | # | Name | R | U | Raum |
 |---|---|---|---|---|
@@ -334,7 +334,12 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |8|Memory Test ★|–|U1|★|
 |9|Cable Mess|–|U9|Falle|
 |10|VPN Tunnel|R3|U7|Rätsel|
-|11–16|Pilot|siehe Pilot-Bericht||
+|11|Server Room|R1|U15|Rätsel|
+|12|Address Space|–|U1|Falle|
+|13|Works on My Machine|R5|U10|Rätsel|
+|14|127.0.0.1|R3|U11|Rätsel|
+|15|Greeting|R1|U3|Rätsel|
+|16|Through Traffic (Finale)|R3+R5|U9+U2|Finale|
 
 **Akt 2 „Traffic“** (17–24: Pilot, wird nach Rezept v2 neu gebaut. Rotation im Akt: Die eine Tür-Flucht gehört 21 („301 Moved Permanently“), 24 verliert ihre. Ein Schalter steht im Finale 32, der Pilot hat also höchstens 2 Pad-Level. Getaktete Laser-Tore höchstens 3 im ganzen Akt.)
 
