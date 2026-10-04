@@ -30,6 +30,8 @@ object World2Part1 {
     private val hidden = Glyph(spike = true, hidden = true)
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
+    /** The tiles of the bridge in 2-15 (one group per tile, so the bridge can crumble one tile at a time). */
+    private val bridgeTiles = ('m'..'r').toList()
 
     val levels: List<Level> = listOf(
 
@@ -402,26 +404,34 @@ object World2Part1 {
             spawn(); door(18); bits(14, x0 = 3)
         },
 
-        // 15 — EASTER EGG: TCP three-way handshake. The door sits on a ledge nobody can reach; two switches at the far ends of
-        // the room are client and server. SYN (left) opens a port: a bridge appears over the wide pit on the right. SYN-ACK
-        // (right) sends the door home, to the left end, and turns the bridge into a SYN cookie that blinks. ACK is getting back
+        // 15 — EASTER EGG: TCP three-way handshake. The door floats at the top right, nobody can reach it; two switches are client
+        // (far left) and server (the far side of a wide pit). SYN opens a port: a bridge appears over the pit, and the client's
+        // island closes behind you. The bridge is a SYN cookie that crumbles under whoever stops on it. SYN-ACK (the server's
+        // pad) builds a staircase up to the door. ACK is the door
         Level(
             name = T("Greeting", "Begrüßung"),
             intro = T("Politeness is free, they say.", "Höflichkeit kostet nichts, sagt man."),
-            legend = mapOf('r' to hiddenSolid),
-            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 29 to 14)),
+            legend = (bridgeTiles + 'a' + 'b').associateWith { hiddenSolid },
+            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 26 to 14)),
             traps = listOf(
-                trap(Pressed('1'), Show('r'), say("SYN. The server opened a port. Over there.", "SYN. Der Server hat einen Port geöffnet. Da drüben.")),
-                trap(Pressed('2'), Play(Card.GHOST_BLOCK), Blink('r', on = 1.5f, off = 1f, phase = 1.1f), DoorTo(2, 14, 30f),
-                    say("SYN-ACK. Now ACK at home. The bridge is a SYN cookie: it rotates.", "SYN-ACK. Jetzt ACK, daheim. Die Brücke ist ein SYN-Cookie: sie rotiert.")),
-                trap(Pressed('1', times = 2), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
-            ),
+                trap(Pressed('1'), *(listOf<Action>(Play(Card.GHOST_BLOCK), say("SYN. A port opened over there. The cookie is good for 8 seconds.", "SYN. Drüben ging ein Port auf. Das Cookie hält 8 Sekunden.")) +
+                    bridgeTiles.map { Show(it) }).toTypedArray()),
+                trap(Pressed('1'), Move('i', 0f, 12f, 20f), say("The client socket closes behind you. Politely.", "Der Client-Socket schließt hinter dir. Höflich."), delay = 0.9f),
+                trap(Pressed('1'), *bridgeTiles.map { Move(it, 0f, 12f, 30f) }.toTypedArray(), say("SYN cookie expired.", "SYN-Cookie abgelaufen."), delay = 8f),
+                trap(PastX(14f), Move('h', 0f, 12f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt.")),
+                trap(PastX(14f), Move('h', 0f, -12f, 40f), delay = 0.55f),
+                trap(Pressed('2'), Show('a'), say("SYN-ACK. The server is building you a staircase. ACK it.", "SYN-ACK. Der Server baut dir eine Treppe. Bestätige sie."), delay = 0.5f),
+                trap(Pressed('2'), Show('b'), delay = 1f),
+                trap(Zone(28.8f, 8f, 31f, 11f), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
+            ) + bridgeTiles.mapIndexed { n, c -> trap(Touch(bridgeTiles[0]), Move(c, 0f, 12f, 30f), delay = 0.7f + 0.14f * n) },
             hint = T("Client left, server right. Who greets first?", "Client links, Server rechts. Wer grüßt zuerst?"),
         ) {
             border(); floor()
-            pit(7..9); pit(21..26); fill(21..26, 15..15, 'r')
-            fill(14..16, 5..5)
-            spawn(13); door(15, 4); bits(15)
+            fill(0..6, 15..17, 'i'); pit(7..9); pit(20..25)
+            for (n in 0 until 6) put(20 + n, 15, bridgeTiles[n])
+            fill(28..29, 13..14, 'a'); fill(30..30, 11..14, 'b')
+            fill(17..18, 1..2, 'h')
+            spawn(13); door(30, 10); bits(15)
         },
 
         // 16 — EASTER EGG: man in the middle. Two pillars hang from the ceiling; step between them and they drop into a cell

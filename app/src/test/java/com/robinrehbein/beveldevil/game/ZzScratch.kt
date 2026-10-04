@@ -20,16 +20,5 @@ class ZzScratch {
     }
 
     @Test
-    fun go() {
-        val b = Bot(World2.levels[13], 1)
-        b.right(1.65f).hopL(9.2f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f); show(b, "TR")
-        b.leftTo(24.1f).wait(0.45f).hopL(23.5f, 0.5f); show(b, "hopH")
-        b.leftUntil { it.player.box.cy > 10f }; show(b, "BR")
-        b.left(0.4f); show(b, "edge")
-        b.leftJump(0.5f); show(b, "j1")
-        b.landLeft(); show(b, "onK")
-        b.leftJump(0.5f); show(b, "j2")
-        b.landLeft(); show(b, "off")
-        b.left(1f); show(b, "end")
-    }
+    fun go() = slopTrace(15)
 }
