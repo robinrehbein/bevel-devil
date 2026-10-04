@@ -27,7 +27,7 @@ class World1DesignTest : DesignTestBase() {
             13 to d("R7", "U14"),
             14 to d("R10", "U12"),
             15 to d("R6", "U6"),
-            16 to d("R1+R5+R6", "U7+U4"),
+            16 to d("R1+R5+R6", "U7+U4+U18"),
             // Act 2 "Neue Regeln"
             17 to d("R8", "U1"),
             18 to d("R5", "U7"),
@@ -44,9 +44,9 @@ class World1DesignTest : DesignTestBase() {
             29 to d("R10", "U3"),
             30 to d("R9", "U2"),
             31 to d("R7", "U7"),
-            32 to d("R1+R5+R8", "U1+U7+U4"),
+            32 to d("R1+R5+R8", "U1+U7+U4+U18"),
             // Act 3 "Mephi schummelt"
-            33 to d("R7", "U14"),
+            33 to d("R7", "U14+U18"),
             34 to d("R1", "U16:Pause"),
             35 to d("–", "U4", breather = true),
             36 to d("R5", "U16:FrameCrack"),
@@ -61,7 +61,7 @@ class World1DesignTest : DesignTestBase() {
             45 to d("R5", "U1"),
             46 to d("R1", "U15"),
             47 to d("R12", "U3"),
-            48 to d("R1+R5+R7", "U14+U4"),
+            48 to d("R1+R5+R7", "U14+U4+U18"),
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */

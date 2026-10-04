@@ -45,7 +45,7 @@ class World2DesignTest : DesignTestBase() {
             27 to d("R10", "U2"),
             28 to d("R3", "U13"),
             29 to d("R1", "U7"),
-            30 to d("R3+R5", "U11"),
+            30 to d("R3+R5", "U11+U18"),
             31 to d("R8", "U3"),
             32 to d("R4+R3+R8", "U12+U13+U4"),
             // Act 3 "Root"
@@ -64,7 +64,7 @@ class World2DesignTest : DesignTestBase() {
             45 to d("R2", "U3"),
             46 to d("R10+R1", "U12"),
             47 to d("R5", "U9+U10"),
-            48 to d("R4+R3+R6", "U11+U9+U4"),
+            48 to d("R4+R3+R6", "U11+U9+U4+U18"),
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */

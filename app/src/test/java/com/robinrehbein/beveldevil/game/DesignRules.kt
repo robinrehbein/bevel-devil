@@ -41,7 +41,7 @@ import org.junit.Assert.assertTrue
 typealias Solution = Bot.() -> Unit
 
 /**
- * A level's row in §8: its puzzle blocks (R1–R12) and its surprise families (U1–U17), the main one first. A meta twist
+ * A level's row in §8: its puzzle blocks (R1–R12) and its surprise families (U1–U18), the main one first. A meta twist
  * keeps its variant (`U16:Ghost`): the meta tricks have nothing in common but the label, so H6 compares the variant.
  */
 data class Design(val blocks: Set<String>, val twists: Set<String>, val breather: Boolean = false) {
@@ -75,7 +75,7 @@ object DesignRules {
     const val CARD_LIMIT = 3
 
     val BLOCKS = (1..12).map { "R$it" }.toSet()
-    val TWISTS = (1..17).map { "U$it" }.toSet()
+    val TWISTS = (1..18).map { "U$it" }.toSet()
     /** The families W3 has to bring in at least every third level (§8, World 3). */
     val OTHER_FAMILIES = setOf("U1", "U2", "U3", "U4", "U6", "U7", "U8", "U12", "U14")
 

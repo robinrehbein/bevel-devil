@@ -39,7 +39,7 @@ class World3DesignTest : DesignTestBase() {
             13 to d("R5+R1", "U1"),
             14 to d("R2", "U6"),
             15 to d("R1", "U9"),
-            16 to d("R1+R5+R8", "U17+U4+U1"),
+            16 to d("R1+R5+R8", "U17+U4+U1+U18"),
             // Act 2 "Überhitzung"
             17 to d("R11", "U17"),
             18 to d("R1+R11", "U7"),
@@ -56,7 +56,7 @@ class World3DesignTest : DesignTestBase() {
             29 to d("R2", "U15"),
             30 to d("R7", "U14"),
             31 to d("R11+R5", "U3"),
-            32 to d("R11+R1+R6", "U17+U4+U2"),
+            32 to d("R11+R1+R6", "U17+U4+U2+U18"),
             // Act 3 "Lüfter"
             33 to d("R10", "U1"),
             34 to d("R5", "U12"),
@@ -72,8 +72,8 @@ class World3DesignTest : DesignTestBase() {
             44 to d("–", "U10", breather = true),
             45 to d("R11", "U3"),
             46 to d("R5+R1", "U16"),
-            47 to d("R7+R6", "U14+U4"),
-            48 to d("R4+R10+R11", "U12+U10+U4"),
+            47 to d("R7+R6", "U14+U4+U18"),
+            48 to d("R4+R10+R11", "U12+U10+U4+U18"),
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
