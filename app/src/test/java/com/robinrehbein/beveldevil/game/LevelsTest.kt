@@ -4,15 +4,31 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Plays [level], or [round] of it (see [Level.rounds]). */
-class Bot(level: Level, round: Int = 0) {
+/**
+ * Deliberate sloppiness for a [Bot], see [DesignRules.solutionToleratesSlop]: [time] seconds are added to every timed
+ * hold ([Bot.right], [Bot.rightJump], [Bot.wait], …) and to [Bot.waitUntil]; every [Bot.rightTo]/[Bot.leftTo] target
+ * (and so every [Bot.hopR]/[Bot.hopL] take-off) moves [tiles] tiles further along the direction of travel. Negative
+ * values make the bot early. Waits on a condition ([Bot.waitFor], [Bot.rightUntil], …) are not perturbed: reacting
+ * to what the room shows is what a player does.
+ */
+data class Slop(val time: Float = 0f, val tiles: Float = 0f) {
+    companion object {
+        val NONE = Slop()
+    }
+}
+
+/** Plays [level], or [round] of it (see [Level.rounds]), as precisely as scripted, or with [slop]. */
+class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE) {
     private val stage = level.rounds[round]
     var world = World(stage)
         private set
     private val input = Controls()
     private val trace = StringBuilder()
 
-    private fun hold(seconds: Float, left: Boolean = false, right: Boolean = false, jump: Boolean = false): Bot {
+    private fun hold(seconds: Float, left: Boolean = false, right: Boolean = false, jump: Boolean = false, exact: Boolean = false): Bot {
+        // a sloppy jump is still a jump: it never shrinks below one step
+        val seconds = if (exact || seconds <= 0f || slop.time == 0f) seconds
+        else maxOf(seconds + slop.time, if (jump) minOf(seconds, DT) else 0f)
         input.left = left
         input.right = right
         input.jump = jump
@@ -35,7 +51,8 @@ class Bot(level: Level, round: Int = 0) {
     fun jump(s: Float) = hold(s, jump = true)
 
     /** Hold a key until the player center passes [x] in the given direction (keys may be swapped). */
-    private fun until(x: Float, left: Boolean, goingRight: Boolean): Bot {
+    private fun until(x0: Float, left: Boolean, goingRight: Boolean): Bot {
+        val x = if (goingRight) x0 + slop.tiles else x0 - slop.tiles
         input.left = left; input.right = !left; input.jump = false
         while ((if (goingRight) world.player.box.cx < x else world.player.box.cx > x) &&
             world.state == WorldState.PLAYING && world.time < 60f
@@ -64,7 +81,8 @@ class Bot(level: Level, round: Int = 0) {
     fun hopSL(x: Float, hold: Float = 0.35f) = rightKeyLeftTo(x).rightJump(hold).landRight()
 
     /** Stand still until the world clock reaches [t] seconds. */
-    fun waitUntil(t: Float): Bot {
+    fun waitUntil(t0: Float): Bot {
+        val t = t0 + slop.time
         input.left = false; input.right = false; input.jump = false
         while (world.time < t && world.state == WorldState.PLAYING) world.step(DT, input)
         return hold(0f)
@@ -124,7 +142,7 @@ class Bot(level: Level, round: Int = 0) {
     /** Like [waitFor], but hops on the spot so that idle triggers never fire. */
     fun fidgetUntil(max: Float = 10f, cond: (World) -> Boolean): Bot {
         val end = world.time + max
-        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) hold(0.1f, jump = true)
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) hold(0.1f, jump = true, exact = true)
         return hold(0f)
     }
 
@@ -163,7 +181,7 @@ class Bot(level: Level, round: Int = 0) {
     }
 
     fun expect(state: WorldState) {
-        assertEquals("${stage.name.en}\n$trace", state, world.state)
+        assertEquals("${stage.name.en}${if (slop == Slop.NONE) "" else " with $slop"}\n$trace", state, world.state)
     }
 
     companion object {

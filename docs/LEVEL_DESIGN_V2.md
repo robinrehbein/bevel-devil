@@ -118,7 +118,9 @@ Eine neue Mechanik wird im ersten Level allein und sicher eingeführt. Im zweite
 
 Die Zuordnung ist eine Vorgabe für Abwechslung. Die konkrete Umsetzung entscheidet der Bauende. Ein Tausch innerhalb eines Blocks ist erlaubt, solange H6 erfüllt bleibt. Name und Gag bleiben. Wo die bisherige Idee schon gut passt, wird sie ausgebaut statt ersetzt.
 
-Spalten: Haupt-Baustein (R) · Hauptüberraschung (U) · ★ = Verschnaufpause.
+Spalten: Haupt-Baustein (R) · Hauptüberraschung (U) · ★ = Verschnaufpause. Bei mehreren Codes steht der Haupt-Code vorn. Die Meta-Familie U16 zählt je Variante (Pause, Ghost, Undo, Shake, Tilt, Roll, Frame-Crack) als eigene Überraschung, weil die Tricks außer dem Etikett nichts gemeinsam haben. Dieselbe Variante zweimal hintereinander verstößt gegen H6.
+
+Korrekturen nach dem ersten Lauf der Leitplanken-Tests: W2-1 ist jetzt ★ (vorher ohne Baustein, verstieß gegen H2). W2-42 führt mit R5 statt R7 (vorher derselbe Haupt-Baustein wie W2-41). W2-45 nutzt R2 statt R9 (vorher derselbe Haupt-Baustein wie W2-44).
 
 ### Welt 1: Höllenkeller (Keller, Burg; Thema: „Mephis Hausregeln“)
 
@@ -193,7 +195,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 12 Level nutzen Schalter (R1, R2 oder R
 
 | # | Name | R | U |
 |---|---|---|---|
-|1|Hello, World!|–|U1|
+|1|Hello, World! ★|–|U1|
 |2|Open Port|R3|U5|
 |3|Reception|R6|U4|
 |4|String Lights|R8|U6|
@@ -232,10 +234,10 @@ Für Welt 2 gilt zusätzlich: Mindestens 12 Level nutzen Schalter (R1, R2 oder R
 |39|Contingency Plan|R1|U16 (Pause)|
 |40|Ping Pong ★|–|U16 (Roll)|
 |41|Security Audit|R7|U1|
-|42|Gold Mine|R7+R5|U15|
+|42|Gold Mine|R5+R7|U15|
 |43|Workshop|R4|U16 (Shake)|
 |44|Rebase|R9|U16 (Undo)|
-|45|Playground|R9|U3|
+|45|Playground|R2 (Wippe als Halteschalter)|U3|
 |46|Privilege Escalation|R10+R1|U12|
 |47|Math Problem|R5|U9+U10|
 |48|shutdown -h now (Finale)|R4+R3+R6|U11+U9+U4|
@@ -315,9 +317,41 @@ Diese Tests kommen pro Welt neu dazu, in `World{n}DesignTest.kt`. Sie laufen fü
 2. `holdRightWithHopsNeverWins`: Rechts halten mit Hüpfern in den Rhythmen 0,4 / 0,7 / 1,0 s gewinnt nie.
 3. `solutionToleratesSlop`: Die Bot-Lösung mit allen Haltezeiten ±0,15 s gewinnt in mindestens einer von zwei Varianten. Das sichert, dass keine pixelgenauen Eingaben nötig sind.
 4. `spikePopupQuota`: H5.
-5. `noSameTwistTwiceInARow`: H6. Die Zuordnung aus §8 liegt als Tabelle im Test (`design = mapOf(n to ("R1" to "U9"))`), damit Abweichungen bewusst passieren.
+5. `noSameTwistTwiceInARow`: H6. Die Zuordnung aus §8 liegt als Tabelle im Test (`DESIGN = mapOf(9 to d("R1", "U9"))`), damit Abweichungen bewusst passieren.
 6. `cardsSpreadPerAct`: §7.
 7. Weiter gültig: die vorhandenen Tests (eine Karte pro Runde, Runde-1-Lösung verliert Runde 2, 2 s Stillstehen sicher, `TrapInvisibilityTest`, `LayoutTest`).
+
+So prüfen die Tests im Detail:
+
+- **H6** vergleicht bei Nachbarn nur die Haupt-Codes (den ersten Code einer Zeile). „3 von 4“ zählt alle Codes einer Zeile. Akt-Finale zählen bei beiden Regeln nicht mit, weil sie den Akt absichtlich kombinieren. In W1 beginnt die Prüfung bei Level 7. Die Leitmechanik (W3: R11 in Akt 2, R10 in Akt 3) ist nur von „3 von 4“ ausgenommen.
+- **Tabelle:** Jedes Level ab W1-7 ohne ★ hat einen Baustein (H2). Ein Finale hat mindestens 2 Bausteine und 2 Überraschungen. Pro Akt gibt es höchstens 2 ★. W2 braucht mindestens 12 Schalter-Level (R1, R2, R4) und 8 Routing-Level (R3, R4). In W3 kommt spätestens jedes dritte Level eine Überraschung aus U1–U4, U6–U8, U12 oder U14.
+- **H5:** Eine Spike-Popup-Falle ist ein `Show`, das eine Gruppe mit `Glyph(spike = true, hidden = true)` sichtbar macht. Pro Akt dürfen höchstens 4 der umgebauten Level eine haben. In W3 gilt dasselbe für `HeatSpike` als Schlussfalle (letzte Falle der Liste oder Auslöser in den letzten 3 Tiles vor der Tür).
+- **H7 (Spielraum):** Die Lösung läuft zweimal: einmal „spät“ (jede Haltezeit +0,15 s, jedes `rightTo`/`leftTo`-Ziel 1 Tile weiter) und einmal „früh“ (−0,15 s, 1 Tile kürzer). Eine der beiden muss gewinnen. Warten auf eine Bedingung (`waitFor`, `rightUntil`, `fidgetUntil`) bleibt unverändert.
+- **§7:** Gezählt werden alle `Play`-Karten aller Runden der umgebauten Level eines Aktes. Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht.
+
+### Leitplanken-Tests: so trägst du ein Level ein
+
+Die Tests liegen in `app/src/test/java/com/robinrehbein/beveldevil/game/`: die Regeln in `DesignRules.kt`, die Testfälle in `DesignTestBase.kt` und pro Welt `World{n}DesignTest.kt` mit der Tabelle aus §8. Solange ein Level nicht in `REBUILT` steht, prüfen die Tests nur die Tabelle. Für ein umgebautes Level gehst du so vor:
+
+1. **Zuordnung prüfen:** `DESIGN` enthält die Zeile aus §8, zum Beispiel `12 to d("R1+R5", "U7")`, ★ als `d("–", "U9", breather = true)` und Meta als `d("R5", "U16:Ghost")`. Wenn du innerhalb deines Blocks tauschst, änderst du die Zeile hier und in §8. Der Test `noSameTwistTwiceInARow` sagt dir, ob der Tausch H6 einhält. Pilot-Level (W2 11–24) tragen ihre Zeile selbst ein und entfernen die Nummer aus `PILOT`.
+2. **Bot-Lösung eintragen:** in `SOLUTIONS`, eine Lösung pro Runde. Zuerst kommt Runde 1, dann jede Revanche. Nimm `rightTo`, `hopR`, `waitFor` und Wände als Anschlag statt vieler kurzer Haltezeiten, sonst scheitert der Spielraum-Test.
+3. **Level freischalten:** die Nummer in `REBUILT` eintragen.
+4. **Lauf:** `./gradlew --offline testDebugUnitTest --tests '*DesignTest*' --tests '*DesignRulesTest*'`. Jede Meldung nennt Level, Runde und den Wert, zum Beispiel `clean run 3.26 s, needs 8 s`.
+
+```kotlin
+// World2DesignTest.kt, companion object
+val REBUILT: Set<Int> = setOf(25, 26)
+
+val SOLUTIONS: Map<Int, List<Solution>> = mapOf(
+    25 to listOf(
+        { rightTo(6f).hopR(9.5f).leftTo(3f).waitFor { !it.beams[0].lit }.hopR(14f).rightTo(29f) },  // Runde 1
+        { right(3f).rightJump(0.35f).landRight().leftTo(4f).rightTo(29f) },                         // Revanche
+    ),
+    26 to listOf({ hopR(5f).rightUntil { it.player.box.cx > 20f }.right(2f) }),
+)
+```
+
+Die Level-Tests spielen dieselbe Lösung, damit sie nur an einer Stelle steht: `@Test fun level25() = World2DesignTest.play(25)` und im Revanche-Test `World2DesignTest.play(25, round = 2)`. Ein Beispielraum, der alle Regeln erfüllt, steht in `DesignDemos.puzzle` (Schalter oben links, Tür hinter einer Kupferwand, Boden fällt nach dem Schalter).
 
 ## 10. Ablauf
 
