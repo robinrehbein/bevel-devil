@@ -264,8 +264,8 @@ class DesignRulesTest {
     @Test
     fun aDoorTrailIsOneMoment() {
         // the door hopping along in several traps with the same trigger is one surprise, not three
-        val l13 = World2.levels[12]
-        val bot = DesignRules.cleanRun(l13, 0) { World2Test.rooms.getValue(13)(this) }
+        val l13 = World2.levels[23]
+        val bot = DesignRules.cleanRun(l13, 0) { World2Rooms.l24(this) }
         val door = bot.moments.filter { m -> m.actions.any { it is Action.DoorTo } }
         assertEquals(1, door.size)
         assertEquals(2, door.single().actions.count { it is Action.DoorTo })
@@ -302,24 +302,23 @@ class DesignRulesTest {
     fun effectFamiliesAreCountedPerRoom() {
         assertEquals(setOf("spikes"), DesignRules.families(DesignDemos.corridor()))
         assertEquals(setOf("spikes", "heat"), DesignRules.families(DesignDemos.corridor(heat = true)))
-        // 2-16 as piloted: pillars, swapped controls, a forged block that blinks, the door that flees
+        // 2-16: two portals, pillars that come down, swapped controls: three families, fine for a finale only
         val l16 = World2.levels[15]
-        assertEquals(setOf("drop", "controls", "blink", "door", "secret"), DesignRules.families(l16))
-        assertEquals(1, DesignRules.familyViolations(16, l16).size)
-        assertTrue(DesignRules.familyViolations(16, l16).single().contains("(max 3)"))
+        assertEquals(setOf("portal", "move", "controls"), DesignRules.families(l16))
+        assertEquals(emptyList<String>(), DesignRules.familyViolations(16, l16))
         assertTrue(DesignRules.familyViolations(15, l16).single().contains("(max 2)"))
     }
 
     @Test
     fun mechanicsRotateOverAnAct() {
-        // the door flees in 2-13 and 2-15: twice in act 1
-        val levels = mapOf(13 to World2.levels[12], 15 to World2.levels[14])
+        // the door flees in 2-3 and 2-4: twice in act 1
+        val levels = mapOf(3 to World2.levels[2], 4 to World2.levels[3])
         assertEquals(
-            listOf("act 1: door flees (DoorTo) in 2 levels [13, 15] (max 1)"),
+            listOf("act 1: door flees (DoorTo) in 2 levels [3, 4] (max 1)"),
             DesignRules.rotationViolations(levels).filter { "DoorTo" in it },
         )
         // one each in two acts is fine
-        assertEquals(emptyList<String>(), DesignRules.rotationViolations(mapOf(13 to World2.levels[12], 21 to World2.levels[20])).filter { "DoorTo" in it })
+        assertEquals(emptyList<String>(), DesignRules.rotationViolations(mapOf(3 to World2.levels[2], 21 to World2.levels[20])).filter { "DoorTo" in it })
     }
 
     @Test

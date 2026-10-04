@@ -30,6 +30,8 @@ object World2Part1 {
     private val hidden = Glyph(spike = true, hidden = true)
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
+    /** The tiles of the bridge in 2-15 (one group per tile, so the bridge can crumble one tile at a time). */
+    private val bridgeTiles = ('m'..'r').toList()
 
     val levels: List<Level> = listOf(
 
@@ -257,129 +259,139 @@ object World2Part1 {
             spawn(); door(); bits(10)
         },
 
-        // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a locked rack door (a copper rail), the switch is
-        // up on the mezzanine at the far end. Fan 1 circles the mezzanine (rushing at the switch runs into it), the switch
-        // sets fan 2 loose in the aisle below, and fan 3's housing comes down in front of the door
+        // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a rack gate (a slab that slides into the floor), the
+        // switch is up on the mezzanine at the far end. Fan 1 circles the mezzanine (rushing at the switch runs into it); the
+        // switch opens the gate for seven seconds and sets fan 2 loose in the aisle; past the rack the raised floor is lifted
         Level(
             name = T("Server Room", "Serverraum"),
             intro = T("Nice and cool in here. Three fans, all fit.", "Schön kühl hier. Drei Lüfter, alle fit."),
-            start = listOf(Circuit('w'), Pad('1', at = 2 to 10, circuits = "w", mode = PadMode.OFF)),
+            start = listOf(Pad('1', at = 2 to 10)),
             traps = listOf(
-                trap(Zone(9.5f, 8.5f, 14.5f, 11f), Play(Card.DEVIL_SAW), PathSaw(6f, 4.5f to 6.5f, 4.5f to 10.3f, 10f to 10.3f, 10f to 6.5f, loop = true),
+                trap(Zone(8f, 8.5f, 12.6f, 11f), Play(Card.DEVIL_SAW), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
                     say("Fan 1 of 3 spinning. It does laps.", "Lüfter 1 von 3 dreht. Er dreht Runden.")),
-                trap(Pressed('1'), PathSaw(6f, 21.5f to 19.5f, 21.5f to 11.5f),
-                    say("Rack unlocked. Fan 2 spins from below. It's a feature.", "Rack offen. Lüfter 2 dreht von unten. Ist ein Feature.")),
-                trap(PastX(25.3f), Fall('c'), say("Fan 3: REPLACE. (Housing included.)", "Lüfter 3: TAUSCHEN. (Gehäuse inklusive.)")),
+                trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
+                    say("Rack unlocked. For 7 seconds. Fan 2 is on call.", "Rack offen. Für 7 Sekunden. Lüfter 2 hat Bereitschaft.")),
+                trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
+                trap(PastX(14.7f), Move('p', 0f, 8f, 30f), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
             ),
             hint = T("The switch is upstairs. The fans keep a rhythm.", "Der Schalter ist oben. Die Lüfter halten einen Takt."),
-            // rematch: the fans are fixed, but the rack got two-factor authentication: a second rail behind the first, its switch
-            // next to the spawn. The old switch upstairs only opens one of them. Behind them the raised floor is lifted
+            // rematch: the aisle left of the spawn is a hot aisle now (LEDs): dropping off the shelf where round 1 dropped is fatal.
+            // The way out is back across the shelf, past fan 1 a second time, and down over the rack
             rematch = listOf(
                 Round(
-                    T("Fans fixed. Security added two-factor auth.", "Lüfter repariert. Die IT hat Zwei-Faktor eingeführt."),
-                    start = listOf(
-                        Circuit('w'), Circuit('u'),
-                        Pad('1', at = 2 to 10, circuits = "w", mode = PadMode.OFF), Pad('2', at = 1 to 14, circuits = "u", mode = PadMode.OFF),
-                    ),
-                    hint = T("Two locks, two switches. One is right behind you.", "Zwei Schlösser, zwei Schalter. Einer ist direkt hinter dir."),
+                    T("Failover test. The left aisle is a hot aisle now.", "Failover-Test. Der linke Gang ist jetzt ein Heißgang."),
+                    hint = T("Don't drop where you dropped. Go back the way you came.", "Spring nicht dort runter, wo du es kennst. Geh zurück."),
                     traps = listOf(
-                        trap(Pressed('2'), say("Factor one: something you step on.", "Faktor eins: etwas, worauf du trittst.")),
-                        trap(Pressed('1'), say("Factor two: something upstairs.", "Faktor zwei: etwas im Obergeschoss.")),
-                        trap(PastX(25.2f), Play(Card.COLLAPSE), Fall('x'), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
+                        trap(Zone(8f, 8.5f, 12.6f, 11f), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
+                            say("Fan 1 again. Same laps. New schedule.", "Lüfter 1 wieder. Gleiche Runden. Neuer Plan.")),
+                        trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
+                            say("Rack unlocked. Fan 2 is on call. The hot aisle is not.", "Rack offen. Lüfter 2 hat Bereitschaft. Der Heißgang nicht.")),
+                        trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
+                        trap(PastX(14.7f), Play(Card.COLLAPSE), Move('p', 0f, 8f, 30f), say("Raised floor: lifted again. Maintenance is thorough.", "Doppelboden: wieder entnommen. Die Wartung ist gründlich.")),
                     ),
-                ) { fill(23..23, 1..10); fill(23..23, 11..14, 'u'); fill(25..27, 15..17, 'x') },
+                ) { put(1, 14, '^'); put(2, 14, '^') },
             ),
         ) {
             border(); floor()
-            fill(1..13, 11..11)
-            rack(15, 2, 2)
-            fill(24..24, 1..10); fill(24..24, 11..14, 'w')
-            fill(4..5, 1..2); fill(26..27, 10..11, 'c')
-            spawn(); door(29); bits(11, x0 = 14)
+            fill(2..11, 11..11)
+            rack(12, 4, 2)
+            fill(27..27, 1..10); fill(27..27, 11..14, 'w')
+            fill(16..18, 15..17, 'p')
+            spawn(4); door(29); bits(11, x0 = 14)
         },
 
         // 12 — EASTER EGG: Segmentation fault (core dumped). A loop around the room: the door is in kernel space (upper left),
-        // you start in user space (lower left). Every page you touch on the way right is freed behind you, a pointer at the far
-        // end takes you upstairs, and on the way back the next page is realloc'ed out of reach the moment you jump at it.
-        // Provoke it with a hop at the edge, wait for it to come back, then jump
+        // you start in user space (lower left). Every page you touch on the way right is freed behind you, faster each time; a
+        // pointer at the far end takes you upstairs, where the page you land on is freed too. On the way back the next page is
+        // realloc'ed away the moment you step up to it (standing there is enough), and the last page before the door is freed as you land
         Level(
             name = T("Address Space", "Adressraum"),
             intro = T("Everyone gets their own space. You too.", "Jeder bekommt seinen eigenen Platz. Du auch."),
             start = listOf(Portal('1', 30 to 14, 30 to 8, twoWay = false)),
             traps = listOf(
-                trap(Touch('a'), Fall('a'), say("free(page). Use after free is your problem.", "free(page). Use after free ist dein Problem."), delay = 0.28f),
-                trap(Zone(16.9f, 3f, 19.7f, 8.2f), Play(Card.SINKING), Move('f', 0f, 12f, 24f),
-                    say("realloc(): page moved to a new address. Below you.", "realloc(): Seite an neue Adresse verschoben. Unter dich.")),
-                trap(Zone(16.9f, 3f, 19.7f, 8.2f), Move('f', 0f, -12f, 12f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 1.4f),
-            ) + ('b'..'d').map { g -> trap(Touch(g), Fall(g), delay = 0.28f) },
-            hint = T("Hop at the edge first. The page comes back.", "Erst an der Kante hüpfen. Die Seite kommt zurück."),
+                trap(Touch('a'), Move('a', 0f, 12f, 20f), say("free(page). Use after free is your problem.", "free(page). Use after free ist dein Problem."), delay = 0.28f),
+                trap(Touch('b'), Move('b', 0f, 12f, 20f), delay = 0.2f),
+                trap(Touch('c'), Move('c', 0f, 12f, 20f), delay = 0.14f),
+                trap(Touch('d'), Move('d', 0f, 12f, 20f), delay = 0.08f),
+                trap(Zone(26f, 5f, 31f, 9.5f), Move('g', 0f, 12f, 20f), say("Dangling pointer: this page is freed too.", "Hängender Zeiger: Diese Seite wird auch freigegeben."), delay = 0.8f),
+                trap(Zone(16.9f, 3f, 21f, 9.9f), Play(Card.SINKING), Move('f', 0f, 12f, 40f),
+                    say("realloc(): page moved to a new address. Below you.", "realloc(): Seite an neue Adresse verschoben. Unter dir.")),
+                trap(Zone(16.9f, 3f, 21f, 9.9f), Move('f', 0f, -12f, 30f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 0.75f),
+                trap(Zone(1f, 5f, 10.6f, 9.9f), Move('l', 0f, 12f, 20f), say("Last page before the door: freed on arrival.", "Letzte Seite vor der Tür: bei Ankunft freigegeben."), delay = 0.5f),
+            ),
+            hint = T("Whatever you touch gets freed. Keep moving. The pointer is on the right.", "Was du berührst, wird freigegeben. Bleib in Bewegung. Der Zeiger ist rechts."),
         ) {
             border()
             fill(0..5, 15..17); fill(26..30, 15..17)
             fill(7..9, 15..15, 'a'); fill(12..14, 15..15, 'b'); fill(17..19, 15..15, 'c'); fill(22..24, 15..15, 'd')
-            fill(26..30, 9..9); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..9, 9..9)
+            fill(26..26, 9..9); fill(27..30, 9..9, 'g'); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..5, 9..9); fill(6..10, 9..9, 'l')
             spawn(); door(4, 8); bits(12, x0 = 12)
         },
 
-        // 13 — EASTER EGG: "works on my machine". The deploy switch flips you onto the ceiling (production), where a flaky
-        // test blinks the ceiling in and out; the rollback drops you on the far side, and the door, which only ever worked
-        // locally, flees back home to hang above the spawn. The second switch deploys you again: the whole way back, upside down
+        // 13 — EASTER EGG: "works on my machine". The door sits on a ledge nobody can jump to. The deploy switch flips you onto
+        // the ceiling (production), where you walk over the LEDs; the rollback drops you on the far side, and the redeploy
+        // switch flips you again, the whole way back upside down. This time the ceiling has a flaky test (it blinks), and
+        // the second rollback drops you on the ledge, next to the door
         Level(
             name = T("Works on My Machine", "Läuft bei mir"),
             intro = T("Tested locally. Green everywhere.", "Lokal getestet. Überall grün."),
-            start = listOf(Pad('1', at = 6 to 14), Pad('2', at = 30 to 14), Blink('f', on = 1.5f, off = 1f)),
+            start = listOf(Pad('1', at = 8 to 14), Pad('2', at = 28 to 14)),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.UPSIDE_DOWN), Gravity(true), say("Deployed. Production has different gravity.", "Deployt. Produktion hat eine andere Schwerkraft.")),
+                trap(Zone(23.2f, 0f, 31f, 3f), Gravity(false), say("Rollback! The door stayed in staging.", "Rollback! Die Tür ist im Staging geblieben.")),
                 trap(Pressed('2'), Gravity(true), say("Redeploy. Same bugs, other direction.", "Neu deployt. Gleiche Bugs, andere Richtung.")),
-            ) + doorTrail(
-                Zone(22.6f, 0f, 31f, 3f), 29, 14,
-                listOf(DoorTo(29, 1, 24f, hanging = true), DoorTo(3, 1, 24f, hanging = true)),
-                first = listOf(Gravity(false), say("Rollback! The door works on my machine. Only there.", "Rollback! Die Tür läuft bei mir. Nur bei mir.")),
+                trap(Landed(15.2f, 17.4f), Blink('f', on = 1f, off = 1f, phase = 1f), say("Flaky test: red again. Nobody knows why.", "Wackeliger Test: wieder rot. Keiner weiß, warum.")),
+                trap(Zone(0f, 0f, 6.4f, 3f), Gravity(false), say("Rollback complete. Works on my machine.", "Rollback fertig. Läuft bei mir.")),
             ),
             hint = T("The flaky test blinks. Count before you cross.", "Der wackelige Test blinkt. Erst zählen, dann rüber."),
         ) {
             border(); floor()
-            leds(9..22)
-            put(11, 1, 'v'); put(12, 1, 'v'); put(20, 1, 'v')
-            fill(15..17, 0..0, 'f')
-            spawn(); door()
+            leds(10..22)
+            fill(1..7, 10..10); door(1, 9)
+            put(19, 1, 'v'); put(9, 1, 'v'); put(29, 1, 'v')
+            fill(12..14, 0..0, 'f')
+            spawn(2)
         },
 
         // 14 — EASTER EGG: 127.0.0.1 and traceroute. The room is four subnets (a slab and a wall split it into quarters), and the
         // way to the door is a spiral of one-way links: bottom left, top left, top right, bottom right. The obvious floor link
         // is the loopback (it sends you home); the way on is the one hanging in mid-air above it. Upstairs the next link flaps
-        // (down for a moment just as you arrive), and in the top right the ceiling comes down on whoever runs under it.
-        // The last subnet drops every other packet: its bridge blinks
+        // (down for a moment just as you arrive), in the top right the ceiling comes down on whoever runs under it, and the
+        // last subnet is a pit with one stone: the stone is freed as soon as you step on it
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
             start = listOf(
                 Portal('1', 13 to 14, 3 to 14, twoWay = false), Portal('2', 13 to 12, 13 to 7, twoWay = false),
                 Portal('3', 1 to 7, 30 to 7, twoWay = false), Portal('4', 17 to 7, 30 to 14, twoWay = false),
-                Blink('k', on = 1.6f, off = 1f),
             ),
             traps = listOf(
                 trap(Zone(12.3f, 14f, 13f, 15f), say("ping 127.0.0.1: reply from 127.0.0.1. Welcome home.", "ping 127.0.0.1: Antwort von 127.0.0.1. Willkommen daheim.")),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', false), say("Link down. Hop 3 is flapping.", "Link down. Hop 3 flattert.")),
-                trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.9f),
-                trap(Zone(23.4f, 1f, 24.2f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
+                trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.2f),
+                trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                trap(Zone(23.4f, 1f, 26.5f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
+                trap(Touch('k'), Fall('k'), say("Hop 5: packet dropped. Stone included.", "Hop 5: Paket verworfen. Stein inklusive."), delay = 0.15f),
             ),
             hint = T("The obvious link goes home. Try the one in the air.", "Der offensichtliche Link führt heim. Nimm den in der Luft."),
-            // rematch: the two links at home swap (the one in the air is the loopback now), and the last subnet got a firewall:
-            // once your packet is forwarded into it, the firewall follows it. No waiting for the bridge down there
+            // rematch: the two links at home swap (the one in the air is the loopback now), the DNS entry of the way upstairs is
+            // poisoned for a moment after you arrive (stay out of the link until it heals), and a firewall follows your packet
+            // into the last subnet
             rematch = listOf(
                 Round(
                     T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
                     start = listOf(
                         Portal('1', 13 to 14, 13 to 7, twoWay = false), Portal('2', 13 to 12, 3 to 14, twoWay = false),
                         Portal('3', 1 to 7, 30 to 7, twoWay = false), Portal('4', 17 to 7, 29 to 14, twoWay = false),
-                        Blink('k', on = 1.6f, off = 1f),
                     ),
-                    hint = T("Watch the bridge before you take the last link.", "Schau auf die Brücke, bevor du den letzten Link nimmst."),
+                    hint = T("Let the DNS settle before you take the link. Then don't stop.", "Lass das DNS sich beruhigen, bevor du den Link nimmst. Dann nicht stehen bleiben."),
                     traps = listOf(
                         trap(Zone(12.3f, 11f, 14f, 13f), say("Routing table updated. You're home again.", "Routing-Tabelle aktualisiert. Du bist wieder daheim.")),
-                        trap(Zone(23.4f, 1f, 24.2f, 8f), Fall('h'), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
-                        trap(Zone(17f, 9f, 28.6f, 15f), Play(Card.STALKER), Chase('F', speed = 2.6f, left = 13f, right = 0f),
+                        trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 22 to 12), say("DNS poisoned: hop 3 now exits over the pit.", "DNS vergiftet: Hop 3 endet jetzt über der Grube.")),
+                        trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 30 to 7), say("TTL expired. DNS healed.", "TTL abgelaufen. DNS geheilt."), delay = 1.2f),
+                        trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                        trap(Zone(23.4f, 1f, 26.5f, 8f), Move('h', 0f, 5f, 30f), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
+                        trap(Zone(17f, 9f, 28.6f, 15f), Play(Card.STALKER), Chase('F', speed = 4f, left = 13f, right = 0f),
                             say("Firewall rule added: follow that packet.", "Neue Firewall-Regel: Folge dem Paket.")),
                     ),
                 ) { put(30, 13, 'F'); put(30, 14, 'F') },
@@ -387,58 +399,71 @@ object World2Part1 {
         ) {
             border(); floor()
             fill(1..30, 8..8); fill(15..16, 1..14)
-            fill(20..22, 1..2, 'h'); pit(19..25); fill(21..23, 15..15, 'k')
+            fill(20..22, 1..2, 'h'); pit(20..25); fill(21..25, 15..15, 'k')
             leds(6..7, 7)
             spawn(); door(18); bits(14, x0 = 3)
         },
 
-        // 15 — EASTER EGG: TCP three-way handshake. The door sits on a ledge nobody can reach; two switches at the far ends of
-        // the room are client and server. SYN (left) opens a port: a bridge appears over the wide pit on the right. SYN-ACK
-        // (right) sends the door home, to the left end, and turns the bridge into a SYN cookie that blinks. ACK is getting back
+        // 15 — EASTER EGG: TCP three-way handshake. The door floats at the top right, nobody can reach it; two switches are client
+        // (far left) and server (the far side of a wide pit). SYN opens a port: a bridge appears over the pit, and the client's
+        // island closes behind you. The bridge is a SYN cookie that crumbles under whoever stops on it. SYN-ACK (the server's
+        // pad) builds a staircase up to the door. ACK is the door
         Level(
             name = T("Greeting", "Begrüßung"),
             intro = T("Politeness is free, they say.", "Höflichkeit kostet nichts, sagt man."),
-            legend = mapOf('r' to hiddenSolid),
-            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 29 to 14)),
+            legend = (bridgeTiles + 'a' + 'b').associateWith { hiddenSolid },
+            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 26 to 14)),
             traps = listOf(
-                trap(Pressed('1'), Show('r'), say("SYN. The server opened a port. Over there.", "SYN. Der Server hat einen Port geöffnet. Da drüben.")),
-                trap(Pressed('2'), Play(Card.GHOST_BLOCK), Blink('r', on = 1.5f, off = 1f, phase = 1.1f), DoorTo(2, 14, 30f),
-                    say("SYN-ACK. Now ACK at home. The bridge is a SYN cookie: it rotates.", "SYN-ACK. Jetzt ACK, daheim. Die Brücke ist ein SYN-Cookie: sie rotiert.")),
-                trap(Pressed('1', times = 2), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
-            ),
+                trap(Pressed('1'), *(listOf<Action>(Play(Card.GHOST_BLOCK), say("SYN. A port opened over there. The cookie is good for 8 seconds.", "SYN. Drüben ging ein Port auf. Das Cookie hält 8 Sekunden.")) +
+                    bridgeTiles.map { Show(it) }).toTypedArray()),
+                trap(Pressed('1'), Move('i', 0f, 12f, 20f), say("The client socket closes behind you. Politely.", "Der Client-Socket schließt hinter dir. Höflich."), delay = 0.9f),
+                trap(Pressed('1'), *bridgeTiles.map { Move(it, 0f, 12f, 30f) }.toTypedArray(), say("SYN cookie expired.", "SYN-Cookie abgelaufen."), delay = 8f),
+                trap(PastX(14f), Move('h', 0f, 11f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt.")),
+                trap(PastX(14f), Move('h', 0f, -11f, 40f), delay = 0.55f),
+                trap(Pressed('2'), Show('a'), say("SYN-ACK. The server is building you a staircase. ACK it.", "SYN-ACK. Der Server baut dir eine Treppe. Bestätige sie."), delay = 0.5f),
+                trap(Pressed('2'), Show('b'), delay = 1f),
+                trap(Zone(28.8f, 8f, 31f, 11f), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
+            ) + bridgeTiles.mapIndexed { n, c -> trap(Touch(bridgeTiles[0]), Move(c, 0f, 12f, 30f), delay = 0.7f + 0.14f * n) },
             hint = T("Client left, server right. Who greets first?", "Client links, Server rechts. Wer grüßt zuerst?"),
         ) {
             border(); floor()
-            pit(7..9); pit(21..26); fill(21..26, 15..15, 'r')
-            fill(14..16, 5..5)
-            spawn(13); door(15, 4); bits(15)
+            fill(0..6, 15..17, 'i'); pit(7..9); pit(20..25)
+            for (n in 0 until 6) put(20 + n, 15, bridgeTiles[n])
+            fill(28..29, 13..14, 'a'); fill(30..30, 11..14, 'b')
+            fill(17..18, 1..3, 'h')
+            spawn(13); door(30, 10); bits(15)
         },
 
         // 16 — EASTER EGG: man in the middle. Two pillars hang from the ceiling; step between them and they drop into a cell
-        // (sprinting on gets you crushed by the far one). Inside, Mephi "encrypts" the connection: left and right swap. The way
-        // out is an invisible block (a forged certificate) to climb on, and once found it rotates (blinks). On top of the wall, the packet is intercepted: the
-        // door is forwarded to the far left, so back through the cell and over the other wall
+        // (sprinting on gets you crushed by the far one). Inside, Mephi "encrypts" the connection: left and right swap. The
+        // only way out is the cell's portal, which wakes up after a moment and forwards your packet to the top right, where
+        // it is decrypted. The whole upper lane back to the left is a field of freed pages; at its end sits the server's
+        // switch, and when its port opens it leads to the door
         Level(
             name = T("Through Traffic", "Durchgangsverkehr"),
             intro = T("Your connection is encrypted. Mostly by me.", "Deine Verbindung ist verschlüsselt. Größtenteils von mir."),
-            legend = mapOf('b' to ghost),
-            traps = listOf(
-                trap(PastX(15.2f), Fall('l'), Fall('r'), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür.")),
-                trap(PastX(15.2f), Play(Card.TWISTED), Swap(true),
-                    say("Connection encrypted. By me. Left is right now.", "Verbindung verschlüsselt. Von mir. Links ist jetzt rechts."), delay = 0.6f),
-                trap(Touch('b'), Blink('b', on = 1.4f, off = 0.9f), say("Certificate valid. Rotating every second. (It isn't valid.)", "Zertifikat gültig. Rotiert sekündlich. (Gültig ist es nicht.)")),
-            ) + doorTrail(
-                Zone(18.5f, 7f, 21.5f, 11f), 29, 14,
-                listOf(DoorTo(29, 1, 26f, hanging = true), DoorTo(2, 1, 26f, hanging = true), DoorTo(2, 14, 26f)),
-                first = listOf(Swap(false), say("Packet intercepted. Forwarded to the left. Decrypted, too.", "Paket abgefangen. Nach links weitergeleitet. Und entschlüsselt.")),
+            start = listOf(
+                Portal('1', 13 to 14, 28 to 7, twoWay = false), Portal('2', 3 to 7, 22 to 14, twoWay = false),
+                Power('1', false), Power('2', false),
             ),
-            hint = T("Jump around in the cell. Something is forged.", "Spring in der Zelle herum. Irgendwas ist gefälscht."),
+            traps = listOf(
+                trap(PastX(12.7f), Play(Card.HEADBUTT), Move('l', 0f, 2f, 8f), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür."), delay = 0.3f),
+                trap(PastX(12.7f), Move('r', 0f, 2f, 8f), delay = 0.5f),
+                trap(PastX(12.7f), Swap(true), say("Connection encrypted. By me. Left is right now.", "Verbindung verschlüsselt. Von mir. Links ist jetzt rechts."), delay = 0.6f),
+                trap(PastX(12.7f), Power('1', true), say("Packet forwarded. Eventually.", "Paket weitergeleitet. Irgendwann."), delay = 2.55f),
+                trap(Zone(24f, 3f, 31f, 8.5f), Swap(false), say("Decrypted. You have the plaintext now. Don't lose it.", "Entschlüsselt. Du hast jetzt den Klartext. Verlier ihn nicht.")),
+                trap(Touch('s'), Power('2', true), say("Port 443 opens in a moment. Courtesy of the server.", "Port 443 öffnet gleich. Mit freundlichen Grüßen vom Server."), delay = 1.45f),
+            ) + "abcd".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) } + "efgj".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) } +
+                "qtuw".map { c -> trap(Touch(c), Move(c, 0f, 12f, 30f), delay = 0.3f) },
+            hint = T("The way out of the cell is the portal. It needs a moment. Everything upstairs is freed.", "Der Weg aus der Zelle ist das Portal. Es braucht einen Moment. Oben wird alles freigegeben."),
         ) {
             border(); floor()
-            fill(11..12, 1..4, 'l'); fill(19..20, 1..4, 'r')
-            put(15, 13, 'b')
-            leds(6..7); leds(21..23)
-            spawn(); door(); bits(16, x0 = 23)
+            fill(11..12, 9..12, 'l'); fill(19..20, 9..12, 'r')
+            fill(1..30, 8..8)
+            for (n in 0 until 4) { put(23 + n, 8, "abcd"[n]); put(16 + n, 8, "efgj"[n]); put(4 + n, 8, "qtuw"[n]) }
+            put(21, 7, '^'); put(9, 7, '^'); put(1, 7, 's'); put(14, 7, '^'); fill(7..8, 13..14)
+            put(27, 14, '^')
+            spawn(); door(30); bits(16, x0 = 23)
         },
 
     )
