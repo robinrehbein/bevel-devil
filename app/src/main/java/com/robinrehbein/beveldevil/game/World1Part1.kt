@@ -256,18 +256,20 @@ object World1Part1 {
         Level(
             name = T("Return Trip", "Rückreise"),
             intro = T("The door is on the left. I know. Unusual.", "Die Tür ist links. Ich weiß. Ungewohnt."),
-            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
+            legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(Airborne(19f, 21.6f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Spikes read right to left too.", "Spikes lesen auch von rechts nach links."))),
                 trap(Airborne(16.4f, 18f), Fall('c')),
             ),
-            // rematch: no spikes behind the first landing this time, but the second hop lands on some
+            // rematch: no spikes this time; the first landing swaps the controls, so the hop-hop rhythm of round 1
+            // jumps back the way you came. Walk on, pressing right
             rematch = listOf(
                 Round(
                     T("Rematch. Same trip, other luggage.", "Revanche. Gleiche Reise, anderes Gepäck."),
                     traps = listOf(
-                        trap(Airborne(19f, 21.6f), Say(T("Spikes! Somewhere.", "Spikes! Irgendwo."))),
-                        trap(Airborne(13.5f, 18.8f), Play(Card.SPIKE_SEED), Show('B'), Say(T("There.", "Da."))),
+                        trap(Landed(16.5f, 21.6f), Play(Card.TWISTED), Swap(true),
+                            Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
+                        trap(Airborne(16.4f, 18f), Fall('c')),
                     ),
                 ),
             ),
@@ -275,7 +277,6 @@ object World1Part1 {
             border(); floor()
             put(22, 14, '^')
             put(15, 14, 'A'); put(16, 14, 'A')
-            put(13, 14, 'B'); put(14, 14, 'B')
             fill(11..12, 15..17, 'c')
             put(29, 14, 'P'); put(2, 14, 'D')
         },

@@ -152,13 +152,30 @@ class World3DeckTest {
         for ((n, rounds) in rematch) rounds.forEachIndexed { k, solve -> solve(bot(n, round = k + 1)).expect(WorldState.WON) }
     }
 
-    /** A rematch subverts round 1: the move that won it loses the next round. */
+    /** A rematch subverts the round before: the move that won it never wins the next round (round 2's on round 3 too). */
     @Test
     fun theRoundOneSolutionLosesTheRematch() {
+        assertEquals(rematch.keys, first.keys)
         for (n in rematch.keys) {
             first.getValue(n)(bot(n)).expect(WorldState.WON)
             val b = first.getValue(n)(bot(n, round = 1))
             assertNotEquals("level $n: round 1's solution still wins round 2", WorldState.WON, b.world.state)
+            for ((k, solve) in rematch.getValue(n).withIndex().drop(1)) {
+                val c = rematch.getValue(n)[k - 1](bot(n, round = k + 1))
+                assertNotEquals("level $n: round ${k + 1}'s solution still wins round ${k + 2}", WorldState.WON, c.world.state)
+                solve(bot(n, round = k + 1)).expect(WorldState.WON)
+            }
         }
+    }
+
+    /** The card a round shows: its honest card, or the card it bluffs with. */
+    private fun shown(r: Level) = r.traps.flatMap { it.actions }.firstNotNullOfOrNull { (it as? Action.Play)?.card ?: (it as? Action.Bluff)?.card }
+
+    /** The card must not give the trap away: at least half the rematch rounds bluff or show a card the round before did not. */
+    @Test
+    fun atLeastHalfTheRematchRoundsChangeTheCard() {
+        val rounds = World3.levels.flatMap { l -> l.rounds.zipWithNext() }
+        val fresh = rounds.count { (a, b) -> b.traps.any(::bluff) || shown(b) != shown(a) }
+        assertTrue("only $fresh of ${rounds.size} rematch rounds change the card", fresh * 2 >= rounds.size)
     }
 }

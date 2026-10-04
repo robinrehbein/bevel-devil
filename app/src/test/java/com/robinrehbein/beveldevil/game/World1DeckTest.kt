@@ -15,6 +15,79 @@ class World1DeckTest {
     /** Mephi bluffs ([Action.Bluff]). A card played without its trap must be a declared bluff. */
     private fun bluff(t: Trap) = t.actions.any { it is Action.Bluff }
 
+    // ---------- the solutions of the round before ----------
+
+    /** Round 1 of every level with a rematch, as scripted in [World1Test]. */
+    private val round1: Map<Int, (Bot) -> Bot> = mapOf(
+        4 to { b -> b.rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
+            .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
+            .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
+            .rightJump(0.35f).landRight().right(1f).left(2f) },
+        6 to { b -> b.rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight()
+            .rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f) },
+        8 to { b -> b.rightTo(10f).wait(1f).rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(4f) },
+        12 to { b -> b.hopL(24f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(2f) },
+        15 to { b -> b.rightTo(11.8f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f) },
+        17 to { b -> b.rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .rightTo(24.8f).rightJump(0.35f).landRight().right(2f) },
+        18 to { b -> b.rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
+            .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
+            .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
+            .rightTo(23.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight().left(2f) },
+        21 to { b -> b.hopR(7.7f).hopR(15.7f).right(2f) },
+        24 to { b -> b.waitUntil(3.3f).rightJump(0.35f).landRight().rightTo(21.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f) },
+        28 to { b -> b.rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightTo(13.3f).rightJump(0.35f).landRight()
+            .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f) },
+        33 to { b -> b.hopR(18.6f).right(2f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded || it.door.moving }
+            .hopL(22.6f).hopL(17.4f).hopL(8.6f).left(4f) },
+        37 to { b -> b.hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f) },
+        42 to { b -> b.hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f) },
+        46 to { b -> b.left(1.2f).hopR(23.6f).right(2f) },
+        47 to { b -> b.rightTo(10.5f).jump(0.3f).wait(0.4f).hopR(15.2f).rightJump(0.35f).landRight().right(4f) },
+        48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .right(4f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded }
+            .leftTo(27.6f).leftJump(0.35f).landLeft().leftTo(22.4f).leftJump(0.35f).landLeft()
+            .leftTo(15.4f).leftJump(0.35f).landLeft().left(3f) },
+    )
+
+    /** Round 2 of the levels with a third round, as in the round tests below. */
+    private val round2: Map<Int, (Bot) -> Bot> = mapOf(
+        17 to { b -> b.rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .rightTo(19.8f).rightJump(0.35f).landRight().right(3f) },
+        28 to { b -> b.hopR(13.3f).rightTo(26.8f).rightJump(0.35f).landRight().right(1f) },
+        48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+            .rightTo(16.6f).rightJump(0.35f).landRight().right(3f) },
+    )
+
+    @Test
+    fun theScriptsCoverEveryRound() {
+        val withRounds = World1.levels.withIndex().filter { it.value.rounds.size > 1 }.map { it.index + 1 }.toSet()
+        assertEquals(setOf(4, 6, 8, 12, 15, 17, 18, 21, 24, 28, 33, 37, 42, 46, 47, 48), withRounds)
+        assertEquals(withRounds, round1.keys)
+        assertEquals(World1.levels.withIndex().filter { it.value.rounds.size > 2 }.map { it.index + 1 }.toSet(), round2.keys)
+        for ((n, solve) in round1) solve(b(n)).expect(WorldState.WON)
+        for ((n, solve) in round2) solve(b(n, 1)).expect(WorldState.WON)
+    }
+
+    /** A rematch is felt: the exact solution of the round before never wins the next round. */
+    @Test
+    fun theSolutionOfTheRoundBeforeNeverWins() {
+        val winners = round1.filter { (n, solve) -> solve(b(n, 1)).world.state == WorldState.WON }.keys.map { "$it/2" } +
+            round2.filter { (n, solve) -> solve(b(n, 2)).world.state == WorldState.WON }.keys.map { "$it/3" }
+        assertEquals(emptyList<String>(), winners)
+    }
+
+    /** The card a round shows: its honest card, or the card it bluffs with. */
+    private fun shown(r: Level) = r.traps.flatMap { it.actions }.firstNotNullOfOrNull { (it as? Action.Play)?.card ?: (it as? Action.Bluff)?.card }
+
+    /** The card must not give the trap away: at least half the rematch rounds bluff or show a card the round before did not. */
+    @Test
+    fun atLeastHalfTheRematchRoundsChangeTheCard() {
+        val rounds = World1.levels.flatMap { l -> l.rounds.zipWithNext() }
+        val fresh = rounds.count { (a, b) -> b.traps.any(::bluff) || shown(b) != shown(a) }
+        assertTrue("only $fresh of ${rounds.size} rematch rounds change the card", fresh * 2 >= rounds.size)
+    }
+
     // ---------- structure ----------
 
     @Test
@@ -97,9 +170,14 @@ class World1DeckTest {
         .expect(WorldState.WON)
     @Test fun level08RematchWalkingInIsSpikes() = b(8, 1).rightTo(10f).wait(1f).right(2f).expect(WorldState.DEAD)
 
-    @Test fun level12Rematch() = b(12, 1).hopL(24f).left(4f).expect(WorldState.WON)
-    @Test fun level12RematchTheOldHopsLandOnSpikes() =
-        b(12, 1).hopL(24f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(2f).expect(WorldState.DEAD)
+    /** Return Trip, round 2: the first landing swaps the controls; walk on pressing right. */
+    @Test fun level12Rematch() = b(12, 1).hopL(24f).rightKeyLeftTo(4f).right(2f).expect(WorldState.WON)
+    @Test fun level12RematchTheOldHopJumpsBack() {
+        val bot = b(12, 1).hopL(24f)
+        val landed = bot.world.player.box.cx
+        bot.leftJump(0.35f).landLeft().expect(WorldState.PLAYING)
+        assertTrue("landed at $landed, now at ${bot.world.player.box.cx}", bot.world.player.box.cx > landed + 1f)
+    }
 
     @Test fun level15Rematch() = b(15, 1).rightTo(13.3f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
     @Test fun level15RematchTheOldJumpLandsInTheShiftedHole() = b(15, 1).rightTo(11.8f).rightJump(0.35f).landRight().right(1f)
@@ -120,14 +198,14 @@ class World1DeckTest {
         bridge17(2).rightTo(19.8f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
     }
 
-    @Test fun level18Rematch() = b(18, 1).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
+    /** Level 18, [round], past the three bobbing saws. */
+    private fun saws18(round: Int) = b(18, round).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
         .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
         .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
-        .right(3f).expect(WorldState.WON)
-    @Test fun level18RematchWaitingForTheFrontSawDies() = b(18, 1).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
-        .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
-        .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
-        .rightTo(23.5f).wait(1.5f).expect(WorldState.DEAD)
+
+    /** No fourth saw: the floor before the door collapses, so jump it from its edge. */
+    @Test fun level18Rematch() = saws18(1).rightTo(23.2f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
+    @Test fun level18RematchRunningOnToMeetTheSawCollapses() = saws18(1).right(3f).expect(WorldState.DEAD)
 
     @Test fun level21Rematch() = b(21, 1).rightTo(4.6f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
         .rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
@@ -152,8 +230,9 @@ class World1DeckTest {
         b(33, 1).hopR(18.6f).wait(1f).expect(WorldState.DEAD)   // the floor erodes behind the landing
     }
 
-    @Test fun level37Rematch() = b(37, 1).hopR(10.7f).rightTo(14.2f).hopL(13.8f).hopL(8.6f).left(2f).expect(WorldState.WON)
-    @Test fun level37RematchWaitingAtTheOldSpotDies() = b(37, 1).hopR(10.7f).hopR(16.5f).right(2f).expect(WorldState.DEAD)
+    /** The door stays: run through, the floor where round 1 made you wait crumbles. */
+    @Test fun level37Rematch() = b(37, 1).hopR(10.7f).hopR(16.5f).right(3f).expect(WorldState.WON)
+    @Test fun level37RematchWaitingForThePushDies() = b(37, 1).hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(1.5f).expect(WorldState.DEAD)
 
     @Test fun level46Rematch() = b(46, 1).jump(0.3f).wait(0.4f).hopR(23.6f).right(2f).expect(WorldState.WON)
     @Test fun level46RematchOldButtonBluffs() {
@@ -180,9 +259,11 @@ class World1DeckTest {
         assertTrue(stuck.world.state != WorldState.WON)
     }
 
-    /** Tailwind, round 2: the stalking teeth are slower than Bevel. Keep running and every jump clears them. */
-    @Test fun level42RematchKeepRunning() = b(42, 1).hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
+    /** Tailwind, round 2: the teeth wait over the first pit. Let them come to the start, then outrun them: they are slower. */
+    @Test fun level42RematchLetItComeThenRun() = b(42, 1)
+        .waitFor { it.group('S').visible && kotlin.math.abs(it.group('S').homeX + it.group('S').ox - it.player.box.cx) < 0.2f }
+        .hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
 
-    /** Stop to aim at the pit and the teeth catch up overhead: the jump goes into them. */
-    @Test fun level42RematchStoppingJumpsIntoTheStalker() = b(42, 1).rightTo(9.4f).wait(1.2f).rightJump(0.35f).landRight().expect(WorldState.DEAD)
+    /** Waiting under the pit's edge for them does not help: they settle overhead and the jump goes into them. */
+    @Test fun level42RematchJumpingUnderTheStalkerDies() = b(42, 1).rightTo(9.4f).wait(1.5f).rightJump(0.35f).landRight().expect(WorldState.DEAD)
 }
