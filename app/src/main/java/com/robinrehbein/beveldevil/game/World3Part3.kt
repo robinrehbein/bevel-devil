@@ -138,19 +138,6 @@ object World3Part3 {
                 trap(Landed(18f, 20.5f), FanSet('w', 14f), say("Overtime: the gusts are stronger now.", "Überstunden: die Böen sind jetzt stärker.")),
                 trap(Airborne(24f, 29f), FanSet('w', -6f), say("And then it turns around.", "Und dann dreht er sich um.")),
             ),
-            // rematch: the stone holds this time; the solid floor where you waited for the gust is what goes: jump from the stone
-            rematch = listOf(
-                Round(
-                    T("The union negotiated new break times.", "Neue Betriebsvereinbarung. Pausen jetzt woanders."),
-                    start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6, on = 2.2f, off = 2.4f)),
-                    traps = listOf(
-                        trap(Touch('e'), say("The stone holds. Union rules.", "Der Stein hält. Tarifvertrag.")),
-                        trap(Touch('y'), Play(Card.SINKING), Fall('y'), say("Your waiting spot took a break.", "Dein Warteplatz macht Pause."), delay = 0.12f),
-                        trap(Landed(18f, 20.5f), FanSet('w', 14f), say("Overtime again.", "Schon wieder Überstunden.")),
-                        trap(Airborne(24f, 29f), FanSet('w', -6f), say("And the turnaround, as agreed.", "Und die Wende, wie vereinbart.")),
-                    ),
-                ) { fill(20..22, 15..17, 'y') },
-            ),
         ) {
             border(); floor(); pit(10..17)
             fill(18..19, 15..17, 'e')
@@ -170,23 +157,6 @@ object World3Part3 {
                 trap(Pressed('1'), Play(Card.DECOY), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
                 trap(Landed(12f, 17f), Power('Z', true), say("Sorry, a cable on the ledge.", "Sorry, ein Kabel auf der Kante.")),
                 trap(Airborne(17f, 22f), HeatSpike('g', 0.7f), say("Landing pad: toasty.", "Landeplatz: kuschelig.")),
-            ),
-            // rematch: the fan runs and the pad stops it (twice starts it again); the cable is live until you land, and the
-            // jump over it that saved you in round 1 lands on an overclocked strip
-            rematch = listOf(
-                Round(
-                    T("Restart. Now it's loud in here.", "Neustart. Ruhe war gestern."),
-                    start = listOf(
-                        Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2),
-                        Pad('1', at = 5 to 14), Circuit('Z'),
-                    ),
-                    traps = listOf(
-                        trap(Pressed('1'), Play(Card.DECOY), Power('f', false), say("Quiet mode, as you liked it.", "Leisemodus, wie du ihn mochtest.")),
-                        trap(Pressed('1', times = 2), Power('f', true), say("Fine. Loud mode.", "Na gut. Lautmodus.")),
-                        trap(Landed(12f, 17f), Power('Z', false), say("Cable unplugged. Probably.", "Kabel gezogen. Vermutlich.")),
-                        trap(Airborne(16.5f, 22f), HeatSpike('g', 0.8f), say("Jumping costs extra now.", "Springen kostet jetzt extra.")),
-                    ),
-                ) { fill(20..24, 8..8, 'g') },
             ),
         ) {
             border(); floor()

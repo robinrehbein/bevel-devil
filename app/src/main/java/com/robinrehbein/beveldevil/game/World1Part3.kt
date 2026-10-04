@@ -114,17 +114,6 @@ object World1Part3 {
                 trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack."))),
                 trap(Airborne(14f, 20f), Show('A')),
             ),
-            // rematch: the frame holds, the spot you waited on drops, and the spikes come for walkers
-            rematch = listOf(
-                Round(
-                    T("Rematch. New exhibition, same thief.", "Revanche. Neue Ausstellung, gleicher Dieb."),
-                    traps = listOf(
-                        trap(PastX(4f), Shake(0.3f), Say(T("Mind the frame.", "Vorsicht, Rahmen."))),
-                        trap(Touch('w'), Play(Card.COLLAPSE), Fall('w'), delay = 1f),
-                        trap(PastX(19.4f), Show('A'), Say(T("Looking up was the wrong idea.", "Nach oben schauen war falsch."))),
-                    ),
-                ) { fill(9..11, 15..17, 'w') },
-            ),
         ) {
             border(); floor()
             put(21, 14, 'A'); put(22, 14, 'A')
@@ -169,16 +158,6 @@ object World1Part3 {
                 trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
                 trap(Airborne(10f, 16.5f), Show('A')),
             ),
-            // rematch: no flip where it came before; it comes in mid-jump over the spikes
-            rematch = listOf(
-                Round(
-                    T("Rematch. I'll hold the picture still. Promise.", "Revanche. Ich halte das Bild still. Versprochen."),
-                    traps = listOf(
-                        trap(PastX(6f), Shake(0.3f), Say(T("See? Upright.", "Siehst du? Aufrecht."))),
-                        trap(Airborne(11f, 13.5f), Play(Card.UPSIDE_DOWN), Flip(2.5f), Say(T("Promise expired.", "Versprechen abgelaufen."))),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(13..14, 14..14, '^')
@@ -214,16 +193,6 @@ object World1Part3 {
                 trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
                 trap(Airborne(15f, 20.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
             ),
-            // rematch: the keys stay sane on the ceiling and only swap over the hole
-            rematch = listOf(
-                Round(
-                    T("Rematch. Rebooted in safe mode. Ha.", "Revanche. Im abgesicherten Modus. Haha."),
-                    traps = listOf(
-                        trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Shake(1.5f), Say(T("Panic, but gently.", "Panik, aber sanft."))),
-                        trap(Airborne(15f, 20.5f), Swap(true), Say(T("Rebooted. Into a different panic.", "Neu gestartet. In eine andere Panik."))),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(6..27, 14..14, '^')
@@ -240,16 +209,6 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Technical difficulties.", "Bildstörung."))),
                 trap(PastX(20.5f), Fall('T'), Roll(2f, 2)),
-            ),
-            // rematch: the second wave waits until you have walked on from where it fell before
-            rematch = listOf(
-                Round(
-                    T("Rematch. Same channel, later broadcast.", "Revanche. Gleicher Sender, spätere Ausstrahlung."),
-                    traps = listOf(
-                        trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Rerun.", "Wiederholung."))),
-                        trap(PastX(21.1f), Fall('T'), Roll(2f, 2), Say(T("Now with a delay.", "Jetzt zeitversetzt."))),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
@@ -336,16 +295,6 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
                 trap(Airborne(2.5f, 7f), Show('A')),
-            ),
-            // rematch: no spikes behind the climb; the hop you learned over them lands on new ones
-            rematch = listOf(
-                Round(
-                    T("Rematch. Root again. Same password.", "Revanche. Wieder root. Gleiches Passwort."),
-                    traps = listOf(
-                        trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), Say(T("rm -rf ./habits", "rm -rf ./gewohnheiten"))),
-                        trap(Airborne(8.5f, 11.5f), Show('B')),
-                    ),
-                ),
             ),
         ) {
             border()

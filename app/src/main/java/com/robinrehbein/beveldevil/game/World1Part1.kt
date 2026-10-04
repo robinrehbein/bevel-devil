@@ -207,16 +207,6 @@ object World1Part1 {
                 trap(Airborne(12.2f, 14f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."))),
                 trap(Airborne(21.4f, 23f), Swap(false), Say(T("Or is it?", "Oder doch nicht?"))),
             ),
-            // rematch: nothing happens over the first hole, the swap waits for the second
-            rematch = listOf(
-                Round(
-                    T("Round two. Same holes, new wiring.", "Zweite Runde. Gleiche Löcher, neu verkabelt."),
-                    traps = listOf(
-                        trap(Airborne(12.2f, 14f), Say(T("Twisted? Not yet.", "Verdreht? Noch nicht."))),
-                        trap(Airborne(21.4f, 23f), Play(Card.TWISTED), Swap(true), Say(T("Now.", "Jetzt."))),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(12..14, 15..17, '.'); fill(21..23, 15..17, '.')
@@ -297,17 +287,6 @@ object World1Part1 {
                 trap(PastX(11.5f), Shake(0.6f), Say(T("Incoming!", "Achtung, Einschlag!"))),
                 trap(Touch('a'), Play(Card.COLLAPSE), Fall('a'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte.")), delay = 0.1f),
                 trap(Landed(24.5f, 27f), Show('A')),
-            ),
-            // rematch: the ceiling spikes that bluffed are real now; the floor that fell holds, and whoever jumps it anyway
-            // sees the spike before the door slide under the landing
-            rematch = listOf(
-                Round(
-                    T("Rematch. Still Wednesday. Still grumpy.", "Revanche. Immer noch Mittwoch. Immer noch sauer."),
-                    traps = listOf(
-                        trap(PastX(8.2f), Play(Card.HEADBUTT), Fall('S'), Say(T("Bluffs expire.", "Bluffs haben ein Verfallsdatum."))),
-                        trap(Airborne(20.5f, 23.5f), Move('K', -2f, 0f, 14f)),
-                    ),
-                ) { put(27, 14, 'K') },
             ),
         ) {
             border(); floor()

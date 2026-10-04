@@ -20,31 +20,19 @@ class World3DeckTest {
 
     /** Round 1 (as in [World3Test]) of the levels that get a rematch. */
     private val first: Map<Int, (Bot) -> Bot> = mapOf(
-        1 to { b -> b.rightTo(22f).rightJump(0.55f).landRight().right(3f) },
         2 to { b -> b.rightTo(23.5f).rightJump(0.55f).landRight().right(3f) },
-        3 to { b -> b.rightTo(8.3f).waitPowered('a', false).waitPowered('a').rightTo(23.4f).rightJump(0.55f).landRight().right(3f) },
-        4 to { b -> b.hopR(11.5f).rightJump(0.55f).landRight().right(3f) },
         5 to { b -> b.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(20.8f).rightJump(0.55f).landRight().waitPowered('Z').waitPowered('Z', false).right(3f) },
         6 to { b -> b.rightTo(5.3f).rightJump(0.55f).landRight().rightTo(16.6f).rightJump(0.55f).landRight().right(3f) },
-        8 to { b -> b.hopR(14f).hopR(18.9f).right(3f) },
-        9 to { b -> b.rightTo(16.2f).rightJump(0.55f).landRight().right(3f) },
-        11 to { b -> b.hopR(11.5f).rightJump(0.55f).landRight().right(3f) },
         12 to { b -> b.rightTo(18f).rightJump(0.55f).landRight().waitFor { (it.saws.firstOrNull()?.x ?: 99f) < 21.5f }.right(3f) },
-        14 to { b -> b.rightTo(7.2f).rightJump(0.55f).landRight().rightTo(25f).rightJump(0.55f).landRight().right(3f) },
         15 to { b -> b.rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopR(20f).rightUntil { it.pads[2].presses >= 1 }.leftKeyRightTo(31f) },
-        16 to { b -> b.rightTo(5f).rightTo(15.5f).waitPowered('Z', false).rightTo(21f).rightJump(0.55f).landRight().right(3f) },
         17 to { b -> b.rightTo(15.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f) },
         21 to { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
-        23 to { b -> b.rightTo(7f).waitPowered('a').rightTo(24.3f).rightJump(0.55f).landRight().right(4f) },
         28 to { b -> b.rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f) },
         30 to { b -> b.rightTo(6.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
             .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
-        31 to { b -> b.rightTo(15.5f).waitCooled('h').rightTo(19f).rightJump(0.55f).landRight().rightTo(24.3f).rightJump(0.55f).landRight().right(4f) },
         32 to { b -> b.rightTo(5.5f).waitCooled('c').rightTo(25.5f).rightJump(0.55f).landRight().right(3f) },
         34 to { b -> b.hopR(8f).rightTo(21.6f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f) },
         36 to { b -> b.hopR(8f).rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(1f).left(3f) },
-        37 to { b -> b.rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().rightTo(22.4f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f) },
-        38 to { b -> b.rightTo(6f).rightTo(10f).waitFor { it.player.box.cy < 7f }.rightTo(16.5f).rightJump(0.55f).landRight().right(3f) },
         39 to { b -> b.rightTo(14.2f).leftTo(10.3f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight()
             .rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(1f).left(3f) },
         41 to { b -> climb41(b).rightTo(21.2f).rightJump(0.55f).landRight().right(4f) },
@@ -55,34 +43,22 @@ class World3DeckTest {
 
     /** Rematch rounds: level to the solution of each extra round. */
     private val rematch: Map<Int, List<(Bot) -> Bot>> = mapOf(
-        1 to listOf { b -> b.rightTo(10.3f).waitPowered('a', false).waitPowered('a').rightTo(22f).rightJump(0.55f).landRight().right(3f) },
         2 to listOf(
             { b -> b.rightTo(10f).waitPowered('Z').leftTo(8.3f).rightTo(23.5f).rightJump(0.55f).landRight().right(3f) },
             { b -> b.rightTo(22f).rightJump(0.12f).landRight().rightTo(26.2f).rightJump(0.35f).landRight().right(0.5f).left(2f) },
         ),
-        3 to listOf { b -> b.rightTo(8.3f).waitPowered('a', false).waitPowered('a').right(4f) },
-        4 to listOf { b -> b.hopR(11.5f).right(3f) },
         5 to listOf { b -> b.rightTo(20.8f).rightJump(0.55f).landRight().waitPowered('Z').waitPowered('Z', false).right(3f) },
         6 to listOf { b -> b.rightTo(16.6f).rightJump(0.55f).landRight().right(3f) },
-        8 to listOf { b -> b.rightTo(16f).rightJump(0.55f).landRight().right(3f) },
-        9 to listOf { b -> b.rightTo(13.3f).waitPowered('Z').leftTo(10.4f).rightTo(16.2f).rightJump(0.55f).landRight().right(3f) },
-        11 to listOf { b -> b.rightTo(16.5f).rightJump(0.55f).landRight().right(3f) },
         12 to listOf { b -> b.rightTo(21.5f).rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(2f) },
-        14 to listOf { b -> b.rightUntil { it.pads[0].presses >= 1 }.leftTo(3.2f).rightTo(7.2f).rightJump(0.55f).landRight().rightTo(25f).rightJump(0.55f).landRight().right(3f) },
         15 to listOf { b -> b.rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopS(20f).leftUntil { it.pads[2].presses >= 1 }.leftKeyRightTo(31f) },
-        16 to listOf { b -> b.rightTo(5f).rightTo(15.5f).waitPowered('Z', false).rightTo(19.6f).rightJump(0.55f).landRight().right(3f) },
         17 to listOf { b -> b.rightTo(5f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f) },
         21 to listOf { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
-        23 to listOf { b -> b.rightTo(3.2f).waitPowered('a', false).waitPowered('a').rightTo(24.3f).rightJump(0.55f).landRight().right(4f) },
         28 to listOf { b -> b.rightTo(16.5f).waitCooled('h').right(3f) },
         30 to listOf { b -> b.rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
             .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
-        31 to listOf { b -> b.rightTo(13.4f).rightJump(0.35f).landRight().rightTo(20.5f).waitCooled('h').rightTo(24.3f).rightJump(0.55f).landRight().right(4f) },
         32 to listOf { b -> b.rightTo(5.5f).waitCooled('c').rightTo(21.6f).rightJump(0.55f).landRight().right(3f) },
         34 to listOf { b -> b.hopR(8f).waitFor { it.fans[0].wind > 3f }.rightTo(21.6f).rightJump(0.55f).landRight().right(1f).left(3f) },
         36 to listOf { b -> b.hopR(8f).rightTo(22f).rightJump(0.12f).landRight().rightTo(24.4f).rightJump(0.35f).landRight().right(1f).left(3f) },
-        37 to listOf { b -> b.rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f) },
-        38 to listOf { b -> b.rightTo(6f).leftTo(4.3f).rightTo(10f).waitFor { it.player.box.cy < 7f }.rightTo(16.5f).right(3f) },
         39 to listOf { b -> b.rightTo(14.2f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight()
             .rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(1f).left(3f) },
         41 to listOf { b -> climb41(b).rightTo(26f).right(4f) },
@@ -92,10 +68,10 @@ class World3DeckTest {
     // ---------- structure ----------
 
     @Test
-    fun twentyLevelsGetARematchSpreadOverAllActs() {
+    fun aboutAThirdOfTheLevelsGetARematchSpreadOverAllActs() {
         val levels = World3.levels.withIndex().filter { (_, l) -> l.rematch.isNotEmpty() }.map { it.index + 1 }
-        assertTrue("rematch levels $levels", levels.size >= 20)
-        for (act in 0..2) assertTrue("act ${act + 1}: $levels", levels.count { (it - 1) / 16 == act } >= 5)
+        assertTrue("rematch levels $levels", levels.size in 12..18)
+        for (act in 0..2) assertTrue("act ${act + 1}: $levels", levels.count { (it - 1) / 16 == act } in 4..7)
         assertEquals(rematch.keys, levels.toSet())
         rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
     }

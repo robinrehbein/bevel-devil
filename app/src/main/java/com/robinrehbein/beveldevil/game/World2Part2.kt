@@ -36,17 +36,6 @@ object World2Part2 {
                 trap(Landed(14.2f, 18.6f), Play(Card.TWISTED), Belt('b', -6f), say("Packet reordering: the bus runs the other way.", "Paket-Umsortierung: Der Bus fährt andersrum.")),
                 trap(Landed(21.4f, 25f), Belt('b', -10f), say("Congestion control: even faster.", "Staukontrolle: noch schneller.")),
             ),
-            // rematch: the bus starts backwards, and the landing that turned it against you now throws you forward
-            rematch = listOf(
-                Round(
-                    T("Out of order. Resending the bus.", "Falsche Reihenfolge. Schienenersatzverkehr."),
-                    start = listOf(Belt('b', -3.5f)),
-                    traps = listOf(
-                        trap(Landed(14.2f, 18.6f), Play(Card.TWISTED), Belt('b', 7f), say("Now with the flow. Full throttle.", "Jetzt mit dem Strom. Tempolimit? Nie gehört.")),
-                        trap(Landed(21.4f, 25f), Belt('b', 2f), say("Delivered. Probably.", "Zugestellt. Beim Nachbarn.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(5..26, 15..15, 'b')
@@ -295,18 +284,6 @@ object World2Part2 {
             ) + "defgh".mapIndexed { i, g -> trap(PastX(4f), Fall(g), delay = 0.35f * (i + 1)) } + listOf(
                 trap(Landed(14f, 22f), Belt('b', -7f), say("Rate limit: the belt says no.", "Ratenbegrenzung: Das Band sagt nein.")),
             ),
-            // rematch: the flood comes from the far end, last block first, so running into the stairs runs into the falling ones
-            rematch = listOf(
-                Round(
-                    T("Second wave. From the other side.", "Zweite Welle. Von der anderen Seite."),
-                    start = listOf(Belt('b', -3f)),
-                    traps = listOf(
-                        trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("Botnet reversed.", "Botnetz umgedreht.")),
-                    ) + "hgfed".mapIndexed { i, g -> trap(PastX(4f), Fall(g), delay = 0.35f * i) } + listOf(
-                        trap(Landed(14f, 22f), Belt('b', -7f)),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(5..26, 15..15, 'b')
@@ -325,18 +302,6 @@ object World2Part2 {
                 trap(Zone(9.6f, 12.5f, 10.8f, 15f), Reroute('1', 22 to 14), say("Split tunnel: your exit has moved.", "Split Tunnel: Dein Ausgang ist umgezogen.")),
                 trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 23 to 14, 26 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
                 trap(PastX(24.6f), Show('A'), say("Intrusion logged.", "Eindringen protokolliert.")),
-            ),
-            // rematch: the exit is not re-pointed, the tunnel drops you where it always did, and the IPS moved up to meet you
-            rematch = listOf(
-                Round(
-                    T("Tunnel collapsed. Digging a new one.", "Tunnel eingestürzt. Baustelle bis 2031."),
-                    start = listOf(Laser('L', 15 to 1, 15 to 14), Portal('1', 11 to 14, 19 to 14)),
-                    traps = listOf(
-                        trap(Zone(9.6f, 12.5f, 10.8f, 15f), say("Exit moved. Trust me.", "Ausgang verlegt. Großes Teufelsehrenwort.")),
-                        trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 21 to 14, 24 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: I moved closer.", "IPS: Ich hab mich näher gesetzt.")),
-                        trap(PastX(25.2f), Show('A')),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
@@ -420,19 +385,6 @@ object World2Part2 {
                 trap(Landed(16f, 22f), Belt('b', -9f), say("Keep-alive rejected.", "Keep-Alive abgelehnt.")),
                 // the gate closes for good at 5.2 s: whoever still stands in front of it loses the connection
                 trap(After(5.6f), Fall('b'), say("Timeout: connection closed.", "Zeitüberschreitung: Verbindung getrennt.")),
-            ),
-            // rematch: the first hop is safe now; the spikes wait where the second one lands
-            rematch = listOf(
-                Round(
-                    T("Detention, day two. Seats were moved.", "Nachsitzen, Tag zwei. Die Plätze sind getauscht."),
-                    start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
-                    traps = listOf(
-                        trap(After(0.2f), say("408 again. I'm keeping count.", "Wieder 408. Ich führe Strichliste.")),
-                        trap(Airborne(15f, 18.5f), Show('C'), say("Retry-After: later.", "Retry-After: später.")),
-                        trap(Landed(16f, 22f), Belt('b', -9f)),
-                        trap(After(5.6f), Play(Card.SINKING), Fall('b'), say("Timeout. The floor logged off.", "Timeout. Der Boden hat sich abgemeldet.")),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
