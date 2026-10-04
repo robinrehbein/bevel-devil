@@ -8,6 +8,9 @@ import com.robinrehbein.beveldevil.game.GroupMode
 import com.robinrehbein.beveldevil.game.HardwareDemos
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Levels
+import com.robinrehbein.beveldevil.game.ROOM_COLS
+import com.robinrehbein.beveldevil.game.ROOM_ROWS
+import com.robinrehbein.beveldevil.game.RoomDemos
 import com.robinrehbein.beveldevil.game.Trigger
 import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.World
@@ -32,7 +35,7 @@ class TrapInvisibilityTest {
     private val layout = Layout().apply { update(2400, 1080, 2.75f) }
 
     /** The level as a player sees it before anything happens: no groups, no legend, no traps. */
-    private fun plain(level: Level) = Level(level.name, level.intro) {
+    private fun plain(level: Level) = Level(level.name, level.intro, rooms = level.rooms) {
         for (y in 0 until level.rows) for (x in 0 until level.cols) {
             val c = level.map.grid[y][x]
             val g = if (c == '#' || c in "^v<>PD.") null else level.glyph(c)
@@ -108,12 +111,56 @@ class TrapInvisibilityTest {
             if (level.start.any { it is Action.Blink || it is Action.Tilt || it is Action.Belt || it is Action.Laser || it is Action.Portal || hardware(it) }) continue
             val plainWorld = World(plain(level))
             assertTrue(plainWorld.groups.isEmpty())
-            for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) {
-                diff(render(trapWorld, t, theme), render(plainWorld, t, theme))?.let { throw AssertionError("Level ${i + 1} round ${k + 1} (${level.name.en}) at t=$t: $it") }
+            for (t in floatArrayOf(0.37f, 2.9f, 5.55f)) for (room in 0 until trapWorld.rooms) {
+                trapWorld.showRoom(room); plainWorld.showRoom(room)
+                diff(render(trapWorld, t, theme), render(plainWorld, t, theme))?.let { throw AssertionError("Level ${i + 1} round ${k + 1} (${level.name.en}) room ${room + 1} at t=$t: $it") }
             }
             checked++
         }
         return checked
+    }
+
+    /** The wall Mephi breaks open ([Action.Extend]) is plain wall in every room until he does, and the rooms render like one-room levels. */
+    @Test
+    fun theBreachLooksLikeTheWallUntilItFires() {
+        for (level in RoomDemos.all) for (theme in listOf(Themes.HELL, Themes.DATA_CENTER, Themes.PCB_GREEN)) {
+            val a = World(level)
+            // the same level without its traps (saws and belts run as before)
+            val b = World(Level(level.name, level.intro, level.legend, emptyList(), level.start, rooms = level.rooms) {
+                for (y in 0 until level.rows) for (x in 0 until level.cols) put(x, y, level.map.grid[y][x])
+            })
+            assertTrue(a.groups.isNotEmpty())
+            for (room in 0 until a.rooms) {
+                a.showRoom(room); b.showRoom(room)
+                for (t in floatArrayOf(0.37f, 2.9f)) diff(render(a, t, theme), render(b, t, theme))?.let { throw AssertionError("${level.name.en} room ${room + 1} t=$t: $it") }
+            }
+        }
+        // room 1 of a two-room level looks exactly like the same room built as a level of its own
+        val wide = plain(RoomDemos.annex)
+        val alone = Level(wide.name, wide.intro) { for (y in 0 until ROOM_ROWS) for (x in 0 until ROOM_COLS) put(x, y, wide.map.grid[y][x]) }
+        diff(render(World(wide), 0.37f), render(World(alone), 0.37f))?.let { throw AssertionError("room 1 alone: $it") }
+    }
+
+    @Test
+    fun theBreachShowsOnceItFires() {
+        val w = World(RoomDemos.annex)
+        val input = Controls().apply { right = true }
+        // to the door, hopping the block: the wall cracks, then is gone
+        while (w.cracks.isEmpty() && w.time < 10f) {
+            input.jump = w.player.box.cx in 12.3f..14.5f
+            input.jumpPressed = input.jump && w.player.grounded
+            w.step(1f / 120f, input)
+        }
+        assertTrue(w.cracks.isNotEmpty())
+        val before = render(World(plain(RoomDemos.annex)), w.time)
+        while (w.cracks[0].group.visible && w.time < 12f) w.step(1f / 120f, Controls())
+        val after = render(w, w.time)
+        var changed = 0
+        for (y in 12 * TS until 15 * TS) for (x in 30 * TS until 32 * TS) {
+            val i = (layout.fy + y) * layout.lw + layout.fx + x
+            if (after[i] != before[i]) changed++
+        }
+        assertTrue("open wall must be visible ($changed px)", changed > 150)
     }
 
     @Test

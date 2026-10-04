@@ -14,6 +14,7 @@ import com.robinrehbein.beveldevil.game.Group
 import com.robinrehbein.beveldevil.game.GroupMode
 import com.robinrehbein.beveldevil.game.Level
 import com.robinrehbein.beveldevil.game.Particle
+import com.robinrehbein.beveldevil.game.ROOM_COLS
 import com.robinrehbein.beveldevil.game.World
 import com.robinrehbein.beveldevil.game.WorldState
 import kotlin.math.PI
@@ -37,12 +38,16 @@ import kotlin.math.sqrt
  * level geometry until it fires. Only groups that are moving or displaced are drawn on their own.
  */
 class WorldPainter(px: Pixels) : Painter(px) {
-    private val tileBmp = Bitmap.createBitmap(PW, PH, Bitmap.Config.ARGB_8888)
-    private val tilePx = IntArray(PW * PH)
-    private val shadowBmp = Bitmap.createBitmap(PW + 2, PH + 2, Bitmap.Config.ARGB_8888)
-    private val shadowC = Canvas(shadowBmp)
-    private val frameShadow = Bitmap.createBitmap(PW + 2, PH + 2, Bitmap.Config.ARGB_8888)
-    private val frameShadowC = Canvas(frameShadow)
+    // the level's layers, one room (PW × PH) wide per room of the level
+    private var tileW = PW
+    private var tileBmp = Bitmap.createBitmap(PW, PH, Bitmap.Config.ARGB_8888)
+    private var tilePx = IntArray(PW * PH)
+    private var shadowBmp = Bitmap.createBitmap(PW + 2, PH + 2, Bitmap.Config.ARGB_8888)
+    private var shadowC = Canvas(shadowBmp)
+    private var frameShadow = Bitmap.createBitmap(PW + 2, PH + 2, Bitmap.Config.ARGB_8888)
+    private var frameShadowC = Canvas(frameShadow)
+    /** Left edge of the view in level pixels (the camera, see [World.camX]). */
+    private var cam = 0
     private val silhouette = Paint().apply { colorFilter = PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN) }
     private val shadowPaint = Paint().apply { alpha = Color.alpha(SHADOW) }
     private val glowPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD) }
@@ -96,21 +101,51 @@ class WorldPainter(px: Pixels) : Painter(px) {
         surroundings(w, l, t, heat)
         px.at(l.fx, l.fy) { backdrop(w, t) }
         if (theme.fire) Fx.embers(px, l.lw, l.lh, t, heat)
-        px.at(l.fx, l.fy) { drawWorld(w, t, particles) }
+        // the level is drawn in its own pixels, shifted so the camera's room fills the playfield
+        cam = camPx(w)
+        px.at(l.fx - cam, l.fy) { drawWorld(w, t, particles) }
+        px.at(l.fx, l.fy) { panCue(w) }
     }
+
+    /** A short whoosh of chevrons along the edge the camera just moved away from, so the move reads as one. */
+    private fun panCue(w: World) {
+        if (w.panDir == 0) return
+        // in world time the pan is frozen, so the cue runs on the pan clock and a beat after it
+        val a = if (w.panning) w.panAge / World.PAN else 1f + (w.time - w.panTime) / CUE_TAIL
+        if (a >= 2f) return
+        val fade = if (a <= 1f) 1f else 2f - a
+        val alpha = (fade * 255).toInt().coerceIn(0, 255)
+        val dir = w.panDir
+        // chevrons sweep across the playfield in the direction of travel, against the moving picture
+        val x0 = if (dir > 0) PW - 10 else 6
+        for (k in 0 until 3) {
+            val x = x0 - dir * (k * 6 + ((a * 18f).toInt() % 6))
+            val c = (alpha shl 24) or ((if (k == 0) GOLD_HI else GOLD) and 0xFFFFFF)
+            for (i in 0..3) {
+                rect(x + dir * i, PH / 2 - 4 + i, 1, 1, c)
+                rect(x + dir * i, PH / 2 + 4 - i, 1, 1, c)
+            }
+        }
+    }
+
+    private fun camPx(w: World) = (w.camX * TS).roundToInt()
 
     // ---------- surroundings ----------
 
-    /** Rock everywhere outside the playfield, except where the level's edge is open: there the pit continues. */
+    /**
+     * Rock everywhere outside the playfield, except where the edge of the room in view is open: there the pit
+     * continues. (A room of a wider level counts on its own; during a pan, the room it goes to.)
+     */
     private fun surroundings(w: World, l: Layout, t: Float, heat: Float) {
         if (l.lw == PW && l.lh == PH) return
-        val cols = w.cols
+        val cols = ROOM_COLS
         val rows = w.rows
+        val left = w.room * ROOM_COLS
         open.fill(true)
         for (i in 0 until w.pieces.size) {
             val p = w.pieces[i]
             if (!p.visible) continue
-            val cx = (p.box.x + 0.5f).toInt()
+            val cx = (p.box.x + 0.5f).toInt() - left
             val cy = (p.box.y + 0.5f).toInt()
             if (cx !in 0 until cols || cy !in 0 until rows) continue
             if (cy == 0) open[cx] = false
@@ -203,7 +238,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
     private fun backdrop(w: World, t: Float) {
         lc.save()
         lc.clipRect(0, 0, PW, PH)
-        val shift = ((w.cols / 2f - w.player.box.cx) * 0.7f).roundToInt().coerceIn(-PARALLAX, PARALLAX)
+        val shift = ((ROOM_COLS / 2f - (w.player.box.cx - w.camX)) * 0.7f).roundToInt().coerceIn(-PARALLAX, PARALLAX)
         val bd = theme.backdrop
         lc.drawBitmap(bd.bmp, (shift - PARALLAX).toFloat(), 0f, null)
         blinkLeds(bd.leds, shift - PARALLAX, t)
@@ -241,6 +276,16 @@ class WorldPainter(px: Pixels) : Painter(px) {
             look = IntArray(groups.size)
         }
         if (cells.size != w.cols * w.rows) cells = IntArray(w.cols * w.rows)
+        val lw = w.cols * TS
+        if (lw != tileW) {
+            tileW = lw
+            tileBmp = Bitmap.createBitmap(lw, PH, Bitmap.Config.ARGB_8888)
+            tilePx = IntArray(lw * PH)
+            shadowBmp = Bitmap.createBitmap(lw + 2, PH + 2, Bitmap.Config.ARGB_8888)
+            shadowC = Canvas(shadowBmp)
+            frameShadow = Bitmap.createBitmap(lw + 2, PH + 2, Bitmap.Config.ARGB_8888)
+            frameShadowC = Canvas(frameShadow)
+        }
     }
 
     /** A group on its own, as a mass of just its own pieces, for when it moves. */
@@ -307,9 +352,18 @@ class WorldPainter(px: Pixels) : Painter(px) {
             val r = p.hy.toInt()
             if (c in 0 until w.cols && r in 0 until w.rows) cells[r * w.cols + c] = 1
         }
-        Masonry.bake(tilePx, PW, PH, 0, 0, cells, w.cols, w.rows, 0, 0, false, theme.stone)
-        for (p in w.pieces) if (p.spike && restingPiece(p.group)) Masonry.spike(tilePx, PW, PH, p.hx.toInt() * TS, p.hy.toInt() * TS, p.dir, theme.spike)
-        tileBmp.setPixels(tilePx, 0, PW, 0, 0, PW, PH)
+        if (w.rooms == 1) Masonry.bake(tilePx, tileW, PH, 0, 0, cells, w.cols, w.rows, 0, 0, false, theme.stone)
+        else {
+            // each room is masonry of its own, so its frame looks exactly like a one-room level's (and a breach
+            // between two rooms opens into empty space, not into a wall that carries on)
+            val one = IntArray(ROOM_COLS * w.rows)
+            for (room in 0 until w.rooms) {
+                for (r in 0 until w.rows) System.arraycopy(cells, r * w.cols + room * ROOM_COLS, one, r * ROOM_COLS, ROOM_COLS)
+                Masonry.bake(tilePx, tileW, PH, room * PW, 0, one, ROOM_COLS, w.rows, room * ROOM_COLS, 0, false, theme.stone)
+            }
+        }
+        for (p in w.pieces) if (p.spike && restingPiece(p.group)) Masonry.spike(tilePx, tileW, PH, p.hx.toInt() * TS, p.hy.toInt() * TS, p.dir, theme.spike)
+        tileBmp.setPixels(tilePx, 0, tileW, 0, 0, tileW, PH)
         shadowBmp.eraseColor(Color.TRANSPARENT)
         shadowC.drawBitmap(tileBmp, 2f, 2f, silhouette)
         baked = w
@@ -338,7 +392,7 @@ class WorldPainter(px: Pixels) : Painter(px) {
         if (dirty) bakeLevel(w)
 
         lc.save()
-        lc.clipRect(0, 0, PW, PH)
+        lc.clipRect(cam, 0, cam + PW, PH)
         drawHalo(w, t)
         lc.restore()
         // one shadow pass for everything solid, then all tiles on top
@@ -351,10 +405,13 @@ class WorldPainter(px: Pixels) : Painter(px) {
             }
             frameShadow
         }
+        lc.save()
+        lc.clipRect(cam, 0, cam + PW + 2, PH + 2)
         lc.drawBitmap(shadow, 0f, 0f, shadowPaint)
         hw.shadow(w)
+        lc.restore()
         lc.save()
-        lc.clipRect(0, 0, PW, PH)
+        lc.clipRect(cam, 0, cam + PW, PH)
         lc.drawBitmap(tileBmp, 0f, 0f, null)
         for (i in 0 until groups.size) {
             when (look[i]) {
@@ -686,6 +743,8 @@ class WorldPainter(px: Pixels) : Painter(px) {
     companion object {
         /** How far the backdrop slides, in pixels. */
         const val PARALLAX = 20
+        /** Seconds the pan cue lingers after the pan. */
+        private const val CUE_TAIL = 0.35f
         const val POP = 0.32f
         const val SUCK = 0.42f
         private const val CRACK_WARM = 0xFFC4462C.toInt()

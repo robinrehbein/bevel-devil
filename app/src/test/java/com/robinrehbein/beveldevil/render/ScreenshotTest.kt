@@ -22,6 +22,7 @@ import com.robinrehbein.beveldevil.game.Twists
 import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Round
+import com.robinrehbein.beveldevil.game.RoomDemos
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
@@ -431,6 +432,48 @@ class ScreenshotTest {
             game.input.shake = true
             play(0.1f); save("66-tilt-buttons-${s.tag}")
         }
+    }
+
+    /** U18 "Who says the room ends here?": the door that isn't the end, the breach, the pan to room 2 and back. */
+    @Test
+    fun roomExtension() {
+        Lang.german = true
+        for (s in listOf(sizes[0], sizes[2])) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            Film(Game(MemoryProgress(), silent).apply { startCustom(RoomDemos.annex) }, s).apply {
+                fun w() = game.world!!
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 12.4f }
+                game.input.jump = true; game.input.jumpPressed = true
+                play(0.45f)
+                game.input.jump = false
+                play(4f) { w().cracks.isNotEmpty() }
+                play(0.35f); save("120-rooms-door-cracks$tag")
+                game.input.right = false
+                play(2f) { !w().cracks[0].group.visible }
+                play(0.12f); save("121-rooms-breach-crumbles$tag")
+                play(2f) { !w().door.moving }
+                play(0.3f); save("122-rooms-breach-open$tag")
+                game.input.right = true
+                play(2f) { w().panning }
+                play(0.25f); save("123-rooms-mid-pan$tag")
+                play(0.3f) { !w().panning }
+                play(0.12f); save("124-rooms-room2$tag")
+                game.input.right = false
+                play(0.6f); save("125-rooms-room2-still$tag")
+                game.input.left = true
+                play(3f) { w().panning }
+                play(0.2f); save("126-rooms-pan-back$tag")
+                game.input.left = false
+            }
+        }
+        val g = Game(MemoryProgress().apply { findCard(Card.ANNEX) }, silent)
+        run(g, 0.5f)
+        g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.6f)
+        g.tap(Ui.pageNext.x + 2f, Ui.pageNext.y + 2f); run(g, 0.4f)
+        Ui.albumCard(Card.entries.indexOf(Card.ANNEX)).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("127-card-annex", g, sizes.take(1))
     }
 
     /** World 2's network mechanics on their test-only demo levels. */

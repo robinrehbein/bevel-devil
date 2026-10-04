@@ -393,16 +393,25 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Event.Switch -> audio.play(Sound.SWITCH)
             Event.Sizzle -> audio.play(Sound.SIZZLE)
             Event.Hum -> audio.play(Sound.HUM)
+            Event.Extended -> {
+                audio.play(Sound.LAUGH)
+                setMood(Mood.LAUGH, 1.8f)
+                heat = 1f
+            }
+            is Event.Breach -> rubble(e)
+            is Event.Pan -> audio.play(Sound.FLIP)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> { say(e.text.toString(), 2.6f); bubbleIsTrap = bubble != null }
             is Event.Played -> {
                 card = e.card
                 cardBluff = e.bluff
                 cardAge = 0f
-                cardSide = world?.player?.box?.let { p ->
-                    // the card is about 5.5×7.5 tiles around (16, 8.25); keep a margin for the player walking on
-                    val hits = abs(p.cx - 16f) < 2.75f + 2f + p.w / 2 && abs(p.cy - 8.25f) < 3.75f + 1f + p.h / 2
-                    if (!hits) 0 else if (p.cx > 16f) -1 else 1
+                cardSide = world?.let { cw ->
+                    // the card is about 5.5×7.5 tiles around (16, 8.25) of the room in view; keep a margin for the player walking on
+                    val p = cw.player.box
+                    val x = p.cx - cw.camX
+                    val hits = abs(x - 16f) < 2.75f + 2f + p.w / 2 && abs(p.cy - 8.25f) < 3.75f + 1f + p.h / 2
+                    if (!hits) 0 else if (x > 16f) -1 else 1
                 } ?: 0
                 heat = 1f
                 glitch = GLITCH_TIME
@@ -468,6 +477,23 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             val a = fx.nextFloat() * 6.283f
             val s = 8f + fx.nextFloat() * 12f
             particles += Particle(x, y, cos(a) * s, sin(a) * s + up, 0.3f + fx.nextFloat() * 0.35f, if (it % 2 == 0) 0xFFFFFFFF.toInt() else 0xFFB8FFE6.toInt(), size = 1)
+        }
+    }
+
+    /** The breach crumbles: stone chunks tumble out of the wall and dust hangs where it stood. */
+    private fun rubble(b: Event.Breach) {
+        val w = b.x1 - b.x0
+        val h = b.y1 - b.y0
+        repeat(16) {
+            val x = b.x0 + fx.nextFloat() * w
+            val y = b.y0 + fx.nextFloat() * h
+            val side = if (fx.nextBoolean()) 1f else -1f
+            particles += Particle(x, y, side * (2f + fx.nextFloat() * 5f), -4f - fx.nextFloat() * 6f, 0.5f + fx.nextFloat() * 0.4f,
+                if (it % 3 == 0) 0xFFFFD98A.toInt() else 0xFFB8702E.toInt(), size = if (it % 2 == 0) 2 else 1)
+        }
+        repeat(10) {
+            particles += Particle(b.x0 + fx.nextFloat() * w, b.y0 + fx.nextFloat() * h, (fx.nextFloat() - 0.5f) * 3f, -0.5f - fx.nextFloat(),
+                0.5f + fx.nextFloat() * 0.3f, 0xFFEADCCB.toInt(), size = 4, dust = true)
         }
     }
 
