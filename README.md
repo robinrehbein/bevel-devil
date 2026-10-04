@@ -170,7 +170,7 @@ trap(PastX(24f), Play(Card.UNDO), Undo(2f))
 trap(PastX(8f), Play(Card.STALKER), Show('S'), Chase('S', speed = 4f, left = 3f, right = 18f))
 
 // Tipp: Mephi verrät ihn einmal pro Runde, wenn man 9 s ohne Tod feststeckt. Runden erben start und hint vom Level.
-hint = T("Ceilings are overrated.", "Decken werden überschätzt."),   // once per round
+hint = T("Ceilings are overrated.", "Decken werden überschätzt."),
 ```
 
 - Die Runde zeigt das HUD erst ab der zweiten („#2“), damit Runde 1 nichts verrät. Eine neue Runde steht 0,8 s still unter dem Banner, gehaltene Tasten werden losgelassen.
