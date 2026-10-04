@@ -65,24 +65,77 @@ class DesignRulesTest {
     }
 
     @Test
+    fun heatSpikeFinaleLooksAtWhereTheDoorIs() {
+        // door at the left, a heat spike far from it at 20 that is not the last trap
+        val far = DesignDemos.leftDoor(heatAt = Trigger.PastX(20f))
+        assertEquals(0, DesignRules.heatSpikeFinaleCount(far))
+        // walking left onto the door, BeforeX is the natural trigger
+        assertEquals(1, DesignRules.heatSpikeFinaleCount(DesignDemos.leftDoor(heatAt = Trigger.BeforeX(5f))))
+    }
+
+    @Test
+    fun trapsInsideAFakeWinCount() {
+        val clearRoad = World1.levels.single { it.name.en == "Clear Road" }
+        assertEquals(1, DesignRules.spikePopupCount(clearRoad))
+        for (name in listOf("Burn-in Test", "Boot Order")) {
+            assertEquals(name, 1, DesignRules.heatSpikeFinaleCount(World3.levels.single { it.name.en == name }))
+        }
+    }
+
+    @Test
     fun aPixelPerfectSolutionFailsTheSlopTest() {
         val needle = DesignDemos.needle
         val exact: Solution = { rightTo(10.1f).waitUntil(3.2f).right(4f) }
         assertTrue(DesignRules.cleanRunTime(needle, 0, exact) > 3f)
         assertFalse(DesignRules.solutionToleratesSlop(needle, 0, exact))
+        // the same needle written as conditions on position and clock is no way around it
+        val disguised: Solution = { rightUntil { it.player.box.cx >= 10.1f }.waitFor { it.time >= 3.2f }.right(4f) }
+        assertTrue(DesignRules.cleanRunTime(needle, 0, disguised) > 3f)
+        assertFalse(DesignRules.solutionToleratesSlop(needle, 0, disguised))
+        assertFalse(DesignRules.solutionToleratesSlop(needle, 0) { rightUntil { it.player.box.cx >= 10.1f }.waitWhile { it.time < 3.2f }.right(4f) })
     }
 
     @Test
-    fun slopMovesTargetsAndHoldsButNotConditions() {
+    fun idlePaddingDoesNotMakeARoomLonger() {
+        val corridor = DesignDemos.corridor()
+        val padded: Solution = { wait(9f).right(5f) }
+        assertTrue(DesignRules.cleanRunTime(corridor, 0, padded) > 8f)
+        assertTrue(DesignRules.cleanRunViolations(corridor, 0, padded, 8f).single().contains("without its idle waits"))
+        val clocked: Solution = { waitFor(20f) { it.time >= 9f }.right(5f) }
+        assertEquals(1, DesignRules.cleanRunViolations(corridor, 0, clocked, 8f).size)
+        val stalled: Solution = { wait(20f); solution() }
+        assertEquals(1, DesignRules.cleanRunViolations(puzzle, 0, stalled, 15f).size)
+        // the honest puzzle loses nothing when idle commands are skipped
+        assertEquals(emptyList<String>(), DesignRules.cleanRunViolations(puzzle, 0, solution, DesignRules.minDuration(3, 20, d("R1+R5", "U1"))))
+    }
+
+    @Test
+    fun aWaitTheRoomNeedsStillCounts() {
+        // the needle's spikes are only gone after 3 s: skipping the wait walks into them, so the wait is no padding
+        val needle = DesignDemos.needle
+        val patient: Solution = { waitFor { it.time >= 3.5f }.right(6f) }
+        assertEquals(emptyList<String>(), DesignRules.cleanRunViolations(needle, 0, patient, 4f))
+    }
+
+    @Test
+    fun slopMovesTargetsHoldsAndReactions() {
         val corridor = DesignDemos.corridor()
         val exact = Bot(corridor).rightTo(10f).world.player.box.cx
         val late = Bot(corridor, slop = Slop(0f, 1f)).rightTo(10f).world.player.box.cx
         assertEquals(exact + 1f, late, 0.1f)
         assertEquals(1.15f, Bot(corridor, slop = Slop(0.15f)).wait(1f).world.time, 0.01f)
         assertEquals(0.85f, Bot(corridor, slop = Slop(-0.15f)).wait(1f).world.time, 0.01f)
-        assertEquals(1f, Bot(corridor, slop = Slop(0.15f)).waitFor { it.time >= 1f }.world.time, 0.01f)
+        // a condition is reacted to late or early as well
+        assertEquals(1.15f, Bot(corridor, slop = Slop(0.15f)).waitFor { it.time >= 1f }.world.time, 0.01f)
+        assertEquals(0.85f, Bot(corridor, slop = Slop(-0.15f)).waitFor { it.time >= 1f }.world.time, 0.01f)
+        val ran = Bot(corridor).rightUntil { it.player.box.cx >= 10f }.world.player.box.cx
+        assertTrue(Bot(corridor, slop = Slop(0.15f)).rightUntil { it.player.box.cx >= 10f }.world.player.box.cx > ran + 0.5f)
+        assertTrue(Bot(corridor, slop = Slop(-0.15f)).rightUntil { it.player.box.cx >= 10f }.world.player.box.cx < ran - 0.5f)
+        // rewinding replays the run exactly: early then on time ends where on time does
+        assertEquals(Bot(corridor).right(1f).wait(0.85f).right(0.5f).world.player.box.cx,
+            Bot(corridor, slop = Slop(-0.15f)).right(1.15f).waitFor { it.time >= 2f }.right(0.65f).world.player.box.cx, 0.001f)
         // a sloppy jump is still a jump
-        assertTrue(Bot(corridor, slop = Slop(-0.15f)).jump(0.05f).waitFor { it.time >= 0.1f }.world.player.box.b < 15f)
+        assertTrue(Bot(corridor, slop = Slop(-0.15f)).jump(0.05f).right(0.4f).world.player.box.b < 15f)
     }
 
     // ---------- the §8 table ----------

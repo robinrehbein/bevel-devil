@@ -313,9 +313,9 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 
 Diese Tests kommen pro Welt neu dazu, in `World{n}DesignTest.kt`. Sie laufen für alle Level ab W1-7, die schon umgebaut sind. Die Liste der umgebauten Level wächst mit jedem Block, damit der Umbau schrittweise grün bleibt.
 
-1. `cleanRunLastsLongEnough`: Die Bot-Lösung gewinnt und braucht mindestens die Mindestdauer aus §6 (★ ausgenommen).
+1. `cleanRunLastsLongEnough`: Die Bot-Lösung gewinnt und braucht mindestens die Mindestdauer aus §6 (★ ausgenommen). Stillstehen zählt nicht: Die Lösung läuft ein zweites Mal ohne alle Warte-Befehle (`wait`, `waitUntil`, `waitFor`, `waitWhile`, `fidgetUntil`, `untilSaw`, Sprung auf der Stelle). Gewinnt sie auch so, zählt diese kürzere Zeit. Eine Wartezeit, die der Raum wirklich verlangt, lässt den zweiten Lauf verlieren und zählt deshalb mit.
 2. `holdRightWithHopsNeverWins`: Rechts halten mit Hüpfern in den Rhythmen 0,4 / 0,7 / 1,0 s gewinnt nie.
-3. `solutionToleratesSlop`: Die Bot-Lösung mit allen Haltezeiten ±0,15 s gewinnt in mindestens einer von zwei Varianten. Das sichert, dass keine pixelgenauen Eingaben nötig sind.
+3. `solutionToleratesSlop`: Die Bot-Lösung mit allen Haltezeiten, Zielen und Reaktionen ±0,15 s gewinnt in mindestens einer von zwei Varianten. Das sichert, dass keine pixelgenauen Eingaben nötig sind.
 4. `spikePopupQuota`: H5.
 5. `noSameTwistTwiceInARow`: H6. Die Zuordnung aus §8 liegt als Tabelle im Test (`DESIGN = mapOf(9 to d("R1", "U9"))`), damit Abweichungen bewusst passieren.
 6. `cardsSpreadPerAct`: §7.
@@ -325,16 +325,16 @@ So prüfen die Tests im Detail:
 
 - **H6** vergleicht bei Nachbarn nur die Haupt-Codes (den ersten Code einer Zeile). „3 von 4“ zählt alle Codes einer Zeile. Akt-Finale zählen bei beiden Regeln nicht mit, weil sie den Akt absichtlich kombinieren. In W1 beginnt die Prüfung bei Level 7. Die Leitmechanik (W3: R11 in Akt 2, R10 in Akt 3) ist nur von „3 von 4“ ausgenommen.
 - **Tabelle:** Jedes Level ab W1-7 ohne ★ hat einen Baustein (H2). Ein Finale hat mindestens 2 Bausteine und 2 Überraschungen. Pro Akt gibt es höchstens 2 ★. W2 braucht mindestens 12 Schalter-Level (R1, R2, R4) und 8 Routing-Level (R3, R4). In W3 kommt spätestens jedes dritte Level eine Überraschung aus U1–U4, U6–U8, U12 oder U14.
-- **H5:** Eine Spike-Popup-Falle ist ein `Show`, das eine Gruppe mit `Glyph(spike = true, hidden = true)` sichtbar macht. Pro Akt dürfen höchstens 4 der umgebauten Level eine haben. In W3 gilt dasselbe für `HeatSpike` als Schlussfalle (letzte Falle der Liste oder Auslöser in den letzten 3 Tiles vor der Tür).
-- **H7 (Spielraum):** Die Lösung läuft zweimal: einmal „spät“ (jede Haltezeit +0,15 s, jedes `rightTo`/`leftTo`-Ziel 1 Tile weiter) und einmal „früh“ (−0,15 s, 1 Tile kürzer). Eine der beiden muss gewinnen. Warten auf eine Bedingung (`waitFor`, `rightUntil`, `fidgetUntil`) bleibt unverändert.
-- **§7:** Gezählt werden alle `Play`-Karten aller Runden der umgebauten Level eines Aktes. Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht.
+- **H5:** Eine Spike-Popup-Falle ist ein `Show`, das eine Gruppe mit `Glyph(spike = true, hidden = true)` sichtbar macht. Pro Akt dürfen höchstens 4 der umgebauten Level eine haben. In W3 gilt dasselbe für `HeatSpike` als Schlussfalle (letzte Falle der Liste, Auslöser `AtDoor` oder Auslöser höchstens 3 Tiles von der Tür entfernt, egal von welcher Seite, auch an der Stelle, an die `DoorTo` die Tür schiebt). Gezählt wird auch, was in einem `FakeWin(..., then)` steckt.
+- **H7 (Spielraum):** Die Lösung läuft zweimal: einmal „spät“ (jede Haltezeit +0,15 s, jedes `rightTo`/`leftTo`-Ziel 1 Tile weiter) und einmal „früh“ (−0,15 s, 1 Tile kürzer). Eine der beiden muss gewinnen. Warten auf eine Bedingung (`waitFor`, `rightUntil`, `waitWhile`, `fidgetUntil`, `untilSaw`) reagiert ebenfalls 0,15 s zu spät oder zu früh. Eine Bedingung auf `player.box.cx` oder `world.time` ist also kein Weg um den Test herum. Nur das Landen (`landRight`) bleibt exakt.
+- **§7:** Gezählt werden alle `Play`-Karten (auch in `FakeWin`) aller Runden der umgebauten Level eines Aktes. Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht.
 
 ### Leitplanken-Tests: so trägst du ein Level ein
 
 Die Tests liegen in `app/src/test/java/com/robinrehbein/beveldevil/game/`: die Regeln in `DesignRules.kt`, die Testfälle in `DesignTestBase.kt` und pro Welt `World{n}DesignTest.kt` mit der Tabelle aus §8. Solange ein Level nicht in `REBUILT` steht, prüfen die Tests nur die Tabelle. Für ein umgebautes Level gehst du so vor:
 
 1. **Zuordnung prüfen:** `DESIGN` enthält die Zeile aus §8, zum Beispiel `12 to d("R1+R5", "U7")`, ★ als `d("–", "U9", breather = true)` und Meta als `d("R5", "U16:Ghost")`. Wenn du innerhalb deines Blocks tauschst, änderst du die Zeile hier und in §8. Der Test `noSameTwistTwiceInARow` sagt dir, ob der Tausch H6 einhält. Pilot-Level (W2 11–24) tragen ihre Zeile selbst ein und entfernen die Nummer aus `PILOT`.
-2. **Bot-Lösung eintragen:** in `SOLUTIONS`, eine Lösung pro Runde. Zuerst kommt Runde 1, dann jede Revanche. Nimm `rightTo`, `hopR`, `waitFor` und Wände als Anschlag statt vieler kurzer Haltezeiten, sonst scheitert der Spielraum-Test.
+2. **Bot-Lösung eintragen:** in `SOLUTIONS`, eine Lösung pro Runde. Zuerst kommt Runde 1, dann jede Revanche. Nimm `rightTo`, `hopR`, `waitFor` und Wände als Anschlag statt vieler kurzer Haltezeiten, sonst scheitert der Spielraum-Test. Polstere die Lösung nicht mit `wait`: Der Dauer-Test misst den Lauf zusätzlich ohne Warte-Befehle.
 3. **Level freischalten:** die Nummer in `REBUILT` eintragen.
 4. **Lauf:** `./gradlew --offline testDebugUnitTest --tests '*DesignTest*' --tests '*DesignRulesTest*'`. Jede Meldung nennt Level, Runde und den Wert, zum Beispiel `clean run 3.26 s, needs 8 s`.
 
@@ -347,7 +347,7 @@ val SOLUTIONS: Map<Int, List<Solution>> = mapOf(
         { rightTo(6f).hopR(9.5f).leftTo(3f).waitFor { !it.beams[0].lit }.hopR(14f).rightTo(29f) },  // Runde 1
         { right(3f).rightJump(0.35f).landRight().leftTo(4f).rightTo(29f) },                         // Revanche
     ),
-    26 to listOf({ hopR(5f).rightUntil { it.player.box.cx > 20f }.right(2f) }),
+    26 to listOf({ hopR(5f).rightTo(20f).waitPowered('a').right(2f) }),
 )
 ```
 

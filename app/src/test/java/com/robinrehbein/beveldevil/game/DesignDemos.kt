@@ -90,4 +90,19 @@ object DesignDemos {
         put(2, 14, 'P')
         put(29, 14, 'D')
     }
+
+    /** Door at the far left, spawn at the right; a heat spike at [heatAt], then a harmless last trap. */
+    fun leftDoor(heatAt: Trigger) = Level(
+        name = T("Demo: Back Door", "Demo: Hintertür"),
+        intro = T("Go back.", "Geh zurück."),
+        traps = listOf(
+            trap(heatAt, HeatSpike('g')),
+            trap(PastX(29f), Play(Card.SPIKE_SEED)),
+        ),
+    ) {
+        border(); floor()
+        fill(18..21, 15..15, 'g')
+        put(28, 14, 'P')
+        put(2, 14, 'D')
+    }
 }
