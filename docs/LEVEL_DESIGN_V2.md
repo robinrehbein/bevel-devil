@@ -331,6 +331,13 @@ Diese Tests kommen pro Welt neu dazu, in `World{n}DesignTest.kt`. Sie laufen fü
 | 5 | Zusammenführen, volle Testsuite, ein PR pro Welt, Screenshots im PR | Opus | PR |
 | 6 | Playtest Gründer und Kollegen pro Welt, dann Merge und Release | Team | Release |
 
+**Review-Regel (gilt für jedes Review, auch für Engine-Änderungen):** Jedes Ergebnis wird von mindestens drei unabhängigen Reviewern geprüft:
+1. **Fachreviewer:** Korrektheit, Fairness, Regeln aus §2/§3, Tests.
+2. **Level-Devil-Reviewer:** misst das Ergebnis an Level Devil als Referenz (`docs/LEVEL_DEVIL_REFERENCE.md`). Würde das Level dort bestehen? Überrascht es genauso? Ist es genauso rätselhaft und genauso fair?
+3. **Reviewer ohne Referenz:** liest weder den Plan noch Level Devil. Er spielt und bewertet wie ein neuer Spieler mit frischen Augen: Macht es Spaß? Versteht man, was passiert? Will man weiterspielen?
+
+Ein Level gilt erst als fertig, wenn keiner der drei einen Blocker oder ein „langweilig“ meldet.
+
 **Pro Block bekommt der Sonnet-Agent:** dieses Dokument, den Pilot-Bericht als Beispiel, seine 8 Level aus §8 und die Leitplanken-Tests. Er liefert: umgebaute Level, Bot-Lösungen, zwei oder mehr Tod-Tests pro Level, aktualisierte Revanche-Tests, Screenshots jedes Raums und einen Bericht (Rätsel, Überraschungen, Dauer, Karte) auf Deutsch.
 
 **Risiken:**
