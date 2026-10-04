@@ -138,21 +138,23 @@ class Layout {
         val free = h - cutB - (fy + GROUND_TOP) * sc - pad
         val cap = max(22f * dp, (free - 10f * dp) / 2)
         val minR = min(26f * dp, cap)
-        var r = min(min(34f * dp * c.sizeScale, h * 0.14f), cap)
+        var r = min(min(34f * dp, h * 0.14f), cap)
         val pair = 2.3f
+        val colL0 = cutL.toFloat(); val colL1 = fx * sc.toFloat()
+        val colR0 = (fx + Ui.W) * sc.toFloat(); val colR1 = (w - cutR).toFloat()
+        val (m0, m1) = if (c.mirror) colR0 to colR1 else colL0 to colL1
+        val (j0, j1) = if (c.mirror) colL0 to colL1 else colR0 to colR1
+        r = if (hud == HudMode.SIDE) max(min(r, min((m1 - m0 - 2 * pad) / 4.3f, (j1 - j0 - 2 * pad) / 2f)), minR) else max(r, minR)
+        // the size setting scales the fitted size (M), so S/M/L differ on phones too: never below 22dp, never above
+        // the ground line, but L may reach past the side columns
+        r = min(max(r * c.sizeScale, min(22f * dp, r)), max(22f * dp, (free - 4f * dp) / 2))
         var mv: Float // x of the left arrow
         var jx: Float
         if (hud == HudMode.SIDE) {
-            val colL0 = cutL.toFloat(); val colL1 = fx * sc.toFloat()
-            val colR0 = (fx + Ui.W) * sc.toFloat(); val colR1 = (w - cutR).toFloat()
-            val (m0, m1) = if (c.mirror) colR0 to colR1 else colL0 to colL1
-            val (j0, j1) = if (c.mirror) colL0 to colL1 else colR0 to colR1
-            r = max(min(r, min((m1 - m0 - 2 * pad) / 4.3f, (j1 - j0 - 2 * pad) / 2f)), minR)
             // too narrow a column: the buttons may reach into the playfield, but stay on screen
             mv = if (c.mirror) min((m0 + m1) / 2 + 1.15f * r, m1 - r - pad) - pair * r else max((m0 + m1) / 2 - 1.15f * r, m0 + r + pad)
             jx = if (c.mirror) max((j0 + j1) / 2, j0 + r + pad) else min((j0 + j1) / 2, j1 - r - pad)
         } else {
-            r = max(r, minR)
             mv = if (c.mirror) w - cutR - margin - r - pair * r else cutL + margin + r
             jx = if (c.mirror) cutL + margin + r else w - cutR - margin - r
         }
