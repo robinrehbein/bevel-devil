@@ -556,6 +556,7 @@ class ScreenshotTest {
         fun at(n: Int, round: Int = 0, script: Bot.() -> Bot = { wait(0.5f) }) = Bot(w2[n - 1], round).script().world
         val rooms = com.robinrehbein.beveldevil.game.World2Rooms
         val scenes = listOf(
+            "11" to at(11), "12" to at(12), "13" to at(13), "14" to at(14), "14-r2" to at(14, 1), "15" to at(15), "16" to at(16),
             "17" to at(17), "17-ceiling" to at(17) { rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().rightTo(10.2f).wait(0.6f) },
             "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.0f) }, "18-r2" to at(18, 1),
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
