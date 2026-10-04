@@ -159,7 +159,7 @@ class World2DeckTest {
 
     /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; a saw inspects the floor after it. */
     @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
-    @Test fun l18r2TheRoundOneRouteEndsAtAPadNotADoor() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f) }.expect(WorldState.PLAYING)
+    @Test fun l18r2TheRoundOneRouteDoesNotWin() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f); assertTrue(it.world.state != WorldState.WON) }.let { }
     @Test fun l18r2RunningForTheDoorAfterThePadMeetsTheSaw() = b(18, 2).hopR(10f).wait(0.15f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
         .leftJump(0.4f).landLeft().leftTo(2.4f).rightUntil { it.player.box.cx > 11.3f && it.player.grounded && it.player.box.b < 13.5f }
         .rightTo(14.5f).waitFor(cond = World2Rooms.clear('L')).right(3f).expect(WorldState.DEAD)

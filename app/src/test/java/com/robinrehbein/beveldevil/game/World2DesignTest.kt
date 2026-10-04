@@ -25,8 +25,8 @@ class World2DesignTest : DesignTestBase() {
     }
 
     companion object {
-        /** The pilot (11-24) fixes its own rows; add them here once the pilot report is in. */
-        val PILOT: Set<Int> = (11..24).toSet()
+        /** The pilot (11-16) fixes its own rows; add them here once the pilot report is in. */
+        val PILOT: Set<Int> = (11..16).toSet()
 
         /** §8, World 2 "Höllen-Rechenzentrum". A row without block ("–") and without ★ is a trap room. */
         val DESIGN: Map<Int, Design> = mapOf(
@@ -41,8 +41,16 @@ class World2DesignTest : DesignTestBase() {
             8 to d("–", "U1", breather = true),
             9 to d("–", "U9"),
             10 to d("R3", "U7"),
-            // 11-24: pilot, see PILOT
+            // 11-16: pilot, see PILOT
             // Act 2 "Traffic"
+            17 to d("R10", "U12"),
+            18 to d("R5", "U13"),
+            19 to d("–", "U9"),
+            20 to d("R8", "U13"),
+            21 to d("R3", "U11"),
+            22 to d("–", "U2+U3"),
+            23 to d("–", "U3"),
+            24 to d("–", "U13+U1"),
             25 to d("–", "U1"),
             26 to d("–", "U8"),
             27 to d("R10", "U2"),
@@ -75,24 +83,26 @@ class World2DesignTest : DesignTestBase() {
          * writes the violations to build/reports/pilot-v2-violations.txt; a rebuilt pilot level moves to [REBUILT] (with
          * its row in [DESIGN], out of [PILOT]) and its solutions to [SOLUTIONS].
          */
-        val PILOT_V2: Set<Int> = (11..24).toSet()
+        val PILOT_V2: Set<Int> = (11..16).toSet()
 
         /** The pilot's solutions, one per round (round 1 first), from [World2Test.rooms] and [World2Rooms]. */
         val PILOT_SOLUTIONS: Map<Int, List<Solution>> =
             (11..16).associateWith { n -> listOf<Solution>({ World2Test.rooms.getValue(n)(this) }) } +
-                World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
                 mapOf(
                     11 to listOf({ World2Test.rooms.getValue(11)(this) }, { World2Rooms.l11r2(this) }),
                     14 to listOf({ World2Test.rooms.getValue(14)(this) }, { World2Rooms.l14r2(this) }),
-                    18 to listOf({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
-                    20 to listOf({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
                 )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = emptySet()
+        val REBUILT: Set<Int> = (17..24).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
-        val SOLUTIONS: Map<Int, List<Solution>> = emptyMap()
+        val SOLUTIONS: Map<Int, List<Solution>> =
+            World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
+                mapOf(
+                    18 to listOf({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
+                    20 to listOf({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
+                )
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World2Test]). */
         fun play(n: Int, round: Int = 1) =

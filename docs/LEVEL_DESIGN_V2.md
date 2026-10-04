@@ -336,11 +336,18 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |10|VPN Tunnel|R3|U7|Rätsel|
 |11–16|Pilot|siehe Pilot-Bericht||
 
-**Akt 2 „Traffic“** (17–24: Pilot, wird nach Rezept v2 neu gebaut. Rotation im Akt: Die eine Tür-Flucht gehört 21 („301 Moved Permanently“), 24 verliert ihre. Ein Schalter steht im Finale 32, der Pilot hat also höchstens 2 Pad-Level. Getaktete Laser-Tore höchstens 3 im ganzen Akt.)
+**Akt 2 „Traffic“** (17–24: nach Rezept v2 neu gebaut, die Zeilen stehen unten. Rotation im Akt: Die eine Tür-Flucht gehört 21 („301 Moved Permanently“), 24 verliert ihre. Ein Schalter steht im Finale 32, der Pilot hat also höchstens 2 Pad-Level. Getaktete Laser-Tore höchstens 3 im ganzen Akt.)
 
 | # | Name | R | U | Raum |
 |---|---|---|---|---|
-|17–24|Pilot|siehe Pilot-Bericht||
+|17|Data Bus|R10|U12|Rätsel|
+|18|Firewall|R5|U13|Rätsel|
+|19|Delivery|–|U9|Falle|
+|20|Stateful Inspection|R8|U13|Rätsel|
+|21|Flat Rate|R3|U11|Rätsel|
+|22|Bouncer|–|U2+U3|Falle|
+|23|Information Superhighway|–|U3|Falle|
+|24|Uplink|–|U13+U1|Falle|
 |25|Load Balancer|–|U1|Falle|
 |26|Ticket Number|–|U8|Falle|
 |27|DDoS|R10|U2|Rätsel|
