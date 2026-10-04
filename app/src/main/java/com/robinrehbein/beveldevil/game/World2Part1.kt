@@ -330,12 +330,13 @@ object World2Part1 {
                 Round(
                     T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
                     start = listOf(Portal('1', 15 to 14, 22 to 14, twoWay = false)),
-                    legend = mapOf('C' to hidden),
+                    legend = mapOf('C' to hidden, 'E' to hidden),
                     traps = listOf(
-                        trap(Airborne(14.6f, 16.8f), Play(Card.SPIKE_SEED), Show('C'), say("break; is deprecated.", "break; ist veraltet.")),
-                        trap(PastX(23f), say("Port forwarding. You're welcome.", "Portweiterleitung. Gern geschehen.")),
+                        trap(Airborne(14.6f, 16.8f), Show('C'), say("break; is deprecated.", "break; ist veraltet.")),
+                        // the shortcut is the bait: the forwarded packet lands right in front of a spike wall
+                        trap(PastX(22.8f), Play(Card.SPIKE_SEED), Show('E'), say("Port forwarding. Firewall included.", "Portweiterleitung. Firewall inklusive.")),
                     ),
-                ) { put(18, 14, 'C'); put(19, 14, 'C') },
+                ) { put(18, 14, 'C'); put(19, 14, 'C'); put(25, 14, 'E'); put(26, 14, 'E') },
             ),
         ) {
             border(); floor()

@@ -21,6 +21,7 @@ import com.robinrehbein.beveldevil.game.TwistDemos
 import com.robinrehbein.beveldevil.game.Twists
 import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
+import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.Round
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Sound
@@ -191,6 +192,13 @@ class ScreenshotTest {
             game.input.right = false
             play(0.55f); save("66-v2-bluff-tell")
             play(0.6f); save("67-v2-bluff-flipped")
+        }
+        // a two-digit level in its rematch round: the plaque fits "2-14" and the "#2" sticker
+        val i = Levels.all.indexOfFirst { it.name.en == "127.0.0.1" }
+        val resumed = object : Progress by MemoryProgress() { override fun checkpoint(level: Int) = 1 to 3 }
+        Film(Game(resumed, silent), big).apply {
+            game.startLevel(i)
+            play(2f); save("6a-v2-round-plaque")
         }
         val all = MemoryProgress().apply { Card.entries.forEach { findCard(it) } }
         val g = Game(all, silent)

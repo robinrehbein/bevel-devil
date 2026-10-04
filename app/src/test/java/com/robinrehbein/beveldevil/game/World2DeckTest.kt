@@ -133,7 +133,8 @@ class World2DeckTest {
     /** Server Room, round 2: one fan left, and a floor tile drops in front of the runner; jump the hole. */
     @Test fun l11r2() = b(11, 2).hopR(16.6f).right(2f).expect(WorldState.WON)
     @Test fun l11r2StandingAtTheEdgeAndJumpingWorksToo() = b(11, 2).rightTo(17f).wait(0.6f).rightJump(0.45f).landRight().right(2f).expect(WorldState.WON)
-    @Test fun l14r2() =b(14, 2).hopR(8.5f).right(2f).expect(WorldState.WON)
+    @Test fun l14r2() = b(14, 2).hopR(8.5f).rightTo(23.2f).hopR(24f).right(2f).expect(WorldState.WON)
+    @Test fun l14r2TheForwardedPacketHitsTheFirewall() = b(14, 2).hopR(8.5f).right(3f).expect(WorldState.DEAD)
     @Test fun l14r2JumpingTheLoopbackLandsInSpikes() = b(14, 2).hopR(8.5f).rightTo(13.8f).rightJump(0.55f).landRight().expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
