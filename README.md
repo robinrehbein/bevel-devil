@@ -169,7 +169,7 @@ trap(PastX(10f), Play(Card.COLLAPSE), Say(T("Kidding.", "Spaß.")))
 trap(PastX(24f), Play(Card.UNDO), Undo(2f))
 trap(PastX(8f), Play(Card.STALKER), Show('S'), Chase('S', speed = 4f, left = 3f, right = 18f))
 
-// Tipp: Mephi verrät ihn einmal pro Runde, wenn man 9 s ohne Tod feststeckt. Runden erben start und hint vom Level.
+// Tipp: Mephi verrät ihn einmal pro Runde, beim Respawn nach dem zweiten Tod in dieser Runde. Runden erben start und hint vom Level.
 hint = T("Ceilings are overrated.", "Decken werden überschätzt."),
 ```
 

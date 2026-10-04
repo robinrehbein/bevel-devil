@@ -22,15 +22,48 @@ data class Slop(val time: Float = 0f, val tiles: Float = 0f) {
 /**
  * Plays [level], or [round] of it (see [Level.rounds]), as precisely as scripted, or with [slop]. With [skipIdle] every
  * command that stands still (wait, waitUntil, waitFor, waitWhile, untilSaw, fidgetUntil, a jump on the spot) is
- * skipped: [DesignRules.cleanRunViolations] uses it to see whether a solution is padded with idle time.
+ * skipped: [DesignRules.cleanRunViolations] uses it to see whether a solution is padded with idle time. With [probe] it
+ * leaves the script once, for the teeth test. Along the way it records [moments] (the traps that sprang) and how long the
+ * player stood still ([idleTime], [longestIdle]).
  */
-class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle: Boolean = false) {
+class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle: Boolean = false, val probe: Probe? = null) {
     private val stage = level.rounds[round]
     private var past: Trail? = null
     var world = World(stage)
         private set
     private val input = Controls()
     private val trace = StringBuilder()
+
+    /**
+     * A probe of the teeth test ([DesignRules.teethViolations]): when [at] first holds after a step, the bot leaves the
+     * script for a moment. [Probe.Kind.WAIT] stands still [seconds], then the script goes on. [Probe.Kind.RUN] holds the
+     * key it was holding (right if none) for [seconds] without jumping and then stops the script ([ProbeDone]):
+     * [ranThrough] says whether it is still alive.
+     */
+    data class Probe(val kind: Kind, val seconds: Float, val at: (Bot) -> Boolean) {
+        enum class Kind { WAIT, RUN }
+    }
+
+    /** Thrown by a [Probe.Kind.RUN] probe to end the script once the run is over. */
+    class ProbeDone : RuntimeException()
+
+    private var probed = false
+    /** A [Probe.Kind.RUN] probe ran its seconds and the player was still alive (or through the door). */
+    var ranThrough = false
+        private set
+
+    // ---------- what the clean run looked like (exact only without slop: an early slop rewinds) ----------
+
+    /** Seconds the player stood still: no left or right key, in play, not inside a fake win. Jumping on the spot counts. */
+    var idleTime = 0f
+        private set
+    /** The longest stretch of [idleTime] in one go. */
+    var longestIdle = 0f
+        private set
+    private var idleRun = 0f
+    /** The traps that went off, grouped and weighed ([DesignRules.Moment]); filled as they spring. */
+    val moments = ArrayList<DesignRules.Moment>()
+    private var seen = 0
 
     /** Everything that happened to [world] since it was made, so an early [Slop] can play it again up to a cut. */
     private sealed interface Entry {
@@ -41,8 +74,45 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
     private val log = ArrayList<Entry>()
 
     private fun step() {
+        val idle = !input.left && !input.right && world.state == WorldState.PLAYING && world.fake == null
         log += Entry.Step(input.left, input.right, input.jump, input.jumpPressed, input.tilt, input.shake)
         world.step(DT, input)
+        if (idle) { idleTime += DT; idleRun += DT; longestIdle = maxOf(longestIdle, idleRun) } else idleRun = 0f
+        observe()
+        val p = probe ?: return
+        if (probed || world.state != WorldState.PLAYING || !p.at(this)) return
+        probed = true
+        when (p.kind) {
+            Probe.Kind.WAIT -> {
+                val keys = Triple(input.left, input.right, input.jump)
+                input.left = false; input.right = false; input.jump = false; input.jumpPressed = false
+                var t = 0f
+                while (t < p.seconds && world.state == WorldState.PLAYING) { stepPlain(); t += DT }
+                input.left = keys.first; input.right = keys.second; input.jump = keys.third
+                trace.append("--- probe: stood still %.1f s\n".format(p.seconds))
+            }
+            Probe.Kind.RUN -> {
+                val left = input.left && !input.right
+                input.left = left; input.right = !left; input.jump = false; input.jumpPressed = false
+                var t = 0f
+                while (t < p.seconds && world.state == WorldState.PLAYING) { stepPlain(); t += DT }
+                ranThrough = world.state != WorldState.DEAD
+                throw ProbeDone()
+            }
+        }
+    }
+
+    /** One step without the probe (it is running), still logged and observed. */
+    private fun stepPlain() {
+        log += Entry.Step(input.left, input.right, input.jump, input.jumpPressed, input.tilt, input.shake)
+        world.step(DT, input)
+        observe()
+    }
+
+    /** Picks up the traps that sprang in the last step. */
+    private fun observe() {
+        val s = world.sprung
+        while (seen < s.size) DesignRules.addMoment(moments, s[seen++], stage, world)
     }
 
     /** Rebuilds [world] from the first [cut] entries of [log]. */
@@ -50,6 +120,8 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
         val keep = log.subList(0, cut).toList()
         log.clear()
         world = World(stage, past)
+        seen = 0
+        moments.clear()
         val c = Controls()
         for (e in keep) {
             when (e) {
@@ -61,6 +133,7 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
                 Entry.Resume -> world.resumed()
             }
             log += e
+            observe()
         }
         trace.append("--- early by %.2f s\n".format(-slop.time))
     }
@@ -226,6 +299,7 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
         past = world.trail
         world = World(stage, past)
         log.clear()
+        seen = 0
         trace.append("--- retry\n")
         return this
     }

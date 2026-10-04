@@ -508,7 +508,7 @@ class Level(
     val start: List<Action> = emptyList(),
     /** Further rounds in the same room, played after the door; see [Round]. */
     val rematch: List<Round> = emptyList(),
-    /** What Mephi lets slip when the player is stuck for [Game.HINT_AFTER] seconds without dying (once per level). */
+    /** What Mephi lets slip on the respawn after [Game.HINT_DEATHS] deaths in a round (once per round). */
     val hint: T? = null,
     /**
      * Rooms side by side, [ROOM_COLS] columns each. Hard rule: a level is one screen. The rare exception is Mephi's

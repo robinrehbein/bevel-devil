@@ -218,9 +218,20 @@ class World(val level: Level, private val past: Trail? = null) {
         var fired = false
         var done = false
         var timer = 0f
+        /** [time] the trigger held. */
+        var at = 0f
     }
 
     private val traps = level.traps.map { TrapState(it) }
+
+    /**
+     * A trap that went off in this attempt: its trigger held at [triggered], its actions ran at [time] (later by the
+     * trap's delay). Read by the design guard rails (docs/LEVEL_DESIGN_V2.md §9), not by the game.
+     */
+    class Sprung(val trap: Trap, val triggered: Float, val time: Float)
+
+    /** Every trap that went off in this attempt, in order. */
+    val sprung = ArrayList<Sprung>()
 
     // ---------- meta twists (see Twists.kt) ----------
 
@@ -418,6 +429,7 @@ class World(val level: Level, private val past: Trail? = null) {
             if (atDoor != null) {
                 atDoor.fired = true
                 atDoor.done = true
+                sprung += Sprung(atDoor.trap, time, time)
                 atDoor.trap.actions.forEach(::run)
             } else {
                 state = WorldState.WON
@@ -588,10 +600,12 @@ class World(val level: Level, private val past: Trail? = null) {
                 if (!triggered(ts.trap.trigger)) continue
                 ts.fired = true
                 ts.timer = ts.trap.delay
+                ts.at = time
             }
             ts.timer -= dt
             if (ts.timer <= 0f) {
                 ts.done = true
+                sprung += Sprung(ts.trap, ts.at, time)
                 ts.trap.actions.forEach(::run)
             }
         }

@@ -134,8 +134,7 @@ class World2DeckTest {
      * Server Room, round 2: two-factor auth. A second rail sits behind the first and its switch is next to the spawn; the
      * switch upstairs only opens the outer one. Behind the rack the raised floor drops: jump it.
      */
-    @Test fun l11r2() = b(11, 2).leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f).leftJump(0.45f).landLeft()
-        .leftTo(2.5f).rightTo(14.5f).landRight().rightTo(24.6f).rightJump(0.5f).landRight().right(0.5f).expect(WorldState.WON)
+    @Test fun l11r2() = World2Rooms.l11r2(b(11, 2)).expect(WorldState.WON)
     @Test fun l11r2RunningOverTheRaisedFloorFallsIn() = b(11, 2).leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f)
         .leftJump(0.45f).landLeft().leftTo(2.5f).rightTo(14.5f).landRight().right(3f).expect(WorldState.DEAD)
     @Test fun l11r2TheOldSwitchAloneLeavesTheInnerRailShut() {
@@ -147,10 +146,7 @@ class World2DeckTest {
      * 127.0.0.1, round 2: the links at home swapped (the floor one leads on now, the one in the air is the loopback), and a
      * firewall follows the packet into the last subnet: no time to wait for the bridge there, so wait in the top right.
      */
-    @Test fun l14r2() = b(14, 2).right(1.6f).leftTo(9f).leftJump(0.3f).landLeft().leftUntil { it.player.box.cx > 20f }
-        .leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft().waitFor { it.group('k').visible }.waitFor { !it.group('k').visible }
-        .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).leftJump(0.3f).landLeft().leftTo(22.6f).leftJump(0.35f).landLeft().left(0.5f)
-        .expect(WorldState.WON)
+    @Test fun l14r2() = World2Rooms.l14r2(b(14, 2)).expect(WorldState.WON)
     @Test fun l14r2TheLinkInTheAirIsTheLoopbackNow() {
         val bot = b(14, 2).rightTo(10.3f).rightJump(0.3f).landRight().wait(0.3f)
         bot.expect(WorldState.PLAYING)

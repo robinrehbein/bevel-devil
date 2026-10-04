@@ -11,13 +11,16 @@ class World2DesignTest : DesignTestBase() {
     override val pending = PILOT
     override val rebuilt = REBUILT
     override val solutions = SOLUTIONS
+    override val pilot = PILOT_V2
+    override val pilotSolutions = PILOT_SOLUTIONS
 
-    /** §8, World 2: at least 12 levels with switches (R1, R2, R4), at least 8 with real portal routing (R3, R4). */
+    /**
+     * §8, World 2: at least 8 levels with real portal routing (R3, R4). Switches (R1, R2, R4) are capped at 3 per act by
+     * the rotation rule H12 ([DesignRules.tableRotationViolations]), the pilot included.
+     */
     @Test
-    fun switchesAndPortalRoutingAreEverywhere() {
-        val switches = DesignRules.withBlock(design, "R1", "R2", "R4")
+    fun portalRoutingIsEverywhere() {
         val routing = DesignRules.withBlock(design, "R3", "R4")
-        assertTrue("switch levels $switches", switches.size >= 12)
         assertTrue("routing levels $routing", routing.size >= 8)
     }
 
@@ -25,47 +28,65 @@ class World2DesignTest : DesignTestBase() {
         /** The pilot (11-24) fixes its own rows; add them here once the pilot report is in. */
         val PILOT: Set<Int> = (11..24).toSet()
 
-        /** §8, World 2 "Höllen-Rechenzentrum". */
+        /** §8, World 2 "Höllen-Rechenzentrum". A row without block ("–") and without ★ is a trap room. */
         val DESIGN: Map<Int, Design> = mapOf(
             // Act 1 "Handshake"
             1 to d("–", "U1", breather = true),
             2 to d("R3", "U5"),
             3 to d("R6", "U4"),
-            4 to d("R8", "U6"),
-            5 to d("R12", "U1"),
+            4 to d("–", "U6"),
+            5 to d("–", "U1"),
             6 to d("R4", "U11"),
-            7 to d("R5", "U2"),
+            7 to d("–", "U2"),
             8 to d("–", "U1", breather = true),
-            9 to d("R1", "U9"),
+            9 to d("–", "U9"),
             10 to d("R3", "U7"),
             // 11-24: pilot, see PILOT
             // Act 2 "Traffic"
-            25 to d("R4", "U1"),
-            26 to d("R2", "U8"),
+            25 to d("–", "U1"),
+            26 to d("–", "U8"),
             27 to d("R10", "U2"),
             28 to d("R3", "U13"),
-            29 to d("R1", "U7"),
+            29 to d("–", "U7"),
             30 to d("R3+R5", "U11+U18"),
             31 to d("R8", "U3"),
-            32 to d("R4+R3+R8", "U12+U13+U4"),
+            32 to d("R4+R3+R8", "U12+U13"),
             // Act 3 "Root"
-            33 to d("R7", "U14"),
+            33 to d("–", "U14"),
             34 to d("R3+R5", "U10"),
-            35 to d("R4", "U12"),
-            36 to d("R5", "U16:Ghost"),
+            35 to d("–", "U12"),
+            36 to d("–", "U16:Ghost"),
             37 to d("R1", "U15"),
             38 to d("R3", "U1"),
-            39 to d("R1", "U16:Pause"),
+            39 to d("–", "U16:Pause"),
             40 to d("–", "U16:Roll", breather = true),
-            41 to d("R7", "U1"),
+            41 to d("–", "U1"),
             42 to d("R5+R7", "U15"),
-            43 to d("R4", "U16:Shake"),
-            44 to d("R9", "U16:Undo"),
+            43 to d("–", "U16:Shake"),
+            44 to d("–", "U16:Undo"),
             45 to d("R2", "U3"),
-            46 to d("R10+R1", "U12"),
+            46 to d("R10", "U12"),
             47 to d("R5", "U9+U10"),
-            48 to d("R4+R3+R6", "U11+U9+U4+U18"),
+            48 to d("R4+R3", "U11+U9+U18"),
         )
+
+        /**
+         * The pilot rooms built before recipe v2. [DesignTestBase.pilotV2Report] checks them against every v2 rule and
+         * writes the violations to build/reports/pilot-v2-violations.txt; a rebuilt pilot level moves to [REBUILT] (with
+         * its row in [DESIGN], out of [PILOT]) and its solutions to [SOLUTIONS].
+         */
+        val PILOT_V2: Set<Int> = (11..24).toSet()
+
+        /** The pilot's solutions, one per round (round 1 first), from [World2Test.rooms] and [World2Rooms]. */
+        val PILOT_SOLUTIONS: Map<Int, List<Solution>> =
+            (11..16).associateWith { n -> listOf<Solution>({ World2Test.rooms.getValue(n)(this) }) } +
+                World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
+                mapOf(
+                    11 to listOf({ World2Test.rooms.getValue(11)(this) }, { World2Rooms.l11r2(this) }),
+                    14 to listOf({ World2Test.rooms.getValue(14)(this) }, { World2Rooms.l14r2(this) }),
+                    18 to listOf({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
+                    20 to listOf({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
+                )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
         val REBUILT: Set<Int> = emptySet()

@@ -1,7 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 /**
- * Scripted clean runs of the puzzle rooms of World 2, act 2 (levels 17-24), keyed by level number: what an informed
+ * Scripted clean runs of the puzzle rooms of World 2, act 2 (levels 17-24, and the rematches of 11 and 14), keyed by level number: what an informed
  * player does, with the real physics. Shared by [World2Test] (the level, its wrong approaches, its length) and
  * [World2DeckTest] (round-1 scripts against the rematches).
  */
@@ -87,6 +87,15 @@ object World2Rooms {
     /** 24: the door sinks to the start; climb down, waiting on each rack until the gate below it is dark. */
     fun l24(b: Bot) = l24Up(b).wait(0.5f).leftTo(24.5f).waitFor(cond = clear('4')).leftTo(19.4f)
         .waitFor(cond = clear('3')).leftTo(14.4f).waitFor(cond = clear('2')).leftTo(9.4f).waitFor(cond = clear('1')).left(3f)
+
+    /** 11, round 2: the switch behind the spawn, the one upstairs, then jump the raised floor in front of the door. */
+    fun l11r2(b: Bot) = b.leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f).leftJump(0.45f).landLeft()
+        .leftTo(2.5f).rightTo(14.5f).landRight().rightTo(24.6f).rightJump(0.5f).landRight().right(0.5f)
+
+    /** 14, round 2: the floor link leads on now; wait in the top right, then outrun the firewall over the bridge. */
+    fun l14r2(b: Bot) = b.right(1.6f).leftTo(9f).leftJump(0.3f).landLeft().leftUntil { it.player.box.cx > 20f }
+        .leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft().waitFor { it.group('k').visible }.waitFor { !it.group('k').visible }
+        .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).leftJump(0.3f).landLeft().leftTo(22.6f).leftJump(0.35f).landLeft().left(0.5f)
 
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,

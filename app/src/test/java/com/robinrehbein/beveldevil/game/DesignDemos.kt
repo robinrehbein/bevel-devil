@@ -11,50 +11,55 @@ import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
+import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 /** Test-only rooms for [DesignRulesTest]: one that follows every V2 rule, and the bad habits the rules exist for. */
 object DesignDemos {
     private val hidden = Glyph(spike = true, hidden = true)
 
     /**
-     * A one-screen puzzle room (R1 + R5, U1): the door is behind a copper wall. The switch that cuts the wall lies on
-     * the upper floor, back at the far left; the stairs up are at the right, next to the wall. Pressing it drops a
-     * piece of the upper floor behind you, so the way back is a hop (or the hole and the lower floor).
+     * A one-screen puzzle room (R1 + R5, U1) after recipe v2: a loop, no way walked twice. You start on the upper floor;
+     * the door is right below you, behind a copper wall. The switch that cuts the wall lies at the far right of the upper
+     * floor; from there the way down is the drop at the right edge and back left along the lower floor. Four real traps
+     * in two families (spikes, drop): spikes sprout ahead of you, a hanging block drops on whoever runs under it, the
+     * switch drops the block above it, and down below a piece of the floor crumbles under whoever stops on it.
      */
     val puzzle = Level(
         name = T("Demo: Back Office", "Demo: Hinterzimmer"),
         intro = T("The door is right there. The switch is not.", "Die Tür ist gleich da. Der Schalter nicht."),
-        start = listOf(Circuit('w'), Pad('1', at = 3 to 9, circuits = "w", mode = PadMode.OFF)),
+        legend = mapOf('S' to hidden),
+        start = listOf(Circuit('w'), Pad('1', at = 25 to 9, circuits = "w", mode = PadMode.OFF)),
         traps = listOf(
-            trap(Pressed('1'), Play(Card.COLLAPSE), Fall('f'), Say(T("Floor plan changed.", "Grundriss geändert."))),
+            trap(Zone(6f, 5f, 7.5f, 9.9f), Show('S'), Say(T("Mind your step.", "Pass auf, wo du hintrittst."))),
+            trap(PastX(16f), Fall('b')),
+            trap(Pressed('1'), Play(Card.COLLAPSE), Fall('c'), Say(T("Floor plan changed.", "Grundriss geändert.")), delay = 0.1f),
+            trap(Zone(22f, 11f, 24f, 15.5f), Fall('d'), Say(T("That floor was on loan.", "Der Boden war geliehen.")), delay = 0.4f),
         ),
     ) {
         border(); floor()
-        fill(1..22, 10..10)        // the upper floor
-        fill(8..9, 10..10, 'f')    // the piece that falls
-        fill(22..23, 13..14)       // step A
-        fill(24..25, 11..14)       // step B
-        fill(26..26, 1..14, 'w')   // the copper wall
-        put(2, 14, 'P')
-        put(29, 14, 'D')
+        fill(1..28, 10..10)           // the upper floor; the drop is at the right edge
+        put(10, 9, 'S')               // sprouts ahead of you
+        fill(19..20, 2..2, 'b')       // hangs over the upper floor, drops on whoever runs under it
+        fill(24..25, 4..4, 'c')       // hangs over the switch
+        fill(22..23, 15..17, 'd')     // crumbles under whoever stops on it
+        fill(5..5, 11..14, 'w')       // the copper wall in front of the door
+        put(2, 9, 'P')
+        put(2, 14, 'D')
     }
 
     /**
-     * Round 1 of [puzzle]: up the stairs, back left along the upper floor to the switch, down the new hole, up the
-     * stairs again and over the dark wall. Steps and walls stop the bot, so it never has to hit a spot to the pixel.
+     * Round 1 of [puzzle]: hop the spike that sprouts, stop short of the hanging block and hop it once it lies, over the
+     * switch (its block drops behind you) and off the edge, then left along the lower floor without stopping on the
+     * crumbling piece, through where the wall was, into the door. Every hazard is one tile wide and every jump starts
+     * well clear of it, so no spot has to be hit to the pixel.
      */
     val puzzleSolution: Solution = {
-        right(3f)                                   // along the lower floor, up against step A
-        rightJump(0.35f).landRight()                // onto A
-        rightJump(0.35f).landRight()                // onto B, against the wall
-        leftJump(0.35f).landLeft()                  // over to the upper floor
-        leftTo(2.6f)                                // the switch: wall off, floor gone
-        right(3f)                                   // through the hole, along the lower floor to A
-        rightJump(0.35f).landRight()
-        rightJump(0.35f).landRight()
-        right(1.5f)                                 // over where the wall was, into the door
+        hopR(8.2f, hold = 0.45f)                                                                  // over the spike
+        rightTo(17.2f).waitFor { it.group('b').mode == GroupMode.IDLE && it.group('b').oy > 0f }   // the block lies
+        hopR(17.6f)                                                                               // over it
+        right(1.5f)                                                                               // over the switch, off the edge
+        leftTo(1.5f)                                                                              // over the crumbling piece, into the door
     }
-
     /**
      * Everything V1 did too often: a straight corridor, two spike popups behind you, [card] played, run through in
      * three seconds. With [heat], the last trap overclocks the floor in front of the door.
@@ -104,5 +109,46 @@ object DesignDemos {
         fill(18..21, 15..15, 'g')
         put(28, 14, 'P')
         put(2, 14, 'D')
+    }
+
+    /**
+     * Decoration: a block hangs far ahead and drops as soon as you start running. By the time you get there it lies on
+     * the floor; whether you wait or run, you just hop it.
+     */
+    val toothless = Level(
+        name = T("Demo: Decoration", "Demo: Deko"),
+        intro = T("Something will happen. Eventually.", "Gleich passiert was. Irgendwann."),
+        traps = listOf(trap(PastX(4f), Play(Card.HEADBUTT), Fall('b'))),
+    ) {
+        border(); floor()
+        fill(20..21, 12..12, 'b')
+        put(2, 14, 'P')
+        put(29, 14, 'D')
+    }
+
+    /** Spikes right in front of the spawn: holding right dies at once, before any trap went off. */
+    val spawnSpikes = Level(
+        name = T("Demo: Doormat", "Demo: Fußmatte"),
+        intro = T("Wipe your feet.", "Füße abtreten."),
+        traps = listOf(trap(PastX(12f), Play(Card.COLLAPSE), Fall('a'))),
+    ) {
+        border(); floor()
+        put(5, 14, '^')
+        fill(14..15, 15..17, 'a')
+        put(2, 14, 'P')
+        put(29, 14, 'D')
+    }
+
+    /** A rematch that is the same room without the trap and with the door halfway: round 1's solution wins it, and it is shorter. */
+    val lazyRematch = Level(
+        name = T("Demo: Same Again", "Demo: Nochmal dasselbe"),
+        intro = T("Again.", "Nochmal."),
+        traps = listOf(trap(PastX(8f), Play(Card.COLLAPSE), Fall('a'))),
+        rematch = listOf(Round(T("Again, but easier.", "Nochmal, aber leichter."), traps = emptyList()) { put(28, 14, '.'); put(16, 14, 'D') }),
+    ) {
+        border(); floor()
+        fill(9..11, 15..17, 'a')
+        put(2, 14, 'P')
+        put(28, 14, 'D')
     }
 }

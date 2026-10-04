@@ -16,9 +16,15 @@ class DesignRulesTest {
     fun thePuzzleRoomPassesEveryRule() {
         val t = DesignRules.cleanRunTime(puzzle, 0, solution)
         assertTrue("clean run $t s", t >= DesignRules.minDuration(3, 20, d("R1+R5", "U1")))
+        assertEquals(emptyList<String>(), DesignRules.densityViolations(puzzle, 0, solution, DesignRules.minDuration(3, 20, d("R1+R5", "U1"))))
         assertEquals(emptyList<String>(), DesignRules.holdRightWithHopsViolations(puzzle, 0))
         assertEquals(emptyList<String>(), DesignRules.slopViolations(puzzle, 0, solution))
-        assertEquals(0, DesignRules.spikePopupCount(puzzle))
+        assertEquals(emptyList<String>(), DesignRules.teethViolations(puzzle, 0, solution))
+        assertEquals(emptyList<String>(), DesignRules.fillerDeathViolations(puzzle, 0))
+        assertEquals(emptyList<String>(), DesignRules.familyViolations(20, puzzle))
+        assertEquals(emptyList<String>(), DesignRules.cardLintViolations(puzzle))
+        assertEquals(emptyList<String>(), DesignRules.rotationViolations(mapOf(20 to puzzle)))
+        assertEquals(1, DesignRules.spikePopupCount(puzzle))
         assertEquals(0, DesignRules.heatSpikeFinaleCount(puzzle))
         assertEquals(emptyList<String>(), DesignRules.spikeQuotaViolations(mapOf(20 to puzzle)))
         assertEquals(emptyList<String>(), DesignRules.cardSpreadViolations(mapOf(20 to puzzle)))
@@ -26,12 +32,16 @@ class DesignRulesTest {
 
     @Test
     fun thePuzzleRoomHasItsSurprisesWhereThePlanSaysSo() {
-        // the switch is the only way: without it the copper wall stays up, whatever you do
-        Bot(puzzle).right(3f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.PLAYING)
-        // and it drops the upper floor behind you (U1)
-        val pressed = Bot(puzzle).right(3f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().leftJump(0.35f).landLeft().leftTo(2.6f)
-        assertFalse(pressed.world.circuits.getValue('w').powered)
-        assertEquals(Card.COLLAPSE, pressed.world.lastCard)
+        // the copper wall stands until the switch: the door below the spawn is locked
+        assertTrue(Bot(puzzle).world.circuits.getValue('w').powered)
+        val won = DesignRules.cleanRun(puzzle, 0, solution)
+        won.expect(WorldState.WON)
+        assertFalse(won.world.circuits.getValue('w').powered)
+        // four real traps in two families, the switch's block among them (U1), the card on it
+        assertEquals(4, won.moments.count { it.real })
+        assertEquals(setOf("spikes", "drop"), DesignRules.families(puzzle))
+        assertTrue(won.moments.any { m -> m.actions.any { it is Action.Fall && it.group == 'c' } && m.weight == DesignRules.Weight.LETHAL })
+        assertEquals(Card.COLLAPSE, DesignRules.cards(puzzle).single())
     }
 
     // ---------- the old habits are caught ----------
@@ -103,8 +113,10 @@ class DesignRulesTest {
         assertTrue(DesignRules.cleanRunViolations(corridor, 0, padded, 8f).single().contains("without its idle waits"))
         val clocked: Solution = { waitFor(20f) { it.time >= 9f }.right(5f) }
         assertEquals(1, DesignRules.cleanRunViolations(corridor, 0, clocked, 8f).size)
+        // the puzzle needs its one wait (for the block to lie), so skipping every wait loses; a stall up front is still caught by H3
         val stalled: Solution = { wait(20f); solution() }
-        assertEquals(1, DesignRules.cleanRunViolations(puzzle, 0, stalled, 15f).size)
+        val v = DesignRules.densityViolations(puzzle, 0, stalled, 15f)
+        assertTrue(v.joinToString("\n"), v.any { "start to first trap" in it } && v.any { "in one go" in it } && v.any { "% of the run" in it })
         // the honest puzzle loses nothing when idle commands are skipped
         assertEquals(emptyList<String>(), DesignRules.cleanRunViolations(puzzle, 0, solution, DesignRules.minDuration(3, 20, d("R1+R5", "U1"))))
     }
@@ -169,27 +181,167 @@ class DesignRulesTest {
     }
 
     @Test
-    fun theTableCheckWantsAPuzzleOrAStar() {
-        val noBlock = World2DesignTest.DESIGN + (1 to d("–", "U1"))
-        assertEquals(
-            listOf("level 1: no puzzle block and no ★ (H2)"),
-            DesignRules.tableViolations(2, noBlock, (1..48).toSet() - World2DesignTest.PILOT),
-        )
-        // W1's tutorial may do without
+    fun theTableWantsAboutHalfPuzzleRooms() {
+        // a world 2 act 3 where every row is a puzzle room again
+        val allPuzzles = World2DesignTest.DESIGN + (33..47).filter { !World2DesignTest.DESIGN.getValue(it).breather }.associateWith { d("R5", "U1") }
+        assertEquals(listOf("act 3: 14 of 14 rows are puzzle rooms (about half)"), DesignRules.puzzleShareViolations(2, allPuzzles))
+        // and one with only trap rooms
+        val noPuzzles = World2DesignTest.DESIGN + (33..47).filter { !World2DesignTest.DESIGN.getValue(it).breather }.associateWith { d("–", "U1") }
+        assertEquals(listOf("act 3: 0 of 14 rows are puzzle rooms (about half)"), DesignRules.puzzleShareViolations(2, noPuzzles))
+        // a trap room needs no block any more, a breather still has at most one
+        assertEquals(emptyList<String>(), DesignRules.tableViolations(2, World2DesignTest.DESIGN, (1..48).toSet() - World2DesignTest.PILOT))
+        // W1's tutorial does not count
         assertEquals(emptyList<String>(), DesignRules.tableViolations(1, World1DesignTest.DESIGN, (1..48).toSet()))
+    }
+
+    @Test
+    fun theTableKeepsTheRotation() {
+        // the §8 rows before recipe v2: W1 act 1 had the fleeing door three times (10, 15, finale 16)
+        val v1 = World1DesignTest.DESIGN + mapOf(10 to d("R6", "U3"), 16 to d("R1+R5+R6", "U7+U4+U18"))
+        assertEquals(listOf("act 1: 3 rows with a fleeing door (R6/U4) [10, 15, 16] (max 1)"), DesignRules.tableRotationViolations(1, v1))
+        val switches = World3DesignTest.DESIGN + mapOf(2 to d("R2", "U6"), 4 to d("R4", "U7"))
+        assertEquals(listOf("act 1: 5 rows with a switch (R1/R2/R4) [1, 2, 4, 6, 16] (max 3)"), DesignRules.tableRotationViolations(3, switches))
+        for (t in listOf(World1DesignTest.DESIGN to 1, World2DesignTest.DESIGN to 2, World3DesignTest.DESIGN to 3)) {
+            assertEquals(emptyList<String>(), DesignRules.tableRotationViolations(t.second, t.first))
+        }
     }
 
     @Test
     fun minimumDurationsFollowTheCurve() {
         val plain = d("R1", "U1")
         val star = d("–", "U1", breather = true)
-        assertEquals(0f, DesignRules.minDuration(1, 6, d("–", "U7")))
+        assertEquals(4f, DesignRules.minDuration(1, 6, d("–", "U7")))
         assertEquals(6f, DesignRules.minDuration(1, 7, plain))
-        assertEquals(8f, DesignRules.minDuration(1, 17, plain))
-        assertEquals(8f, DesignRules.minDuration(2, 10, plain))
-        assertEquals(10f, DesignRules.minDuration(2, 25, plain))
-        assertEquals(10f, DesignRules.minDuration(3, 1, plain))
-        for (w in 1..3) for (n in DesignRules.FINALES) assertEquals(15f, DesignRules.minDuration(w, n, d("R1+R5", "U1+U4")))
+        assertEquals(6f, DesignRules.minDuration(1, 17, plain))
+        assertEquals(6f, DesignRules.minDuration(2, 10, plain))
+        assertEquals(6f, DesignRules.minDuration(2, 25, d("–", "U1")))
+        assertEquals(6f, DesignRules.minDuration(3, 1, plain))
+        for (w in 1..3) for (n in DesignRules.FINALES) assertEquals(10f, DesignRules.minDuration(w, n, d("R1+R5", "U1+U4")))
         assertEquals(0f, DesignRules.minDuration(2, 40, star))
+    }
+
+    // ---------- recipe v2: density, teeth, filler deaths, families, rotation, cards, rematches ----------
+
+    @Test
+    fun aRoomThatMakesYouWaitIsNotDense() {
+        // the needle: one real trap at 2 s, then 1.5 s of waiting it out and the walk to the door
+        val needle = DesignDemos.needle
+        val patient: Solution = { waitFor { it.time >= 3.5f }.right(6f) }
+        val v = DesignRules.densityViolations(needle, 0, patient, 0f)
+        assertTrue(v.joinToString("\n"), v.any { "no real trap for" in it && "last trap to door" in it })
+        assertTrue(v.joinToString("\n"), v.any { "stands still" in it && "% of the run" in it })
+        assertTrue(v.joinToString("\n"), v.any { "stands still 3." in it && "in one go" in it })
+        // the hidden spikes going again (Hide) is no trap: only the Show counts
+        val bot = DesignRules.cleanRun(needle, 0, patient)
+        assertEquals(listOf(2f), bot.moments.filter { it.real }.map { Math.round(it.time * 10) / 10f })
+        assertEquals(3.5f, bot.idleTime, 0.05f)
+    }
+
+    @Test
+    fun padsTalkAndHelpfulChangesAreNoTraps() {
+        val w = World(puzzle)
+        fun weigh(a: Action) = DesignRules.weigh(a, puzzle, w)
+        assertEquals(DesignRules.Weight.LETHAL, weigh(Action.Show('S')))
+        assertEquals(DesignRules.Weight.LETHAL, weigh(Action.Fall('b')))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Say(T("Hi", "Hi"))))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Play(Card.COLLAPSE)))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Pad('2', 3 to 9)))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Show('w')))                 // a block appears: the switch did its job
+        assertEquals(DesignRules.Weight.ROUTE, weigh(Action.DoorTo(20, 9)))
+        assertEquals(DesignRules.Weight.ROUTE, weigh(Action.Swap(true)))
+        // the copper rail switched off under you is a trap, switched on it is help
+        assertEquals(DesignRules.Weight.LETHAL, weigh(Action.Power('w', false)))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Power('w', true)))
+        // a belt counts when it pushes away from the door (on the left here), not when it helps
+        assertEquals(DesignRules.Weight.LETHAL, weigh(Action.Belt('d', 5f)))
+        assertEquals(DesignRules.Weight.NONE, weigh(Action.Belt('d', -5f)))
+        // a laser switched off is help, a new beam a trap
+        val l20 = World2.levels[19]
+        assertEquals(DesignRules.Weight.NONE, DesignRules.weigh(Action.Power('K', false), l20, World(l20)))
+        assertEquals(DesignRules.Weight.LETHAL, DesignRules.weigh(Action.Power('K', true), l20, World(l20)))
+    }
+
+    @Test
+    fun aDoorTrailIsOneMoment() {
+        // the door hopping along in several traps with the same trigger is one surprise, not three
+        val l13 = World2.levels[12]
+        val bot = DesignRules.cleanRun(l13, 0) { World2Test.rooms.getValue(13)(this) }
+        val door = bot.moments.filter { m -> m.actions.any { it is Action.DoorTo } }
+        assertEquals(1, door.size)
+        assertEquals(2, door.single().actions.count { it is Action.DoorTo })
+    }
+
+    @Test
+    fun aTrapThatWaitingAndRunningBothBeatIsDecoration() {
+        val room = DesignDemos.toothless
+        val run: Solution = { rightTo(18.2f).hopR(18.4f).right(3f) }
+        DesignRules.cleanRun(room, 0, run).expect(WorldState.WON)
+        val v = DesignRules.teethViolations(room, 0, run)
+        assertEquals(v.joinToString("\n"), 1, v.size)
+        assertTrue(v.single(), "has no teeth" in v.single())
+    }
+
+    @Test
+    fun waitingEightSecondsDoesNotBeatTheRoomEither() {
+        // standing still until the trap is gone, then holding right: the patient naive player
+        val needle = DesignDemos.needle
+        assertTrue(DesignRules.holdRightWithHopsViolations(needle, 0).any { "standing still 8 s, then holding right" in it })
+    }
+
+    @Test
+    fun spikesInFrontOfTheSpawnAreAFillerDeath() {
+        val v = DesignRules.fillerDeathViolations(DesignDemos.spawnSpikes, 0)
+        assertEquals(1, v.size)
+        assertTrue(v.single(), "before any trap went off" in v.single())
+        // dying to a trap that went off is a gag, not filler: the puzzle room's spikes sprout ahead of whoever holds right
+        assertEquals(DesignRules.Weight.LETHAL, Bot(puzzle).right(2f).also { it.expect(WorldState.DEAD) }.moments.first().weight)
+        assertEquals(emptyList<String>(), DesignRules.fillerDeathViolations(puzzle, 0))
+    }
+
+    @Test
+    fun effectFamiliesAreCountedPerRoom() {
+        assertEquals(setOf("spikes"), DesignRules.families(DesignDemos.corridor()))
+        assertEquals(setOf("spikes", "heat"), DesignRules.families(DesignDemos.corridor(heat = true)))
+        // 2-16 as piloted: pillars, swapped controls, a forged block that blinks, the door that flees
+        val l16 = World2.levels[15]
+        assertEquals(setOf("drop", "controls", "blink", "door", "secret"), DesignRules.families(l16))
+        assertEquals(1, DesignRules.familyViolations(16, l16).size)
+        assertTrue(DesignRules.familyViolations(16, l16).single().contains("(max 3)"))
+        assertTrue(DesignRules.familyViolations(15, l16).single().contains("(max 2)"))
+    }
+
+    @Test
+    fun mechanicsRotateOverAnAct() {
+        // the door flees in 2-13 and 2-15: twice in act 1
+        val levels = mapOf(13 to World2.levels[12], 15 to World2.levels[14])
+        assertEquals(
+            listOf("act 1: door flees (DoorTo) in 2 levels [13, 15] (max 1)"),
+            DesignRules.rotationViolations(levels).filter { "DoorTo" in it },
+        )
+        // one each in two acts is fine
+        assertEquals(emptyList<String>(), DesignRules.rotationViolations(mapOf(13 to World2.levels[12], 21 to World2.levels[20])).filter { "DoorTo" in it })
+    }
+
+    @Test
+    fun aCardFitsTheTrapItSitsOn() {
+        assertEquals(emptyList<String>(), DesignRules.cardLintViolations(DesignDemos.corridor(Card.SPIKE_SEED)))
+        assertEquals(listOf("Demo: Corridor round 1: GHOST_BLOCK sits on Show"), DesignRules.cardLintViolations(DesignDemos.corridor(Card.GHOST_BLOCK)))
+        assertEquals(listOf("Demo: Corridor round 1: SHY_DOOR sits on Show"), DesignRules.cardLintViolations(DesignDemos.corridor(Card.SHY_DOOR)))
+        // a ghost block card on the bonk block it is about
+        val ghost = Level(T("g", "g"), T("g", "g"), legend = mapOf('k' to Glyph(spike = false, hidden = true, bonk = true)),
+            traps = listOf(trap(Trigger.Touch('k'), Action.Play(Card.GHOST_BLOCK)))) { border(); floor(); put(6, 11, 'k'); put(2, 14, 'P'); put(29, 14, 'D') }
+        assertEquals(emptyList<String>(), DesignRules.cardLintViolations(ghost))
+        // every card has a rule
+        for (c in Card.entries) DesignRules.cardFits(c, trap(Trigger.PastX(1f), Action.Play(c)), DesignDemos.corridor())
+    }
+
+    @Test
+    fun aRematchMustNotBeEasierOrFallToRoundOne() {
+        val l = DesignDemos.lazyRematch
+        val round1: Solution = { hopR(7.6f).right(4f) }
+        val round2: Solution = { right(3f) }
+        val v = DesignRules.rematchViolations(l, listOf(round1, round2))
+        assertTrue(v.joinToString("\n"), v.any { "round 1's solution wins it" in it })
+        assertTrue(v.joinToString("\n"), v.any { "shorter than round 1" in it })
     }
 }

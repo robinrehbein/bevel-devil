@@ -176,8 +176,11 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private var survivalCheck = -1f
     /** [time] the clear screen opened. */
     private var clearAt = 0f
-    /** Mephi already nudged the player stuck in this attempt ([Level.hint]). */
+    /** Mephi already gave this round's hint ([Level.hint]). */
     private var hinted = false
+    /** Deaths (restarts included) in the current round: the hint comes on the respawn after the [HINT_DEATHS]th. */
+    var roundDeaths = 0
+        private set
 
     var shake = 0f
         private set
@@ -357,13 +360,6 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (rematchAge < REMATCH_FREEZE) return
         w.step(dt, input)
         handleEvents(w)
-        // stuck for a while without dying: Mephi can't resist a hint (only once per level)
-        val hint = stage.hint
-        if (hint != null && !hinted && w.state == WorldState.PLAYING && w.time > HINT_AFTER) {
-            hinted = true
-            say(hint.toString(), 3.5f)
-            setMood(Mood.SULK, 1.5f)
-        }
         if (survivalCheck >= 0f) {
             survivalCheck -= dt
             if (survivalCheck < 0f && w.state == WorldState.PLAYING) setMood(Mood.SULK, 1.6f)
@@ -530,6 +526,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     private fun countDeath() {
         deaths++
+        roundDeaths++
         progress.totalDeaths = progress.totalDeaths + 1
     }
 
@@ -566,6 +563,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         deaths = if (round > 0) cpDeaths else 0
         rematchAge = if (round > 0) 0f else 99f
         hinted = false
+        // deaths of a round reached before (checkpoint) count for the level, not toward this session's hint
+        roundDeaths = 0
         world = World(stage)
         deadTimer = 0f
         card = null
@@ -593,15 +592,25 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         survivalCheck = -1f
         input.jumpPressed = false
         input.shake = false
+        hintIfStuck()
+    }
+
+    /** Died [HINT_DEATHS] times in this round: on the respawn Mephi can't resist the round's hint (once per round). */
+    private fun hintIfStuck() {
+        val hint = stage.hint ?: return
+        if (hinted || roundDeaths < HINT_DEATHS) return
+        hinted = true
+        say(hint.toString(), 3.5f)
+        setMood(Mood.SULK, 1.5f)
     }
 
     /** The pause menu's RESTART: a fresh attempt like after a death, counted as one, but instant and without resuming traps. */
     private fun restartFromPause() {
         countDeath()
         particles.clear()
-        restartAttempt()
         setMood(Mood.GRIN, 0f)
         bubble = null
+        restartAttempt()
         go(Screen.PLAY)
     }
 
@@ -619,6 +628,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         round++
         if (sandbox == null) progress.saveCheckpoint(levelIndex, round, deaths)
         hinted = false
+        roundDeaths = 0
         releaseInput()
         world = World(stage)
         deadTimer = 0f
@@ -867,8 +877,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         const val REMATCH_FREEZE = 0.8f
         /** Seconds from a death to the next attempt. */
         const val RESPAWN = 0.7f
-        /** Seconds in one attempt before Mephi gives a level's [Level.hint]. */
-        const val HINT_AFTER = 9f
+        /** Deaths in one round before Mephi gives its [Level.hint], on the next respawn. */
+        const val HINT_DEATHS = 2
         /** Seconds before a tap anywhere leaves the clear screen. */
         const val CLEAR_ANYWHERE = 0.5f
 
