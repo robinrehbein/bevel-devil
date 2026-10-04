@@ -807,7 +807,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     companion object {
-        const val CARD_LIFE = 1.9f
+        const val CARD_LIFE = 2.2f
         /** Base life of a devil quip; [say] adds reading time, so it hangs about two seconds. */
         const val QUIP_LIFE = 0.4f
         /** Length of the CRT glitch when Mephi plays a card. */

@@ -340,7 +340,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         val revealed = turn >= 0.5f
         val s = (if (out) 1f + (1f - fade) * 0.3f else 0.4f + 0.6f * k) * CARD_SCALE
         val solid = if (game.cardBluff) Game.BLUFF_FLIP + FLIP_TIME + 0.5f else CARD_SOLID
-        val ghost = if (age < solid) 1f else max(CARD_GHOST, 1f - (age - solid) / 0.25f * (1f - CARD_GHOST))
+        val ghost = if (age < solid) 1f else max(CARD_GHOST, 1f - (age - solid) / CARD_FADE * (1f - CARD_GHOST))
         canvas.save()
         canvas.translate(cx, cy)
         canvas.rotate(((sin(game.time * 2.4f) * 0.05f - 0.05f + (1 - f) * 0.6f) * 180f / PI.toFloat()))
@@ -770,10 +770,11 @@ class UiPainter(px: Pixels) : Painter(px) {
         val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
         /** Seconds the rematch banner stays up. */
         const val REMATCH_BANNER = 1.5f
-        /** The flying trap card's size, and after [CARD_SOLID] seconds the alpha it fades to. */
+        /** The flying trap card's size; after [CARD_SOLID] seconds it fades over [CARD_FADE] seconds to the alpha [CARD_GHOST]. */
         const val CARD_SCALE = 0.8f
-        const val CARD_SOLID = 0.7f
-        const val CARD_GHOST = 0.35f
+        const val CARD_SOLID = 1.2f
+        const val CARD_GHOST = 0.5f
+        const val CARD_FADE = 0.4f
         /** Seconds a bluff card takes to turn over. */
         const val FLIP_TIME = 0.22f
         const val SWEAT = 0xFF8FD8FF.toInt()
