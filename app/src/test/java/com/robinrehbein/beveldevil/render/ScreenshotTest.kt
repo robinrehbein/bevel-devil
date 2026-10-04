@@ -548,6 +548,35 @@ class ScreenshotTest {
         }
     }
 
+    /** World 2, levels 17-24 (the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
+    @Test
+    fun worldTwoPuzzleRooms() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val w2 = com.robinrehbein.beveldevil.game.World2.levels
+        fun at(n: Int, round: Int = 0, script: Bot.() -> Bot = { wait(0.5f) }) = Bot(w2[n - 1], round).script().world
+        val rooms = com.robinrehbein.beveldevil.game.World2Rooms
+        val scenes = listOf(
+            "17" to at(17), "17-ceiling" to at(17) { rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().rightTo(10.2f).wait(0.6f) },
+            "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.0f) }, "18-r2" to at(18, 1),
+            "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
+            "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) },
+            "21" to at(21), "21-cage" to at(21) { rooms.l21ToCage(this).wait(1.1f) },
+            "21-moved" to at(21) { rooms.l21ToCage(this).waitFor { !it.group('w').visible }.rightTo(23.8f).wait(0.3f) },
+            "22" to at(22), "22-shelf" to at(22) { rooms.l22ToShelf(this).wait(0.2f) },
+            "23" to at(23), "23-jam" to at(23) { hopR(10.2f).rightUntil { it.links[0].hopTime > 0f }.hopR(4.3f).rightTo(11f).wait(0.2f) },
+            "24" to at(24), "24-downlink" to at(24) { rooms.l24Up(this).wait(0.6f) },
+        )
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((name, w) in scenes) {
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, Themes.DATA_CENTER)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "140-w2-room-$name.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
     /** Act 1 of World 1: every room as the player first sees it (plain and calm), and a few moments after a trap fired. */
     @Test
     fun worldOneActOne() {
