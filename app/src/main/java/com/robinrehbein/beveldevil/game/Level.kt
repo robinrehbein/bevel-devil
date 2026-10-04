@@ -390,14 +390,15 @@ fun trap(trigger: Trigger, vararg actions: Action, delay: Float = 0f) = Trap(tri
 
 /**
  * A rematch: after the door, Mephi deals a new hand in the same room ("Revanche!"). The map is the level's own,
- * changed by [edit]; [legend] adds to the level's. Dying restarts this round, not the whole level.
+ * changed by [edit]; [legend] adds to the level's. [start] and [hint] default to the level's own (pass a list, even an
+ * empty one, to replace the start actions). Dying restarts this round, not the whole level.
  *
  *     rematch = listOf(Round(T("Again. Same room.", "Nochmal. Gleicher Raum."), traps = listOf(…)) { fill(9..10, 15..17, 'x') })
  */
 class Round(
     val intro: T,
     val traps: List<Trap> = emptyList(),
-    val start: List<Action> = emptyList(),
+    val start: List<Action>? = null,
     val legend: Map<Char, Glyph> = emptyMap(),
     val hint: T? = null,
     val edit: MapBuilder.() -> Unit = {},
@@ -447,7 +448,7 @@ class Level(
     /** This level and its rematches, each a level of its own: round 1 is this level. */
     val rounds: List<Level> by lazy {
         listOf(this) + rematch.map { r ->
-            Level(name, r.intro, legend + r.legend, r.traps, r.start, hint = r.hint) { build(); r.edit(this) }
+            Level(name, r.intro, legend + r.legend, r.traps, r.start ?: start, hint = r.hint ?: hint) { build(); r.edit(this) }
         }
     }
     val cols get() = map.cols

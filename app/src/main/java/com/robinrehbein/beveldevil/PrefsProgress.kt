@@ -54,6 +54,13 @@ class PrefsProgress(context: Context) : Progress {
         get() = prefs.getBoolean("ads_removed", false)
         set(v) = prefs.edit().putBoolean("ads_removed", v).apply()
 
+    override fun checkpoint(level: Int): Pair<Int, Int> = prefs.getInt("cp_round_$level", 0) to prefs.getInt("cp_deaths_$level", 0)
+
+    override fun saveCheckpoint(level: Int, round: Int, deaths: Int) {
+        if (round <= 0) prefs.edit().remove("cp_round_$level").remove("cp_deaths_$level").apply()
+        else prefs.edit().putInt("cp_round_$level", round).putInt("cp_deaths_$level", deaths).apply()
+    }
+
     override var totalDeaths: Int
         get() = prefs.getInt("total_deaths", 0)
         set(v) = prefs.edit().putInt("total_deaths", v).apply()

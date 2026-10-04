@@ -39,6 +39,9 @@ interface Progress {
         set(_) {}
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
+    /** The rematch round reached in [level] (0 = none) and the deaths it took to get there. */
+    fun checkpoint(level: Int): Pair<Int, Int> = 0 to 0
+    fun saveCheckpoint(level: Int, round: Int, deaths: Int) {}
     fun cardFound(card: Card): Boolean
     fun findCard(card: Card)
     fun cardDeaths(card: Card): Int
@@ -350,6 +353,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (screen != Screen.PLAY) return
 
         val w = world ?: return
+        // a new round holds still under the banner: the player sees the room again before anything moves
+        if (rematchAge < REMATCH_FREEZE) return
         w.step(dt, input)
         handleEvents(w)
         // stuck for a while without dying: Mephi can't resist a hint (only once per level)
@@ -528,18 +533,25 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     fun startLevel(i: Int) {
         levelIndex = i
-        deaths = 0
         particles.clear()
-        round = 0
-        rematchAge = 99f
+        // a rematch round reached before (app closed, back to the level select) is where the level picks up again
+        val (cpRound, cpDeaths) = if (sandbox == null) progress.checkpoint(i) else 0 to 0
+        round = cpRound.coerceIn(0, level.rounds.lastIndex)
+        deaths = if (round > 0) cpDeaths else 0
+        rematchAge = if (round > 0) 0f else 99f
         hinted = false
         world = World(stage)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
+        releaseInput()
         setMood(Mood.GRIN, 0f)
-        say(level.intro.toString(), 2.8f)
+        say((if (round > 0) stage.intro else level.intro).toString(), 2.8f)
         screen = Screen.PLAY
+    }
+
+    private fun releaseInput() {
+        input.left = false; input.right = false; input.jump = false; input.jumpPressed = false; input.shake = false
     }
 
     /** Plays [l] as if it were level [levelIndex]; for tests and demos. */
@@ -579,13 +591,14 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     /** Through the door, but Mephi deals another hand in the same room: the next round. */
     private fun nextRound() {
         round++
+        if (sandbox == null) progress.saveCheckpoint(levelIndex, round, deaths)
+        hinted = false
+        releaseInput()
         world = World(stage)
         deadTimer = 0f
         card = null
         survivalCheck = -1f
         particles.clear()
-        input.jumpPressed = false
-        input.shake = false
         rematchAge = 0f
         glitch = GLITCH_TIME * 1.4f
         heat = 1f
@@ -597,6 +610,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     }
 
     private fun finishLevel() {
+        if (sandbox == null) progress.saveCheckpoint(levelIndex, 0, 0)
         val best = progress.bestDeaths(levelIndex)
         if (best == null || deaths < best) progress.saveBest(levelIndex, deaths)
         clearsSinceAd++
@@ -627,6 +641,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private fun skipLevel() {
         if (screen != Screen.PAUSE) return
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
+        if (sandbox == null) progress.saveCheckpoint(levelIndex, 0, 0)
         clearsSinceAd = 0
         lastAdAt = time
         go(Screen.CLEAR)
@@ -822,6 +837,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             T("I was bluffing. Obviously.", "War natürlich ein Bluff."),
             T("Poker face: offline.", "Pokerface: offline."),
         )
+        /** Seconds a new rematch round stays frozen under its banner. */
+        const val REMATCH_FREEZE = 0.8f
         /** Seconds from a death to the next attempt. */
         const val RESPAWN = 0.7f
         /** Seconds in one attempt before Mephi gives a level's [Level.hint]. */

@@ -137,6 +137,7 @@ object World3Part1 {
         Level(
             name = T("Turnstile", "Drehkreuz"),
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
+            hint = T("The ceiling is on the floor now. Floors can be jumped.", "Die Decke liegt jetzt am Boden. Über Böden kann man springen."),
             start = listOf(Circuit('w'), Pad('1', at = 11 to 14, circuits = "w", mode = PadMode.HOLD), Circuit('Z', on = false)),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke.")),

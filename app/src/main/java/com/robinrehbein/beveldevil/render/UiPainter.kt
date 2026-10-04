@@ -146,7 +146,8 @@ class UiPainter(px: Pixels) : Painter(px) {
             if (l.hud == HudMode.SIDE) bubbleBelow(it, game.bubbleAge, f.x + f.w / 2f, l.bubble)
             else bubble(it, game.bubbleAge, l.bubble.x.toFloat(), l.bubble.y.toFloat(), l.bubble.w.toFloat())
         }
-        if (game.rematchAge < REMATCH_BANNER) rematchBanner(game, l)
+        // the banner gives way to a trap card: never both at once
+        if (game.rematchAge < REMATCH_BANNER && game.card == null) rematchBanner(game, l)
     }
 
     /** "REMATCH!" slams in over the room for a moment when Mephi deals another round. */
@@ -769,7 +770,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         /** Where the dodging pause button hops to, in logical pixels from home. */
         val DODGE_HOPS = listOf(64f to 4f, 26f to 70f, 150f to 22f)
         /** Seconds the rematch banner stays up. */
-        const val REMATCH_BANNER = 1.5f
+        const val REMATCH_BANNER = 1.2f
         /** The flying trap card's size; after [CARD_SOLID] seconds it fades over [CARD_FADE] seconds to the alpha [CARD_GHOST]. */
         const val CARD_SCALE = 0.8f
         const val CARD_SOLID = 1.2f

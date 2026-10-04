@@ -169,11 +169,12 @@ trap(PastX(10f), Play(Card.COLLAPSE), Say(T("Kidding.", "Spaß.")))
 trap(PastX(24f), Play(Card.UNDO), Undo(2f))
 trap(PastX(8f), Play(Card.STALKER), Show('S'), Chase('S', speed = 4f, left = 3f, right = 18f))
 
-// Tipp: Mephi verrät ihn einmal, wenn man 9 s ohne Tod feststeckt.
-hint = T("Ceilings are overrated.", "Decken werden überschätzt."),
+// Tipp: Mephi verrät ihn einmal pro Runde, wenn man 9 s ohne Tod feststeckt. Runden erben start und hint vom Level.
+hint = T("Ceilings are overrated.", "Decken werden überschätzt."),   // once per round
 ```
 
-- Die Runde zeigt das HUD erst ab der zweiten („#2“), damit Runde 1 nichts verrät.
+- Die Runde zeigt das HUD erst ab der zweiten („#2“), damit Runde 1 nichts verrät. Eine neue Runde steht 0,8 s still unter dem Banner, gehaltene Tasten werden losgelassen.
+- Erreichte Runden werden gespeichert: Wer das Level verlässt oder die App schließt, macht in der Runde weiter (mit den Toden bis dahin).
 - Jede Runde spielt genau eine Karte (ein Bluff zählt mit) und hat im Test einen Bot, der sie löst: `Bot(level, round = 1)`.
 
 ### Meta-Twists

@@ -66,6 +66,7 @@ object World1Part1 {
         Level(
             name = T("Stairwell", "Treppenhaus"),
             intro = T("Take the stairs. The elevator is broken. Again.", "Nimm die Treppe. Der Aufzug ist kaputt. Schon wieder."),
+            hint = T("Stairs go up. So did the door.", "Treppen führen nach oben. Die Tür auch."),
             traps = listOf(
                 trap(PastX(26.4f), Play(Card.SHY_DOOR), DoorTo(29, 6, speed = 18f), Say(T("Whoops. Up there now.", "Hoppla. Jetzt ist sie da oben."))),
                 trap(Touch('b'), Fall('b'), delay = 0.7f),
@@ -109,6 +110,7 @@ object World1Part1 {
         Level(
             name = T("Obstacle Course", "Hindernislauf"),
             intro = T("That wall is too high. Giving up is the only option.", "Die Wand ist zu hoch. Da hilft nur Aufgeben."),
+            hint = T("Ever headbutted thin air? Try it just before the wall.", "Schon mal mit dem Kopf gegen Luft gesprungen? Kurz vor der Wand."),
             legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true), 'A' to hiddenSpike, 'f' to Glyph(spike = false)),
             traps = listOf(
                 trap(Touch('b'), Play(Card.GHOST_BLOCK), Say(T("Hey! That one was secret.", "Hey! Der war geheim."))),

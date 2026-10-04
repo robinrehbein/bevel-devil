@@ -28,6 +28,9 @@ class DeckTest {
         override fun findCard(card: Card) {}
         override fun cardDeaths(card: Card) = 0
         override fun addCardDeath(card: Card) {}
+        val checkpoints = HashMap<Int, Pair<Int, Int>>()
+        override fun checkpoint(level: Int) = checkpoints[level] ?: (0 to 0)
+        override fun saveCheckpoint(level: Int, round: Int, deaths: Int) { if (round <= 0) checkpoints.remove(level) else checkpoints[level] = round to deaths }
     }
 
     private val silent = object : Audio { override fun play(sound: Sound) {} }
@@ -147,5 +150,80 @@ class DeckTest {
         g.run(Game.CLEAR_ANYWHERE + 0.1f)
         g.tap(4f, 4f)
         assertNotEquals(Screen.CLEAR, g.screen)
+    }
+
+    /** Through the door of round 1 (the pit is jumped), so round 2 starts; returns with the input still held right. */
+    private fun Game.winRoundOne() {
+        input.right = true
+        while (world!!.player.box.cx < 7.6f) update(Bot.DT)
+        input.jump = true; input.jumpPressed = true
+        run(0.35f)
+        input.jump = false
+        var guard = 0f
+        while (round == 0 && guard < 6f) { update(Bot.DT); guard += Bot.DT }
+    }
+
+    @Test
+    fun aNewRoundStartsWithTheInputReleasedAndHoldsStillUnderTheBanner() {
+        val g = sandbox(demo)
+        g.winRoundOne()
+        assertEquals(1, g.round)
+        assertFalse("held input is released", g.input.right)
+        // even pressing right again, nothing moves before the banner is gone
+        val x = g.world!!.player.box.cx
+        g.input.right = true
+        g.run(Game.REMATCH_FREEZE - 0.1f)
+        assertEquals(x, g.world!!.player.box.cx, 1e-4f)
+        assertEquals(0f, g.world!!.time, 1e-4f)
+        g.run(0.5f)
+        assertTrue(g.world!!.player.box.cx > x)
+    }
+
+    @Test
+    fun theLevelPicksUpAtTheRoundReached() {
+        val p = Prog()
+        val i = Levels.all.indexOfFirst { it.rematch.isNotEmpty() }
+        p.checkpoints[i] = 1 to 5
+        val g = Game(p, silent).apply { startLevel(i) }
+        assertEquals(1, g.round)
+        assertEquals(5, g.deaths)
+        assertEquals("#2", g.roundTag)
+        assertTrue("the banner shows what round this is", g.rematchAge < 0.1f)
+        // a level without a checkpoint starts at round 1
+        val h = Game(Prog(), silent).apply { startLevel(i) }
+        assertEquals(0, h.round)
+    }
+
+    @Test
+    fun aRoundInheritsTheLevelsStartAndHintUnlessItSaysOtherwise() {
+        val l = Level(
+            T("x", "x"), T("x", "x"),
+            start = listOf(Action.Blink('a', on = 1f, off = 1f)),
+            hint = T("Hint", "Tipp"),
+            rematch = listOf(
+                Round(T("r2", "r2")),
+                Round(T("r3", "r3"), start = emptyList(), hint = T("Other", "Anders")),
+            ),
+        ) { border(); floor(); fill(10..12, 15..15, 'a'); put(2, 14, 'P'); put(28, 14, 'D') }
+        assertEquals(l.start, l.rounds[1].start)
+        assertEquals("Hint", l.rounds[1].hint?.en)
+        assertTrue(l.rounds[2].start.isEmpty())
+        assertEquals("Other", l.rounds[2].hint?.en)
+    }
+
+    @Test
+    fun theHintComesAgainInTheNextRound() {
+        val l = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke."),
+            rematch = listOf(Round(T("Again.", "Nochmal.")))) {
+            border(); floor(); put(2, 14, 'P'); put(5, 14, 'D')
+        }
+        val g = sandbox(l)
+        g.run(Game.HINT_AFTER + 0.5f)
+        assertEquals(l.hint.toString(), g.bubble)
+        g.hold(2f, right = true)
+        g.run(1.2f)
+        assertEquals(1, g.round)
+        g.run(Game.REMATCH_FREEZE + Game.HINT_AFTER + 0.5f)
+        assertEquals(l.hint.toString(), g.bubble)
     }
 }
