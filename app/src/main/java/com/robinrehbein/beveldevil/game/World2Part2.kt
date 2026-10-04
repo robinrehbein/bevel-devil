@@ -2,6 +2,7 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
+import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.PathSaw
@@ -255,17 +256,19 @@ object World2Part2 {
                 trap(PastX(15.4f), Fall('b'), say("Session expired.", "Sitzung abgelaufen.")),
                 trap(Airborne(18.2f, 21f), Show('A'), say("Re-login required.", "Erneute Anmeldung nötig.")),
             ),
-            // rematch: idling is fine now; the hops you kept the line alive with are what drops the floor
+            // rematch: idling is fine now, but the queue moves up: a spike pops up behind you and creeps after you, right up to
+            // the gate. Hopping on the spot (round 1's keep-alive) lands on it; jump over it and back until the gate opens
             rematch = listOf(
                 Round(
                     T("Your number was called. Take a new one.", "Nummer 2, bitte. Ach, du schon wieder."),
-                    start = listOf(Laser('L', 15 to 1, 15 to 14, on = 3.5f, off = 1.6f)),
+                    legend = mapOf('S' to hidden),
                     traps = listOf(
-                        trap(Airborne(8.6f, 14f), Play(Card.CRUMBLE), Fall('a'), say("Flood detected. Floor dropped.", "Flut erkannt. Boden verworfen.")),
+                        trap(PastX(10.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 3f, left = 4f, right = 4.5f),
+                            say("The queue moves up. Onto you.", "Die Schlange rückt auf. Auf dich.")),
                         trap(PastX(15.4f), Fall('b')),
                         trap(Airborne(18.2f, 21f), Show('A'), say("Please wait quietly.", "Bitte leise warten.")),
                     ),
-                ),
+                ) { put(9, 14, 'S') },
             ),
         ) {
             border(); floor()
@@ -324,20 +327,15 @@ object World2Part2 {
                 trap(Landed(12f, 15f), Belt('b', -4f), say("Mutex acquired: by the belt.", "Mutex gesperrt: vom Band.")),
                 trap(Airborne(23f, 25.6f), Show('A'), say("Deadlock.", "Deadlock.")),
             ),
-            // rematch: no saw behind you; thread 3 starts at the finish and runs against you
+            // rematch: no saw behind you; the belt still turns against you after the first hop, but landing behind the first
+            // pendulum turns it forward again: whoever keeps holding right like in round 1 is rushed into the last spike.
+            // Let it carry you, slip under the second pendulum and jump the spike (the floor behind it stays clean)
             rematch = listOf(
                 Round(
                     T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
-                    start = listOf(
-                        Belt('b', 5f),
-                        PathSaw(5f, 16f to 14.4f, 16f to 11.6f),
-                        PathSaw(5f, 21f to 14.4f, 21f to 11.6f, delay = 0.56f),
-                    ),
                     traps = listOf(
-                        trap(PastX(6f), say("Thread 3 joins the race. Somewhere.", "Thread 3 ist auch im Rennen. Irgendwo.")),
                         trap(Landed(12f, 15f), Belt('b', -4f)),
-                        trap(PastX(22.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 14.4f, -4f, 0f), say("Found it. It found you.", "Gefunden. Er dich auch.")),
-                        trap(Airborne(23f, 25.6f), Show('A')),
+                        trap(Landed(19f, 24.5f), Play(Card.TWISTED), Belt('b', 3f), say("Priority inversion. The belt goes first.", "Prioritätsumkehr. Das Band hat Vorfahrt.")),
                     ),
                 ),
             ),
