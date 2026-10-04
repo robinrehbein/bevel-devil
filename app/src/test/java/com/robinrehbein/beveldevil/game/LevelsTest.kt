@@ -93,6 +93,7 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
             }
             Probe.Kind.RUN -> {
                 val left = input.left && !input.right
+                println("DBG run probe left=$left in.left=${input.left} in.right=${input.right} t=${world.time}")
                 input.left = left; input.right = !left; input.jump = false; input.jumpPressed = false
                 var t = 0f
                 while (t < p.seconds && world.state == WorldState.PLAYING) { stepPlain(); t += DT }

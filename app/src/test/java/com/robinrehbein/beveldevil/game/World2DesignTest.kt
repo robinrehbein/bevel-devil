@@ -78,21 +78,36 @@ class World2DesignTest : DesignTestBase() {
         val PILOT_V2: Set<Int> = (11..24).toSet()
 
         /** The pilot's solutions, one per round (round 1 first), from [World2Test.rooms] and [World2Rooms]. */
-        val PILOT_SOLUTIONS: Map<Int, List<Solution>> =
-            (11..16).associateWith { n -> listOf<Solution>({ World2Test.rooms.getValue(n)(this) }) } +
+        val PILOT_SOLUTIONS: Map<Int, List<Solution>> by lazy {
+            val old: Map<Int, List<Solution>> = (11..16).associateWith { n -> listOf<Solution>({ World2Test.rooms.getValue(n)(this) }) } +
                 World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
-                mapOf(
-                    11 to listOf({ World2Test.rooms.getValue(11)(this) }, { World2Rooms.l11r2(this) }),
-                    14 to listOf({ World2Test.rooms.getValue(14)(this) }, { World2Rooms.l14r2(this) }),
-                    18 to listOf({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
-                    20 to listOf({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
+                mapOf<Int, List<Solution>>(
+                    11 to listOf<Solution>({ World2Test.rooms.getValue(11)(this) }, { World2Rooms.l11r2(this) }),
+                    14 to listOf<Solution>({ World2Test.rooms.getValue(14)(this) }, { World2Rooms.l14r2(this) }),
+                    18 to listOf<Solution>({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
+                    20 to listOf<Solution>({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
                 )
+            old + SOLUTIONS
+        }
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
         val REBUILT: Set<Int> = emptySet()
 
         /** Level number → bot solution per round (round 1 first). */
-        val SOLUTIONS: Map<Int, List<Solution>> = emptyMap()
+        val SOLUTIONS: Map<Int, List<Solution>> = mapOf(
+            11 to listOf(
+                { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
+                    .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)
+                    .hopR(10.8f, 0.5f).hopR(15.2f, 0.5f).hopR(21.5f, 0.5f).right(1.5f) },
+                { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
+                    .waitUntil(3.5f).leftTo(2.2f).waitUntil(5.4f).rightTo(12.6f)
+                    .hopR(15.2f, 0.5f).hopR(21.5f, 0.5f).right(1.5f) },
+            ),
+            13 to listOf(
+                { rightTo(8.3f).landRight().hopR(17.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(21.0f).leftTo(15.8f)
+                    .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },
+            ),
+        )
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World2Test]). */
         fun play(n: Int, round: Int = 1) =

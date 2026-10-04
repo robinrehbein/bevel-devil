@@ -257,45 +257,45 @@ object World2Part1 {
             spawn(); door(); bits(10)
         },
 
-        // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a locked rack door (a copper rail), the switch is
-        // up on the mezzanine at the far end. Fan 1 circles the mezzanine (rushing at the switch runs into it), the switch
-        // sets fan 2 loose in the aisle below, and fan 3's housing comes down in front of the door
+        // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a rack gate (a slab that slides into the floor), the
+        // switch is up on the mezzanine at the far end. Fan 1 circles the mezzanine (rushing at the switch runs into it); the
+        // switch opens the gate for seven seconds and sets fan 2 loose in the aisle; past the rack the raised floor is lifted
         Level(
             name = T("Server Room", "Serverraum"),
             intro = T("Nice and cool in here. Three fans, all fit.", "Schön kühl hier. Drei Lüfter, alle fit."),
-            start = listOf(Circuit('w'), Pad('1', at = 2 to 10, circuits = "w", mode = PadMode.OFF)),
+            start = listOf(Pad('1', at = 2 to 10)),
             traps = listOf(
-                trap(Zone(9.5f, 8.5f, 14.5f, 11f), Play(Card.DEVIL_SAW), PathSaw(6f, 4.5f to 6.5f, 4.5f to 10.3f, 10f to 10.3f, 10f to 6.5f, loop = true),
+                trap(Zone(8f, 8.5f, 12.6f, 11f), Play(Card.DEVIL_SAW), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
                     say("Fan 1 of 3 spinning. It does laps.", "Lüfter 1 von 3 dreht. Er dreht Runden.")),
-                trap(Pressed('1'), PathSaw(6f, 21.5f to 19.5f, 21.5f to 11.5f),
-                    say("Rack unlocked. Fan 2 spins from below. It's a feature.", "Rack offen. Lüfter 2 dreht von unten. Ist ein Feature.")),
-                trap(PastX(25.3f), Fall('c'), say("Fan 3: REPLACE. (Housing included.)", "Lüfter 3: TAUSCHEN. (Gehäuse inklusive.)")),
+                trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
+                    say("Rack unlocked. For 7 seconds. Fan 2 is on call.", "Rack offen. Für 7 Sekunden. Lüfter 2 hat Bereitschaft.")),
+                trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
+                trap(PastX(14.7f), Move('p', 0f, 8f, 30f), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
             ),
             hint = T("The switch is upstairs. The fans keep a rhythm.", "Der Schalter ist oben. Die Lüfter halten einen Takt."),
-            // rematch: the fans are fixed, but the rack got two-factor authentication: a second rail behind the first, its switch
-            // next to the spawn. The old switch upstairs only opens one of them. Behind them the raised floor is lifted
+            // rematch: the aisle left of the spawn is a hot aisle now (LEDs): dropping off the shelf where round 1 dropped is fatal.
+            // The way out is back across the shelf, past fan 1 a second time, and down over the rack
             rematch = listOf(
                 Round(
-                    T("Fans fixed. Security added two-factor auth.", "Lüfter repariert. Die IT hat Zwei-Faktor eingeführt."),
-                    start = listOf(
-                        Circuit('w'), Circuit('u'),
-                        Pad('1', at = 2 to 10, circuits = "w", mode = PadMode.OFF), Pad('2', at = 1 to 14, circuits = "u", mode = PadMode.OFF),
-                    ),
-                    hint = T("Two locks, two switches. One is right behind you.", "Zwei Schlösser, zwei Schalter. Einer ist direkt hinter dir."),
+                    T("Failover test. The left aisle is a hot aisle now.", "Failover-Test. Der linke Gang ist jetzt ein Heißgang."),
+                    hint = T("Don't drop where you dropped. Go back the way you came.", "Spring nicht dort runter, wo du es kennst. Geh zurück."),
                     traps = listOf(
-                        trap(Pressed('2'), say("Factor one: something you step on.", "Faktor eins: etwas, worauf du trittst.")),
-                        trap(Pressed('1'), say("Factor two: something upstairs.", "Faktor zwei: etwas im Obergeschoss.")),
-                        trap(PastX(25.2f), Play(Card.COLLAPSE), Fall('x'), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
+                        trap(Zone(8f, 8.5f, 12.6f, 11f), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
+                            say("Fan 1 again. Same laps. New schedule.", "Lüfter 1 wieder. Gleiche Runden. Neuer Plan.")),
+                        trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
+                            say("Rack unlocked. Fan 2 is on call. The hot aisle is not.", "Rack offen. Lüfter 2 hat Bereitschaft. Der Heißgang nicht.")),
+                        trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
+                        trap(PastX(14.7f), Play(Card.COLLAPSE), Move('p', 0f, 8f, 30f), say("Raised floor: lifted again. Maintenance is thorough.", "Doppelboden: wieder entnommen. Die Wartung ist gründlich.")),
                     ),
-                ) { fill(23..23, 1..10); fill(23..23, 11..14, 'u'); fill(25..27, 15..17, 'x') },
+                ) { put(1, 14, '^'); put(2, 14, '^') },
             ),
         ) {
             border(); floor()
-            fill(1..13, 11..11)
-            rack(15, 2, 2)
-            fill(24..24, 1..10); fill(24..24, 11..14, 'w')
-            fill(4..5, 1..2); fill(26..27, 10..11, 'c')
-            spawn(); door(29); bits(11, x0 = 14)
+            fill(2..11, 11..11)
+            rack(12, 4, 2)
+            fill(27..27, 1..10); fill(27..27, 11..14, 'w')
+            fill(16..18, 15..17, 'p')
+            spawn(4); door(29); bits(11, x0 = 14)
         },
 
         // 12 — EASTER EGG: Segmentation fault (core dumped). A loop around the room: the door is in kernel space (upper left),
@@ -321,28 +321,29 @@ object World2Part1 {
             spawn(); door(4, 8); bits(12, x0 = 12)
         },
 
-        // 13 — EASTER EGG: "works on my machine". The deploy switch flips you onto the ceiling (production), where a flaky
-        // test blinks the ceiling in and out; the rollback drops you on the far side, and the door, which only ever worked
-        // locally, flees back home to hang above the spawn. The second switch deploys you again: the whole way back, upside down
+        // 13 — EASTER EGG: "works on my machine". The door sits on a ledge nobody can jump to. The deploy switch flips you onto
+        // the ceiling (production), where you walk over the LEDs; the rollback drops you on the far side, and the redeploy
+        // switch flips you again, the whole way back upside down. This time the ceiling has a flaky test (it blinks), and
+        // the second rollback drops you on the ledge, next to the door
         Level(
             name = T("Works on My Machine", "Läuft bei mir"),
             intro = T("Tested locally. Green everywhere.", "Lokal getestet. Überall grün."),
-            start = listOf(Pad('1', at = 6 to 14), Pad('2', at = 30 to 14), Blink('f', on = 1.5f, off = 1f)),
+            start = listOf(Pad('1', at = 8 to 14), Pad('2', at = 28 to 14)),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.UPSIDE_DOWN), Gravity(true), say("Deployed. Production has different gravity.", "Deployt. Produktion hat eine andere Schwerkraft.")),
+                trap(Zone(23.2f, 0f, 31f, 3f), Gravity(false), say("Rollback! The door stayed in staging.", "Rollback! Die Tür ist im Staging geblieben.")),
                 trap(Pressed('2'), Gravity(true), say("Redeploy. Same bugs, other direction.", "Neu deployt. Gleiche Bugs, andere Richtung.")),
-            ) + doorTrail(
-                Zone(22.6f, 0f, 31f, 3f), 29, 14,
-                listOf(DoorTo(29, 1, 24f, hanging = true), DoorTo(3, 1, 24f, hanging = true)),
-                first = listOf(Gravity(false), say("Rollback! The door works on my machine. Only there.", "Rollback! Die Tür läuft bei mir. Nur bei mir.")),
+                trap(Landed(15.2f, 17.4f), Blink('f', on = 1f, off = 1f, phase = 1f), say("Flaky test: red again. Nobody knows why.", "Wackeliger Test: wieder rot. Keiner weiß, warum.")),
+                trap(Zone(0f, 0f, 6.4f, 3f), Gravity(false), say("Rollback complete. Works on my machine.", "Rollback fertig. Läuft bei mir.")),
             ),
             hint = T("The flaky test blinks. Count before you cross.", "Der wackelige Test blinkt. Erst zählen, dann rüber."),
         ) {
             border(); floor()
-            leds(9..22)
-            put(11, 1, 'v'); put(12, 1, 'v'); put(20, 1, 'v')
-            fill(15..17, 0..0, 'f')
-            spawn(); door()
+            leds(10..22)
+            fill(1..7, 10..10); door(1, 9)
+            put(19, 1, 'v'); put(9, 1, 'v'); put(29, 1, 'v')
+            fill(12..14, 0..0, 'f')
+            spawn(2)
         },
 
         // 14 — EASTER EGG: 127.0.0.1 and traceroute. The room is four subnets (a slab and a wall split it into quarters), and the
