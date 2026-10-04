@@ -376,6 +376,31 @@ sealed interface Action {
     data class PauseTrap(val trick: PauseTrick) : Action
     /** The golden frame cracks in the tile rectangle for [warn] seconds, then that piece of it falls into the level. */
     data class FrameCrack(val x0: Int, val y0: Int, val x1: Int = x0, val y1: Int = y0, val warn: Float = 0.8f) : Action
+    /**
+     * "Who says the room ends here?": the wall between room [into] - 1 and room [into] of a level with several
+     * [Level.rooms] cracks open for [warn] seconds, then crumbles away in rows [top]..[bottom] (both its tiles, the
+     * right wall of the one room and the left wall of the next; plain '#' only). Mephi laughs and says [line]. The
+     * camera stays in the room the player is in: it pans to the next room (the game frozen, see [World.PAN]) only
+     * once the player walks through the breach, so every room is fully in view before anything in it can be done.
+     * The door cannot be entered while the wall cracks. With [door] (global tile, like [DoorTo]) the door then slips
+     * through the breach to that tile, at [doorSpeed] tiles/s and out of reach until it lands: the classic is
+     * [Trigger.AtDoor], so the door the player just reached "was never the end":
+     *
+     *     trap(Trigger.AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14))
+     */
+    data class Extend(
+        val into: Int = 1, val top: Int = 12, val bottom: Int = 14, val warn: Float = 0.6f,
+        val door: Pair<Int, Int>? = null, val doorSpeed: Float = 14f, val line: T? = ROOM_LINE,
+    ) : Action {
+        init { require(into >= 1 && top <= bottom && warn >= 0f) }
+        /** Global columns of the breach: the shared wall between the two rooms. */
+        val x0 get() = roomX(into, 0) - 1
+        val x1 get() = roomX(into, 0)
+
+        companion object {
+            val ROOM_LINE = T("Who says the room ends here?", "Wer sagt, dass der Raum hier aufhört?")
+        }
+    }
     /** The picture turns upside down for [seconds]. Left and right follow the screen, so the controls stay sane. */
     data class Flip(val seconds: Float) : Action
     /** The CRT loses vertical hold for [seconds]: the picture rolls [laps] times. Visual only. */
@@ -404,28 +429,72 @@ class Round(
     val edit: MapBuilder.() -> Unit = {},
 )
 
-/** Mutable char grid used to lay out a level. '#' solid, '^v<>' spikes, 'P' spawn, 'D' door. */
-class MapBuilder(val cols: Int = 32, val rows: Int = 18) {
+/** Columns of one room: one screen. A level is one room, or (rarely, see [Level.rooms]) several side by side. */
+const val ROOM_COLS = 32
+/** Rows of a room (and of every level). */
+const val ROOM_ROWS = 18
+
+/** Global tile column of column [x] of room [room]: rooms sit side by side, [ROOM_COLS] apart. */
+fun roomX(room: Int, x: Int): Int = room * ROOM_COLS + x
+/** Global x of [x] tiles into room [room], for triggers and saws: `PastX(roomX(1, 4f))`. */
+fun roomX(room: Int, x: Float): Float = room * ROOM_COLS + x
+
+/**
+ * Mutable char grid used to lay out a level. '#' solid, '^v<>' spikes, 'P' spawn, 'D' door.
+ *
+ * A level of several rooms ([Level.rooms]) is one wide grid, [ROOM_COLS] columns per room. Inside [room] every call
+ * takes that room's local coordinates (0..31), and [border] and [floor] cover just that room. Outside it they take
+ * global coordinates, and [border] frames every room on its own, so neighbouring rooms are parted by a two-tile wall
+ * ([Action.Extend] breaks it open).
+ */
+class MapBuilder(val cols: Int = ROOM_COLS, val rows: Int = ROOM_ROWS) {
     val grid: Array<CharArray> = Array(rows) { CharArray(cols) { '.' } }
+    /** Rooms side by side. */
+    val rooms get() = maxOf(1, cols / ROOM_COLS)
+    private var ox = 0
+    private var span = cols
+    /** Width of what calls address now: one room inside [room], else the whole map. */
+    val width get() = span
+
+    /**
+     * Runs [block] in room [i], in its local coordinates:
+     *
+     *     room(1) { fill(10..12, 12..14); door(28) }
+     */
+    fun room(i: Int, block: MapBuilder.() -> Unit) {
+        require(i in 0 until rooms) { "room $i outside the map ($rooms rooms)" }
+        val o = ox
+        val s = span
+        ox = i * ROOM_COLS
+        span = ROOM_COLS
+        try { block() } finally { ox = o; span = s }
+    }
 
     fun put(x: Int, y: Int, c: Char) {
-        require(x in 0 until cols && y in 0 until rows) { "($x,$y) outside map" }
-        grid[y][x] = c
+        require(x in 0 until span && y in 0 until rows) { "($x,$y) outside map" }
+        grid[y][ox + x] = c
     }
+
+    /** The char at ([x], [y]), in the same coordinates as [put]. */
+    fun at(x: Int, y: Int): Char = grid[y][ox + x]
 
     fun fill(xs: IntRange, ys: IntRange, c: Char = '#') {
         for (y in ys) for (x in xs) put(x, y, c)
     }
 
-    /** Ceiling and side walls. */
+    /** Ceiling and side walls; of every room on its own when the map has several and no [room] is chosen. */
     fun border() {
-        fill(0 until cols, 0..0)
+        if (span > ROOM_COLS) {
+            for (r in 0 until rooms) room(r) { border() }
+            return
+        }
+        fill(0 until span, 0..0)
         fill(0..0, 0 until rows)
-        fill(cols - 1 until cols, 0 until rows)
+        fill(span - 1 until span, 0 until rows)
     }
 
     /** Standard ground: the player walks on row 14. */
-    fun floor(top: Int = 15) = fill(0 until cols, top until rows)
+    fun floor(top: Int = 15) = fill(0 until span, top until rows)
 
     fun ascii(): String = grid.joinToString("\n") { String(it) }
 }
@@ -441,14 +510,22 @@ class Level(
     val rematch: List<Round> = emptyList(),
     /** What Mephi lets slip when the player is stuck for [Game.HINT_AFTER] seconds without dying (once per level). */
     val hint: T? = null,
+    /**
+     * Rooms side by side, [ROOM_COLS] columns each. Hard rule: a level is one screen. The rare exception is Mephi's
+     * surprise "who says the room ends here?" ([Action.Extend]): the camera always shows one whole room and pans,
+     * with the game frozen, when the player walks into the next one. See docs/LEVEL_DESIGN_V2.md, U18.
+     */
+    val rooms: Int = 1,
     private val build: MapBuilder.() -> Unit,
 ) {
-    val map: MapBuilder = MapBuilder().apply(build)
+    init { require(rooms >= 1) { "a level has at least one room" } }
+
+    val map: MapBuilder = MapBuilder(cols = ROOM_COLS * rooms).apply(build)
 
     /** This level and its rematches, each a level of its own: round 1 is this level. */
     val rounds: List<Level> by lazy {
         listOf(this) + rematch.map { r ->
-            Level(name, r.intro, legend + r.legend, r.traps, r.start ?: start, hint = r.hint ?: hint) { build(); r.edit(this) }
+            Level(name, r.intro, legend + r.legend, r.traps, r.start ?: start, hint = r.hint ?: hint, rooms = rooms) { build(); r.edit(this) }
         }
     }
     val cols get() = map.cols
@@ -472,3 +549,6 @@ class Level(
         else -> null
     }
 }
+
+/** This action and, for a [Action.FakeWin], everything it goes on with (nested). */
+fun Action.flat(): List<Action> = if (this is Action.FakeWin) listOf(this) + then.flatMap { it.flat() } else listOf(this)

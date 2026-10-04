@@ -153,6 +153,12 @@ sealed interface Event {
     data object Sizzle : Event
     /** A fan spun up from a standstill. */
     data object Hum : Event
+    /** Mephi breaks the room open ([Action.Extend]): the wall starts to crack. */
+    data object Extended : Event
+    /** The breach crumbled away, over the tile rectangle [x0]..[x1] × [y0]..[y1]. */
+    data class Breach(val x0: Float, val y0: Float, val x1: Float, val y1: Float) : Event
+    /** The camera started to pan one room over: [dir] +1 right, -1 left. */
+    data class Pan(val dir: Int) : Event
 }
 
 enum class WorldState { PLAYING, DEAD, WON }
@@ -256,12 +262,54 @@ class World(val level: Level, private val past: Trail? = null) {
     var resumes = 0
         private set
 
-    class Crack(val group: Group, val time: Float, val warn: Float) {
+    /** A cracking piece of wall: after [warn] seconds it falls into the level, or for an [extend] crumbles away. */
+    class Crack(val group: Group, val time: Float, val warn: Float, val extend: Action.Extend? = null) {
         var fell = false
+        val crumble get() = extend != null
     }
     val cracks = ArrayList<Crack>()
-    private val crackRects = level.traps.flatMap { it.actions }.filterIsInstance<Action.FrameCrack>().distinct()
+    /** Every action the level can run: its start, its traps, and what fake endings go on with. */
+    private val allActions = (level.start + level.traps.flatMap { it.actions }).flatMap { it.flat() }
+    private val crackRects = allActions.filterIsInstance<Action.FrameCrack>().distinct()
     private val crackGroups = HashMap<Action.FrameCrack, Group>()
+
+    // ---------- rooms and camera ([Level.rooms], [Action.Extend]) ----------
+
+    /** Rooms side by side; the camera shows exactly one of them, or pans between two. */
+    val rooms = level.map.rooms
+    private val breachRects = allActions.filterIsInstance<Action.Extend>()
+        .onEach { require(it.into < rooms) { "Level ${level.name.en} extends into room ${it.into} but has only $rooms rooms" } }.map { Triple(it.into, it.top, it.bottom) }.distinct()
+    private val breachGroups = HashMap<Triple<Int, Int, Int>, Group>()
+    /** The room the camera shows (or pans to). */
+    var room = 0
+        private set
+    /** Left edge of the view in tiles: [room] × [ROOM_COLS], or on the way there during a pan. */
+    var camX = 0f
+        private set
+    private var panFrom = 0f
+    /** Seconds into the current pan; [PAN] or more when the camera rests. */
+    var panAge = PAN
+        private set
+    /** The camera is moving to another room: nothing else moves (see [step]). */
+    val panning get() = panAge < PAN
+    /** Global x of the room edge the camera last panned across (-1 before any): going back over it needs [ROOM_SLACK]. */
+    private var lastSeam = -1
+    /** +1 when the last pan went right, -1 left, 0 before any. */
+    var panDir = 0
+        private set
+    /** [time] of the last pan (time stands still during one, so this is also when it ended). */
+    var panTime = -99f
+        private set
+
+    /** The room that global x [x] lies in. */
+    fun roomOf(x: Float): Int = floor(x / ROOM_COLS).toInt().coerceIn(0, rooms - 1)
+
+    /** Shows room [r] at once, without a pan (tests, screenshots). */
+    fun showRoom(r: Int) {
+        room = r.coerceIn(0, rooms - 1)
+        camX = (room * ROOM_COLS).toFloat()
+        panAge = PAN
+    }
 
     private var turnFrom = -99f
     private var turnUntil = -99f
@@ -291,8 +339,12 @@ class World(val level: Level, private val past: Trail? = null) {
                 else -> {
                     val g = level.glyph(c) ?: error("Unknown map char '$c' in ${level.name.en}")
                     val crack = if (c == '#') crackRects.indexOfFirst { x in it.x0..it.x1 && y in it.y0..it.y1 } else -1
+                    val breach = if (c == '#' && crack < 0) breachRects.indexOfFirst { (into, top, bottom) ->
+                        (x == roomX(into, 0) - 1 || x == roomX(into, 0)) && y in top..bottom
+                    } else -1
                     val group = when {
                         crack >= 0 -> groups.getOrPut(CRACK_ID + crack) { Group(CRACK_ID + crack, false, false) }.also { crackGroups[crackRects[crack]] = it }
+                        breach >= 0 -> groups.getOrPut(BREACH_ID + breach) { Group(BREACH_ID + breach, false, false) }.also { breachGroups[breachRects[breach]] = it }
                         c == '#' || c in "^v<>" -> null
                         else -> groups.getOrPut(c) { Group(c, g.hidden, g.bonk) }
                     }
@@ -307,6 +359,8 @@ class World(val level: Level, private val past: Trail? = null) {
         player = Player(sx + 0.5f, sy + 1f)
         spawnX = sx + 0.5f
         door = Door(dx - 0.1f, dy + 1f - 1.6f)
+        // every attempt starts with the camera on the spawn's room
+        showRoom(roomOf(spawnX))
         level.start.forEach(::run)
         updateBlinks()
         updateNet(0f)
@@ -316,6 +370,12 @@ class World(val level: Level, private val past: Trail? = null) {
     fun group(id: Char): Group = groups[id] ?: error("Level ${level.name.en} has no group '$id'")
 
     fun step(dt: Float, input: Controls) {
+        // the camera moves to another room: like the rematch freeze, the whole world holds still meanwhile
+        // (time included), so the new room is fully in view before anything in it moves. Input stays held.
+        if (panning) {
+            pan(dt)
+            return
+        }
         time += dt
         ticks++
         tilt = input.tilt.coerceIn(-1f, 1f)
@@ -365,6 +425,41 @@ class World(val level: Level, private val past: Trail? = null) {
                 events += Event.Won
             }
         }
+        // also on the step the player died, so a death just past a room's edge is shown, not hidden off-screen
+        if (fake == null && (state == WorldState.PLAYING || (state == WorldState.DEAD && stateTime == time))) followPlayer()
+    }
+
+    // ---------- camera ----------
+
+    /**
+     * Starts a pan as soon as the player's center is inside another room (walked, hopped or was put there).
+     * Only going back over the edge just panned across needs [ROOM_SLACK], so standing in the doorway can't flicker.
+     */
+    private fun followPlayer() {
+        if (rooms == 1) return
+        val cx = player.box.cx
+        val left = room * ROOM_COLS
+        val right = (room + 1) * ROOM_COLS
+        val lo = left - if (left == lastSeam) ROOM_SLACK else 0f
+        val hi = right + if (right == lastSeam) ROOM_SLACK else 0f
+        if (cx in lo..hi) return
+        val to = roomOf(cx)
+        if (to == room) return
+        panDir = if (to > room) 1 else -1
+        lastSeam = if (to > room) right else left
+        panFrom = camX
+        room = to
+        panAge = 0f
+        panTime = time
+        events += Event.Pan(panDir)
+    }
+
+    private fun pan(dt: Float) {
+        panAge = min(PAN, panAge + dt)
+        val f = panAge / PAN
+        val e = f * f * (3f - 2f * f)
+        val target = (room * ROOM_COLS).toFloat()
+        camX = if (panAge >= PAN) target else panFrom + (target - panFrom) * e
     }
 
     // ---------- meta twists ----------
@@ -372,7 +467,8 @@ class World(val level: Level, private val past: Trail? = null) {
     /** The HUD pause button was tapped. True if the game should really pause. */
     fun pausePressed(): Boolean = when (pauseTrick) {
         PauseTrick.HONEST, PauseTrick.SWAP -> true
-        PauseTrick.SPIKE -> if (state == WorldState.PLAYING && fake == null) {
+        // during a pan the world is frozen: a real pause, no spike
+        PauseTrick.SPIKE -> if (state == WorldState.PLAYING && fake == null && !panning) {
             events += Event.Say(SPIKE_LINE)
             die()
             false
@@ -410,7 +506,23 @@ class World(val level: Level, private val past: Trail? = null) {
     }
 
     private fun updateCracks() {
-        for (c in cracks) if (!c.fell && time >= c.time + c.warn) {
+        for (c in cracks) if (!c.fell && time >= c.time + c.warn && c.crumble) {
+            // the breach: the wall crumbles away for good, a passage into the next room
+            c.fell = true
+            c.group.visible = false
+            val b = c.group.pieces
+            events += Event.Breach(b.minOf { it.hx }, b.minOf { it.hy }, b.maxOf { it.hx } + 1f, b.maxOf { it.hy } + 1f)
+            events += Event.Crash
+            events += Event.Shake(0.7f)
+            c.extend?.door?.let { (col, row) ->
+                // the door slips through the hole into the next room, out of reach until it lands
+                door.tx = col - 0.1f
+                door.ty = row + 1f - 1.6f
+                door.speed = c.extend.doorSpeed
+                door.hanging = false
+                doorLock = max(doorLock, time + hypot(door.tx - door.box.x, door.ty - door.box.y) / door.speed + 0.05f)
+            }
+        } else if (!c.fell && time >= c.time + c.warn) {
             c.fell = true
             c.group.mode = GroupMode.FALL
             c.group.vy = 0f
@@ -600,6 +712,16 @@ class World(val level: Level, private val past: Trail? = null) {
                     events += Event.Shake(0.25f)
                 }
             }
+            is Action.Extend -> breachGroups[Triple(a.into, a.top, a.bottom)]?.let { g ->
+                if (cracks.none { it.group === g }) {
+                    cracks += Crack(g, time, a.warn, a)
+                    // no stepping through the door while the wall cracks
+                    doorLock = max(doorLock, time + a.warn + 0.05f)
+                    events += Event.Extended
+                    events += Event.Shake(0.35f)
+                    a.line?.let { events += Event.Say(it) }
+                }
+            } ?: error("Level ${level.name.en} has no wall to break open into room ${a.into} (rows ${a.top}..${a.bottom} must be '#')")
             is Action.Flip -> {
                 val v = viewTurn()
                 turnFrom = time - v * Twists.TURN
@@ -1025,12 +1147,18 @@ class World(val level: Level, private val past: Trail? = null) {
         events += Event.Shake(1f)
     }
 
-    private companion object {
+    companion object {
+        /** Seconds a pan from one room to the next takes; the world is frozen meanwhile. */
+        const val PAN = 0.5f
+        /** How far (tiles) the player's center must be past a room's edge before the camera follows. */
+        const val ROOM_SLACK = 0.15f
         /** Groups made for [Action.FrameCrack] pieces get ids from the private use area, clear of map letters. */
-        const val CRACK_ID = '\uE000'
-        const val GHOST_INSET = 0.12f
+        private const val CRACK_ID = '\uE000'
+        /** Groups made for [Action.Extend] breaches, likewise. */
+        private const val BREACH_ID = '\uE100'
+        private const val GHOST_INSET = 0.12f
         /** Seconds of position history kept for [Action.Undo]. */
-        const val HISTORY = 4f
-        val SPIKE_LINE = T("Pause? Ours come with spikes.", "Pause? Gibt's hier nur mit Stacheln.")
+        private const val HISTORY = 4f
+        private val SPIKE_LINE = T("Pause? Ours come with spikes.", "Pause? Gibt's hier nur mit Stacheln.")
     }
 }

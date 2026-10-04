@@ -33,7 +33,7 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 
 | # | Regel | Test |
 |---|---|---|
-| H1 | **Ein Bildschirm** (32×18), kein Scrollen. | vorhanden (Grid) |
+| H1 | **Ein Bildschirm** (32×18), kein Scrollen. Einzige Ausnahme: U18, siehe §5a. | vorhanden (Grid), `RoomsTest` |
 | H2 | **Rätselraum:** mindestens ein Rätsel-Baustein aus §4 (R1–R12). Nur nach rechts laufen reicht nie. | `holdRightWithHopsNeverWins` für alle Level |
 | H3 | **Dauer:** Ein sauberer, informierter Bot-Lauf dauert mindestens die Mindestzeit aus §6. Gemessen wird `world.time` beim Sieg. | `cleanRunLastsLongEnough` |
 | H4 | **2–4 Überraschungen** pro Runde. Sie bauen aufeinander auf: Jede bestraft die Lösung, die die vorige nahegelegt hat. | Trigger-Zählung (vorhanden, verschärfen) |
@@ -93,6 +93,44 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 | U15 | Hilfe wird Falle | Der Schalter, den man braucht, löst die Falle aus. Die rettende Plattform ist die Falle. |
 | U16 | Meta | Pause, Ghost, Undo, Shake, Tilt, Roll, Frame-Crack. Höchstens die vorhandenen Quoten in Akt 3 |
 | U17 | Hitze oder Strom (W3) | Überhitzen, Kurzschluss, Bit-Flip, Lüfter aus |
+| U18 | Raum geht weiter | Die Tür am Ende ist nicht das Ende: Die Wand bricht auf, dahinter liegt ein zweiter (oder dritter) Raum. Selten, siehe §5a |
+
+## 5a. Ausnahme: Mephi erweitert den Raum (U18 „Raum geht weiter“)
+
+H1 bleibt die harte Regel: **Die Kamera zeigt immer genau einen ganzen Raum (32×18).** Es gibt kein freies Scrollen. Die einzige Ausnahme ist selbst eine Überraschung von Mephi: Der Spieler erreicht, was wie das Ende aussieht (meist die Tür am rechten Rand). Dann bricht die Wand dahinter auf, die Tür rutscht durch das Loch in den nächsten Raum, und Mephi lacht: „Wer sagt, dass der Raum hier aufhört?“
+
+**Regeln**
+
+- **Höchstens etwa 10 Level im ganzen Spiel.** Zugeteilt in §8: W1 16, 32, 33, 48 · W2 30, 48 · W3 16, 32, 47, 48. Mehr nur nach Absprache, sonst nutzt sich der Gag ab.
+- **Ein Raum, ein Bild:** Ein Level hat 2 oder 3 Räume nebeneinander. Die Kamera folgt dem Spieler raumweise. Sobald seine Mitte eine Viertelkachel im Nachbarraum steht, schwenkt sie in 0,5 s hinüber. **Währenddessen steht das Spiel still** (wie beim Revanche-Freeze: Zeit, Sägen, Takte, Laser). Jeder Raum ist also ganz zu sehen, bevor man darin handelt. Zurücklaufen funktioniert genauso.
+- **Tod und Revanche:** Nach einem Tod beginnt der Versuch im Raum des Spawns, die Kamera steht wieder dort. Revanche-Runden starten ebenfalls im Spawn-Raum. Checkpoint-Verhalten unverändert.
+- **Fairness am Eingang:** Die ersten 3 Kacheln hinter dem Durchbruch sind sicher (keine Stacheln, keine Säge, kein Loch). Der Spieler steht nach dem Schwenk dort und muss erst schauen dürfen.
+- **Die Wand ist ehrlich:** Bis die Falle feuert, sieht die Trennwand genau aus wie der Rahmen eines normalen Levels (`TrapInvisibilityTest`). Während sie bricht (0,6 s), ist die Tür gesperrt.
+- **Karte:** `Card.ANNEX` („Anbau“ / „Annex“, selten, „Das Ende war eine tragende Lüge.“). Pro Level höchstens einmal, auf dem Durchbruch. Solange kein ausgeliefertes Level sie spielt, ist sie in `everyLevelPlaysACard` als ausstehend markiert; mit dem ersten U18-Level die Ausnahme dort entfernen.
+- Kombinationen: Im zweiten Raum gilt alles wie gewohnt (Sägen, Portale, Bänder, Laser, Lüfter, Hitze arbeiten über die ganze Breite). Ein Portal darf auch in einen anderen Raum führen, die Kamera folgt mit Schwenk. Nicht kombinieren mit `FakeEnd.CREDITS`.
+
+**So baust du es (DSL)**
+
+```kotlin
+Level(
+    T("Annex", "Anbau"), T("Almost done. Surely.", "Fast geschafft. Sicher."),
+    rooms = 2,                                   // 2 Räume = 64 Spalten
+    traps = listOf(
+        // Tür erreicht: Karte, Wand zwischen Raum 0 und 1 bricht (Zeilen 12..14), Tür rutscht nach Raum 1, Spalte 28
+        trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14)),
+        // Trigger und Sägen nehmen globale x-Werte: roomX(raum, lokal) = 32 × raum + lokal
+        trap(PastX(roomX(1, 6f)), Fall('a')),
+    ),
+) {
+    border(); floor()                            // ohne room(): jeder Raum bekommt seinen eigenen Rahmen
+    room(0) { spawn(); door(); fill(14..15, 13..14) }   // in room(i) gelten lokale Koordinaten 0..31
+    room(1) { pit(12..15); fill(9..11, 15..15, 'a') }
+}
+```
+
+- `Extend(into, top = 12, bottom = 14, warn = 0.6f, door = null, line = …)`: bricht die Doppelwand zwischen Raum `into - 1` und `into` in den Zeilen `top..bottom` auf (nur `#`-Kacheln). `line` ist Mephis Spruch (Standard: „Wer sagt, dass der Raum hier aufhört?“), `door` das neue Ziel der Tür.
+- Drei Räume: zwei `AtDoor`-Fallen hintereinander, die zweite mit `Extend(into = 2, door = roomX(2, 29) to 14)`. Die erste unverbrauchte `AtDoor`-Falle feuert zuerst.
+- Beispiele mit Bot-Lösungen: `RoomDemos.kt` und `RoomsTest.kt` (nur Tests, nicht im Spiel).
 
 ## 6. Kurve und Mindestdauer
 
@@ -141,7 +179,7 @@ Spalten: Haupt-Baustein (R) · Hauptüberraschung (U) · ★ = Verschnaufpause.
 |13|Wednesday|R7|U14|zwei Wege, der sichere ist der Bluff|
 |14|Performance Review|R10|U12|Lift fährt erst richtig, dann falsch|
 |15|Loop|R6|U6|Tür wandert durch den Raum, Stacheln aus der Wand|
-|16|Number 16 (Finale)|R1+R5+R6|U7+U4|Schalter oben, Tür flieht, Säge|
+|16|Number 16 (Finale)|R1+R5+R6|U7+U4+U18|Schalter oben, Tür flieht, Säge|
 
 **Akt 2 „Neue Regeln“ (Blink, PathSaw, Idle)**
 
@@ -162,13 +200,13 @@ Spalten: Haupt-Baustein (R) · Hauptüberraschung (U) · ★ = Verschnaufpause.
 |29|Hike|R10|U3|
 |30|Arcade|R9|U2|
 |31|Meadow|R7|U7|
-|32|Beta Test (Finale)|R1+R5+R8|U1+U7+U4|
+|32|Beta Test (Finale)|R1+R5+R8|U1+U7+U4+U18|
 
 **Akt 3 „Mephi schummelt“ (Meta)**
 
 | # | Name | R | U |
 |---|---|---|---|
-|33|Clear Road|R7|U14|
+|33|Clear Road|R7|U14+U18|
 |34|Monday Morning|R1|U16 (Pause)|
 |35|Home Network ★|–|U4|
 |36|Gallery|R5|U16 (Frame-Crack)|
@@ -183,7 +221,7 @@ Spalten: Haupt-Baustein (R) · Hauptüberraschung (U) · ★ = Verschnaufpause.
 |45|sudo rm -rf /|R5|U1|
 |46|Home Stretch|R1|U15|
 |47|sudo make me a sandwich|R12|U3|
-|48|Exit (Finale)|R1+R5+R7|U14+U4|
+|48|Exit (Finale)|R1+R5+R7|U14+U4+U18|
 
 ### Welt 2: Höllen-Rechenzentrum (Thema: Routing, Firewalls, Ports)
 
@@ -215,7 +253,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 12 Level nutzen Schalter (R1, R2 oder R
 |27|DDoS|R10|U2|
 |28|Split Tunnel|R3|U13|
 |29|Race Condition|R1|U7|
-|30|Hop Limit|R3+R5|U11|
+|30|Hop Limit|R3+R5|U11+U18|
 |31|Detention|R8|U3|
 |32|Core Switch (Finale)|R4+R3+R8|U12+U13+U4|
 
@@ -238,7 +276,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 12 Level nutzen Schalter (R1, R2 oder R
 |45|Playground|R9|U3|
 |46|Privilege Escalation|R10+R1|U12|
 |47|Math Problem|R5|U9+U10|
-|48|shutdown -h now (Finale)|R4+R3+R6|U11+U9+U4|
+|48|shutdown -h now (Finale)|R4+R3+R6|U11+U9+U4+U18|
 
 ### Welt 3: Platine (Thema: Strom, Hitze, Lüfter)
 
@@ -263,7 +301,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |13|Fuse Box|R5+R1|U1|
 |14|Power Supply|R2|U6|
 |15|Connector|R1|U9|
-|16|Motherboard (Finale)|R1+R5+R8|U17+U4+U1|
+|16|Motherboard (Finale)|R1+R5+R8|U17+U4+U1+U18|
 
 **Akt 2 „Überhitzung“**
 
@@ -284,7 +322,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |29|Thermostat|R2|U15|
 |30|Burn-in Test|R7|U14|
 |31|Pit Stop|R11+R5|U3|
-|32|Thermal Runaway (Finale)|R11+R1+R6|U17+U4+U2|
+|32|Thermal Runaway (Finale)|R11+R1+R6|U17+U4+U2+U18|
 
 **Akt 3 „Lüfter“**
 
@@ -304,8 +342,8 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |44|Display ★|–|U10|
 |45|Cold Air|R11|U3|
 |46|POST|R5+R1|U16|
-|47|Boot Order|R7+R6|U14+U4|
-|48|BIOS Setup (Finale)|R4+R10+R11|U12+U10+U4|
+|47|Boot Order|R7+R6|U14+U4+U18|
+|48|BIOS Setup (Finale)|R4+R10+R11|U12+U10+U4+U18|
 
 ## 9. Qualitätstests (Leitplanken)
 

@@ -24,9 +24,11 @@ class TwistPainter(px: Pixels, private val ui: UiPainter) : Painter(px) {
     /** Everything that lives in the level, drawn over it (playfield coordinates). */
     fun inWorld(game: Game, l: Layout) {
         val w = game.world ?: return
-        px.at(l.fx, l.fy) {
+        // level pixels, shifted like the level itself (see [World.camX])
+        val cam = (w.camX * TS).roundToInt()
+        px.at(l.fx - cam, l.fy) {
             lc.save()
-            lc.clipRect(0, 0, PW, PH)
+            lc.clipRect(cam, 0, cam + PW, PH)
             cracks(w)
             ghost(w)
             if (w.viewTurn() == 0f && w.viewRoll() == 0f) creditPlatforms(w, game.deaths)
@@ -208,8 +210,9 @@ class TwistPainter(px: Pixels, private val ui: UiPainter) : Painter(px) {
                 // text can't be clipped, so lines appear and vanish at the frame's inner edge
                 if (cy < TS + 4f || cy > PH - TS - 4f) continue
                 val s = text(line, game.deaths)
-                if (line.big) say(s, line.x * TS, cy, 9f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
-                else say(s, line.x * TS, cy, 6f, if (line.stop != null) GOLD_MID else CREAM, Paint.Align.CENTER)
+                val x = line.x * TS - w.camX * TS
+                if (line.big) say(s, x, cy, 9f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+                else say(s, x, cy, 6f, if (line.stop != null) GOLD_MID else CREAM, Paint.Align.CENTER)
             }
         }
         return true

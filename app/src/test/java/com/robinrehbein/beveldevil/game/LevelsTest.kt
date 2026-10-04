@@ -191,7 +191,12 @@ class LevelsTest {
         // a bluff deals the Bluff card
         val played = Levels.all.flatMap { it.rounds }.flatMap { l -> l.traps.flatMap { it.actions } }
             .mapNotNull { a -> if (a is Action.Play) a.card else if (a is Action.Bluff) Card.BLUFF else null }
-        assertEquals(Card.entries.toSet(), played.toSet())
+        // ANNEX belongs to the U18 levels ("who says the room ends here?", docs/LEVEL_DESIGN_V2.md), which are not
+        // built yet: until then only the test demos deal it. Remove it from here as soon as one level plays it.
+        val pending = setOf(Card.ANNEX)
+        assertEquals(Card.entries.toSet() - pending, played.toSet() - pending)
+        val demos = RoomDemos.all.flatMap { l -> l.traps.flatMap { it.actions } }.filterIsInstance<Action.Play>().map { it.card }
+        assertTrue(pending.all { it in played || it in demos })
     }
 
     @Test

@@ -181,7 +181,7 @@ class Renderer(context: Context) {
                     val c = snapPx[i]
                     snapPx[i] = Color.rgb((c shr 16 and 0xFF) / 5 + 6, (c shr 8 and 0xFF) / 6 + 2, (c and 0xFF) / 5 + 10)
                 }
-                wipeCx = l.fx + w.player.box.cx * TS
+                wipeCx = l.fx + (w.player.box.cx - w.camX) * TS
                 wipeCy = l.fy + w.player.box.cy * TS
                 wipeMax = hypot(max(wipeCx, l.lw - wipeCx), max(wipeCy, l.lh - wipeCy))
             }

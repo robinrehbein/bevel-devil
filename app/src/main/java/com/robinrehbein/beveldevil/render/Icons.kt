@@ -116,6 +116,15 @@ object Icons {
                 p(INK, 3, 1, 10, 14); p(0xFF46295F.toInt(), 4, 2, 8, 12); p(GOLD, 5, 3, 6, 10); p(0xFF46295F.toInt(), 6, 4, 4, 8)
                 for (i in 0 until 14) p(RED, 1 + i, 10 - i / 2, 1, 2)
             }
+            Card.ANNEX -> {
+                // the end wall broken open, Bevel stepping through, an arrow on into the next room
+                p(GOLD, 7, 0, 3, 5); p(GOLD_HI, 7, 0, 1, 5); p(GOLD_LO, 7, 4, 3, 1); p(INK, 8, 3); p(INK, 9, 4)
+                p(GOLD, 7, 13, 3, 2); p(GOLD_HI, 7, 13, 3, 1); p(GOLD_LO, 9, 13, 1, 2)
+                p(GOLD_LO, 6, 12); p(GOLD, 10, 11); p(GOLD_LO, 11, 12)
+                hero(1, 8)
+                p(INK, 10, 9, 5, 1); p(INK, 13, 7); p(INK, 14, 8); p(INK, 15, 9); p(INK, 14, 10); p(INK, 13, 11)
+                p(GOLD_LO, 0, 15, 16, 1)
+            }
             Card.GRAND_FINALE -> { horns(); p(RED, 6, 9, 4, 3); p(GOLD_HI, 7, 10, 2, 1) }
         }
     }

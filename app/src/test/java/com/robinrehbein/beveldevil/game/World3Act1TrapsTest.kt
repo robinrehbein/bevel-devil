@@ -16,7 +16,7 @@ class World3Act1TrapsTest {
     /** Level [n] without its trap number [i] (0-based): proves that it is the new link that bites. */
     private fun without(n: Int, i: Int): Bot {
         val l = level(n)
-        val copy = Level(l.name, l.intro, l.legend, l.traps.filterIndexed { k, _ -> k != i }, l.start) {
+        val copy = Level(l.name, l.intro, l.legend, l.traps.filterIndexed { k, _ -> k != i }, l.start, rooms = l.rooms) {
             for (y in 0 until l.rows) for (x in 0 until l.cols) put(x, y, l.map.grid[y][x])
         }
         return Bot(copy)
