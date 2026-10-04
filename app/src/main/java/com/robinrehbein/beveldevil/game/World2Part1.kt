@@ -68,17 +68,6 @@ object World2Part1 {
                 trap(Airborne(4.6f, 7.4f), Play(Card.SPIKE_SEED), Show('A'), say("Port 80 open. Port 9: a spike.", "Port 80 offen. Port 9: ein Spike.")),
                 trap(Landed(23.5f, 27.6f), Show('B'), say("Packet loss: two spikes in transit.", "Paketverlust: zwei Spikes unterwegs.")),
             ),
-            // rematch: the way to the portal stays clean; the spikes grow right behind the port, where round 1 landed safely
-            rematch = listOf(
-                Round(
-                    T("Port closed. Knocking on another one.", "Port zu. Ich klopf an einem anderen."),
-                    start = listOf(Portal('1', 10 to 14, 19 to 14)),
-                    traps = listOf(
-                        trap(Airborne(4.6f, 7.4f), say("Port 9? Closed for lunch.", "Port 9? Mittagspause.")),
-                        trap(Airborne(20f, 23.4f), Play(Card.SPIKE_SEED), Show('C'), say("Port scan. Different port.", "Portscan. Falscher Port, richtige Spikes.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(14..15, 1..14)
@@ -172,18 +161,6 @@ object World2Part1 {
                 trap(Touch('s'), Reroute('1', 17 to 14), say("ipconfig /flushdns: cache cleared. Try again.", "ipconfig /flushdns: Cache geleert. Versuch's nochmal.")),
                 trap(PastX(19.5f), Show('A'), say("Cache poisoned.", "Cache vergiftet.")),
             ),
-            // rematch: the DNS stays put, and flushing the cache is what poisons it now
-            rematch = listOf(
-                Round(
-                    T("New lease. Same address. Probably.", "DHCP sagt: gleiche Adresse. DHCP lügt gern."),
-                    start = listOf(Portal('1', 8 to 14, 17 to 14)),
-                    traps = listOf(
-                        trap(PastX(6f), say("DNS changed. Or did it?", "DNS geändert. Oder doch nicht?")),
-                        trap(Touch('s'), Play(Card.DECOY), Reroute('1', 5 to 3), say("Flushed. Into the spikes.", "Geleert. Direkt in die Spikes.")),
-                        trap(PastX(19.5f), Show('A'), say("TTL expired: spikes.", "TTL abgelaufen: Spikes.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(12..12, 1..14)
@@ -245,17 +222,6 @@ object World2Part1 {
                 trap(PastX(23f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
                 trap(Airborne(21.8f, 24.4f), Show('A'), say("Driver signed by nobody.", "Treiber von niemandem signiert.")),
             ),
-            // rematch: the cable stays put before the LEDs and comes loose while you land on the second stone
-            rematch = listOf(
-                Round(
-                    T("Unplugged it. Plugged it back in. Mostly.", "Ausgesteckt, wieder eingesteckt. Größtenteils."),
-                    traps = listOf(
-                        trap(Airborne(13.8f, 15.4f), Play(Card.TWISTED), Swap(true), say("Plug and pray.", "Plug and Pray.")),
-                        trap(PastX(23f), Swap(false)),
-                        trap(Airborne(21.8f, 24.4f), Show('A')),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             leds(8..23)
@@ -273,17 +239,6 @@ object World2Part1 {
             traps = listOf(
                 trap(Landed(21f, 23.8f), Play(Card.SPIKE_SEED), Show('A'), say("Tunnel established. Spikes included.", "Tunnel steht. Spikes inklusive.")),
                 trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f), say("Packet loss. Incoming.", "Paketverlust. Kommt rein.")),
-            ),
-            // rematch: the spikes grow right where the tunnel drops you, while you are still falling
-            rematch = listOf(
-                Round(
-                    T("Tunnel rebuilt. Shorter. Pointier.", "Tunnel neu gebaut. Kürzer. Spitzer."),
-                    start = listOf(Portal('1', 10 to 12, 21 to 12)),
-                    traps = listOf(
-                        trap(Airborne(20.8f, 23.5f), Play(Card.SPIKE_SEED), Show('C'), say("Split tunnel. Split spikes.", "Geteilter Tunnel. Geteilte Spikes.")),
-                        trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f)),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
@@ -397,18 +352,6 @@ object World2Part1 {
                 trap(Touch('q'), Show('B'), say("SYN-ACK. Now the bridge.", "SYN-ACK. Jetzt die Brücke.")),
                 trap(Touch('B'), Show('A'), say("ACK. Connection established. And spiked.", "ACK. Verbindung steht. Und bespikt.")),
             ),
-            // rematch: TCP Fast Open, the bridge comes at once; no spike on it, but the old hop over the spike lands in new ones
-            rematch = listOf(
-                Round(
-                    T("Handshake failed. Your palms were sweaty.", "Handshake fehlgeschlagen, neuer Versuch. Hände waschen."),
-                    legend = mapOf('C' to hidden),
-                    traps = listOf(
-                        trap(Touch('p'), Play(Card.GHOST_BLOCK), Show('B'), say("Fast open. No time for manners.", "Fast Open. Keine Zeit für Manieren.")),
-                        trap(Touch('B'), say("ACK. Spikes? Who said spikes?", "ACK. Spikes? Wer redet von Spikes?")),
-                        trap(Airborne(13.4f, 16.6f), Show('C'), say("Duplicate ACK.", "Doppeltes ACK.")),
-                    ),
-                ) { put(17, 14, 'C'); put(18, 14, 'C') },
-            ),
         ) {
             border()
             fill(0..11, 15..17); fill(19..31, 15..17)
@@ -426,17 +369,6 @@ object World2Part1 {
                 trap(PastX(15.8f), Play(Card.HEADBUTT), Fall('l'), Fall('r'), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür.")),
                 trap(Touch('b'), say("Certificate valid. (It isn't.)", "Zertifikat gültig. (Ist es nicht.)")),
                 trap(Landed(23f, 26.4f), Show('A'), say("Man in the middle: spikes.", "Man in the Middle: Spikes.")),
-            ),
-            // rematch: no cell this time; the right wall comes down late, on whoever runs under it
-            rematch = listOf(
-                Round(
-                    T("Session expired. The cookies were delicious.", "Sitzung abgelaufen. Bitte nochmal Ausweis zeigen."),
-                    traps = listOf(
-                        trap(PastX(15.8f), say("Man in the middle? Never met him.", "Man in the Middle? Kenn ich nicht.")),
-                        trap(PastX(19.4f), Play(Card.HEADBUTT), Fall('r'), say("Late binding.", "Spätes Binden.")),
-                        trap(Landed(23f, 26.4f), Show('A')),
-                    ),
-                ) { fill(21..22, 3..4, '.') },
             ),
         ) {
             border(); floor()

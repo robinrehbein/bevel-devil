@@ -174,19 +174,6 @@ object World3Part2 {
                 trap(Touch('a'), Clock('a', on = 2.2f, off = 2f), say("The rail got a new appointment schedule.", "Die Schiene hat einen neuen Terminplan.")),
                 trap(Airborne(24.3f, 28.5f), HeatSpike('f', 0.7f), say("Next appointment: preheated.", "Nächster Termin: vorgeheizt.")),
             ),
-            // rematch: the spot where you waited in round 1 is overclocked; wait further back
-            rematch = listOf(
-                Round(
-                    T("Next patient, please. Same waiting room.", "Der Nächste, bitte. Wartenummer zwei."),
-                    start = listOf(Heat('h', rise = 3f), Clock('a', on = 2.4f, off = 2f, phase = 2f)),
-                    traps = listOf(
-                        trap(Zone(4.5f, 13f, 7.9f, 15f), Play(Card.OVERCLOCKED), HeatSpike('e', 0.5f), say("Waiting area now heated. Fee applies.", "Wartebereich jetzt beheizt. Gebührenpflichtig.")),
-                        trap(PastX(8.3f), Heat('h', rise = 0.8f), say("Sauna, as last time.", "Sauna, wie letztes Mal.")),
-                        trap(Touch('a'), Clock('a', on = 2.2f, off = 2f), say("Rail schedule: unchanged. Lucky you.", "Schienenplan: unverändert. Glück gehabt.")),
-                        trap(Airborne(24.3f, 28.5f), HeatSpike('f', 0.7f), say("Exit: preheated, as always.", "Ausgang: vorgeheizt, wie immer.")),
-                    ),
-                ) { fill(4..7, 15..15, 'e') },
-            ),
         ) {
             border(); floor()
             fill(8..11, 15..15, 'h')
@@ -355,18 +342,6 @@ object World3Part2 {
                 trap(Touch('l'), Play(Card.SINKING), HeatSpike('l', 1f), say("Heatsink 2 runs hotter than advertised.", "Kühlkörper 2 ist heißer als beworben.")),
                 trap(Landed(21f, 25.5f), HeatSpike('h', 0.6f), say("Pit stop tires: preheated.", "Boxenstopp-Reifen: vorgeheizt.")),
                 trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Pit lane exit: hot.", "Boxenausfahrt: heiß.")),
-            ),
-            // rematch: the crew swapped the heatsinks: the first one burns now, the second one is fine
-            rematch = listOf(
-                Round(
-                    T("Pit crew swapped the parts. Guess which.", "Die Boxencrew hat getauscht. Rate mal, was."),
-                    start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h"), Heatsink('l', cools = "h")),
-                    traps = listOf(
-                        trap(Touch('k'), Play(Card.SINKING), HeatSpike('k', 1f), say("Heatsink 1: now the hot one.", "Kühlkörper 1: jetzt der heiße.")),
-                        trap(Landed(21f, 25.5f), HeatSpike('h', 0.6f), say("Tires: preheated again.", "Reifen: wieder vorgeheizt.")),
-                        trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Pit lane exit: still hot.", "Boxenausfahrt: immer noch heiß.")),
-                    ),
-                ),
             ),
         ) {
             border(); floor()

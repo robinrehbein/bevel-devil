@@ -218,20 +218,6 @@ object World1Part2 {
                 Blink('a', on = 4.4f, off = 1f),
                 PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
             ),
-            // rematch: the gap in the bridge is mended, and jumping it anyway lands on spikes
-            rematch = listOf(
-                Round(
-                    T("Rematch. I fixed the bridge. You're welcome.", "Revanche. Brücke repariert. Bitte sehr."),
-                    start = listOf(
-                        Blink('a', on = 4.4f, off = 1f),
-                        PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
-                    ),
-                    traps = listOf(
-                        trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.6f),
-                        trap(Airborne(13f, 17f), Show('C'), Say(T("You jumped. The bridge felt insulted.", "Du bist gesprungen. Die Brücke ist beleidigt."))),
-                    ),
-                ),
-            ),
         ) {
             border(); floor(); pit(9..22)
             fill(9..13, 15..15, 'a'); fill(14..16, 15..15, 'm'); fill(17..22, 15..15, 'a')

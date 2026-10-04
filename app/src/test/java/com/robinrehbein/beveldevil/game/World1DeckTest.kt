@@ -20,9 +20,9 @@ class World1DeckTest {
     @Test
     fun rematchesAreSpreadOverAllThreeActsButSpareTheOnboarding() {
         val withRounds = World1.levels.withIndex().filter { it.value.rounds.size > 1 }.map { it.index + 1 }
-        assertTrue("rematch levels $withRounds", withRounds.size >= 20)
+        assertTrue("rematch levels $withRounds", withRounds.size in 12..18)
         assertTrue(withRounds.none { it <= 2 })
-        for (act in listOf(1..16, 17..32, 33..48)) assertTrue("act $act: $withRounds", withRounds.count { it in act } >= 5)
+        for (act in listOf(1..16, 17..32, 33..48)) assertTrue("act $act: $withRounds", withRounds.count { it in act } in 4..7)
         World1.levels.forEach { l -> assertTrue("${l.name.en} has ${l.rounds.size} rounds", l.rounds.size <= 3) }
     }
 
@@ -97,21 +97,9 @@ class World1DeckTest {
         .expect(WorldState.WON)
     @Test fun level08RematchWalkingInIsSpikes() = b(8, 1).rightTo(10f).wait(1f).right(2f).expect(WorldState.DEAD)
 
-    @Test fun level09Rematch() = b(9, 1).rightTo(11f).rightJump(0.35f).landRight()
-        .rightTo(20f).rightJump(0.22f).leftJump(0.2f).landLeft().left(3f).expect(WorldState.WON)
-    @Test fun level09RematchFirstSwapIsABluff() = b(9, 1).rightTo(11f).rightJump(0.22f).leftJump(0.2f).landLeft().left(1f).wait(1f)
-        .expect(WorldState.DEAD)
-
     @Test fun level12Rematch() = b(12, 1).hopL(24f).left(4f).expect(WorldState.WON)
     @Test fun level12RematchTheOldHopsLandOnSpikes() =
         b(12, 1).hopL(24f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(2f).expect(WorldState.DEAD)
-
-    @Test fun level13Rematch() = b(13, 1).rightTo(8.3f).wait(1.2f).rightTo(25.6f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level13RematchOldHabitsDie() {
-        b(13, 1).right(4f).expect(WorldState.DEAD)
-        // jumping the floor that fell in round 1: the spike before the door slides under the landing
-        b(13, 1).rightTo(8.3f).wait(1.2f).hopR(21f).right(1f).expect(WorldState.DEAD)
-    }
 
     @Test fun level15Rematch() = b(15, 1).rightTo(13.3f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
     @Test fun level15RematchTheOldJumpLandsInTheShiftedHole() = b(15, 1).rightTo(11.8f).rightJump(0.35f).landRight().right(1f)
@@ -145,13 +133,6 @@ class World1DeckTest {
         .rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
     @Test fun level21RematchTheOldHopsFall() = b(21, 1).hopR(7.7f).hopR(15.7f).right(2f).expect(WorldState.DEAD)
 
-    private fun bridge23() = b(23, 1).rightTo(5.8f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .rightTo(12.9f).waitFor { it.saws[0].y < 9.5f }
-
-    @Test fun level23Rematch() = bridge23().right(4f).expect(WorldState.WON)
-    @Test fun level23RematchJumpingTheMendedGapDies() = bridge23().rightTo(13.3f).rightJump(0.35f).landRight().right(4f).expect(WorldState.DEAD)
-
     @Test fun level24Rematch() = b(24, 1).rightTo(20.3f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.35f).landRight().right(2f)
         .expect(WorldState.WON)
     @Test fun level24RematchWaitingForTheOldWallDies() = b(24, 1).waitUntil(3.3f).rightJump(0.35f).landRight().wait(2f).expect(WorldState.DEAD)
@@ -171,30 +152,8 @@ class World1DeckTest {
         b(33, 1).hopR(18.6f).wait(1f).expect(WorldState.DEAD)   // the floor erodes behind the landing
     }
 
-    @Test fun level36Rematch() = b(36, 1).rightTo(19.3f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level36RematchWaitingForTheFrameDies() = b(36, 1).rightTo(10f).wait(1.6f).expect(WorldState.DEAD)
-
     @Test fun level37Rematch() = b(37, 1).hopR(10.7f).rightTo(14.2f).hopL(13.8f).hopL(8.6f).left(2f).expect(WorldState.WON)
     @Test fun level37RematchWaitingAtTheOldSpotDies() = b(37, 1).hopR(10.7f).hopR(16.5f).right(2f).expect(WorldState.DEAD)
-
-    @Test fun level38Rematch() = b(38, 1).rightTo(11.4f).rightJump(0.17f).leftJump(0.2f).landLeft()
-        .waitWhile(5f) { it.viewTurn() > 0f }.right(3f).expect(WorldState.WON)
-    @Test fun level38RematchHoldingOnIsPushedBack() {
-        val bot = b(38, 1).rightTo(11.4f).rightJump(0.35f).landRight().wait(1f)
-        assertTrue(bot.world.state == WorldState.DEAD || bot.world.player.box.cx < 13f)
-    }
-
-    @Test fun level40Rematch() = b(40, 1).rightTo(4.6f).wait(1.0f).rightTo(17.7f).leftJump(0.35f).landLeft().left(3f).expect(WorldState.WON)
-    @Test fun level40RematchTheOldKeysWalkBack() {
-        val bot = b(40, 1).rightTo(4.6f).wait(1.0f).left(1f)
-        assertTrue(bot.world.player.box.cx < 4.6f)
-    }
-
-    @Test fun level41Rematch() = b(41, 1).rightTo(10.2f).wait(1.2f).rightTo(21.6f).wait(1.2f).right(3f).expect(WorldState.WON)
-    @Test fun level41RematchTheOldPauseIsTooEarly() = b(41, 1).rightTo(10.2f).wait(1.2f).rightTo(20.7f).wait(1.2f).right(3f).expect(WorldState.DEAD)
-
-    @Test fun level45Rematch() = b(45, 1).rightJump(0.35f).landRight().hopR(18.2f).right(2f).expect(WorldState.WON)
-    @Test fun level45RematchTheOldHopLandsOnSpikes() = b(45, 1).rightJump(0.35f).landRight().hopR(8f).wait(0.5f).expect(WorldState.DEAD)
 
     @Test fun level46Rematch() = b(46, 1).jump(0.3f).wait(0.4f).hopR(23.6f).right(2f).expect(WorldState.WON)
     @Test fun level46RematchOldButtonBluffs() {

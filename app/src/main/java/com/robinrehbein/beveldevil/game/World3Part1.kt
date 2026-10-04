@@ -41,17 +41,6 @@ object World3Part1 {
                 trap(Pressed('1'), Clock('a', on = 2.6f, off = 1.5f), say("Power saving mode. You're welcome.", "Stromsparmodus. Gern geschehen.")),
                 trap(Airborne(23f, 27f), Play(Card.OVERCLOCKED), HeatSpike('g', 0.7f), say("That landing pad is warm.", "Der Landeplatz ist vorgewärmt.")),
             ),
-            // rematch: round 1 taught "press and run"; now the bridge runs a short shift, so running at once drops you mid-way
-            rematch = listOf(
-                Round(
-                    T("Rematch. Same bridge, new power plan.", "Revanche. Die Brücke hat jetzt Gleitzeit."),
-                    start = listOf(Circuit('a', on = false), Pad('1', at = 6 to 14, circuits = "a", mode = PadMode.ON)),
-                    traps = listOf(
-                        trap(Pressed('1'), Play(Card.SINKING), Clock('a', on = 1.6f, off = 1.4f), say("Night tariff: short shifts only.", "Nachttarif: nur Kurzschichten.")),
-                        trap(Airborne(23f, 27f), HeatSpike('g', 0.7f), say("The pad remembered you. Warmly.", "Der Landeplatz erinnert sich. Herzlich.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             bridge(11..20, 'a')
@@ -119,17 +108,6 @@ object World3Part1 {
                 trap(Touch('b'), Clock('b', on = 1.1f, off = 1.4f), say("New firmware: same rail, faster clock.", "Neue Firmware: gleiche Schiene, schnellerer Takt.")),
                 trap(PastX(23.6f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.8f), say("Overclocked! Free of charge.", "Übertaktet! Kostenlos.")),
             ),
-            // rematch: the end stays cool and gives way under whoever jumps it (walk it); without the firmware update on rail
-            // two, the runner who never waits drops off it
-            rematch = listOf(
-                Round(
-                    T("New schedule. Same tracks.", "Neuer Fahrplan. Die Bahn lässt grüßen."),
-                    start = listOf(Clock('a', on = 1.8f, off = 1f), Clock('b', on = 1.8f, off = 1f, phase = 2.3f)),
-                    traps = listOf(
-                        trap(Airborne(23.5f, 28f), Play(Card.COLLAPSE), Fall('f'), say("Jumped? The landing went on strike.", "Gesprungen? Die Landung streikt.")),
-                    ),
-                ) { fill(24..28, 15..17, 'f') },
-            ),
         ) {
             border(); floor()
             bridge(9..15, 'a'); bridge(16..22, 'b')
@@ -146,19 +124,6 @@ object World3Part1 {
                 trap(PastX(11.6f), Play(Card.COLLAPSE), Power('a', false), say("Brownout. Sorry. (I'm not.)", "Spannungseinbruch. Tut mir leid. (Stimmt nicht.)")),
                 trap(Landed(15.6f, 18.5f), HeatSpike('f', 0.85f), say("Landing fee: thermal.", "Landegebühr: thermisch.")),
                 trap(Idle(1.3f), Saw(-1.5f, 14.4f, 7f, 0f), say("Stop staring. Fan blade, from behind.", "Nicht rumstehen. Lüfterblatt, von hinten.")),
-            ),
-            // rematch: the brownout waits until you are on the rail (hop it as before), the floor is cool, and the second hop
-            // that saved you in round 1 lands in a hole: walk on
-            rematch = listOf(
-                Round(
-                    T("Again. I learn faster than you.", "Nochmal. Ich hab mitgeschrieben."),
-                    start = listOf(Circuit('a')),
-                    traps = listOf(
-                        trap(Touch('a'), Play(Card.COLLAPSE), Power('a', false), say("Brownout, slightly delayed.", "Spannungseinbruch, leicht verspätet."), delay = 0.3f),
-                        trap(Airborne(17f, 21.5f), Fall('y'), say("Hopping is so last round.", "Hüpfen war letzte Runde.")),
-                        trap(Idle(1.3f), Saw(-1.5f, 14.4f, 7f, 0f), say("Still staring. Still a fan blade.", "Immer noch am Starren. Immer noch ein Lüfterblatt.")),
-                    ),
-                ) { fill(20..24, 15..17, 'y') },
             ),
         ) {
             border(); floor()
@@ -277,16 +242,6 @@ object World3Part1 {
                 trap(Landed(18f, 22.5f), BitFlip('a', 'b'), say("Second cosmic ray. They come in pairs.", "Zweiter kosmischer Strahl. Kommen paarweise."), delay = 0.2f),
                 trap(Airborne(19.5f, 23.5f), HeatSpike('g', 0.7f), say("Memory: fully warmed up.", "Speicher: voll aufgewärmt.")),
             ),
-            // rematch: no ray at 14.5, so the early jump lands on the dark rail; the ray comes at the end of the lit rail: jump late
-            rematch = listOf(
-                Round(
-                    T("ECC patch installed. Errors now on schedule.", "ECC-Patch installiert. Fehler jetzt nach Plan."),
-                    start = listOf(Circuit('a'), Circuit('b', on = false)),
-                    traps = listOf(
-                        trap(Zone(16.2f, 13.6f, 17.8f, 15f), Play(Card.BIT_FLIP), BitFlip('a', 'b'), say("Cosmic rays come later today.", "Die kosmische Strahlung kommt heute später.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             bridge(12..17, 'a'); bridge(18..22, 'b')
@@ -307,22 +262,6 @@ object World3Part1 {
                 trap(Pressed('2'), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Side effects include: resets.", "Nebenwirkungen: Neustarts."), delay = 0.9f),
                 trap(PastX(16.5f), HeatSpike('f', 0.8f), say("Side effects include: warm feet.", "Nebenwirkungen: warme Füße.")),
                 trap(Airborne(16.3f, 20.5f), HeatSpike('g', 0.7f), say("Also: warm landings.", "Außerdem: warme Landungen.")),
-            ),
-            // rematch: breaker 2 resets too fast to outrun now: step on it a second time
-            rematch = listOf(
-                Round(
-                    T("Second opinion. Same symptoms.", "Zweitmeinung eingeholt. Bei mir."),
-                    start = listOf(
-                        Circuit('a', on = false), Circuit('Z', on = false),
-                        Pad('1', at = 4 to 14, circuits = "aZ"),
-                        Pad('2', at = 10 to 14, circuits = "Z", mode = PadMode.OFF),
-                    ),
-                    traps = listOf(
-                        trap(Pressed('2'), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Side effects include: impatience.", "Nebenwirkungen: Ungeduld."), delay = 0.4f),
-                        trap(PastX(16.5f), HeatSpike('f', 0.8f), say("Warm feet, still.", "Warme Füße, immer noch.")),
-                        trap(Airborne(16.3f, 20.5f), HeatSpike('g', 0.7f), say("Warm landings, as prescribed.", "Warme Landungen, wie verschrieben.")),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
@@ -360,18 +299,6 @@ object World3Part1 {
                 trap(PastX(12f), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Who said it was dead? Oh right, I did.", "Wer sagt, dass er tot ist? Ach ja, ich.")),
                 trap(Landed(15.5f, 17.8f), Power('Y', true), say("And its sibling.", "Und sein Geschwisterkabel.")),
                 trap(Airborne(18.5f, 23f), HeatSpike('g', 0.7f), say("The floor went and got warm.", "Der Boden ist auch warm geworden.")),
-            ),
-            // rematch: the first cable stays dead and jumping it brings a slab down; the second one goes live earlier
-            rematch = listOf(
-                Round(
-                    T("Round two. I tidied up. Sort of.", "Runde zwei. Kabelmanagement: kreativ."),
-                    start = listOf(Circuit('Z', on = false), Circuit('Y', on = false)),
-                    traps = listOf(
-                        trap(PastX(12f), say("This one stays dead. Today.", "Das hier bleibt tot. Heute.")),
-                        trap(Airborne(11.2f, 16f), Fall('c'), say("Cable tray, unmounted.", "Kabelkanal, abmontiert.")),
-                        trap(PastX(16.8f), Play(Card.SHORT_CIRCUIT), Power('Y', true), say("That one is live for real.", "Das hier ist echt live.")),
-                    ),
-                ) { fill(13..15, 9..10, 'c') },
             ),
         ) {
             border(); floor()
@@ -438,18 +365,6 @@ object World3Part1 {
                 trap(PastX(17f), Power('Z', false), say("The cable was never live. I just like the glow.", "Das Kabel war nie unter Strom. Ich mag nur das Glühen.")),
                 trap(PastX(26.4f), Show('A'), say("Made it? Here, a spike. On the house.", "Geschafft? Hier, ein Spike. Aufs Haus.")),
             ),
-            // rematch: the bridge is live from the start and the button turns it off (twice turns it back on, or hop it)
-            rematch = listOf(
-                Round(
-                    T("Firmware update: the button got opinions.", "Firmware-Update: Der Knopf hat jetzt eine Meinung."),
-                    start = listOf(Circuit('a'), Pad('1', at = 4 to 14, circuits = "a"), Circuit('Z')),
-                    traps = listOf(
-                        trap(Pressed('1'), Play(Card.SINKING), Power('a', false), say("Pressing it was a habit, not a plan.", "Drücken war Gewohnheit, kein Plan.")),
-                        trap(PastX(17f), Power('Z', false), say("The cable still only glows.", "Das Kabel glüht immer noch nur.")),
-                        trap(PastX(26.4f), Show('A'), say("The spike is a regular.", "Der Spike ist Stammgast.")),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             put(8, 14, '^'); put(10, 14, '^')
@@ -502,22 +417,6 @@ object World3Part1 {
                 trap(PastX(14.2f), Clock('Z', on = 0.9f, off = 1.6f), say("Gate firmware updated.", "Tor-Firmware aktualisiert.")),
                 trap(PastX(21.5f), Play(Card.GRAND_FINALE), BitFlip('b', 'c'), say("Motherboard: 3 of 3 components hostile.", "Hauptplatine: 3 von 3 Bauteilen feindlich.")),
                 trap(Landed(23.6f, 28f), BitFlip('b', 'c'), say("Component 4 of 3. I never could count.", "Bauteil 4 von 3. Zählen war nie meins."), delay = 0.5f),
-            ),
-            // rematch: the rails start the other way round, so the early jump from round 1 falls into the dark one
-            rematch = listOf(
-                Round(
-                    T("Reboot, same motherboard. Different bugs.", "Reboot, gleiche Platine. Andere Bugs."),
-                    start = listOf(
-                        Circuit('a', on = false), Pad('1', at = 4 to 14, circuits = "a", mode = PadMode.ON),
-                        Clock('Z', on = 1.2f, off = 1.8f),
-                        Circuit('b', on = false), Circuit('c'),
-                    ),
-                    traps = listOf(
-                        trap(Pressed('1'), Power('a', false), say("Bridge timer: still a thing.", "Brückentimer: gibt's immer noch."), delay = 2.8f),
-                        trap(PastX(14.2f), Clock('Z', on = 0.9f, off = 1.6f), say("Gate firmware: rolled back. Then forward.", "Tor-Firmware: zurückgerollt. Dann wieder vor.")),
-                        trap(Landed(24.9f, 28f), Play(Card.BIT_FLIP), BitFlip('b', 'c'), say("Bits swapped back. For balance.", "Bits zurückgetauscht. Fürs Gleichgewicht."), delay = 0.12f),
-                    ),
-                ),
             ),
         ) {
             border(); floor()

@@ -155,17 +155,6 @@ object World2Part3 {
                 trap(Touch('B'), Hide('w'), Saw(-1.5f, 14.4f, 6f, 0f), say("Code valid for 30 seconds. Actually 3.", "Code 30 Sekunden gültig. Eigentlich 3.")),
                 trap(PastX(21f), Show('A')),
             ),
-            // rematch: the saw comes through the opened wall instead of from behind: running ahead is running into it
-            rematch = listOf(
-                Round(
-                    T("Code expired. A new one is on its way.", "Code abgelaufen. Der neue kommt per Fax."),
-                    traps = listOf(
-                        trap(Touch('a'), Play(Card.GHOST_BLOCK), Show('B'), say("Factor 1 again. You know the drill.", "Nochmal Faktor 1. Kennst du ja.")),
-                        trap(Touch('B'), Hide('w'), Saw(33.5f, 14.4f, -7f, 0f), say("Your code is coming. Fast.", "Dein Code ist da. Mit Klinge.")),
-                        trap(PastX(21f), Show('A')),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(18..19, 1..14, 'w')
@@ -350,16 +339,6 @@ object World2Part3 {
                 trap(After(2.2f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
                 trap(PastX(16f), Fall('c')),
             ),
-            // rematch: policy updated, the sandbox shrinks sooner, and the ceiling block behind the pit drops early
-            rematch = listOf(
-                Round(
-                    T("Sandbox updated. Smaller, for your safety.", "Sandbox aktualisiert. Kleiner, zu deiner Sicherheit."),
-                    traps = listOf(
-                        trap(After(1.3f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("Policy updated: shrinking sooner.", "Richtlinie aktualisiert: Es wird schneller eng.")),
-                        trap(PastX(16f), Fall('c')),
-                    ),
-                ),
-            ),
         ) {
             border(); floor()
             fill(3..3, 12..14, 'l'); fill(10..10, 12..14, 'r'); put(6, 13, 'b')
@@ -433,22 +412,6 @@ object World2Part3 {
                 trap(PastX(3f), Play(Card.GRAND_FINALE), say("shutdown -h now. All services are stopping.", "shutdown -h now. Alle Dienste werden beendet.")),
                 trap(PastX(20.5f), Swap(true), say("chown -R mephi /controls", "chown -R mephi /steuerung")),
                 trap(PastX(25.5f), Swap(false), DoorTo(28, 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
-            ),
-            // rematch: the controls are twisted the moment you leave the tunnel, in front of the gate, not behind it
-            rematch = listOf(
-                Round(
-                    T("Shutdown aborted. One last hand.", "shutdown abgebrochen. Revanche, allerletzte Runde."),
-                    start = listOf(
-                        Belt('a', -3f),
-                        Portal('1', 11 to 14, 15 to 14, twoWay = false),
-                        Laser('G', 18 to 1, 18 to 14, on = 1f, off = 1.8f, phase = 1f),
-                    ),
-                    traps = listOf(
-                        trap(PastX(3f), say("shutdown -c. Not so fast.", "shutdown -c. Nicht so schnell.")),
-                        trap(PastX(15.6f), Play(Card.GRAND_FINALE), Swap(true), say("chown, earlier this time.", "chown, diesmal früher.")),
-                        trap(PastX(25.5f), Swap(false), DoorTo(28, 16, speed = 20f), say("Fine. Go. Layer 3 awaits.", "Na gut. Ab mit dir in Schicht 3.")),
-                    ),
-                ),
             ),
         ) {
             border(); floor()
