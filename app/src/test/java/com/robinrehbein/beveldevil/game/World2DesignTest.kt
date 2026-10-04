@@ -103,6 +103,22 @@ class World2DesignTest : DesignTestBase() {
                     .waitUntil(3.5f).leftTo(2.2f).waitUntil(5.4f).rightTo(12.6f)
                     .hopR(15.2f, 0.5f).hopR(21.5f, 0.5f).right(1.5f) },
             ),
+            12 to listOf(
+                { rightTo(4.8f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+                    .rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
+                    .leftTo(26.2f).hopL(26.0f, 0.5f).leftTo(19.3f)
+                    .waitFor { it.group('f').oy > 5f }.waitFor { it.group('f').oy < 0.3f }
+                    .hopL(18.8f, 0.5f).leftJump(0.5f).landLeft().left(2f) },
+            ),
+            14 to listOf(
+                { rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.2f, 0.5f).leftTo(1.5f)
+                    .waitFor { it.links[2].on }.left(0.3f).leftTo(24.1f).wait(0.45f).hopL(23.5f, 0.5f)
+                    .leftUntil { it.player.box.cy > 10f }.left(0.4f)
+                    .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1f) },
+                { right(1.65f).hopL(9.2f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f)
+                    .leftTo(24.1f).wait(0.45f).hopL(23.5f, 0.5f).leftUntil { it.player.box.cy > 10f }.left(0.4f)
+                    .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().right(0.5f) },
+            ),
             13 to listOf(
                 { rightTo(8.3f).landRight().hopR(17.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(21.0f).leftTo(15.8f)
                     .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },

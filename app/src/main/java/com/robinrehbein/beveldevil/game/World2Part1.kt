@@ -299,25 +299,30 @@ object World2Part1 {
         },
 
         // 12 — EASTER EGG: Segmentation fault (core dumped). A loop around the room: the door is in kernel space (upper left),
-        // you start in user space (lower left). Every page you touch on the way right is freed behind you, a pointer at the far
-        // end takes you upstairs, and on the way back the next page is realloc'ed out of reach the moment you jump at it.
-        // Provoke it with a hop at the edge, wait for it to come back, then jump
+        // you start in user space (lower left). Every page you touch on the way right is freed behind you, faster each time; a
+        // pointer at the far end takes you upstairs, where the page you land on is freed too. On the way back the next page is
+        // realloc'ed away the moment you step up to it (standing there is enough), and the last page before the door is freed as you land
         Level(
             name = T("Address Space", "Adressraum"),
             intro = T("Everyone gets their own space. You too.", "Jeder bekommt seinen eigenen Platz. Du auch."),
             start = listOf(Portal('1', 30 to 14, 30 to 8, twoWay = false)),
             traps = listOf(
-                trap(Touch('a'), Fall('a'), say("free(page). Use after free is your problem.", "free(page). Use after free ist dein Problem."), delay = 0.28f),
-                trap(Zone(16.9f, 3f, 19.7f, 8.2f), Play(Card.SINKING), Move('f', 0f, 12f, 24f),
-                    say("realloc(): page moved to a new address. Below you.", "realloc(): Seite an neue Adresse verschoben. Unter dich.")),
-                trap(Zone(16.9f, 3f, 19.7f, 8.2f), Move('f', 0f, -12f, 12f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 1.4f),
-            ) + ('b'..'d').map { g -> trap(Touch(g), Fall(g), delay = 0.28f) },
-            hint = T("Hop at the edge first. The page comes back.", "Erst an der Kante hüpfen. Die Seite kommt zurück."),
+                trap(Touch('a'), Move('a', 0f, 12f, 20f), say("free(page). Use after free is your problem.", "free(page). Use after free ist dein Problem."), delay = 0.28f),
+                trap(Touch('b'), Move('b', 0f, 12f, 20f), delay = 0.2f),
+                trap(Touch('c'), Move('c', 0f, 12f, 20f), delay = 0.14f),
+                trap(Touch('d'), Move('d', 0f, 12f, 20f), delay = 0.08f),
+                trap(Zone(26f, 5f, 31f, 9.5f), Move('g', 0f, 12f, 20f), say("Dangling pointer: this page is freed too.", "Hängender Zeiger: Diese Seite wird auch freigegeben."), delay = 0.8f),
+                trap(Zone(16.9f, 3f, 21f, 9.9f), Play(Card.SINKING), Move('f', 0f, 12f, 40f),
+                    say("realloc(): page moved to a new address. Below you.", "realloc(): Seite an neue Adresse verschoben. Unter dir.")),
+                trap(Zone(16.9f, 3f, 21f, 9.9f), Move('f', 0f, -12f, 30f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 0.75f),
+                trap(Zone(1f, 5f, 10.6f, 9.9f), Move('l', 0f, 12f, 20f), say("Last page before the door: freed on arrival.", "Letzte Seite vor der Tür: bei Ankunft freigegeben."), delay = 0.5f),
+            ),
+            hint = T("Whatever you touch gets freed. Keep moving. The pointer is on the right.", "Was du berührst, wird freigegeben. Bleib in Bewegung. Der Zeiger ist rechts."),
         ) {
             border()
             fill(0..5, 15..17); fill(26..30, 15..17)
             fill(7..9, 15..15, 'a'); fill(12..14, 15..15, 'b'); fill(17..19, 15..15, 'c'); fill(22..24, 15..15, 'd')
-            fill(26..30, 9..9); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..9, 9..9)
+            fill(26..26, 9..9); fill(27..30, 9..9, 'g'); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..5, 9..9); fill(6..10, 9..9, 'l')
             spawn(); door(4, 8); bits(12, x0 = 12)
         },
 
@@ -349,38 +354,42 @@ object World2Part1 {
         // 14 — EASTER EGG: 127.0.0.1 and traceroute. The room is four subnets (a slab and a wall split it into quarters), and the
         // way to the door is a spiral of one-way links: bottom left, top left, top right, bottom right. The obvious floor link
         // is the loopback (it sends you home); the way on is the one hanging in mid-air above it. Upstairs the next link flaps
-        // (down for a moment just as you arrive), and in the top right the ceiling comes down on whoever runs under it.
-        // The last subnet drops every other packet: its bridge blinks
+        // (down for a moment just as you arrive), in the top right the ceiling comes down on whoever runs under it, and the
+        // last subnet is a pit with one stone: the stone is freed as soon as you step on it
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
             start = listOf(
                 Portal('1', 13 to 14, 3 to 14, twoWay = false), Portal('2', 13 to 12, 13 to 7, twoWay = false),
                 Portal('3', 1 to 7, 30 to 7, twoWay = false), Portal('4', 17 to 7, 30 to 14, twoWay = false),
-                Blink('k', on = 1.6f, off = 1f),
             ),
             traps = listOf(
                 trap(Zone(12.3f, 14f, 13f, 15f), say("ping 127.0.0.1: reply from 127.0.0.1. Welcome home.", "ping 127.0.0.1: Antwort von 127.0.0.1. Willkommen daheim.")),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', false), say("Link down. Hop 3 is flapping.", "Link down. Hop 3 flattert.")),
-                trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.9f),
-                trap(Zone(23.4f, 1f, 24.2f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
+                trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.2f),
+                trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                trap(Zone(23.4f, 1f, 26.5f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
+                trap(Touch('k'), Fall('k'), say("Hop 5: packet dropped. Stone included.", "Hop 5: Paket verworfen. Stein inklusive."), delay = 0.15f),
             ),
             hint = T("The obvious link goes home. Try the one in the air.", "Der offensichtliche Link führt heim. Nimm den in der Luft."),
-            // rematch: the two links at home swap (the one in the air is the loopback now), and the last subnet got a firewall:
-            // once your packet is forwarded into it, the firewall follows it. No waiting for the bridge down there
+            // rematch: the two links at home swap (the one in the air is the loopback now), the DNS entry of the way upstairs is
+            // poisoned for a moment after you arrive (stay out of the link until it heals), and a firewall follows your packet
+            // into the last subnet
             rematch = listOf(
                 Round(
                     T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
                     start = listOf(
                         Portal('1', 13 to 14, 13 to 7, twoWay = false), Portal('2', 13 to 12, 3 to 14, twoWay = false),
                         Portal('3', 1 to 7, 30 to 7, twoWay = false), Portal('4', 17 to 7, 29 to 14, twoWay = false),
-                        Blink('k', on = 1.6f, off = 1f),
                     ),
-                    hint = T("Watch the bridge before you take the last link.", "Schau auf die Brücke, bevor du den letzten Link nimmst."),
+                    hint = T("Let the DNS settle before you take the link. Then don't stop.", "Lass das DNS sich beruhigen, bevor du den Link nimmst. Dann nicht stehen bleiben."),
                     traps = listOf(
                         trap(Zone(12.3f, 11f, 14f, 13f), say("Routing table updated. You're home again.", "Routing-Tabelle aktualisiert. Du bist wieder daheim.")),
-                        trap(Zone(23.4f, 1f, 24.2f, 8f), Fall('h'), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
-                        trap(Zone(17f, 9f, 28.6f, 15f), Play(Card.STALKER), Chase('F', speed = 2.6f, left = 13f, right = 0f),
+                        trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 22 to 12), say("DNS poisoned: hop 3 now exits over the pit.", "DNS vergiftet: Hop 3 endet jetzt über der Grube.")),
+                        trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 30 to 7), say("TTL expired. DNS healed.", "TTL abgelaufen. DNS geheilt."), delay = 1.2f),
+                        trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                        trap(Zone(23.4f, 1f, 26.5f, 8f), Move('h', 0f, 5f, 30f), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
+                        trap(Zone(17f, 9f, 28.6f, 15f), Play(Card.STALKER), Chase('F', speed = 4f, left = 13f, right = 0f),
                             say("Firewall rule added: follow that packet.", "Neue Firewall-Regel: Folge dem Paket.")),
                     ),
                 ) { put(30, 13, 'F'); put(30, 14, 'F') },
@@ -388,7 +397,7 @@ object World2Part1 {
         ) {
             border(); floor()
             fill(1..30, 8..8); fill(15..16, 1..14)
-            fill(20..22, 1..2, 'h'); pit(19..25); fill(21..23, 15..15, 'k')
+            fill(20..22, 1..2, 'h'); pit(20..25); fill(21..25, 15..15, 'k')
             leds(6..7, 7)
             spawn(); door(18); bits(14, x0 = 3)
         },
