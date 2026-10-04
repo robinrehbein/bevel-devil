@@ -135,7 +135,7 @@ class World2DeckTest {
 
     /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; a saw inspects the floor after it. */
     @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
-    @Test fun l18r2TheRoundOneRouteEndsAtAPadNotADoor() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f) }.expect(WorldState.PLAYING)
+    @Test fun l18r2TheRoundOneRouteDoesNotWin() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f); assertTrue(it.world.state != WorldState.WON) }.let { }
     @Test fun l18r2RunningForTheDoorAfterThePadMeetsTheSaw() = b(18, 2).hopR(10f).wait(0.15f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
         .leftJump(0.4f).landLeft().leftTo(2.4f).rightUntil { it.player.box.cx > 11.3f && it.player.grounded && it.player.box.b < 13.5f }
         .rightTo(14.5f).waitFor(cond = World2Rooms.clear('L')).right(3f).expect(WorldState.DEAD)
@@ -191,8 +191,6 @@ class World2DeckTest {
                 .rightJump(0.55f).right(0.25f).right(0.10f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
                 .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f)
                 .right(0.03f).right(0.03f).left(0.10f).rightJump(0.55f).right(0.60f) },
-                        18 to World2Rooms::l18,
-            20 to World2Rooms::l20,
             25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },
             29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)

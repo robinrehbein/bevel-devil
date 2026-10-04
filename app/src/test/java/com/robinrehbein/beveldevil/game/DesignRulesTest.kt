@@ -264,8 +264,20 @@ class DesignRulesTest {
     @Test
     fun aDoorTrailIsOneMoment() {
         // the door hopping along in several traps with the same trigger is one surprise, not three
-        val l13 = World2.levels[23]
-        val bot = DesignRules.cleanRun(l13, 0) { World2Rooms.l24(this) }
+        // (no World 2 room has a door trail since the v2 rebuild, so a small demo room shows it)
+        val trail = Level(
+            name = T("Demo: Door trail", "Demo: Türspur"),
+            intro = T("", ""),
+            traps = listOf(
+                trap(Trigger.PastX(10f), Action.DoorTo(20, 14, speed = 30f)),
+                trap(Trigger.PastX(10f), Action.DoorTo(4, 14, speed = 30f), delay = 0.6f),
+            ),
+        ) {
+            border(); floor()
+            put(2, 14, 'P')
+            put(28, 14, 'D')
+        }
+        val bot = DesignRules.cleanRun(trail, 0) { rightTo(12f).wait(1.5f) }
         val door = bot.moments.filter { m -> m.actions.any { it is Action.DoorTo } }
         assertEquals(1, door.size)
         assertEquals(2, door.single().actions.count { it is Action.DoorTo })

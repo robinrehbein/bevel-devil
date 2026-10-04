@@ -9,84 +9,84 @@ object World2Rooms {
     /** Firewall gate [id] is dark and not glowing: safe to cross now. */
     fun clear(id: Char) = { w: World -> w.beams.none { it.laser.id == id && (it.lit || it.warn > 0f) } }
 
+    /** On the ground, a saw is ahead within [d] tiles. */
+    fun sawAhead(w: World, d: Float) = w.player.grounded && w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= d }
+
     /** Firewall gate [id] is lit or glowing. */
     fun busy(id: Char) = { w: World -> !clear(id)(w) }
 
-    /** 17: over the duct, wait for the loose shelf piece to drop, up the stairs, left along the shelf to the pad, ride the bus. */
-    fun l17(b: Bot) = b.rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight()
-        .rightTo(10.2f).wait(0.6f).hopR(11f, 0.2f)
-        .rightTo(23.5f).rightJump(0.4f).landRight().wait(0.1f).leftJump(0.4f).landLeft()
-        .leftTo(15.6f).leftJump(0.35f).landLeft().leftTo(2.2f).wait(0.8f)
-        .rightTo(1.9f).rightJump(0.15f).landRight().right(3f)
+    /** 17: over the duct, wait for the loose shelf piece, up the stairs, hop the hole, press the pad, ride the bus, jump the closed station. */
+    fun l17(b: Bot) = b.rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .rightJump(0.35f).landRight().rightTo(17.4f).rightJump(0.4f).landRight()
+        .wait(0.12f).leftJump(0.4f).landLeft().hopL(15.2f)
+        .leftTo(4.6f).leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 13.9f }
+        .rightJump(0.35f).landRight().rightTo(23.5f).rightJump(0.35f).landRight().right(1.5f)
 
-    /** 18, up to the pad on the rack behind the gate. */
-    fun l18ToPad(b: Bot) = b.hopR(10f).rightTo(14.5f).waitFor(cond = clear('L')).rightTo(23f).rightJump(0.4f).landRight().rightTo(26.3f)
+    /** 18, up to the pad on the rack: hop the low beam, wait for the gate, climb the rack, step back onto the pad. */
+    fun l18ToPad(b: Bot) = b.hopR(16.4f).rightTo(23.2f).waitFor(cond = clear('G')).rightTo(25.6f).rightJump(0.35f).landRight().leftTo(28.6f)
 
-    /** 18: through the gate, press the pad, sit out the port scan on the rack, back through the gate, climb without stopping. */
-    fun l18(b: Bot) = l18ToPad(b).wait(0.1f).waitFor { w -> w.beams.any { it.laser.id == 'S' && it.lit } }.waitFor(cond = clear('S'))
-        .leftTo(17.5f).waitFor(cond = clear('L')).leftTo(13.8f).leftJump(0.4f).landLeft()
-        .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f)
+    /** The stairs of 18, from the floor right of the first step up to the ledge: each jump starts where the next step is within reach. */
+    private fun stairs18(b: Bot) = b.leftTo(17.0f).leftJump(0.35f).landLeft().leftTo(13.6f).leftJump(0.4f).landLeft()
+        .leftTo(9.6f).leftJump(0.4f).landLeft().leftTo(5.6f).leftJump(0.4f)
 
-    /** 18, round 2: climb first, press the pad where the door was, stand on the lowest step while the saw passes below. */
-    fun l18r2(b: Bot) = b.hopR(10f).wait(0.15f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftTo(2.4f)
-        .rightUntil { it.player.box.cx > 11.3f && it.player.grounded && it.player.box.b < 13.5f }
-        .waitFor { w -> w.saws.isNotEmpty() && w.saws.all { it.x < 9f } }
-        .rightTo(14.5f).waitFor(cond = clear('L')).rightTo(22.5f).rightJump(0.4f).landRight().right(2f)
+    /** 18: press the pad, run back, hop the port scan onto the first step and up the stairs without stopping. */
+    fun l18(b: Bot) = stairs18(l18ToPad(b).leftTo(23.4f).leftJump(0.35f).landLeft()).landLeft().left(1f)
 
-    /** 19, up to the moment the shelf swaps the controls. */
-    fun l19ToShelf(b: Bot) = b.hopR(5.6f).hopR(14.6f).rightTo(24.8f).rightJump(0.3f).landRight().rightJump(0.4f).landRight()
-        .leftTo(28.5f).wait(0.15f).leftJump(0.4f).landLeft()
+    /** 18, round 2: climb first, press the pad where the door was (landing on it), run down for the door, hop the saw and wait for the last gate. */
+    fun l18r2(b: Bot) = b.hopR(10.3f).wait(0.15f).leftTo(13.6f).leftJump(0.4f).landLeft().leftTo(9.6f).leftJump(0.4f).landLeft().leftTo(5.6f).leftJump(0.4f).waitFor { it.player.grounded }
+        .rightUntil { sawAhead(it, 4.3f) }.rightJump(0.4f).landRight().rightTo(24.6f).waitFor(cond = clear('Z')).rightTo(28.6f).right(1f)
 
-    /** 19, swapped: over the shelf spikes, up to the step and the top floor, over the gap. */
-    fun l19Swapped(b: Bot) = l19ToShelf(b).rightKeyLeftTo(18.2f).rightJump(0.35f).landRight().rightKeyLeftTo(9.6f)
-        .rightJump(0.3f).jump(0.1f).waitFor { it.player.grounded }.wait(0.1f).leftKeyRightTo(8.4f).leftJump(0.4f).landLeft()
-        .leftKeyRightTo(14.9f).leftJump(0.35f).landLeft()
+    /** 19, up to the moment the order is restored: hop the pit, the wall and the stairs with swapped hands. */
+    fun l19ToShelf(b: Bot) = b.hopR(6.8f).hopS(11.6f).hopS(13.9f).hopS(19.6f).hopS(23.4f)
 
-    /** 19: the whole snake; after the gap the controls are back to normal. */
-    fun l19(b: Bot) = l19Swapped(b).right(3f)
+    /** 19: the whole room: stairs with swapped hands, the top floor with normal ones, wait for the packet from the ceiling and hop it. */
+    fun l19(b: Bot) = l19ToShelf(b).leftTo(25.6f).leftJump(0.35f).landLeft()
+        .leftUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopL(15.2f).hopL(9.8f).left(1.5f)
 
-    /** 20, up to the ID scanner on the island's rack. */
-    fun l20ToScanner(b: Bot) = b.waitFor(cond = clear('L')).hopR(9.6f).rightJump(0.4f).landRight().rightTo(15.4f)
+    /** 20, up to the second check: over the scanner on the way, onto the second pad (gate 3 shuts). */
+    fun l20ToScanner(b: Bot) = b.rightTo(18.6f)
 
-    /** 20: wait for gate 2 on the rack, then jump over the second check. */
-    fun l20(b: Bot) = l20ToScanner(b).waitFor(cond = busy('M')).waitFor(cond = clear('M')).hopR(22.6f).right(2f)
+    /** 20: back to the scanner (gate 3 opens again, the queue forms), then down the lane: hop the low beam, wait for the gate. */
+    fun l20(b: Bot) = l20ToScanner(b).leftTo(6.0f).rightTo(13.6f).rightJump(0.35f).landRight().rightTo(21.6f)
+        .waitFor(cond = busy('Z')).waitFor(cond = clear('Z')).right(3f)
 
-    /** 20, round 2: the same, but walk over the second check (the jump is the trap now). */
-    fun l20r2(b: Bot) = l20ToScanner(b).waitFor(cond = busy('M')).waitFor(cond = clear('M')).rightTo(30f)
+    /** 20, round 2: the same, turned around. */
+    fun l20r2(b: Bot) = b.leftTo(13.4f).rightTo(26.0f).leftTo(18.4f).leftJump(0.35f).landLeft().leftTo(10.4f)
+        .waitFor(cond = busy('Z')).waitFor(cond = clear('Z')).left(3f)
 
-    /** 21, into the captive portal and onto the terms. */
-    fun l21ToCage(b: Bot) = b.hopR(6.9f).hopR(12.9f).hopR(18.9f).rightUntil { it.links[0].hopTime > 0f }.wait(0.1f).leftTo(2.6f)
+    /** 21, into the captive portal on the lane, up on the top floor at the far right. */
+    fun l21ToCage(b: Bot) = b.rightUntil { it.links[0].hopTime > 0f }
 
-    /** 21: wait for the cage to open, walk (no jumping) and fall through the hole after the door, hop the portal. */
-    fun l21(b: Bot) = l21ToCage(b).waitFor { !it.group('w').visible }.rightTo(24.3f).wait(0.7f)
-        .rightTo(25.7f).rightJump(0.35f).landRight().right(1f)
+    /** 21: back left along the top floor without a jump, down through the hole, hop the low beam and the portal in front of the door. */
+    fun l21(b: Bot) = l21ToCage(b).leftTo(10.4f).leftTo(9.0f).waitFor { it.player.grounded }.hopR(11.4f).rightTo(20.2f).rightJump(0.12f).landRight().rightTo(25.6f).waitFor(cond = busy('G')).waitFor(cond = clear('G')).right(1.5f)
 
-    /** 22, back left, knock on the hidden step, up onto the shelf. */
-    fun l22ToShelf(b: Bot) = b.leftTo(4.6f).leftJump(0.4f).landLeft().wait(0.15f).rightJump(0.4f).landRight()
-        .rightTo(6.7f).wait(0.1f).jump(0.15f).wait(0.5f).leftTo(5.5f).wait(0.15f).rightJump(0.2f).jump(0.25f).wait(0.4f)
-        .rightTo(7.2f).rightJump(0.4f).landRight()
+    /** The middle of the bouncer's wall (group w) in tiles. */
+    fun bouncerX(w: World) = w.group('w').homeX + w.group('w').ox
 
-    /** 22: drop onto the bouncer and walk straight off his far side. */
-    fun l22(b: Bot) = l22ToShelf(b).rightTo(21.9f).right(3f)
+    /** 22: along the top floor (wait for each packet to land, then hop it), drop down, hop the bouncer and the pit, to the door. */
+    fun l22(b: Bot) = b.rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .rightJump(0.35f).landRight().rightUntil { it.group('d').mode == GroupMode.FALL }.waitFor { it.group('d').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .rightJump(0.35f).landRight().rightTo(29.5f).waitFor { it.player.grounded }
+        .leftUntil { it.player.grounded && bouncerX(it) < it.player.box.cx && it.player.box.cx - bouncerX(it) <= 4.0f }.leftJump(0.35f).landLeft()
+        .hopL(7.4f).left(1f)
 
-    /** 23, lanes 1 and 2 (the jam: walk against it, hop the spikes). */
-    fun l23ToLane3(b: Bot) = b.hopR(10.2f).rightUntil { it.links[0].hopTime > 0f }.hopR(4.3f).rightTo(13.9f).rightJump(0.4f).landRight()
-        .rightUntil { it.links[1].hopTime > 0f }
+    /** On the ground, wall group [id] rolls toward the player from the right within [d] tiles. */
+    fun carAhead(w: World, id: Char, d: Float): Boolean {
+        val x = w.group(id).homeX + w.group(id).ox - w.player.box.cx
+        return w.player.grounded && x in 0f..d
+    }
 
-    /** 23: on lane 3, jump the closed section. */
-    fun l23(b: Bot) = l23ToLane3(b).rightTo(13.6f).rightJump(0.4f).landRight().right(3f)
+    /** 23: hop the first car, ride the on-ramp, hop the second and the third. */
+    fun l23(b: Bot) = b.rightUntil { carAhead(it, 'a', 4.3f) }.rightJump(0.35f).landRight().rightUntil { it.links[0].hopTime > 0f }
+        .rightUntil { carAhead(it, 'b', 4.3f) }.rightJump(0.35f).landRight().rightUntil { carAhead(it, 'c', 4.3f) }.rightJump(0.35f).landRight().right(3f)
 
-    /** 24, up to rack 2: through gate 1 on the first rack, jump. */
-    fun l24ToRack2(b: Bot) = b.rightTo(3.0f).rightJump(0.3f).landRight().rightTo(6.2f).waitFor(cond = clear('1')).rightTo(8.3f).rightJump(0.4f).landRight()
-
-    /** 24, up to the top: off the hot spot where you land, each gate when it is dark, each jump from the far end of a rack. */
-    fun l24Up(b: Bot) = l24ToRack2(b).rightTo(11.2f).waitFor { clear('2')(it) && clear('W')(it) }.rightTo(13.3f).rightJump(0.4f).landRight()
-        .rightTo(16.2f).waitFor(cond = clear('3')).rightTo(18.3f).rightJump(0.4f).landRight()
-        .rightTo(21.2f).waitFor(cond = clear('4')).rightTo(23.3f).rightJump(0.4f).landRight().rightTo(27f)
-
-    /** 24: the door sinks to the start; climb down, waiting on each rack until the gate below it is dark. */
-    fun l24(b: Bot) = l24Up(b).wait(0.5f).leftTo(24.5f).waitFor(cond = clear('4')).leftTo(19.4f)
-        .waitFor(cond = clear('3')).leftTo(14.4f).waitFor(cond = clear('2')).leftTo(9.4f).waitFor(cond = clear('1')).left(3f)
+    /** 24: along the first floor (wait for the packet, hop it), drop to the second (wait for the gate), walk into the hole, ride the piece down and hop the low beam. */
+    fun l24(b: Bot) = b.rightTo(9.0f).waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .rightJump(0.35f).landRight().rightTo(19.2f).leftUntil { it.player.grounded }
+        .leftTo(17.6f).waitFor(cond = busy('G')).waitFor(cond = clear('G')).leftTo(13.0f).landLeft()
+        .hopR(17.4f).right(4f)
 
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
