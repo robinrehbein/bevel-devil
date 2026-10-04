@@ -88,7 +88,7 @@ class World2Test {
         assertTrue("only $tagged use a network mechanic", tagged.size >= 10)
         // each new mechanic shows up alone before it is mixed in (the traps around it are classics and its own tricks)
         assertTrue(actions(World2.levels[16]).filter(::net).all { it is Action.Belt })
-        assertTrue(actions(World2.levels[17]).filter(::net).all { it is Action.Laser })
+        assertTrue(actions(World2.levels[17]).filter(::net).all { it is Action.Laser || it is Action.Power })
         assertTrue(World2Part2.levels.any { l -> actions(l).any { it is Action.Belt } && actions(l).any { it is Action.Portal } })
         assertTrue(World2Part2.levels.any { l -> actions(l).any { it is Action.Laser } && actions(l).any { it is Action.Portal } })
         assertTrue(World2Part2.levels.any { l -> actions(l).any { it is Action.Power } || l.traps.any { t -> t.actions.any { it is Action.Laser } } })
@@ -169,12 +169,12 @@ class World2Test {
         b(3).hopR(12.9f).hopR(17.8f).right(3f).expect(WorldState.DEAD)
         // 4: the gap you aim for is plugged while you fly at it
         b(4).hopR(9.4f).right(1f).expect(WorldState.DEAD)
-        // 17: landing after the first spike turns the belt around, and it carries you back into the spike
-        b(17).hopR(10.2f).right(3f).expect(WorldState.DEAD)
-        // 18: waiting in front of the gate is waiting in front of a second beam
-        b(18).hopR(7f).rightTo(14.3f).wait(1.3f).expect(WorldState.DEAD)
-        // 20: the landing resets the rhythm of the second gate, and there are spikes in front of it
-        b(20).waitUntil(2.05f).hopR(12f).right(2f).expect(WorldState.DEAD)
+        // 17: running along the roof of the duct runs under the loose piece of the shelf
+        b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
+        // 18: running back right after pressing the pad runs into the port scan
+        World2Rooms.l18ToPad(b(18)).left(3f).expect(WorldState.DEAD)
+        // 20: running for gate 2 right after the ID scan: it remembered you and is still shut
+        World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
         // 28: the tunnel drops you next to the IPS beam, and running on runs into it
         b(28).right(3f).expect(WorldState.DEAD)
         // 29: the belt turns against you after the first hop, and the saw behind you does not
@@ -185,12 +185,12 @@ class World2Test {
     }
 
     @Test
-    fun beltsTurnAroundWhereYouLandAndLasersWarmUpWhereYouWait() {
-        assertEquals(-6f, b(17).hopR(10.2f).wait(0.05f).world.group('b').belt)
-        val firewall = b(18).hopR(7f).wait(0.1f)
-        assertTrue(firewall.world.beams.any { it.laser.id == 'M' })
-        // the beam warms up first: the emitters glow before it fires
-        val glow = b(18).hopR(7f).wait(0.6f).world.beams.first { it.laser.id == 'M' }
+    fun theBusTurnsAroundAtThePadAndTheScanWarmsUpBeforeItFires() {
+        assertEquals(-9f, b(17).world.group('b').belt)
+        val shelf = World2Rooms.l17(b(17))
+        assertEquals(5f, shelf.world.group('b').belt)
+        // the port scan glows before it fires: there is time to see it coming from the rack
+        val glow = World2Rooms.l18ToPad(b(18)).wait(0.5f).world.beams.first { it.laser.id == 'S' }
         assertTrue(glow.warn > 0f && !glow.lit)
     }
 
@@ -266,8 +266,10 @@ class World2Test {
 
     @Test
     fun theBeltCarriesYouButOnlyOnTheGround() {
-        val bot = b(17).rightTo(7f).wait(1f)
-        assertTrue(bot.world.player.box.cx > 9f)
+        // the bus in the duct runs against you, faster than you run: it pushes you back out
+        val bot = b(17).rightTo(1.9f).rightJump(0.15f).landRight().right(2f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 7.6f)
     }
 
     // ---------- Act 1: Handshake ----------
@@ -298,29 +300,14 @@ class World2Test {
         .leftJump(0.12f).right(0.03f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
 
     // ---------- Act 2: Traffic ----------
-    @Test fun level17() = b(17).right(0.60f).right(0.25f).rightJump(0.55f).rightJump(0.25f).rightJump(0.12f)
-        .leftJump(0.12f).right(0.03f).left(0.03f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level18() = b(18).right(0.60f).rightJump(0.55f).right(0.25f).right(0.10f).leftJump(0.25f).right(0.60f)
-        .rightJump(0.12f).right(0.03f).leftJump(0.12f).left(0.03f).left(0.03f).left(0.10f).rightJump(0.55f)
-        .right(0.60f).right(0.60f).expect(WorldState.WON)
-    @Test fun level19() = b(19).right(0.60f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level20() = b(20).waitUntil(2.05f).hopR(12f).wait(0.1f).waitFor { !it.beams[1].lit }.hopR(17.3f).wait(1.3f)
-        .right(3f).expect(WorldState.WON)
-    @Test fun level21() = b(21).right(0.25f).leftJump(0.12f).left(0.03f).right(0.10f).left(0.03f).right(0.03f)
-        .rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.12f).right(0.03f).right(0.03f).rightJump(0.12f)
-        .right(0.10f).rightJump(0.12f).left(0.10f).right(0.03f).left(0.03f).left(0.03f).rightJump(0.12f).right(0.03f)
-        .right(0.03f).rightJump(0.12f).right(0.10f).rightJump(0.12f).left(0.10f).right(0.03f).left(0.03f).left(0.03f)
-        .rightJump(0.12f).right(0.03f).right(0.03f).rightJump(0.12f).right(0.10f).rightJump(0.12f).left(0.10f)
-        .right(0.03f).left(0.03f).left(0.03f).rightJump(0.12f).right(0.03f).right(0.03f).rightJump(0.25f).right(0.03f)
-        .leftJump(0.12f).right(0.60f).expect(WorldState.WON)
-    @Test fun level22() = b(22).right(0.60f).rightJump(0.55f).right(0.60f).rightJump(0.12f).leftJump(0.12f)
-        .left(0.10f).rightJump(0.12f).right(0.03f).left(0.10f).left(0.03f).rightJump(0.55f).rightJump(0.55f)
-        .rightJump(0.25f).right(0.60f).expect(WorldState.WON)
-    @Test fun level23() = b(23).rightJump(0.55f).rightJump(0.55f).right(0.25f).right(0.03f).rightJump(0.55f)
-        .left(0.10f).rightJump(0.25f).rightJump(0.12f).jump(0.16f).rightJump(0.55f).rightJump(0.25f).left(0.10f)
-        .leftJump(0.12f).rightJump(0.55f).left(0.03f).left(0.03f).rightJump(0.25f).left(0.60f).expect(WorldState.WON)
-    @Test fun level24() = b(24).rightJump(0.55f).rightJump(0.55f).right(0.25f).rightJump(0.55f).right(0.25f)
-        .rightJump(0.12f).rightJump(0.25f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level17() = World2Rooms.l17(b(17)).expect(WorldState.WON)
+    @Test fun level18() = World2Rooms.l18(b(18)).expect(WorldState.WON)
+    @Test fun level19() = World2Rooms.l19(b(19)).expect(WorldState.WON)
+    @Test fun level20() = World2Rooms.l20(b(20)).expect(WorldState.WON)
+    @Test fun level21() = World2Rooms.l21(b(21)).expect(WorldState.WON)
+    @Test fun level22() = World2Rooms.l22(b(22)).expect(WorldState.WON)
+    @Test fun level23() = World2Rooms.l23(b(23)).expect(WorldState.WON)
+    @Test fun level24() = World2Rooms.l24(b(24)).expect(WorldState.WON)
     @Test fun level25() = b(25).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
     @Test fun level26() = b(26).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
     @Test fun level27() = b(27).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f)
@@ -335,6 +322,79 @@ class World2Test {
     @Test fun level32() = b(32).rightJump(0.55f).rightJump(0.25f).right(0.03f).left(0.10f).left(0.10f)
         .rightJump(0.55f).right(0.10f).left(0.03f).left(0.03f).rightJump(0.25f).jump(0.16f).leftJump(0.12f)
         .rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+
+    // ---------- Act 2, levels 17-24: one-screen puzzle rooms ----------
+
+    /** Run right and jump every [period] seconds, for 14 seconds: the reflex, in a few rhythms. */
+    private fun hammer(n: Int, period: Float) = b(n).also { bot -> repeat((14f / (period + 0.35f)).toInt() + 1) { bot.right(period).rightJump(0.35f) } }
+
+    @Test
+    fun puzzleRoomsTakeTimeAndHoldingRightWithJumpsWinsNone() {
+        for ((n, solve) in World2Rooms.solutions) {
+            val run = solve(b(n))
+            run.expect(WorldState.WON)
+            assertTrue("level $n: clean run only ${run.world.time} s", run.world.time >= 8f)
+            for (period in listOf(0.15f, 0.4f, 0.8f, 1.3f)) {
+                assertTrue("level $n: running right, jumping every $period s, wins", hammer(n, period).world.state != WorldState.WON)
+            }
+        }
+    }
+
+    @Test
+    fun puzzleRoomsUseFewSproutingSpikesAndOneCardEach() {
+        val rooms = (17..24).map { World2.levels[it - 1] }
+        val shows = rooms.map { l -> l.rounds.sumOf { r -> r.traps.sumOf { t -> t.actions.count { it is Action.Show } } } }
+        assertTrue("Show per room: $shows", shows.all { it <= 1 } && shows.count { it == 0 } >= 4)
+        // no two neighbours lead with the same card
+        val cards = rooms.map { l -> l.traps.flatMap { it.actions }.filterIsInstance<Action.Play>().single().card }
+        cards.zipWithNext().forEach { (x, y) -> assertTrue("$cards", x != y) }
+    }
+
+    // 17: the duct's ceiling has spikes, the bus pushes you out, the loose shelf piece drops on runners
+    @Test fun l17HoppingInTheDuctHitsItsCeiling() = b(17).rightTo(1.9f).rightJump(0.15f).landRight().right(0.6f).rightJump(0.3f).wait(0.5f).expect(WorldState.DEAD)
+    @Test fun l17RunningUnderTheLooseShelfPieceIsFatal() = b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
+
+    // 18: the scan after the pad, and the beam over the stairs coming back
+    @Test fun l18LeavingTheRackDuringTheScanIsFatal() = World2Rooms.l18ToPad(b(18)).left(3f).expect(WorldState.DEAD)
+    @Test fun l18PausingOnTheMiddleStepIsFatal() = World2Rooms.l18ToPad(b(18)).wait(0.1f)
+        .waitFor { w -> w.beams.any { it.laser.id == 'S' && it.lit } }.waitFor(cond = World2Rooms.clear('S'))
+        .leftTo(17.5f).waitFor(cond = World2Rooms.clear('L')).leftTo(13.8f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f)
+        .expect(WorldState.DEAD)
+
+    // 19: the shelf bus carries whoever stands into its spikes; after the gap the controls are normal again
+    @Test fun l19StandingOnTheShelfIsFatal() = World2Rooms.l19ToShelf(b(19)).wait(4f).expect(WorldState.DEAD)
+    @Test fun l19KeepingTheSwappedKeyAfterTheGapIsFatal() = World2Rooms.l19Swapped(b(19)).left(2f).expect(WorldState.DEAD)
+    @Test fun l19TheShelfSwapsTheControls() = assertTrue(World2Rooms.l19ToShelf(b(19)).world.swapped)
+
+    // 20: the second check closes gate 3, and gate 2 remembers you
+    @Test fun l20WalkingOverTheSecondCheckIsFatal() = World2Rooms.l20ToScanner(b(20)).waitFor(cond = World2Rooms.busy('M'))
+        .waitFor(cond = World2Rooms.clear('M')).rightTo(30f).expect(WorldState.DEAD)
+    @Test fun l20RunningForGateTwoAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
+
+    // 21: the throttle forbids jumping, in the cage and over the hole; the portal next to the door is a captive portal
+    @Test fun l21ThePortalLeadsIntoTheCage() {
+        val bot = World2Rooms.l21ToCage(b(21))
+        assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
+    }
+    @Test fun l21JumpingInTheCageAfterAcceptingIsFatal() = World2Rooms.l21ToCage(b(21)).waitFor { !it.group('w').visible }.wait(0.1f).jump(0.3f).wait(0.5f).expect(WorldState.DEAD)
+    @Test fun l21JumpingOverTheHoleIsFatal() = World2Rooms.l21ToCage(b(21)).waitFor { !it.group('w').visible }.hopR(22.8f).right(1f).expect(WorldState.DEAD)
+
+    // 22: the bouncer walks out whoever stands on him, and the ceiling over him has spikes
+    @Test fun l22StandingOnTheBouncerIsFatal() = World2Rooms.l22ToShelf(b(22)).rightTo(22.5f).wait(2f).expect(WorldState.DEAD)
+    @Test fun l22JumpingOffTheBouncerIsFatal() = World2Rooms.l22ToShelf(b(22)).rightTo(22.5f).wait(0.1f).rightJump(0.4f).landRight().expect(WorldState.DEAD)
+    @Test fun l22TheBouncerBlocksTheGround() = b(22).leftTo(20f).right(3f).also { assertTrue(it.world.player.box.cx < 27f) }.expect(WorldState.PLAYING)
+
+    // 23: the jam carries whoever stands into the spikes behind; the closed lane drops onto lane 2's spikes
+    @Test fun l23StandingInTheJamIsFatal() = b(23).hopR(10.2f).rightUntil { it.links[0].hopTime > 0f }.hopR(4.3f).rightTo(11f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l23RunningIntoTheClosedLaneIsFatal() = World2Rooms.l23ToLane3(b(23)).right(3f).expect(WorldState.DEAD)
+
+    // 24: rack 2's right edge is a hot aisle; the way down has the beams too
+    @Test fun l24WaitingAtTheHotEdgeIsFatal() = World2Rooms.l24ToRack2(b(24)).wait(2.5f).expect(WorldState.DEAD)
+    @Test fun l24RunningDownWithoutLookingIsFatal() = World2Rooms.l24Up(b(24)).wait(0.5f).left(4f).expect(WorldState.DEAD)
+    @Test fun l24TheDoorFleesToTheBottom() {
+        val bot = World2Rooms.l24Up(b(24)).wait(3f)
+        assertTrue("door at ${bot.world.door.box.x}", bot.world.door.box.x < 3f && bot.world.door.box.b > 14.5f)
+    }
 
     // ---------- Act 3: Root ----------
     @Test fun level33() = b(33).right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) .right(0.03f).expect(WorldState.WON)
