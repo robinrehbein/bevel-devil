@@ -34,9 +34,9 @@ class World1DeckTest {
         21 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(21)[0]) },
         24 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(24)[0]) },
         28 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(28)[0]) },
-        33 to { b -> b.hopR(18.6f).right(2f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded || it.door.moving }
-            .hopL(22.6f).hopL(17.4f).hopL(8.6f).left(4f) },
-        37 to { b -> b.hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f) },
+        // levels 33-40 are rebuilt: their round 1 is the registered solution (World1RoomsD)
+        33 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(33)[0]) },
+        37 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(37)[0]) },
         42 to { b -> b.hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f) },
         46 to { b -> b.left(1.2f).hopR(23.6f).right(2f) },
         47 to { b -> b.rightTo(10.5f).jump(0.3f).wait(0.4f).hopR(15.2f).rightJump(0.35f).landRight().right(4f) },
@@ -217,15 +217,15 @@ class World1DeckTest {
 
     // ---------- Act 3 ----------
 
-    @Test fun level33Rematch() = b(33, 1).hopR(18.6f).rightTo(24.4f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level33RematchNobodyWaitsForTheFake() {
-        b(33, 1).hopR(18.6f).right(2f).expect(WorldState.DEAD)
-        b(33, 1).hopR(18.6f).wait(1f).expect(WorldState.DEAD)   // the floor erodes behind the landing
-    }
+    @Test fun level33Rematch() = World1DesignTest.play(33, 2)
+    /** Clear Road, round 2: the road is longer from the first second, and the hop that saved you in round 1 lands on spikes. */
+    @Test fun level33RematchTheOldRunFails() = assertTrue(solved(33, 1, 0).world.state != WorldState.WON)
+    @Test fun level33RematchTheOldHopLandsOnSpikes() = b(33, 1).hopR(9.0f, 0.4f).wait(0.5f).expect(WorldState.DEAD)
 
-    /** The door stays: run through, the floor where round 1 made you wait crumbles. */
-    @Test fun level37Rematch() = b(37, 1).hopR(10.7f).hopR(16.5f).right(3f).expect(WorldState.WON)
-    @Test fun level37RematchWaitingForThePushDies() = b(37, 1).hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level37Rematch() = World1DesignTest.play(37, 2)
+    /** git push --force, round 2: the floor ahead is already deleted, so the old run along the floor falls into the first pit. */
+    @Test fun level37RematchTheOldRunFails() = assertTrue(solved(37, 1, 0).world.state != WorldState.WON)
+    @Test fun level37RematchStayingOnAStoneDies() = b(37, 1).rightTo(4.0f).rightJump(0.4f).landRight().wait(1.5f).expect(WorldState.DEAD)
 
     @Test fun level46Rematch() = b(46, 1).jump(0.3f).wait(0.4f).hopR(23.6f).right(2f).expect(WorldState.WON)
     @Test fun level46RematchOldButtonBluffs() {

@@ -85,8 +85,12 @@ class DesignRulesTest {
 
     @Test
     fun trapsInsideAFakeWinCount() {
-        val clearRoad = World1.levels.single { it.name.en == "Clear Road" }
-        assertEquals(1, DesignRules.spikePopupCount(clearRoad))
+        // a fake win that carries the spikes: Show inside the fake counts as the room's one spike popup
+        val fake = Level(T("Fake", "Fake"), T("Fake", "Fake"), legend = mapOf('A' to Glyph(spike = true, hidden = true)),
+            traps = listOf(trap(Trigger.AtDoor, Action.FakeWin(FakeEnd.CLEAR, null, Action.Show('A'))))) {
+            border(); floor(); put(10, 14, 'A'); put(2, 14, 'P'); put(29, 14, 'D')
+        }
+        assertEquals(1, DesignRules.spikePopupCount(fake))
         for (name in listOf("Burn-in Test", "Boot Order")) {
             assertEquals(name, 1, DesignRules.heatSpikeFinaleCount(World3.levels.single { it.name.en == name }))
         }

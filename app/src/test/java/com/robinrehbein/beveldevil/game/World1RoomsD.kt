@@ -26,7 +26,7 @@ object World1RoomsD {
         34 to listOf<Solution>(
             { rightTo(7.0f).tapPause().pauseResume().hopR(8.6f, 0.4f).hopR(15.4f, 0.4f).rightTo(20.4f).rightJump(0.5f).landRight()
                 .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft()
-                .waitFor { it.group('s').oy >= 6.9f }.leftJump(0.4f).landLeft().left(3f) },
+                .waitFor { it.pieceLanded(0, 8f) }.leftTo(22.4f).leftJump(0.4f).landLeft().left(3f) },
         ),
         // 35: up the three platforms (the door jumps up as you start, and is gone again when you land), off the left end and back along the ground
         35 to listOf<Solution>(
