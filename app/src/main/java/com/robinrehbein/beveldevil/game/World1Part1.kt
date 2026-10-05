@@ -173,31 +173,36 @@ object World1Part1 {
             put(2, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 8 — gravity flips over a spike floor as you reach it, flips back mid-way, then again as you land, then back for the door
+        // 8 — the door hangs from the ceiling above the start. Jump the spikes, and the room turns over: the way home is the
+        // ceiling, all the way back; stalactites pop up on it; at the door Mephi turns the room around once more
         Level(
             name = T("Down to Earth", "Bodenständig"),
             intro = T("I picked the decor myself. Nice, right?", "Die Deko habe ich selbst ausgesucht. Schön, oder?"),
+            hint = T("The door is on the ceiling. Somebody has to turn you over first.", "Die Tür hängt an der Decke. Erst muss dich jemand umdrehen."),
+            legend = mapOf('S' to hiddenCeilingSpike),
             traps = listOf(
-                trap(PastX(9.9f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Up is the new down.", "Oben ist das neue Unten."))),
-                trap(PastX(22.8f), Gravity(false)),
-                trap(Landed(24.5f, 29f), Gravity(true)),
-                trap(PastX(29.6f), Gravity(false)),
+                trap(PastX(25.2f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Up is the new down.", "Oben ist das neue Unten."))),
+                trap(Zone(16.5f, 0.5f, 19.5f, 2.6f), Show('S'), Say(T("Mind the stalactites. They're new.", "Vorsicht, Stalaktiten. Ganz neu."))),
+                trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Ah, the door. Let me get that for you.", "Ah, die Tür. Lass mich dir helfen."))),
+                trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Kidding.", "War nur ein Scherz."))),
             ),
-            // rematch: walking in no longer flips you, only a jump does
+            // rematch: walking in turns nothing over any more, only a jump does; the stalactites moved
             rematch = listOf(
                 Round(
                     T("Rematch. Gravity is opt-in now.", "Revanche. Schwerkraft nur noch auf Antrag."),
                     traps = listOf(
-                        trap(Airborne(8f, 11.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur für Springer."))),
-                        trap(PastX(22.8f), Gravity(false)),
+                        trap(Airborne(27f, 31f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur für Springer."))),
+                        trap(Zone(13.5f, 0.5f, 16.5f, 2.6f), Show('S')),
+                        trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Here you go. The door. Again.", "Bitte sehr. Die Tür. Schon wieder."))),
+                        trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Still kidding.", "Immer noch ein Scherz."))),
                     ),
-                ),
+                ) { put(14, 1, '.'); put(10, 1, 'S') },
             ),
         ) {
             border(); floor()
-            fill(11..24, 14..14, '^')
-            put(17, 1, 'v'); put(22, 1, 'v')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            put(21, 14, '^')
+            put(14, 1, 'S')
+            put(2, 14, 'P'); put(2, 1, 'D')
         },
 
         // 9 — controls swap while you are in the air over the first hole, and swap back in the air over the second

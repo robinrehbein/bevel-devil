@@ -8,5 +8,11 @@ object World1RoomsA {
                 .rightTo(26.2f).rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightTo(30.5f)
                 .leftJump(0.35f).landLeft().leftTo(1.5f) },
         ),
+        8 to listOf<Solution>(
+            { hopR(19.5f, 0.5f).rightTo(25.5f).landRight().leftTo(17.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
+                .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
+            { hopR(19.5f, 0.5f).rightTo(27.3f).rightJump(0.5f).landRight().leftTo(13.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
+                .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
+        ),
     )
 }
