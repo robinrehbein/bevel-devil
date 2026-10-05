@@ -42,12 +42,11 @@ object World2Rooms {
     /** 18: press the pad, leave the rack before the port scan, run back and climb the stairs without stopping. */
     fun l18(b: Bot) = stairs18(l18ToPad(b)).landLeft().left(1f)
 
-    /** 18, round 2, up to the second press: round 1's way to the rack (landing on the pad is the first press, only a SYN), then step off the pad and onto it again (the ACK). */
-    fun l18r2ToPad(b: Bot) = b.hopR(15.6f).rightTo(21.3f).wait(0.05f).waitFor(cond = clear('G')).rightTo(23.1f).rightJump(0.24f).landRight()
-        .rightUntil { it.pads[0].presses >= 1 && it.player.box.cx > 27.6f }.leftUntil { it.pads[0].presses >= 2 }
+    /** 18, round 2, up to the pad: the hole is two tiles further on (hop it late), wait for the gate, climb the rack and step onto the pad (the rack is the lift now). */
+    fun l18r2ToPad(b: Bot) = b.hopR(17.8f).wait(0.05f).waitFor(cond = clear('G')).rightTo(23.1f).rightJump(0.24f).landRight().leftTo(26.3f)
 
-    /** 18, round 2: the handshake on the rack, then leave it, run back and climb the stairs without stopping, as in round 1. */
-    fun l18r2(b: Bot) = stairs18(l18r2ToPad(b)).landLeft().left(1f)
+    /** 18, round 2: ride the rack to the walkway (hold right against the tower), walk off it before the port scan, hop the tripwire and drop onto the ledge at the door. */
+    fun l18r2(b: Bot) = l18r2ToPad(b).rightUntil { it.group('k').oy < -7.9f }.leftTo(13.4f).leftJump(0.35f).landLeft().left(2.5f)
 
     /** 19, up to the moment the order is restored: hop the pit, the wall and the stairs with swapped hands. */
     fun l19ToShelf(b: Bot) = b.hopR(6.8f).hopS(11.6f).hopS(13.9f).hopS(19.6f).hopS(23.4f)

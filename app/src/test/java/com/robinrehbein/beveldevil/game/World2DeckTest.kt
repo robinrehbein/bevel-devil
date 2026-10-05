@@ -127,27 +127,22 @@ class World2DeckTest {
     @Test fun l07r2TheStalkerCeilingDropsOnThePlateau() = b(7, 2).leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
-    /** Firewall, round 2: a three-way handshake. One press on the pad is only a SYN (floor and beam stay as they were); step off and on again for the ACK. */
-    @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
-    /** Round 1's way (press once, run for the stairs) runs into the hole that the first press did not close. */
-    @Test fun l18r2TheRoundOneRouteFallsIntoTheHoleThatNeverClosed() {
+    /** Firewall, round 2: the beam over the stairs stays on, the pad is the rack's call button, the way is over the top. */
+    @Test fun l18r2() { World2DesignTest.play(18, round = 2) }
+    /** Round 1's way (press the pad, run back, climb the stairs) ends in the beam that never goes out. */
+    @Test fun l18r2TheRoundOneRouteEndsInTheBeamOverTheStairs() {
         val bot = World2Rooms.l18(b(18, 2))
         bot.expect(WorldState.DEAD)
-        assertTrue("died at x=${bot.world.player.box.cx}, y=${bot.world.player.box.cy}", bot.world.player.box.cx in 16f..19.5f && bot.world.player.box.cy > 14f)
+        assertTrue("the beam over the stairs still burns", bot.world.beams.any { it.laser.id == 'W' && it.lit })
     }
-    @Test fun l18r2OnePressIsOnlyASyn() {
-        val bot = World2Rooms.l18ToPad(b(18, 2)).wait(0.4f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("the floor stays gone", bot.world.group('a').oy > 6f)
+    /** Hopping where round 1 hopped lands in the hole that moved two tiles on. */
+    @Test fun l18r2HoppingWhereRoundOneHoppedLandsInTheHole() = b(18, 2).hopR(15.6f).right(1f).expect(WorldState.DEAD)
+    @Test fun l18r2ThePadCallsTheRack() {
+        val bot = World2Rooms.l18r2ToPad(b(18, 2)).wait(0.3f)
+        assertTrue("the rack rises", bot.world.group('k').oy < -1f)
         assertTrue("the beam over the stairs stays on", bot.world.beams.any { it.laser.id == 'W' && it.lit })
     }
-    @Test fun l18r2TheSecondPressIsTheAck() {
-        val bot = World2Rooms.l18r2ToPad(b(18, 2)).leftTo(24.0f).wait(0.7f)
-        assertTrue("the floor is back", bot.world.group('a').oy < 1f)
-        assertTrue("the beam is off", bot.world.beams.none { it.laser.id == 'W' && it.lit })
-    }
-    @Test fun l18r2TheStairsStillRelightTheBeam() = World2Rooms.l18r2ToPad(b(18, 2)).leftTo(17.0f).leftJump(0.35f).landLeft()
-        .leftTo(13.6f).leftJump(0.4f).landLeft().wait(2f).expect(WorldState.DEAD)
+    @Test fun l18r2LingeringOnTheLiftIsFatal() = World2Rooms.l18r2ToPad(b(18, 2)).wait(3f).expect(WorldState.DEAD)
     @Test fun l18r2HasItsOwnHint() = assertTrue(World2.levels[17].rounds[1].hint != null && World2.levels[17].rounds[1].hint!!.en != World2.levels[17].hint!!.en)
     /** Stateful Inspection, round 2: the scanner is a bluff (gate 3 stays shut), the ledge expires with your ID over a floor of LEDs, and goes on over a gap. */
     @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)

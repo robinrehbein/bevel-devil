@@ -608,7 +608,7 @@ class ScreenshotTest {
             "17" to at(17), "17-packet" to at(17) { rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightUntil { it.group('c').mode == com.robinrehbein.beveldevil.game.GroupMode.FALL }.wait(0.15f) },
             "17-ride" to at(17) { rooms.l17(this); this },
             "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.2f) }, "18-r2" to at(18, 1),
-            "18-r2-syn" to at(18, 1) { rooms.l18ToPad(this).wait(0.4f) }, "18-r2-ack" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.3f) },
+            "18-r2-lift" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.5f) }, "18-r2-top" to at(18, 1) { rooms.l18r2ToPad(this).rightUntil { it.group('k').oy < -7.9f }.wait(0.1f) },
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
             "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) }, "20-r2" to at(20, 1),
             "20-r2-ledge" to at(20, 1) { rooms.l20ToLedge(this).wait(0.3f) },

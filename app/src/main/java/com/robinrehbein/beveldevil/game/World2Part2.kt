@@ -82,27 +82,31 @@ object World2Part2 {
                 trap(Zone(7.3f, 9.9f, 11.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 1.1f), say("Rule 1 restarted. Climb faster.", "Regel 1 neu gestartet. Kletter schneller.")),
             ),
             hint = T("The pad is on the rack. And don't dawdle on the stairs.", "Der Schalter liegt auf dem Rack. Und trödel nicht auf der Treppe."),
-            // rematch: a three-way handshake. Same room, same door, same rack, same pad, but one press is only a SYN: the floor stays gone and
-            // the beam over the stairs stays on until the pad has been pressed a second time (step off, step on). Whoever does what round 1 taught,
-            // press once and run for the stairs, falls into the hole that never closed
+            // rematch: the firewall learned from round 1. The beam over the stairs stays on for good, and the pad on the rack does something
+            // else now: it is the call button of the rack, which rises like a lift to a walkway under the ceiling that runs all the way to the
+            // ledge. The floor still drops, but two tiles further on than in round 1 (whoever hops where round 1 hopped lands in it) and only
+            // when you are close; the gate at the rack counts to one again. At the top a port scan sweeps the lift (walk on), and on the walkway
+            // a tripwire flashes before the ledge (hop it). Round 1's run presses the pad, walks off the rising rack and climbs the stairs into
+            // the beam that never goes out
             rematch = listOf(
                 Round(
-                    T("Three-way handshake now. I insist.", "Jetzt mit Handshake. Ich bestehe darauf."),
-                    hint = T("One press is only a SYN. The pad wants an ACK.", "Ein Druck ist nur ein SYN. Der Schalter will ein ACK."),
+                    T("The firewall learned. The stairs stay closed.", "Die Firewall hat gelernt. Die Treppe bleibt zu."),
+                    hint = T("The pad is a lift now. Go over the top, not up the stairs.", "Der Schalter ist jetzt ein Aufzug. Geh obenrum, nicht die Treppe hoch."),
                     start = listOf(
                         Laser('W', 1 to 10, 10 to 10),
                         Pad('1', at = 26 to 12),
                     ),
                     traps = listOf(
-                        trap(PastX(10.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss, second edition.", "Paketverlust, zweite Auflage.")),
-                        trap(PastX(20.6f), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
+                        trap(PastX(14.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss, second edition. A bit further on.", "Paketverlust, zweite Auflage. Etwas weiter hinten.")),
+                        trap(PastX(19.2f), Laser('G', 24 to 1, 24 to 14, on = 0.4f, off = 40f, delay = 0.35f),
                             say("Rule 2: still no entry. Still counting to one.", "Regel 2: immer noch kein Zutritt. Ich zähle immer noch bis eins.")),
-                        trap(Pressed('1'), say("SYN received. Floor and beam are waiting for the ACK.", "SYN erhalten. Boden und Strahl warten auf das ACK.")),
-                        trap(Pressed('1', 2), Power('W', false), Move('a', 0f, -12f, 25f), Laser('K', 25 to 12, 29 to 12, on = 1.0f, off = 40f, delay = 0.8f),
-                            say("ACK. Rule 1 disabled. The port scan wants the rack.", "ACK. Regel 1 deaktiviert. Der Portscan will das Rack.")),
-                        trap(Zone(7.3f, 9.9f, 11.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 1.1f), say("Rule 1 is back. It did not like being off.", "Regel 1 ist zurück. Ausgeschaltet sein hat ihr nicht gefallen.")),
+                        trap(Pressed('1'), Move('k', 0f, -8f, 8f), say("Going up. Rule 1 stays on. It likes the stairs.", "Fahrstuhl nach oben. Regel 1 bleibt an. Sie mag die Treppe.")),
+                        trap(Pressed('1'), Laser('K', 25 to 4, 27 to 4, on = 0.7f, off = 40f, delay = 2.0f),
+                            say("Port scan on the lift. Please do not stand there.", "Portscan im Aufzug. Bitte nicht stehen bleiben.")),
+                        trap(Zone(14f, 3f, 17f, 5.2f), Laser('H', 10 to 4, 11 to 4, on = 0.5f, off = 40f, delay = 0.3f),
+                            say("Tripwire. Mind the cable.", "Stolperdraht. Vorsicht, Kabel.")),
                     ),
-                ) { fill(25..29, 13..14) },
+                ) { fill(17..18, 15..17, '#'); fill(19..21, 15..17, 'a'); fill(25..27, 13..14, 'k'); fill(28..30, 5..14); fill(5..24, 5..5); fill(3..4, 7..7) },
             ),
         ) {
             border(); floor()
