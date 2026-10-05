@@ -297,22 +297,25 @@ object World1Part1 {
             put(29, 14, 'P'); put(2, 14, 'D')
         },
 
-        // 13 — the ceiling spikes are a bluff; the floor is not; landing after the pit sprouts spikes before the door
+        // 13 — spikes hang in the ceiling and the room shakes at them: a bluff. The plain bits of the ceiling are the real ones:
+        // one drops as you pass, one comes down on the lane, one on the upper floor on the way back
         Level(
             name = T("Wednesday", "Mittwoch"),
             intro = T("It's Wednesday. I'm grumpy. That's all.", "Es ist Mittwoch. Ich habe schlechte Laune. Mehr nicht."),
-            legend = mapOf('S' to ceilingSpike, 'A' to hiddenSpike),
+            hint = T("Don't look at the spikes. Look at the plain ceiling.", "Schau nicht auf die Stacheln. Schau auf die glatte Decke."),
+            legend = mapOf('S' to ceilingSpike),
             traps = listOf(
-                trap(PastX(11.5f), Shake(0.6f), Say(T("Incoming!", "Achtung, Einschlag!"))),
-                trap(Touch('a'), Play(Card.COLLAPSE), Fall('a'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte.")), delay = 0.1f),
-                trap(Landed(24.5f, 27f), Show('A')),
+                trap(PastX(5f), Shake(0.6f), Say(T("Ooh, spikes up there. Scary, huh?", "Ooh, Stacheln da oben. Gruselig, was?"))),
+                trap(Zone(13f, 12f, 14f, 15f), Play(Card.HEADBUTT), Fall('c'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte."))),
+                trap(Zone(21f, 12f, 22f, 15f), Move('m', 0f, 3.5f, 5f), Say(T("The ceiling is low on Wednesdays.", "Mittwochs hängt die Decke tief."))),
+                trap(Zone(22f, 5f, 23f, 9.5f), Fall('d'), Say(T("Wednesday is not over yet.", "Der Mittwoch ist noch nicht vorbei."))),
             ),
         ) {
             border(); floor()
-            put(12, 1, 'S'); put(13, 1, 'S')
-            fill(22..24, 15..17, 'a')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            put(2, 14, 'P'); put(30, 14, 'D')
+            fill(27..28, 13..14); fill(29..30, 11..14)
+            fill(1..28, 9..9)
+            fill(7..8, 10..10, 'S'); fill(12..13, 10..10, 'c'); fill(19..22, 10..10, 'm'); fill(22..23, 1..2, 'd')
+            put(2, 14, 'P'); put(2, 8, 'D')
         },
 
         // 14 — a lift takes you up; spikes appear on the ledge when you arrive; a piece of the ledge crumbles when you run over it

@@ -40,5 +40,9 @@ object World1RoomsA {
             { leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
             { leftUntil { it.swapped }.hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
         ),
+        13 to listOf<Solution>(
+            { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
+                .leftJump(0.5f).landLeft().leftTo(1.5f) },
+        ),
     )
 }
