@@ -7,6 +7,7 @@ import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
+import com.robinrehbein.beveldevil.game.Action.Hide
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.PathSaw
@@ -193,33 +194,39 @@ object World2Part1 {
             spawn(13); door(30, 10); bits(6)
         },
 
-        // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device)
+        // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device). The only level that runs right to left: the door is at
+        // the far left, behind the hill. Over the hill the ceiling crashes: the first piece lands on the plateau and becomes a step, the second
+        // (in the low tunnel to the door) is made of paper: it falls where you come down, and is gone again a moment later. Dashing under either
+        // is the end, so wait for it. Round 2: the first piece stalks you
         Level(
             name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
             traps = listOf(
-                trap(PastX(7.4f), Play(Card.HEADBUTT), Fall('c'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt.")),
-                trap(PastX(14.3f), Fall('d')),
-                trap(PastX(21.6f), Fall('e'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt.")),
+                trap(BeforeX(19.6f), Play(Card.COLLAPSE), Fall('a'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt."), delay = 0.28f),
+                trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt."), delay = 0.25f),
+                trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('d'), delay = 1.55f),
             ),
-            // rematch: the first ceiling no longer drops in front of you; it slides over to hover above you and drops at the
-            // same spot as in round 1, now on your head. Waiting for it like in round 1 is fatal: run through at full speed
+            hint = T("Wait for each piece to land. The paper one goes away again.", "Warte, bis jedes Stück gelandet ist. Das aus Papier verschwindet wieder."),
             rematch = listOf(
                 Round(
                     T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
+                    hint = T("The ceiling follows you now. Do not wait where you waited. Two paper pieces at the end.", "Die Decke folgt dir jetzt. Warte nicht, wo du gewartet hast. Zwei Papierstücke am Ende."),
                     traps = listOf(
-                        trap(PastX(5f), Play(Card.STALKER), Chase('c', speed = 6f, left = 6f, right = 3f),
-                            say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
-                        trap(PastX(7.4f), Fall('c'), say("Ceiling synced to your position.", "Decke mit deiner Position synchronisiert.")),
-                        trap(PastX(14.3f), Fall('d')),
-                        trap(PastX(21.6f), Fall('e')),
+                        trap(BeforeX(23.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 9f, right = 12f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(Zone(18f, 3.5f, 20f, 5.5f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.55f),
+                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Paper again. Two sheets this time.", "Wieder Papier. Diesmal zwei Blatt."), delay = 0.25f),
+                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('e'), delay = 0.15f),
+                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('e'), delay = 1.0f),
+                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('d'), delay = 2.5f),
                     ),
-                ),
+                ) { fill(6..7, 9..10, 'e') },
             ),
         ) {
             border(); floor()
-            fill(9..10, 4..5, 'c'); fill(16..17, 4..5, 'd'); fill(23..24, 4..5, 'e')
-            spawn(); door(); bits(7)
+            fill(26..27, 13..14); fill(24..25, 11..14); fill(22..23, 9..14); fill(20..21, 7..14); fill(14..19, 5..14)
+            fill(12..13, 9..14); fill(10..11, 13..14)
+            fill(1..8, 1..8); fill(15..16, 1..2, 'a'); fill(3..4, 9..10, 'd')
+            spawn(29); door(1); bits(7)
         },
 
         // 8 — EASTER EGG: RAM memory test (POST counts up, never finishes)

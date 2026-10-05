@@ -122,14 +122,9 @@ class World2DeckTest {
     @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
     @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
     @Test fun l04r2() { World2DesignTest.play(4, round = 2) }
-    /** Sky Blue, round 2: the first ceiling stalks you and drops where round 1 dropped it; run under it, stop before the second. */
-    @Test fun l07r2() = b(7, 2).rightTo(14.6f).wait(0.8f).hopR(15.3f).rightTo(21.7f).leftTo(20.8f).wait(1f).hopR(21.3f).right(1f).expect(WorldState.WON)
-    @Test fun l07r2TheCeilingFollowsYouAndStandingUnderItIsSafe() {
-        val bot = b(7, 2).rightTo(6f).wait(1.5f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("the ceiling hovers over Bevel", bot.world.group('c').ox < -2.5f)
-    }
-    @Test fun l07r2WaitingForTheFirstCeilingIsFatal() = b(7, 2).rightTo(7.6f).wait(1f).expect(WorldState.DEAD)
+    @Test fun l07r2() { World2DesignTest.play(7, round = 2) }
+    /** Sky Blue, round 2: the ceiling stalks you over the plateau; waiting under it, where round 1 waited, is the end. */
+    @Test fun l07r2TheStalkerCeilingDropsOnThePlateau() = b(7, 2).leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
     /** Firewall, round 2: a three-way handshake. One press on the pad is only a SYN (floor and beam stay as they were); step off and on again for the ACK. */

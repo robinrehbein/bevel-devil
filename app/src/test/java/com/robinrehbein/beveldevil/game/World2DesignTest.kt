@@ -120,6 +120,18 @@ class World2DesignTest : DesignTestBase() {
                     .leftUntil { it.player.box.cx < 2.5f }.rightUntil { it.player.box.cx > 15.3f }.waitFor { w -> w.links[0].on }.rightUntil { it.player.box.cx > 17.5f }
                     .rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightTo(25.4f).rightJump(0.4f).landRight().right(1f) },
             ),
+            7 to listOf(
+                { leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .waitFor { it.group('a').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+                    .leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 9.5f && it.player.grounded }.waitFor { it.group('d').let { g -> g.mode == GroupMode.IDLE && g.oy > 2f } }
+                    .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+                { leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 9.5f && it.player.grounded }
+                    .waitFor { it.group('e').let { g -> g.mode == GroupMode.IDLE && g.oy > 2f } }.waitFor { !it.group('e').visible }
+                    .leftUntil { it.player.box.cx < 5.2f }
+                    .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)
