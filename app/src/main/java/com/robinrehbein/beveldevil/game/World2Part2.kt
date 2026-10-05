@@ -94,8 +94,8 @@ object World2Part2 {
                         Pad('1', at = 26 to 12),
                     ),
                     traps = listOf(
-                        trap(PastX(10.5f), Move('a', 0f, 12f, 30f), say("Packet loss, second edition.", "Paketverlust, zweite Auflage.")),
-                        trap(PastX(20.6f), Play(Card.SPIKE_SEED), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
+                        trap(PastX(10.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss, second edition.", "Paketverlust, zweite Auflage.")),
+                        trap(PastX(20.6f), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
                             say("Rule 2: still no entry. Still counting to one.", "Regel 2: immer noch kein Zutritt. Ich zähle immer noch bis eins.")),
                         trap(Pressed('1'), say("SYN received. Floor and beam are waiting for the ACK.", "SYN erhalten. Boden und Strahl warten auf das ACK.")),
                         trap(Pressed('1', 2), Power('W', false), Move('a', 0f, -12f, 25f), Laser('K', 25 to 12, 29 to 12, on = 1.0f, off = 40f, delay = 0.8f),
@@ -251,8 +251,8 @@ object World2Part2 {
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
             start = listOf(Portal('p', 28 to 14, 11 to 8, twoWay = false), Belt('b', 6f)),
             traps = listOf(
-                trap(PastX(6f), Play(Card.BACKDRAFT), Belt('a', -5.5f), say("Rush hour. Everyone is going your way. The other way.", "Berufsverkehr. Alle wollen in deine Richtung. Die andere.")),
-                trap(PastX(17f), Reroute('p', 2 to 8), say("Route recalculated. The on-ramp is further back now.", "Route neu berechnet. Die Auffahrt liegt jetzt weiter hinten.")),
+                trap(PastX(6f), Belt('a', -5.5f), say("Rush hour. Everyone is going your way. The other way.", "Berufsverkehr. Alle wollen in deine Richtung. Die andere.")),
+                trap(PastX(17f), Play(Card.DECOY), Reroute('p', 2 to 8), say("Route recalculated. The on-ramp is further back now.", "Route neu berechnet. Die Auffahrt liegt jetzt weiter hinten.")),
                 trap(Zone(11f, 5.5f, 14f, 9.3f), Belt('c', -9f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
             ),
             hint = T("The lane runs against you. A hop skips the lane.", "Die Spur läuft gegen dich. Ein Hüpfer überspringt die Spur."),
