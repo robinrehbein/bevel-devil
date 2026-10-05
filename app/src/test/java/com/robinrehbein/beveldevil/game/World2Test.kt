@@ -566,8 +566,11 @@ class World2Test {
     /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
     @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
     @Test fun level39() { World2DesignTest.play(39) }
-    @Test fun level40() = b(40).right(0.60f).rightJump(0.12f).leftJump(0.25f).right(0.60f).rightJump(0.25f)
-        .jump(0.16f).right(0.60f).right(0.10f).left(0.03f).leftJump(0.25f).right(0.60f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level40() { World2DesignTest.play(40) }
+    /** Ping Pong: the wall that wakes up as you pass the middle comes for whoever stands still. */
+    @Test fun level40TheWallComesForWhoStandsStill() = b(40).leftTo(20f).wait(6f).expect(WorldState.DEAD)
+    /** Ping Pong: and running straight into it is the end, too. */
+    @Test fun level40RunningStraightIntoTheWallIsFatal() = b(40).left(5f).expect(WorldState.DEAD)
     @Test fun level41() = b(41).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f) .right(0.60f).expect(WorldState.WON)
     @Test fun level42() = b(42).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f).expect(WorldState.WON)
     @Test fun level43() = b(43).shake().rightTo(23.5f).waitFor { it.beams[0].lit }.waitFor { !it.beams[0].lit }.hopR(24.6f).right(2f).expect(WorldState.WON)

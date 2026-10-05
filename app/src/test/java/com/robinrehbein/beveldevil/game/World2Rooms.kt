@@ -220,6 +220,9 @@ object World2Rooms {
 
     fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(7.5f).left(1f)
 
+    /** 40: left along the lane until the wall that stalks you is five tiles away, hop it (it turns around after you), run to the door. */
+    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 4.0f) }.leftJump(0.5f).landLeft().left(3f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

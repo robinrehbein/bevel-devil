@@ -3,6 +3,7 @@ package com.robinrehbein.beveldevil.game
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
+import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
@@ -13,6 +14,7 @@ import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
+import com.robinrehbein.beveldevil.game.Action.Roll
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Show
@@ -237,6 +239,23 @@ object World2Part3C {
             border(); floor()
             fill(1..20, 9..9)
             spawn(2, 8); door(7, 14)
+        },
+
+        // 40 — ping pong (a breather: U16 the lag roll, with a stalker). Short and mean: the door is at the far left, and as you pass the middle of the lane
+        // a wall with spikes wakes up at the left end and starts for you, at the same moment the picture loses its vertical hold and rolls. Hop it as it
+        // comes (ping), and it turns around and follows you to the door (pong)
+        Level(
+            name = T("Ping Pong", "Ping-Pong"),
+            intro = T("Your ping is excellent. Truly.", "Dein Ping ist hervorragend. Wirklich."),
+            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
+            traps = listOf(
+                trap(BeforeX(24f), Play(Card.STALKER), Chase('S', 3.5f, left = 0f, right = 22f), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
+                trap(BeforeX(7f), say("Pong. Do keep going.", "Pong. Lauf ruhig weiter.")),
+            ),
+        ) {
+            border(); floor()
+            fill(1..1, 14..14, 'S')
+            spawn(29, 14); door(2, 14)
         },
     )
 }
