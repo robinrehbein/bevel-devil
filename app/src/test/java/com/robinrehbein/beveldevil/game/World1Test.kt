@@ -393,10 +393,10 @@ class World1Test {
     }
 
     /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen. */
-    @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).right(3f).expect(WorldState.DEAD)
+    @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).left(3f).expect(WorldState.DEAD)
     @Test fun level38TheOldKeyDoesNotGetYouUpTheStairs() {
-        val run = b(38).rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(3f)
-        assertTrue(run.world.player.box.cx < 24f)
+        val run = b(38).leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().left(3f)
+        assertTrue(run.world.player.box.cx > 8f)
     }
 
     /** 39: the shelf only moves with the tilt of the phone. Without it, running on drops into the pit. */

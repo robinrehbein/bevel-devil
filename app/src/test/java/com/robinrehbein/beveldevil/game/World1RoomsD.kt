@@ -57,9 +57,9 @@ object World1RoomsD {
         // 38: hop the oncoming saw, let the picture turn, flee the second saw to the stairs with the mirrored keys, climb, the picture is
         // back: leave step 2 to the upper floor, let the rope go up, hop home
         38 to listOf<Solution>(
-            { rightUntilSaw(4.5f).rightJump(0.5f).landRight().waitFor { it.viewTurn() >= 0.5f }
-                .hopS(22.4f, 0.5f).leftKeyRightTo(25.0f).leftJump(0.5f).landLeft()
-                .waitFor { it.viewTurn() < 0.5f }.leftTo(29.9f).leftJump(0.5f).landLeft().waitFor { it.ropeUp(14f, 0.35f) }.left(4f) },
+            { leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().waitFor { it.viewTurn() >= 0.5f }
+                .hopSL(9.6f, 0.5f).rightKeyLeftTo(7.0f).rightJump(0.5f).landRight()
+                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(4f) },
         ),
         // 37: run ahead of the deleted floor, hop up the first step (it is deleted behind you) onto the second, back along the upper floor;
         // rematch: hop the stones over the pits that were opened ahead, without staying on any

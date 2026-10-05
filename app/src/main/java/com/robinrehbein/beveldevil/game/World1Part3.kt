@@ -191,25 +191,26 @@ object World1Part3 {
             put(1, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 38 — clear view: a saw rolls in on the ground and must be hopped; as you land by the stairs the picture turns upside down and a
-        // second saw rolls in from behind: left and right follow the screen now, so you flee to the right with the left key and climb the
-        // stairs mirrored. Upstairs the picture is back, and a rope saw swings across the way home
+        // 38 — clear view: you start on the right and the way home runs left, so the stairs are on the far left. A saw rolls in on the ground
+        // from the left and must be hopped; as you land by the stairs the picture turns upside down and a second saw rolls in from behind:
+        // left and right follow the screen now, so you flee to the left with the right key and climb the stairs mirrored. Upstairs the
+        // picture is back, and a rope saw swings across the way to the door on the right
         // TWIST: Flip
         Level(
             name = T("Clear View", "Durchblick"),
-            intro = T("Nice picture today. Sharper than ever.", "Schönes Bild heute. Schärfer als je zuvor."),
-            hint = T("When the picture turns over, left and right follow the screen: run from the saw with the key that points to the stairs on screen.", "Wenn das Bild kippt, folgen links und rechts dem Bildschirm: Lauf vor der Säge mit der Taste, die auf dem Bildschirm zur Treppe zeigt."),
+            intro = T("Nice picture today. Sharper than ever.", "Sch\u00f6nes Bild heute. Sch\u00e4rfer als je zuvor."),
+            hint = T("When the picture turns over, left and right follow the screen: run from the saw with the key that points to the stairs on screen.", "Wenn das Bild kippt, folgen links und rechts dem Bildschirm: Lauf vor der S\u00e4ge mit der Taste, die auf dem Bildschirm zur Treppe zeigt."),
             traps = listOf(
-                trap(PastX(3.5f), Saw(31.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Sharper than ever.", "Gegenverkehr. Schärfer als je zuvor."))),
-                trap(Landed(12f, 23.6f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
-                trap(Landed(12f, 23.6f), Saw(-1.5f, 14.4f, 6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die Säge mag lieber die Originalausrichtung."))),
-                trap(Zone(24.5f, 7f, 26f, 9.5f), PathSaw(7f, 14f to 8.4f, 14f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen für Erwachsene."))),
+                trap(BeforeX(27.5f), Saw(0.5f, 14.4f, 6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Sharper than ever.", "Gegenverkehr. Sch\u00e4rfer als je zuvor."))),
+                trap(Landed(8.4f, 20f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
+                trap(Landed(8.4f, 20f), Saw(33.5f, 14.4f, -6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die S\u00e4ge mag lieber die Originalausrichtung."))),
+                trap(Zone(6f, 7f, 7.5f, 9.5f), PathSaw(7f, 18f to 8.4f, 18f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen f\u00fcr Erwachsene."))),
             ),
         ) {
             border(); floor()
-            fill(24..26, 13..14); fill(28..30, 11..14)
-            fill(2..26, 9..9)
-            put(2, 14, 'P'); put(6, 8, 'D')
+            fill(5..7, 13..14); fill(1..3, 11..14)
+            fill(5..29, 9..9)
+            put(29, 14, 'P'); put(25, 8, 'D')
         },
 
         // 39 — hardware store: a ceiling tile drops in aisle 6; the pit is too wide to jump, and the only way across is the shelf at its edge,
