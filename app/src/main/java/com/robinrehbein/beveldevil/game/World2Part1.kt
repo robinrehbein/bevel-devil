@@ -169,24 +169,28 @@ object World2Part1 {
             spawn(2, 4); door(28); bits(5)
         },
 
-        // 6 — EASTER EGG: "It's always DNS" (Reroute: the portal's exit moves onto spikes, the floating block flushes the cache; behind the exit grows a last pair)
+        // 6 — EASTER EGG: "It's always DNS". You start next to the portal, and it leads home (a loop). The right entry (a block, no pad) is on
+        // top of the long stair, at the far end: walking into it re-points the portal (and restarts it: a wait). So: away from the portal, up, touch, back down and into
+        // it. Over there a stair, and a spike that grows on the top lane where you land
         Level(
             name = T("Address Book", "Adressbuch"),
             intro = T("I looked up the door. It's in the phone book.", "Ich habe die Tür nachgeschlagen. Steht im Telefonbuch."),
             legend = mapOf('A' to hidden),
-            start = listOf(Portal('1', 8 to 14, 17 to 14)),
+            start = listOf(Portal('1', 15 to 14, 12 to 14, twoWay = false)),
             traps = listOf(
-                trap(PastX(6f), Play(Card.DECOY), Reroute('1', 5 to 3), say("DNS changed. The portal leads somewhere nicer now.", "DNS geändert. Das Portal führt jetzt an einen schöneren Ort.")),
-                trap(Touch('s'), Reroute('1', 17 to 14), say("ipconfig /flushdns: cache cleared. Try again.", "ipconfig /flushdns: Cache geleert. Versuch's nochmal.")),
-                trap(PastX(19.5f), Show('A'), say("Cache poisoned.", "Cache vergiftet.")),
+                trap(Touch('k'), Play(Card.DECOY), Reroute('1', 18 to 14), Power('1', false), say("DNS updated. The portal restarts to apply it.", "DNS aktualisiert. Das Portal startet neu, um es zu übernehmen.")),
+                trap(Zone(1.2f, 3f, 3.2f, 5.5f), Power('1', true), say("Port is back up. Almost like new.", "Port wieder oben. Fast wie neu."), delay = 2.8f),
+                trap(Landed(23f, 24.9f), Show('A'), say("Cache poisoned.", "Cache vergiftet.")),
             ),
+            hint = T("The right entry is at the far end of the stair. Then wait for the portal.", "Der richtige Eintrag liegt am Ende der Treppe. Dann warte aufs Portal."),
         ) {
             border(); floor()
-            fill(12..12, 1..14)
-            fill(3..8, 5..5); fill(3..8, 4..4, '^')
-            fill(2..3, 12..12, 's')
-            put(23, 14, 'A'); put(24, 14, 'A')
-            spawn(); door(); bits(6)
+            fill(9..10, 13..14); fill(7..8, 11..14); fill(5..6, 9..14); fill(3..4, 7..14); fill(1..2, 5..14)
+            put(1, 4, 'k')
+            fill(16..17, 1..14)
+            fill(20..22, 13..14); fill(23..24, 11..14); fill(25..30, 11..14)
+            put(27, 10, 'A')
+            spawn(13); door(30, 10); bits(6)
         },
 
         // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device)

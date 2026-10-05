@@ -219,9 +219,16 @@ class World2Test {
     // ---------- the levels that react to the player in unusual ways ----------
 
     @Test
-    fun dnsChangeSendsYouToTheSpikesAndFlushingFixesIt() {
-        b(6).rightTo(7.5f).wait(0.4f).right(3f).expect(WorldState.DEAD)
-        b(6).rightTo(6.3f).leftTo(3.4f).jump(0.4f).wait(0.4f).also { assertEquals(17 to 14, it.world.links[0].to) }.rightTo(9f).hopR(20.8f).right(1.5f).expect(WorldState.WON)
+    fun theDnsEntryAtTheStartLeadsHomeAndTheLastBlockOfTheStairRepointsAndRestartsIt() {
+        // the portal next to the start sends you back to the start
+        val loop = b(6).right(0.5f).wait(0.2f)
+        loop.expect(WorldState.PLAYING)
+        assertTrue("x=${loop.world.player.box.cx}", loop.world.player.box.cx < 13.6f && loop.world.links[0].to == 12 to 14)
+        // the block at the far end of the stair re-points it and takes it down for a moment
+        val touched = b(6).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+            .leftUntil { it.player.box.cx < 2.5f }.wait(0.2f)
+        assertEquals(18 to 14, touched.world.links[0].to)
+        assertFalse(touched.world.links[0].on)
     }
 
     @Test
@@ -290,7 +297,7 @@ class World2Test {
     @Test fun level05() { World2DesignTest.play(5) }
     /** Null Pointer: the saw on the top floor rolls at you; running into it is the end. */
     @Test fun level05RunningIntoTheFirstSawIsFatal() = b(5).right(4f).expect(WorldState.DEAD)
-    @Test fun level06() = b(6).right(0.60f).left(0.60f).rightJump(0.55f).right(0.25f).hopR(20.8f).right(1.5f).expect(WorldState.WON)
+    @Test fun level06() { World2DesignTest.play(6) }
     @Test fun level07() = b(7).right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f) .right(0.03f).left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.10f) .left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f) .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f) .left(0.03f).left(0.03f).left(0.03f).right(0.03f).right(0.03f).left(0.10f) .rightJump(0.55f).right(0.60f).expect(WorldState.WON)
     @Test fun level08() = b(8).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.25f).right(0.03f).rightJump(0.55f) .right(1.20f).expect(WorldState.WON)
     @Test fun level09() = b(9).right(0.60f).leftJump(0.55f).leftJump(0.55f).leftJump(0.55f).left(0.25f)

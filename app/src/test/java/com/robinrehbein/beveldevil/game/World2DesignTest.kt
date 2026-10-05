@@ -115,6 +115,11 @@ class World2DesignTest : DesignTestBase() {
                     .leftUntil { World2Rooms.sawAheadLeft(it, 4.0f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cy > 11f }
                     .rightUntil { World2Rooms.sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 27.6f }.right(1f) },
             ),
+            6 to listOf(
+                { leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 2.5f }.rightUntil { it.player.box.cx > 15.3f }.waitFor { w -> w.links[0].on }.rightUntil { it.player.box.cx > 17.5f }
+                    .rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightTo(25.4f).rightJump(0.4f).landRight().right(1f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)
