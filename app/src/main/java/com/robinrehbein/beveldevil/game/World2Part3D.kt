@@ -2,6 +2,9 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Action.Bluff
+import com.robinrehbein.beveldevil.game.Action.Circuit
+import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Trigger.Pressed
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Fall
@@ -157,20 +160,26 @@ object World2Part3D {
             spawn(); door(); bits(44)
         },
 
-        // 45 — EASTER EGG: sandbox escape (the walls close in)
+        // 45 — playground (a puzzle room: R2 the hold switch, U3 the walls close in). You start in a crawl space under a roof, the walls come: one from the
+        // left as you crawl, and the far end of the roof is a hatch of copper that is only open while you stand on the pad beneath it. Stand on the
+        // pad, jump up through the hatch (the copper cannot close on you in the gap), and the other wall closes in below you. On the roof it is
+        // your way back to the door, with a wall of its own behind you, and two steps up to the deck
         Level(
             name = T("Playground", "Spielplatz"),
             intro = T("Nothing can happen to you in here, says the docs.", "Hier drin kann dir nichts passieren, sagt die Doku."),
-            legend = mapOf('b' to ghost),
+            start = listOf(Circuit('g'), Pad('1', at = 26 to 14, circuits = "g", mode = PadMode.HOLD), Belt('b', -3f)),
             traps = listOf(
-                trap(After(2.2f), Play(Card.CRUMBLE), Move('l', 3f, 0f, 0.8f), Move('r', -3f, 0f, 0.8f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
-                trap(PastX(16f), Fall('c')),
+                trap(PastX(10f), Play(Card.COLLAPSE), Move('s', 25f, 0f, 3.6f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
+                trap(Pressed('1'), Move('r', -8f, 0f, 4f), say("Stand still. The walls are only playing.", "Stillstehen. Die Wände spielen nur."), delay = 0.2f),
+                trap(Landed(19f, 26.5f), Move('y', -22f, 0f, 3.0f), say("Playtime is over. Up the steps.", "Die Pause ist vorbei. Die Stufen hoch.")),
             ),
+            hint = T("The copper only lets you out while you stand on the pad. Jump from it.", "Das Kupfer lässt dich nur raus, solange du auf dem Knopf stehst. Spring von ihm."),
         ) {
             border(); floor()
-            fill(3..3, 12..14, 'l'); fill(10..10, 12..14, 'r'); put(6, 13, 'b')
-            pit(14..15); fill(20..21, 3..4, 'c')
-            spawn(6); door(); bits(45)
+            fill(3..22, 13..13); fill(23..26, 13..13, 'g')
+            fill(7..18, 15..15, 'b'); fill(2..2, 13..14, 's'); fill(27..27, 13..14, 'r'); fill(27..27, 11..12, 'y')
+            fill(3..9, 9..12); fill(10..12, 10..12); fill(13..15, 11..12); fill(16..17, 12..12)
+            spawn(4, 14); door(4, 8); bits(45)
         },
 
         // 46 — EASTER EGG: privilege escalation (user, admin, root: a staircase of belts, each one faster and against you)

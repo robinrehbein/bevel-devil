@@ -47,10 +47,15 @@ object World2RoomsD {
     fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f)
         .rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).rightUntil { undone(it) }.hopR(21.0f, 0.5f).right(3f)
 
+    /** 45: crawl right to the pad at the far end, jump up through the hatch, along the roof, up the steps to the door. */
+    fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
+        .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1.5f)
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
         43 to listOf({ l43(this) }),
         44 to listOf({ l44(this) }, { l44r2(this) }),
+        45 to listOf({ l45(this) }),
     )
 }
