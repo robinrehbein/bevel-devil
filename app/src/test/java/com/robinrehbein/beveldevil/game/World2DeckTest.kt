@@ -181,29 +181,14 @@ class World2DeckTest {
         bot.expect(WorldState.PLAYING)
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx > 20f)
     }
-    /** Security Audit, round 2: the ground behind the stones sinks; take the last stone (honest now) and jump to the door from it. */
-    @Test fun l41r2() = b(41, 2).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).landRight()
-        .rightJump(0.15f).landRight().rightJump(0.55f).right(1f).expect(WorldState.WON)
-    @Test fun l41r2RoundOnesLeapOntoTheGroundSinks() = roundOne.getValue(41)(b(41, 2)).wait(1.5f).expect(WorldState.DEAD)
-    @Test fun l42r2() = b(42, 2).hopR(5f).right(3f).expect(WorldState.WON)
-    @Test fun l42r2TheHighRoadIsTheTrap() = b(42, 2).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f).expect(WorldState.DEAD)
-    @Test fun l46r2() = b(46, 2).hopR(2.6f).hopR(7.5f).hopR(15.2f).hopR(22.2f).right(1f).expect(WorldState.WON)
-    @Test fun l46r2TheOldClimbOvershoots() = b(46, 2).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.03f).expect(WorldState.DEAD)
-    /** Rebase, round 2: Ctrl+Z on the wall throws Bevel back past the spikes; the second climb is the real one. */
-    @Test fun l44r2() = b(44, 2).right(0.60f).rightJump(0.55f).left(0.03f).left(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f)
-        .right(0.03f).right(0.03f).leftJump(0.12f).rightJump(0.55f).wait(0.3f).rightJump(0.4f).landRight().wait(0.1f).right(0.1f).wait(0.6f)
-        .also { assertTrue("undone to x=${it.world.player.box.cx}", it.world.player.box.cx < 21f) }
-        .rightTo(23f).rightJump(0.4f).landRight().right(2f).expect(WorldState.WON)
+    @Test fun l41r2() { World2DesignTest.play(41, round = 2) }
+    @Test fun l42r2() { World2DesignTest.play(42, round = 2) }
+    /** Rebase, round 2: Ctrl+Z comes right before the door; the second climb is the real one. */
+    @Test fun l44r2() { World2DesignTest.play(44, round = 2) }
+    @Test fun l46r2() { World2DesignTest.play(46, round = 2) }
 
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
-        val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            41 to { b -> b.rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            42 to { b -> b.rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f) },
-            44 to { b -> b.right(0.60f).rightJump(0.55f).left(0.03f).left(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f)
-                .right(0.03f).right(0.03f).leftJump(0.12f).rightJump(0.55f).right(1.20f) },
-            46 to { b -> b.rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f)
-                .rightJump(0.55f).right(0.03f) },
-        )
+        val roundOne: Map<Int, (Bot) -> Bot> = emptyMap()
     }
 }

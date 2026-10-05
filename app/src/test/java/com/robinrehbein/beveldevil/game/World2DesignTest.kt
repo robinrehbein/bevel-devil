@@ -73,12 +73,12 @@ class World2DesignTest : DesignTestBase() {
             44 to d("–", "U16:Undo"),
             45 to d("R2", "U3"),
             46 to d("R10", "U12"),
-            47 to d("R5", "U9+U10"),
+            47 to d("R5", "U9"),
             48 to d("R4+R3", "U11+U9+U18"),
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (1..40).toSet()
+        val REBUILT: Set<Int> = (1..48).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
@@ -203,6 +203,7 @@ class World2DesignTest : DesignTestBase() {
             32 to listOf({ World2Rooms.l32(this) }),
         ) +
             World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
+            World2RoomsD.solutions +
             mapOf(
                 18 to listOf<Solution>({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
                 20 to listOf<Solution>({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
