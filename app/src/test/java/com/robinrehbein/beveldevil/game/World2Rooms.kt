@@ -93,8 +93,9 @@ object World2Rooms {
     /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
     fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(15f).left(1f)
 
-    /** 24: along the top floor over the stone (keep moving), drop to the second floor, back left over the stepping stones, jump the LEDs under the first stone, to the door. */
-    fun l24(b: Bot) = b.rightTo(27f).waitFor { it.player.grounded }.leftTo(14.0f).leftJump(0.35f).landLeft().left(3f)
+    /** 24: along the top deck (wait for the stalactites to fall), off the end, back under the deck without stopping, hop the saw out of the back wall, to the door. */
+    fun l24(b: Bot) = b.rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+        .leftUntil { sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().left(1.5f)
 
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,

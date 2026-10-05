@@ -270,27 +270,26 @@ object World2Part2 {
             spawn(1); door(14, 4); bits(23)
         },
 
-        // 24 — the uplink, a trap room (U2 the ceiling falls, U1 the floor goes): the uplink is at the top, so you start at the top and go
-        // down (the elevator is out of order). A stone in the top floor sinks when you step on it, and where you drop onto the second floor
-        // a packet from the ceiling follows you down: it lands on whoever stays where they landed (keep moving). On the way back left the
-        // stepping stones drop as you touch them (keep moving) and the LEDs under the first stone wait on the second floor
+        // 24 — the uplink, a trap room (U2 the ceiling comes down, with a saw from the side as the last surprise): the elevator is out of order and the
+        // uplink is in the basement, so you start up on the top deck and run right: stalactites hang over the deck and the ones ahead drop as you
+        // come near (wait for them to fall, then run). At the end you drop down to the lane and run back left under the underside of the deck, which
+        // comes down on whoever steps under it (keep running); on the last stretch before the door a saw rolls out of the back wall as you land (hop it, before the door)
         Level(
             name = T("Uplink", "Uplink"),
-            intro = T("The uplink is at the top. I'm taking the elevator.", "Der Uplink ist ganz oben. Ich nehme den Aufzug."),
+            intro = T("The uplink is in the basement. So is the elevator.", "Der Uplink ist im Keller. Der Aufzug auch."),
+            legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(Touch('s'), Move('s', 0f, 8f, 25f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink."), delay = 0.5f),
-                trap(Landed(25.5f, 31f), Play(Card.HEADBUTT), Fall('k'), say("Express delivery. Signature required. From above.", "Expresslieferung. Unterschrift erforderlich. Von oben."), delay = 0.5f),
-                trap(Touch('g'), Move('g', 0f, 8f, 25f), say("Floor 2 is under maintenance. As of now.", "Etage 2 ist in Wartung. Ab jetzt."), delay = 0.5f),
-                trap(Touch('i'), Move('i', 0f, 8f, 25f), delay = 0.5f),
+                trap(PastX(16.8f), Move('V', 0f, 16f, 25f), say("Stalactites. This is a cave now.", "Stalaktiten. Das hier ist jetzt eine Höhle."), delay = 0.3f),
+                trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 2.8f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
+                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 8f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
             ),
-            hint = T("Down is the new up. And the floor has a deadline.", "Unten ist das neue Oben. Und der Boden hat eine Frist."),
+            hint = T("Wait for the stalactites to fall. Then run, and do not stop under the deck.", "Warte, bis die Stalaktiten gefallen sind. Dann lauf, und bleib nicht unter dem Deck stehen."),
         ) {
             border(); floor()
-            fill(1..24, 7..7); fill(11..11, 7..7, 's')
-            fill(1..30, 11..11); fill(18..19, 11..11, 'i'); fill(22..23, 11..11, 'g')
-            put(11, 10, '^'); put(18, 14, '^'); put(19, 14, '^'); put(22, 14, '^'); put(23, 14, '^')
-            fill(26..30, 2..3, 'k')
-            spawn(2, 6); put(2, 10, 'D'); bits(24)
+            fill(0..26, 6..6)
+            fill(20..21, 1..2, 'V')
+            fill(19..26, 7..8, 'r')
+            spawn(1, 5); door(9, 14); bits(24)
         },
 
         // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it

@@ -615,8 +615,8 @@ class ScreenshotTest {
             "21" to at(21), "21-closet" to at(21) { rooms.l21ToCloset(this).wait(0.5f) }, "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
             "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
             "23" to at(23), "23-lift" to at(23) { rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27f).wait(0.7f) },
-            "24" to at(24), "24-floor2" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.3f) },
-            "24-packet" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.7f) },
+            "24" to at(24), "24-stalactites" to at(24) { rightTo(10.6f).wait(0.2f) },
+            "24-deck" to at(24) { rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(0.8f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }
         for ((name, w) in scenes) {

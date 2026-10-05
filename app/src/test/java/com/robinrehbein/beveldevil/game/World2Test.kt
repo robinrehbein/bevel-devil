@@ -478,12 +478,12 @@ class World2Test {
     @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(4f).expect(WorldState.DEAD)
     @Test fun l23StandingOnTheExitLiftIsFatal() = b(23).rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27.2f).wait(2.5f).expect(WorldState.DEAD)
 
-    // 24: the stone sinks under you, the packet from the ceiling follows you down, the stepping stones drop under you
-    @Test fun l24RunningStraightIntoTheGapIsFatal() = b(24).right(4f).expect(WorldState.DEAD)
-    @Test fun l24WaitingOnTheSecondFloorMeetsThePacket() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
-        .wait(3f).expect(WorldState.DEAD)
-    @Test fun l24StandingOnTheStoneIsFatal() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
-        .leftTo(23.4f).wait(1.5f).expect(WorldState.DEAD)
+    // 24: stalactites fall where you run, the deck comes down on the lane, the carpet in front of the door is nothing
+    @Test fun l24RunningUnderTheStalactitesIsFatal() = b(24).right(3f).expect(WorldState.DEAD)
+    @Test fun l24StandingUnderTheDeckIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l24RunningStraightIntoTheSawFromTheBackWallIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.left(5f).expect(WorldState.DEAD)
 
     // ---------- act 2, levels 17-24: what the reviews asked for ----------
 
