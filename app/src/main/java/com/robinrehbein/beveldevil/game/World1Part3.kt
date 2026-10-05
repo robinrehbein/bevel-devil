@@ -481,16 +481,16 @@ object World1Part3 {
             put(14, 14, 'P'); put(26, 14, 'D')
         },
 
-        // 48 — exit (finale): the door is right there, behind a live rail nobody touches. The switch is on the roof: up the stairs, over the
+        // 48 — exit (finale): the door is right there, behind a wall that only the switch opens. The switch is on the roof: up the stairs, over the
         // roof under a jump rope, press it, and fall off the end; a spike comes down on the way back to the door. When the door is reached it
         // was not the end: the wall breaks open (U18), behind it a jump rope, a fence and a spike more.
-        // Rematch: a second switch lies on the way back to the door, wired the other way: whoever steps on it powers the rail again, so
+        // Rematch: a second switch lies on the way back to the door, wired the other way: whoever steps on it closes the wall again, so
         // you hop it; the second room has two fences
         // R1: switch opens the door, R5: up and over, R7: the door at hand is the bait; U14+U18: the end that was a lie
         Level(
             name = T("Exit", "Ausgang"),
             intro = T("Last level. Promise.", "Letztes Level. Versprochen."),
-            hint = T("The door is locked by a live rail. The switch is on the roof: up the stairs, over the jump rope, and off the end.", "Die Tür ist mit einer Stromschiene verriegelt. Der Schalter liegt auf dem Dach: Treppe hoch, übers Seil, und am Ende runter."),
+            hint = T("A wall locks the door. The switch is on the roof: up the stairs, over the jump rope, and off the end.", "Eine Wand versperrt die Tür. Der Schalter liegt auf dem Dach: Treppe hoch, übers Seil, und am Ende runter."),
             rooms = 2,
             legend = mapOf('S' to ceilingSpike, 'V' to ceilingSpike, 'W' to ceilingSpike),
             start = listOf(Circuit('w'), Pad('1', at = 17 to 10, circuits = "w", mode = PadMode.OFF)),

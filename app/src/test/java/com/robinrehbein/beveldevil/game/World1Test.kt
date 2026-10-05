@@ -114,7 +114,7 @@ class World1Test {
             a is Action.FakeWin || a is Action.PauseTrap || a is Action.FrameCrack || a is Action.Flip || a is Action.Roll || a is Action.Ghost
         }
         assertTrue((World1Part1.levels + World1Part2.levels).none { l -> actions(l).any(meta) })
-        assertEquals(setOf("FakeWin", "PauseTrap", "FrameCrack", "Flip", "Roll", "Ghost"),
+        assertEquals(setOf("PauseTrap", "FrameCrack", "Flip", "Ghost"),
             World1Part3.levels.flatMap { l -> actions(l).filter(meta).map { it::class.simpleName!! } }.toSet())
     }
 
@@ -127,13 +127,6 @@ class World1Test {
     }
 
     // ---------- the levels that react to input in unusual ways ----------
-
-    @Test
-    fun panicButtonIsASpike() {
-        val bot = b(42).rightTo(7.5f)
-        assertFalse(bot.world.pausePressed())
-        bot.wait(0.3f).expect(WorldState.DEAD)
-    }
 
     // ---------- Act 1: Die Karten ----------
     @Test fun level01() = b(1).rightTo(17.6f).rightJump(0.35f).right(3f).expect(WorldState.WON)
@@ -404,24 +397,24 @@ class World1Test {
     /** 40: after the panic the keys are swapped, so holding right runs back to the start. */
     @Test fun level40HoldingRightRunsBack() = b(40).right(5f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 5f) }.expect(WorldState.PLAYING)
     @Test fun level40TheMemoryTestBeamStopsTheRunner() = b(40).rightUntil { it.swapped }.leftKeyRightTo(25f).expect(WorldState.DEAD)
-    @Test fun level41() = b(41).rightTo(10.2f).wait(1.2f).rightTo(20.7f).wait(1.2f).right(3f).expect(WorldState.WON)
-    @Test fun level42() = b(42).hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
-    @Test fun level43() = b(43).right(4f).also { it.expect(WorldState.DEAD) }
-        .retry().hopR(13.6f).hopR(19.3f).hopR(24.4f).right(2f).expect(WorldState.WON)
-    @Test fun level44() = b(44).rightTo(18f).shake().hopR(22.8f).right(3f).expect(WorldState.WON)
-    @Test fun level45() = b(45).rightJump(0.35f).landRight().hopR(8f).hopR(18.2f).right(2f).expect(WorldState.WON)
-    @Test fun level46() = b(46).left(1.2f).hopR(23.6f).right(2f).expect(WorldState.WON)
-    @Test fun level47() = b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).hopR(15.2f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level48() = b(48).rightTo(9f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .right(4f).also { assertEquals(FakeEnd.CREDITS, it.world.fake?.end) }
-        .waitWhile { it.fake != null }
-        .waitWhile(2f) { !it.player.grounded }
-        .leftTo(27.6f).leftJump(0.35f).landLeft()
-        .leftTo(22.4f).leftJump(0.35f).landLeft()
-        .leftTo(15.4f).leftJump(0.35f).landLeft()
-        .left(3f).expect(WorldState.WON)
+    // ---------- Act 3, levels 41-48 (block E): rebuilt, their clean run is the registered solution (World1RoomsE); the rematches of 42, 46, 47 and 48 are in World1DeckTest ----------
+    @Test fun level41() = World1DesignTest.play(41)
+    @Test fun level42() = World1DesignTest.play(42)
+    @Test fun level43() = World1DesignTest.play(43)
+    @Test fun level44() = World1DesignTest.play(44)
+    @Test fun level45() = World1DesignTest.play(45)
+    @Test fun level46() = World1DesignTest.play(46)
+    @Test fun level47() = World1DesignTest.play(47)
+    @Test fun level48() = World1DesignTest.play(48)
 
+    /** 41: the wall in front of the aerial is too high: running on ends at its foot. */
+    @Test fun level41TheWallStopsTheRunner() = b(41).right(6f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 20.5f) }.expect(WorldState.PLAYING)
+    /** 48: the door is not the end: the wall breaks open and the door slips into the second room. */
+    @Test fun level48TheDoorWasNeverTheEnd() {
+        val run = b(48).also(World1DesignTest.SOLUTIONS.getValue(48)[0]).also { it.expect(WorldState.WON) }
+        assertEquals(1, run.world.room)
+        assertTrue("the door slipped into the second room", run.world.door.box.cx > 32f)
+    }
     // ---------- Acts 2 and 3: chains around the mechanics ----------
 
     @Test
@@ -451,18 +444,7 @@ class World1Test {
         // 24: HEAD catches whoever stands still, and the second branch whoever walks into it
         b(24).hopR(6.8f, 0.3f).wait(4f).expect(WorldState.DEAD)
         b(24).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().left(5f).expect(WorldState.DEAD)
-        // 42: the obvious jump over the first pit lands in the spikes
-        b(42).hopR(10.2f).wait(0.5f).expect(WorldState.DEAD)
-        // 43: the ghost's attempt teaches the first hop, then the second one has spikes
-        b(43).right(4f).also { it.expect(WorldState.DEAD) }.retry().hopR(13.6f).hopR(20.5f).right(2f).expect(WorldState.DEAD)
-        // 44: jumping at the wall
-        b(44).rightTo(17f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
-        // 45: climbing onto the shelf and running on
-        b(45).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
-        // 47: the wall is down, the spikes behind it are not
-        b(47).rightTo(10.5f).jump(0.3f).wait(0.4f).right(4f).expect(WorldState.DEAD)
-        // 48: jumping off the bridge's end
-        b(48).rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }.rightTo(15.4f).rightJump(0.35f).landRight().wait(0.5f).expect(WorldState.DEAD)
+        // 41-48 are rebuilt: the naive runs of every rebuilt level (hold right, hop right) are checked by H2 in World1DesignTest
     }
 
     @Test
@@ -472,10 +454,6 @@ class World1Test {
         val counts = all.map { it.traps.size }
         assertTrue("average ${counts.average()}", counts.average() >= 2.5)
         assertTrue("act 2 average ${World1Part2.levels.map { it.traps.size }.average()}", World1Part2.levels.map { it.traps.size }.average() >= 2.5)
-        // the meta twists already surprise: their chains stay short
-        for (n in listOf(41, 42, 43, 45, 46, 48)) {
-            assertTrue("twist level $n has ${World1.levels[n - 1].traps.size} traps", World1.levels[n - 1].traps.size <= 3)
-        }
     }
 
     @Test
