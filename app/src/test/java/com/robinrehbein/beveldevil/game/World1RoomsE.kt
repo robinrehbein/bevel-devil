@@ -25,6 +25,18 @@ object World1RoomsE {
     }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        48 to listOf<Solution>(
+            { hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+                .waitFor { it.ropeUp(14f, 0.9f) }.rightUntil { it.pads[0].down }.right(0.6f)
+                .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f).right(1.5f)
+                .rightTo(37.5f).waitFor { it.ropeUp(41f, 0.9f) }.rightTo(45.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(51.5f)
+                .waitFor { it.group('W').oy >= 11.5f }.rightTo(61.0f).right(2f) },
+            { hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+                .waitFor { it.ropeUp(14f, 0.9f) }.rightUntil { it.pads[0].down }.right(0.6f)
+                .waitFor { it.group('V').oy >= 11.5f }.rightTo(22.2f).rightJump(0.45f).landRight().rightTo(28.6f).right(1.5f)
+                .rightTo(37.5f).waitFor { it.ropeUp(40f, 0.9f) }.rightTo(44.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(49.2f)
+                .waitFor { it.group('W').oy >= 11.5f }.rightTo(55.0f).waitFor { it.darkFor('C') > 1.1f }.rightTo(61.0f).right(2f) },
+        ),
         47 to listOf<Solution>(
             { leftTo(12.4f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(5.9f).jump(0.4f)
                 .rightTo(14.0f).waitFor { it.group('g').oy <= -1.2f }.rightTo(17.0f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(22.2f).jump(0.4f).waitFor { it.player.grounded }

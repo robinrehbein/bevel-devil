@@ -387,7 +387,7 @@ object World1Part3 {
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
             hint = T("The floor is deleted just ahead of you: hop where it is gone. Upstairs, the strips slide away: hop those too.", "Der Boden wird direkt vor dir gelöscht: Spring, wo er fehlt. Oben gleiten die Streifen weg: Auch darüber hüpfen."),
             traps = listOf(
-                trap(PastX(5.5f), Play(Card.COLLAPSE), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(PastX(5.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
                 trap(PastX(10f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
                 trap(PastX(15f), Hide('c'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
                 trap(Touch('s'), Hide('s'), Say(T("rm: removing '/stairs' ... in a moment.", "rm: entferne '/stairs' ... gleich.")), delay = 0.9f),
@@ -458,7 +458,7 @@ object World1Part3 {
                 Round(
                     T("Rematch. I'm hungry again.", "Revanche. Ich hab schon wieder Hunger."),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.GHOST_BLOCK), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f),
+                        trap(Touch('k'), Play(Card.HEADBUTT), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f),
                             Say(T("Same bread. Same hurry.", "Gleiches Brot. Gleiche Eile."))),
                         trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', -8f, 0f, 2.0f),
                             Say(T("Sandwich comes with the pickle on top.", "Sandwich mit Gurke obendrauf."))),
@@ -481,45 +481,58 @@ object World1Part3 {
             put(14, 14, 'P'); put(26, 14, 'D')
         },
 
-        // 48 — finale: a blinking bridge, then the door ends the game. The credits roll, become stairs, the door went home.
-        // TWIST: FakeWin (credits) + Roll
+        // 48 — exit (finale): the door is right there, behind a live rail nobody touches. The switch is on the roof: up the stairs, over the
+        // roof under a jump rope, press it, and fall off the end; a spike comes down on the way back to the door. When the door is reached it
+        // was not the end: the wall breaks open (U18), behind it a jump rope, a fence and a spike more.
+        // Rematch: a second switch lies on the way back to the door, wired the other way: whoever steps on it powers the rail again, so
+        // you hop it; the second room has two fences
+        // R1: switch opens the door, R5: up and over, R7: the door at hand is the bait; U14+U18: the end that was a lie
         Level(
             name = T("Exit", "Ausgang"),
             intro = T("Last level. Promise.", "Letztes Level. Versprochen."),
-            legend = mapOf('c' to hiddenSolid, 'A' to hiddenSpike),
+            hint = T("The door is locked by a live rail. The switch is on the roof: up the stairs, over the jump rope, and off the end.", "Die Tür ist mit einer Stromschiene verriegelt. Der Schalter liegt auf dem Dach: Treppe hoch, übers Seil, und am Ende runter."),
+            rooms = 2,
+            legend = mapOf('S' to ceilingSpike, 'V' to ceilingSpike, 'W' to ceilingSpike),
+            start = listOf(Circuit('w'), Pad('1', at = 17 to 10, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(Airborne(15.2f, 18.6f), Play(Card.GRAND_FINALE), Show('A'), Say(T("Final level! Everything I've got.", "Letztes Level! Alles, was ich habe."))),
-                trap(AtDoor, FakeWin(FakeEnd.CREDITS, 'c', DoorTo(1, 8), Roll(3f, 2))),
+                trap(PastX(6.6f), Fall('S'), Say(T("Final level! Everything I've got.", "Letztes Level! Alles, was ich habe."))),
+                trap(PastX(9f), PathSaw(7f, 14f to 10.4f, 14f to 6.6f, delay = 0.9f), Say(T("Skip along. It is a roof party.", "Hüpf mit. Es ist eine Dachparty."))),
+                trap(Pressed('1'), Say(T("The switch! And what a view.", "Der Schalter! Und was für eine Aussicht."))),
+                trap(Landed(19f, 25f), Fall('V'), Say(T("Almost home. Almost.", "Fast zu Hause. Fast."))),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14, line = T("Exit? There is a second floor plan.", "Ausgang? Es gibt noch einen zweiten Grundriss."))),
+                trap(PastX(roomX(1, 4f)), PathSaw(7f, roomX(1, 9f) to 14.4f, roomX(1, 9f) to 10.6f, delay = 0.9f), Say(T("Extension. Rope included.", "Anbau. Seil inklusive."))),
+                trap(PastX(roomX(1, 11f)), Laser('B', roomX(1, 15) to 1, roomX(1, 15) to 14, on = 1f, off = 1.6f, delay = 0.3f), Say(T("The extension has a fence. Of course.", "Der Anbau hat einen Zaun. Natürlich."))),
+                trap(PastX(roomX(1, 18f)), Fall('W'), Say(T("Credits roll next. Eventually.", "Als Nächstes der Abspann. Irgendwann."))),
             ),
-            start = listOf(Blink('a', on = 2.4f, off = 1f)),
-            // round 2 (encore, a collapse): no fake, but the floor after the bridge drops: jump off its end this time.
-            // round 3 (second encore, a shy door): the door goes home, back over the bridge
             rematch = listOf(
                 Round(
                     T("Encore! Nobody leaves before the encore.", "Zugabe! Keiner geht vor der Zugabe."),
-                    start = listOf(Blink('a', on = 2.4f, off = 1f, phase = 1.2f)),
-                    traps = listOf(
-                        trap(After(0.4f), Say(T("Same song. New ending.", "Gleiches Lied. Neues Ende."))),
-                        trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.08f),
+                    hint = T("A second switch lies on the way back. It is wired the other way round: hop it.", "Auf dem Rückweg liegt ein zweiter Schalter. Er ist andersherum verdrahtet: Spring drüber."),
+                    start = listOf(
+                        Circuit('w'), Pad('1', at = 17 to 10, circuits = "w", mode = PadMode.OFF),
+                        Pad('2', at = 24 to 14, circuits = "w", mode = PadMode.TOGGLE),
                     ),
-                ) { fill(17..18, 15..17, 'e') },
-                Round(
-                    T("Second encore. The crowd insists. I'm the crowd.", "Zweite Zugabe. Das Publikum will es. Ich bin das Publikum."),
-                    start = listOf(Blink('a', on = 2.4f, off = 1f, phase = 1.2f)),
                     traps = listOf(
-                        trap(After(0.4f), Say(T("From the top!", "Da capo!"))),
-                        // up and over your head first, then home to the start
-                        trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(28, 4, speed = 20f), Say(T("Encore means from the top.", "Zugabe heißt: von vorn."))),
-                        trap(PastX(23f), DoorTo(3, 14, speed = 14f), delay = 0.6f),
+                        trap(PastX(6.6f), Fall('S'), Play(Card.GRAND_FINALE), Say(T("Same song. New ending.", "Gleiches Lied. Neues Ende."))),
+                        trap(PastX(9f), PathSaw(7f, 14f to 10.4f, 14f to 6.6f, delay = 0.9f), Say(T("From the top!", "Da capo!"))),
+                        trap(Landed(19f, 25f), Fall('V'), Say(T("Ah, you remembered the switch. I added another.", "Ah, du weißt noch, wo der Schalter ist. Ich habe noch einen dazugestellt."))),
+                        trap(AtDoor, Extend(into = 1, door = roomX(1, 28) to 14, line = T("The encore is in the next room.", "Die Zugabe ist im nächsten Raum."))),
+                        trap(PastX(roomX(1, 4f)), PathSaw(7f, roomX(1, 8f) to 14.4f, roomX(1, 8f) to 10.6f, delay = 0.9f)),
+                        trap(PastX(roomX(1, 10.5f)), Laser('B', roomX(1, 14) to 1, roomX(1, 14) to 14, on = 1f, off = 1.6f, delay = 0.3f), Say(T("Two fences. The crowd insists.", "Zwei Zäune. Das Publikum besteht darauf."))),
+                        trap(PastX(roomX(1, 15.6f)), Fall('W'), Say(T("Curtain.", "Vorhang."))),
+                        trap(PastX(roomX(1, 21.5f)), Laser('C', roomX(1, 25) to 1, roomX(1, 25) to 14, on = 1f, off = 1.6f, delay = 0.3f)),
                     ),
-                ),
+                ) { room(1) { fill(23..24, 1..2, '.'); fill(20..21, 1..2, 'W') } },
             ),
         ) {
-            border(); floor(); pit(10..16)
-            put(19, 14, 'A'); put(20, 14, 'A')
-            fill(10..16, 15..15, 'a')
-            fill(1..13, 9..9, 'c'); fill(15..19, 11..11, 'c'); fill(22..26, 13..13, 'c')
-            put(2, 14, 'P'); put(28, 14, 'D')
+            border(); floor()
+            room(0) {
+                fill(4..5, 13..14); fill(6..7, 11..14); fill(6..18, 11..11)
+                fill(26..27, 8..14, 'w')
+                fill(10..11, 1..2, 'S'); fill(25..26, 1..2, 'V')
+                put(2, 14, 'P'); put(29, 14, 'D')
+            }
+            room(1) { fill(23..24, 1..2, 'W') }
         },
     )
 }
