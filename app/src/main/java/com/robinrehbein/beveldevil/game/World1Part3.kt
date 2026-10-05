@@ -27,6 +27,12 @@ import com.robinrehbein.beveldevil.game.Action.Tilt
 import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.AtDoor
+import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.Pressed
+import com.robinrehbein.beveldevil.game.Action.Circuit
+import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.Reroute
+import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
@@ -251,22 +257,32 @@ object World1Part3 {
             put(2, 14, 'P'); put(6, 8, 'D')
         },
 
-        // 41 — stalactites fall in two waves while the picture rolls; you cannot see them land
-        // TWIST: Roll
+        // 41 — TV night: the door is straight ahead behind a wall that is too high, so the way is the other way round. Left of the
+        // start the shelf is missing a piece you cannot see (a bracket hangs next to the gap): the stalactites over the sofa come down
+        // as you walk under them, butt the air under the bracket and the wall far away goes off air, with a bang, and the next stalactite
+        // is on its way to the lane you have to run back along. Where the wall stood the last one waits.
+        // R12: the hidden shelf piece, U2: the ceiling falls
         Level(
             name = T("TV Night", "Fernsehabend"),
             intro = T("Reception is great today. No static.", "Der Empfang ist heute super. Kein Rauschen."),
-            legend = mapOf('S' to ceilingSpike, 'T' to ceilingSpike),
+            hint = T("The wall is too high, the way is behind you: a bracket on the left shows where the shelf is missing a piece. Butt the air.", "Die Wand ist zu hoch, der Weg liegt hinter dir: Eine Halterung links zeigt, wo dem Regal ein Stück fehlt. Spring gegen die Luft."),
+            legend = mapOf('S' to ceilingSpike, 'T' to ceilingSpike, 'U' to ceilingSpike, 'b' to ghost),
             traps = listOf(
-                trap(PastX(10f), Play(Card.GHOST_BLOCK), Fall('S'), Roll(2.4f, 2), Say(T("Technical difficulties.", "Bildstörung."))),
-                trap(PastX(20.5f), Fall('T'), Roll(2f, 2)),
+                trap(BeforeX(13f), Fall('S'), Say(T("Technical difficulties.", "Bildstörung."))),
+                trap(Touch('b'), Play(Card.GHOST_BLOCK), Hide('w'), Say(T("Hey! That piece was off air.", "He! Das Stück war nicht auf Sendung."))),
+                trap(Touch('b'), Fall('T'), delay = 0.2f),
+                trap(PastX(17.5f), Fall('U'), Say(T("Next channel: ceiling.", "Nächster Sender: Decke.")), delay = 0.35f),
             ),
         ) {
             border(); floor()
-            put(14, 1, 'S'); put(15, 1, 'S')
-            put(24, 1, 'T'); put(25, 1, 'T')
-            ceilingSpikes(7..8); ceilingSpikes(29..30)
-            put(2, 14, 'P'); put(29, 14, 'D')
+            put(7, 1, 'S'); put(8, 1, 'S'); put(9, 1, 'S'); put(7, 2, 'S'); put(8, 2, 'S'); put(9, 2, 'S')
+            put(10, 1, 'T'); put(11, 1, 'T'); put(10, 2, 'T'); put(11, 2, 'T')
+            put(24, 1, 'U'); put(25, 1, 'U'); put(24, 2, 'U'); put(25, 2, 'U')
+            put(4, 10, '#'); put(5, 10, '#')
+            put(4, 12, 'b'); put(5, 12, 'b')
+            fill(20..21, 3..14, 'w')
+            pit(27..28)
+            put(17, 14, 'P'); put(30, 14, 'D')
         },
 
         // 42 — the old wall of teeth chases you and Mephi offers a pause; the pause button is a spike
