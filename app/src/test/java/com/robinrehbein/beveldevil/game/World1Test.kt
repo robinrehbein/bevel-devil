@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import com.robinrehbein.beveldevil.game.World1RoomsD.pieceLanded
+import com.robinrehbein.beveldevil.game.World1RoomsD.ropeUp
 
 /** One scripted solution per level of World 1 (48 levels, three acts of 16), played with the real physics. */
 class World1Test {
@@ -371,9 +372,17 @@ class World1Test {
     @Test fun level35TheDoorFlees() = b(35).right(8f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
     @Test fun level35TheDoorComesBackDown() = b(35).also(World1DesignTest.SOLUTIONS.getValue(35)[0]).also { assertTrue(it.world.door.box.y > 12f) }.expect(WorldState.WON)
 
-    /** 36: pieces of the frame come down where you run. */
-    @Test fun level36RunningStraightOnMeetsTheFallingFrame() = b(36).right(3f).expect(WorldState.DEAD)
-    @Test fun level36HoppingOverTheFirstPieceLandsOnSpikes() = b(36).rightTo(6.5f).waitFor { it.pieceLanded(0, 5f) }.rightTo(7.9f).rightJump(0.5f).landRight().wait(0.5f).expect(WorldState.DEAD)
+    /** 36: the rope stops the runner, and so does the first piece of the frame when you run on under it instead of waiting for it. */
+    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+        .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight()
+    @Test fun level36RunningStraightOnMeetsTheRope() = b(36).right(3f).expect(WorldState.DEAD)
+    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun level36TheFirstPieceIsTheStepUpToTheLedge() {
+        val up = climbed36()
+        up.expect(WorldState.PLAYING)
+        assertTrue("up on the ledge, y=${up.world.player.box.b}", up.world.player.box.b < 12.5f)
+    }
+    @Test fun level36TheSecondPieceCrushesWhoRunsOnTheLedge() = climbed36().right(2f).expect(WorldState.DEAD)
 
     /** 37: standing still on the deleted floor is the end of you, and the step you leave is gone. */
     @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(9f).wait(4f).expect(WorldState.DEAD)

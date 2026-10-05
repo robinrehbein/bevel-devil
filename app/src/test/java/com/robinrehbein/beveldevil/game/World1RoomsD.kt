@@ -33,13 +33,12 @@ object World1RoomsD {
             { rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
                 .left(3f) },
         ),
-        // 36: let the first piece land, climb on it and hop off its far end over the spikes, up the stairs, back along the upper floor,
-        // let the second piece land and hop it
+        // 36: let the rope go up and hop it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
+        // hop it; the curator puts you back a second, so hop it again
         36 to listOf<Solution>(
-            { rightTo(6.5f).waitFor { it.pieceLanded(0, 5f) }.rightTo(7.2f).rightJump(0.3f).landRight().rightTo(10.6f).rightJump(0.5f).landRight()
-                .rightTo(19.3f).rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
-                .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
-                .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
+            { rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+                .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight().waitFor { it.pieceLanded(1, 11f) }
+                .hopR(24.6f, 0.4f).rightUntil(2f) { it.player.box.cx < 24f }.hopR(24.6f, 0.4f).rightTo(29.6f) },
         ),
         // 40: the keys swap at the first steps: wait for the beam to go dark, cross, the keys come back at the end of the shelf, drop down the
         // shaft, run back along the ground floor; the keys swap again halfway (reboot) and the pit is hopped with them

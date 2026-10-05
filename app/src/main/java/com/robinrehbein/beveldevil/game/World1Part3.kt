@@ -128,26 +128,25 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 36 — gallery: a piece of the golden frame (a bit of the upper floor) breaks off over your head and lands on the path ahead; hopping
-        // over it sprouts spikes behind it, so you have to stand on it first. Upstairs, on the way back along the upper floor, the next
-        // piece of the frame comes down where you hurry, and the hole the first one left is waiting
-        // TWIST: FrameCrack
+        // 36 — gallery: a jump rope swings across the hall, and then the golden frame comes apart: a piece of the ceiling cracks off as you
+        // near the high ledge where the door is, and whoever runs on is under it when it lands. The piece is the step you need up to the
+        // ledge (wait for it to land, then climb on). Up on the ledge the next piece comes down in front of the door, and the curator
+        // hits Ctrl+Z on whoever has just crossed it
+        // TWIST: FrameCrack (meta); the rope is the second family, the undo is meta too
         Level(
             name = T("Gallery", "Galerie"),
             intro = T("All real gold. Almost. Don't touch.", "Alles echtes Gold. Fast. Nicht anfassen."),
-            hint = T("The frame drops pieces where you run. Let them land, then climb on. Spikes grow behind the first piece.", "Der Rahmen lässt Stücke fallen, wo du rennst. Lass sie landen, dann steig drauf. Hinter dem ersten wachsen Stacheln."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("The frame drops pieces where you run. Let them land, then climb on. Mind the rope, and the curator.", "Der Rahmen lässt Stücke fallen, wo du rennst. Lass sie landen, dann steig drauf. Achte auf das Seil und auf die Kuratorin."),
             traps = listOf(
-                trap(PastX(3.1f), FrameCrack(9, 9, 11, 9, warn = 0.5f), Say(T("Crack.", "Knack."))),
-                trap(Airborne(12.2f, 14.4f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Hand-painted. The spikes, too.", "Handgemalt. Die Stacheln auch."))),
-                trap(Zone(21f, 7f, 23f, 9.5f), FrameCrack(16, 0, 18, 0, warn = 0.4f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
+                trap(PastX(3f), PathSaw(7f, 7f to 14.4f, 7f to 10.6f, delay = 0.6f), Say(T("Jump rope. The exhibit is interactive.", "Seilspringen. Das Exponat ist interaktiv."))),
+                trap(PastX(8.5f), FrameCrack(14, 0, 16, 0, warn = 0.5f), Say(T("Crack.", "Knack."))),
+                trap(Landed(17f, 23f), FrameCrack(26, 0, 28, 0, warn = 0.55f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
+                trap(PastX(28.4f), Play(Card.UNDO), Undo(1.0f), Say(T("The curator pressed Ctrl+Z. On you.", "Die Kuratorin hat Strg+Z gedrückt. Bei dir."))),
             ),
         ) {
             border(); floor()
-            fill(21..23, 13..14); fill(24..30, 11..14)
-            fill(2..23, 9..9)
-            put(12, 14, 'A'); put(13, 14, 'A')
-            put(3, 14, 'P'); put(6, 8, 'D')
+            fill(17..30, 12..14)
+            put(2, 14, 'P'); put(29, 11, 'D')
         },
 
         // 37 — force push: as you pass the first marks the floor behind you is deleted, tile pair by tile pair, chasing you to the stairs;
