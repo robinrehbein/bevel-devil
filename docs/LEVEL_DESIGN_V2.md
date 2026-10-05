@@ -388,7 +388,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |44|Rebase|–|U16 (Undo)|Falle|
 |45|Playground|R2 (Wippe als Halteschalter)|U3|Rätsel|
 |46|Privilege Escalation|R10|U12|Rätsel|
-|47|Math Problem|R5|U9+U10|Rätsel|
+|47|Math Problem|R5|U9|Rätsel|
 |48|shutdown -h now (Finale)|R4+R3|U11+U9+U18|Finale|
 
 ### Welt 3: Platine (Thema: Strom, Hitze, Lüfter)

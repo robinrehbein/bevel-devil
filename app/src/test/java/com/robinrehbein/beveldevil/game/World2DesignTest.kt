@@ -73,7 +73,7 @@ class World2DesignTest : DesignTestBase() {
             44 to d("–", "U16:Undo"),
             45 to d("R2", "U3"),
             46 to d("R10", "U12"),
-            47 to d("R5", "U9+U10"),
+            47 to d("R5", "U9"),
             48 to d("R4+R3", "U11+U9+U18"),
         )
 

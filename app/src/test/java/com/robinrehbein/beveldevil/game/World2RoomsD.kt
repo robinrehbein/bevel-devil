@@ -59,6 +59,11 @@ object World2RoomsD {
     fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
         .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().rightJump(0.35f).right(2f)
 
+    /** 47: hop the cart on the lane (the controls swap as you land), up the steps with swapped hands, left onto the deck, hop the cart that comes at you and run on to the door. */
+    fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().hopS(24.2f, 0.35f).hopS(26.4f, 0.55f)
+        .rightUntil { it.player.box.cx < 28.6f }.rightJump(0.55f).landRight()
+        .rightUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.rightJump(0.5f).landRight().right(3f)
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
@@ -66,5 +71,6 @@ object World2RoomsD {
         44 to listOf({ l44(this) }, { l44r2(this) }),
         45 to listOf({ l45(this) }),
         46 to listOf({ l46(this) }, { l46r2(this) }),
+        47 to listOf({ l47(this) }),
     )
 }

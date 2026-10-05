@@ -220,25 +220,22 @@ object World2Part3D {
             spawn(); put(29, 10, 'D'); bits(46)
         },
 
-        // 47 — EASTER EGG: integer overflow 127 + 1 (the LEDs wrap to 0000000) and kernel panic
+        // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls at you along the lane, a second,
+        // faster one starts behind you, and the steps at the end lead up to a deck over the lane, (the top step: the integer overflows and left is right).
+        // The way to the door is back along the deck with swapped hands, and a cart comes at you there as well
         Level(
             name = T("Math Problem", "Rechenaufgabe"),
             intro = T("What's 127 plus 1? Take your time.", "Was ist 127 plus 1? Lass dir Zeit."),
-            legend = mapOf('A' to hidden),
             traps = listOf(
-                trap(PastX(3f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.2f, 0f), say("Kernel panic! Attempted to kill init!", "Kernel Panic! Versuch, init zu beenden!")),
-                trap(PastX(7.5f), Swap(true), say("127 + 1 = -128", "127 + 1 = -128")),
-                trap(PastX(11f), Fall('a'), say("BUG: unable to handle kernel paging request", "BUG: Kernel-Paging-Anfrage nicht behandelbar")),
-                trap(PastX(16f), Gravity(true), say("Call Trace: mephi_devil_flip+0x2a/0x80", "Call Trace: mephi_devil_flip+0x2a/0x80")),
-                trap(PastX(22.5f), Swap(false)),
-                trap(PastX(25.5f), Gravity(false), Show('A'), say("---[ end Kernel panic ]---", "---[ Ende Kernel Panic ]---")),
+                trap(PastX(6f), Saw(32f, 14.4f, -6f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
+                trap(PastX(24f), Saw(-1.5f, 14.4f, 12f, 0f), say("Integer overflow: the next one comes from behind.", "Ganzzahlüberlauf: Die nächste kommt von hinten.")),
+                trap(Landed(21f, 24.9f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
+                trap(Zone(15f, 8f, 18f, 10.5f), Saw(-1.5f, 9.4f, 6f, 0f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
             ),
         ) {
             border(); floor()
-            fill(12..14, 15..17, 'a')
-            leds(17..24); put(19, 1, 'v'); put(21, 1, 'v')
-            put(28, 14, 'A')
-            spawn(); door(30); bits(128) // 127 + 1 wraps the LEDs to 0000000: nothing on the ceiling
+            fill(25..26, 14..14); fill(27..30, 12..14); fill(1..26, 10..10)
+            spawn(); door(3, 9); bits(47)
         },
 
         // 48 — act and world finale: belt, tunnel, gate, swapped controls, and a door that moves down to layer 3
