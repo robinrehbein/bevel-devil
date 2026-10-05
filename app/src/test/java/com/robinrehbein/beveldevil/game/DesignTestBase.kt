@@ -28,6 +28,13 @@ abstract class DesignTestBase {
     /** Level number → one solution per round, for the [pilot]. */
     open val pilotSolutions: Map<Int, List<Solution>> = emptyMap()
 
+    /**
+     * TODO allowlist: findings of rebuilt levels that are known and still to be fixed, rule code → pieces of the finding's
+     * text. A matching finding is printed ("TODO allowlisted") but does not fail the test. Every entry names the level
+     * work that removes it; an empty map means the rules hold without exceptions.
+     */
+    open val todoAllowlist: Map<String, List<String>> = emptyMap()
+
     private fun level(n: Int) = levels[n - 1]
 
     private fun assertNone(what: String, violations: List<String>) =
@@ -102,11 +109,24 @@ abstract class DesignTestBase {
                 if (world == 3) DesignRules.spikeQuotaViolations(acts.levels, DesignRules::heatSpikeFinaleCount, "HeatSpike finales") else emptyList())
                 .map { Finding("H5", null, it) }
         },
+        "H19 say lint" to { DesignRules.sayViolations(acts.levels).map { Finding("H19", null, it) } },
+        "H20 adjacent rooms" to { DesignRules.adjacentViolations(signatures(acts)).map { Finding("H20", null, it) } },
         "§7 card spread" to { DesignRules.cardSpreadViolations(acts.levels).map { Finding("§7", null, it) } },
     )
 
+    /** H20: round 1's signature of every level of [scope] that has a solution. */
+    private fun signatures(scope: Scope) = scope.numbers.filter { scope.solutions[it]?.isNotEmpty() == true }.sorted()
+        .associateWith { DesignRules.signature(level(it), scope.solutions.getValue(it)[0]) }
+
     private val rebuiltScope get() = Scope(rebuilt, solutions, ::level)
-    private fun check(rule: String) = assertNone(rule, rules(rebuiltScope, rebuiltScope).getValue(rule)().map { "level ${it.level ?: "-"}: ${it.text}" })
+    private fun check(rule: String) {
+        val code = rule.substringBefore(' ')
+        val (known, open) = rules(rebuiltScope, rebuiltScope).getValue(rule)().partition { f ->
+            todoAllowlist[code].orEmpty().any { it in f.text }
+        }
+        for (f in known) println("TODO allowlisted [$code] ${f.text}")
+        assertNone(rule, open.map { "level ${it.level ?: "-"}: ${it.text}" })
+    }
 
     // ---------- rebuilt levels ----------
 
@@ -131,6 +151,8 @@ abstract class DesignTestBase {
     @Test fun cardsFitTheirTraps() = check("H8 card lint")
     @Test fun mechanicsRotatePerAct() = check("H12 rotation")
     @Test fun spikePopupQuota() = check("H5 spike popups")
+    @Test fun noRepeatedLinesInAnAct() = check("H19 say lint")
+    @Test fun neighboursPlayDifferently() = check("H20 adjacent rooms")
     @Test fun cardsSpreadPerAct() = check("§7 card spread")
 
     // ---------- the pilot: reported, not asserted ----------

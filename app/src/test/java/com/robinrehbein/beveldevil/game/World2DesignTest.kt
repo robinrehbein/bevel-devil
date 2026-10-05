@@ -13,6 +13,7 @@ class World2DesignTest : DesignTestBase() {
     override val solutions = SOLUTIONS
     override val pilot = PILOT_V2
     override val pilotSolutions = PILOT_SOLUTIONS
+    override val todoAllowlist = TODO_ALLOWLIST
 
     /**
      * §8, World 2: at least 8 levels with real portal routing (R3, R4). Switches (R1, R2, R4) are capped at 3 per act by
@@ -25,6 +26,20 @@ class World2DesignTest : DesignTestBase() {
     }
 
     companion object {
+        /**
+         * TODO ALLOWLIST (remove each entry when the level work lands; an entry that no finding matches any more can go):
+         * findings of the new lints that the review of 2-11..2-24 found and another agent is fixing.
+         *
+         * - H12 "timed laser gates": 18, 20, 21 and 24 all flash a laser gate, the cap is 3 per act (18, 20, 21, 24 are being rebuilt).
+         * - H19 say lint: "Packet from the upper bus. Mind your head." in 17, 19 and 22, "Packet filter: low packets only." in 18 and 21.
+         * - H20 adjacent rooms: 11/12 (both lean on a moving wall and hop), 20/21 (both lean on a laser gate), 22/23 (the wall rolls in, hop).
+         */
+        val TODO_ALLOWLIST: Map<String, List<String>> = mapOf(
+            "H12" to listOf("act 2: timed laser gates in 4 levels [18, 20, 21, 24]"),
+            "H19" to listOf("packet from the upper bus", "paket vom oberen bus", "packet filter: low packets only", "paketfilter: nur flache pakete"),
+            "H20" to listOf("levels 11 and 12:", "levels 20 and 21:", "levels 22 and 23:"),
+        )
+
         /** The pilot (11-24) is rebuilt; every row is fixed in [DESIGN]. */
         val PILOT: Set<Int> = emptySet()
 

@@ -333,6 +333,138 @@ class DesignRulesTest {
         assertEquals(emptyList<String>(), DesignRules.rotationViolations(mapOf(3 to World2.levels[2], 21 to World2.levels[20])).filter { "DoorTo" in it })
     }
 
+    // ---------- laser gates (H12) ----------
+
+    /** A room whose only trap fires [laser] on [trigger]. */
+    private fun gateRoom(trigger: Trigger, laser: Action.Laser, start: List<Action> = emptyList()) =
+        Level(T("g", "g"), T("g", "g"), start = start, traps = listOf(trap(trigger, laser))) { border(); floor(); put(2, 14, 'P'); put(29, 14, 'D') }
+
+    @Test
+    fun aLaserFlashedOnATriggerIsAGateWhateverItsOffTime() {
+        val flash = Action.Laser('G', 15 to 8, 15 to 10, on = 0.7f, off = 40f)
+        // what the old filter (off < 10 s) let through: a one-shot flash on landing, passing, entering a zone
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Landed(10f, 14f), flash)))
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.PastX(10f), flash)))
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Zone(10f, 5f, 14f, 9f), flash)))
+        // the cycling gate is still one
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash.copy(on = 1f, off = 2f))))
+    }
+
+    @Test
+    fun aLongBeamOrAnAlwaysLitLaserIsNoGate() {
+        val flash = Action.Laser('G', 15 to 8, 15 to 10, on = 0.7f, off = 40f)
+        // lit for 5 s: a wall of light, not a gate; a laser from the start that is never dark is a fixture
+        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.PastX(10f), flash.copy(on = 5f))))
+        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash, start = listOf(flash.copy(id = 'H', off = 0f)))))
+        assertFalse(DesignRules.hasLaserGate(DesignDemos.corridor()))
+    }
+
+    @Test
+    fun aFourthLaserGateInAnActBreaksTheRotation() {
+        val flash = Action.Laser('G', 15 to 8, 15 to 10, on = 0.7f, off = 40f)
+        val act = (18..21).associateWith { gateRoom(Trigger.Landed(10f, 14f), flash) }
+        assertEquals(listOf("act 2: timed laser gates in 4 levels [18, 19, 20, 21] (max 3)"), DesignRules.rotationViolations(act))
+        assertEquals(emptyList<String>(), DesignRules.rotationViolations(act.filterKeys { it != 21 }))
+    }
+
+    @Test
+    fun theFinaleMayBringASwitchOnTopOfThreePadLevels() {
+        // W2 act 2: 17, 18 and 20 have pads, and so does the finale 32 (Core Switch): fine
+        val pad = DesignDemos.puzzle
+        val plain = DesignDemos.corridor()
+        val act = mapOf(17 to pad, 18 to pad, 19 to plain, 20 to pad, 32 to pad)
+        assertEquals(emptyList<String>(), DesignRules.rotationViolations(act).filter { "Pad" in it })
+        // a fourth ordinary level with a pad is not
+        val four = act - 32 + (21 to pad)
+        assertEquals(listOf("act 2: pads/switches (Pad) in 4 levels [17, 18, 20, 21] (max 3, plus the finale)"),
+            DesignRules.rotationViolations(four).filter { "Pad" in it })
+        // and the finale does not make a fourth ordinary level legal
+        assertEquals(1, DesignRules.rotationViolations(four + (32 to pad)).count { "Pad" in it })
+    }
+
+    @Test
+    fun theRealUplinkCountsAsALaserGate() {
+        // 2-24: "a gate flashes where you land" (Zone trigger, on 0.7 s, off 40 s)
+        assertTrue(DesignRules.hasLaserGate(World2.levels[23]))
+    }
+
+    // ---------- say lint (H19) ----------
+
+    private fun talker(intro: String, vararg says: Pair<String, String>, hint: T? = null) =
+        Level(T(intro, intro), T(intro, intro), hint = hint,
+            traps = says.mapIndexed { i, (en, de) -> trap(Trigger.PastX(5f + i), Action.Say(T(en, de))) }) { border(); floor(); put(2, 14, 'P'); put(29, 14, 'D') }
+
+    @Test
+    fun theSameLineInTwoLevelsOfAnActIsCaughtInBothLanguages() {
+        val a = talker("one", "Mind your head." to "Kopf einziehen.")
+        val b = talker("two", "Mind your head." to "Achtung, Kopf.")      // same English, other German
+        val c = talker("three", "Not the same." to "Kopf einziehen.")     // same German, other English
+        val v = DesignRules.sayViolations(mapOf(17 to a, 18 to b, 19 to c))
+        assertEquals(2, v.size)
+        assertTrue(v.joinToString("\n"), v.any { it.startsWith("act 2 EN: \"mind your head.\" in levels 17 (Say (round 1)), 18") })
+        assertTrue(v.joinToString("\n"), v.any { it.startsWith("act 2 DE: \"kopf einziehen.\" in levels 17") && "19" in it })
+        // case and spacing do not hide it, an intro or a hint counts as a line
+        val d = talker("MIND  your head.", "x" to "y")
+        assertEquals(1, DesignRules.sayViolations(mapOf(17 to a, 18 to d)).count { it.startsWith("act 2 EN") })
+        assertEquals(1, DesignRules.sayViolations(mapOf(17 to talker("p", "q" to "r", hint = T("Hop.", "Spring.")), 18 to talker("s", hint = T("Hop.", "Spring.")))).count { it.startsWith("act 2 EN") })
+    }
+
+    @Test
+    fun differentLinesOrDifferentActsOrOneLevelRepeatingItselfAreFine() {
+        val a = talker("one", "Mind your head." to "Kopf einziehen.")
+        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to a, 18 to talker("two", "Mind your feet." to "Füße einziehen."))))
+        // the same line in act 1 and act 2
+        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(14 to a, 17 to a)))
+        // twice in one level
+        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to talker("one", "Again." to "Nochmal.", "Again." to "Nochmal."))))
+        // the allowlist silences a known line
+        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to a, 18 to a), allow = setOf("mind your head.", "kopf einziehen.", "one")))
+    }
+
+    // ---------- adjacent rooms (H20) ----------
+
+    private fun sig(dominant: String, major: Set<String>, shape: String, vararg families: String) =
+        DesignRules.Signature(dominant, major, families.toList(), shape.split(' '))
+
+    @Test
+    fun theWallRollsInHopTwiceInARowIsCaught() {
+        // 2-22 and 2-23 as the review found them: one wall of four traps in one room, all of them in the next, run and hop
+        val l22 = sig("drop", setOf("drop", "move"), "R^ L^", "drop", "drop", "move", "drop")
+        val l23 = sig("move", setOf("move"), "R^", "move", "move", "move")
+        val v = DesignRules.adjacentViolations(mapOf(22 to l22, 23 to l23))
+        assertEquals(1, v.size)
+        assertTrue(v[0], v[0].startsWith("levels 22 and 23: both lean on [move] and play alike"))
+        // H6 alone (first U-code) did not see it
+        assertEquals(emptyList<String>(), DesignRules.h6Violations(mapOf(22 to d("–", "U2+U3"), 23 to d("–", "U3"))).filter { "main twist" in it })
+    }
+
+    @Test
+    fun neighboursThatDifferInEffectOrInPlayAreFine() {
+        val wall = sig("move", setOf("move"), "R^ L^", "move", "move")
+        // another effect, same moves
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 18 to sig("drop", setOf("drop"), "R^ L^", "drop"))))
+        // same effect, a different way of playing it (standing, going back, two stretches vs five)
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 18 to sig("move", setOf("move"), "L W R W L", "move"))))
+        // same everything, but a finale (it combines the act on purpose), or the next act
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(31 to wall, 32 to wall)))
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(16 to wall, 17 to wall)))
+        // not neighbours
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 19 to wall)))
+    }
+
+    @Test
+    fun theSignatureOfARoomReadsItsTrapsAndItsMoves() {
+        val s = DesignRules.signature(puzzle, solution)
+        assertEquals("drop", s.dominant)
+        assertEquals(setOf("drop", "spikes"), s.major)
+        assertEquals(listOf("spikes", "drop", "drop", "drop"), s.families)
+        // right, wait for the block, right, back left: no stretch under a quarter second counts
+        assertTrue(s.shape.toString(), s.shape.first() == "R^" && s.shape.last().startsWith("L"))
+        assertEquals(1f, DesignRules.similarity(listOf("a", "b"), listOf("a", "b")))
+        assertEquals(0.5f, DesignRules.similarity(listOf("a", "b"), listOf("b")))
+        assertEquals(0f, DesignRules.similarity(emptyList(), listOf("b")))
+    }
+
     @Test
     fun aCardFitsTheTrapItSitsOn() {
         assertEquals(emptyList<String>(), DesignRules.cardLintViolations(DesignDemos.corridor(Card.SPIKE_SEED)))

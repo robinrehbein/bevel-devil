@@ -453,17 +453,41 @@ object DesignRules {
             bot.moments.filter { it.real }.joinToString().ifEmpty { "none" })
     }
 
-    /** H12: a rotating mechanic and how many levels of an act may use it. */
-    class Cap(val what: String, val max: Int, val counts: (Action) -> Boolean)
+    /** H12: a rotating mechanic and how many levels of an act may use it ([has]: the level uses it). */
+    class Cap(val what: String, val max: Int, val has: (Level) -> Boolean, val finaleExtra: Int = 0)
+
+    /** A [Cap] test: some action of some round of the level satisfies [p]. */
+    private fun uses(p: (Action) -> Boolean): (Level) -> Boolean = { l -> levelActions(l).any(p) }
+
+    /**
+     * Triggers that fire where the player is ([Trigger.Landed], [Trigger.PastX], [Trigger.BeforeX], [Trigger.Zone],
+     * [Trigger.Airborne], [Trigger.Touch]): a beam that flashes there is a gate, however the level words it.
+     */
+    private fun placeTrigger(t: Trigger) = t is Trigger.Landed || t is Trigger.PastX || t is Trigger.BeforeX ||
+        t is Trigger.Zone || t is Trigger.Airborne || t is Trigger.Touch
+
+    /** A trap-fired laser lit for less than [GATE_ON] s: a gate, whatever its off time (a one-shot flash is a gate too). */
+    const val GATE_ON = 2f
+
+    /**
+     * H12, timed laser gates: a laser that cycles with an off time under 10 s, or any laser a trap fires on a place
+     * trigger ([placeTrigger]: [Trigger.Landed], [Trigger.PastX], zones, ...) that is lit for less than [GATE_ON] s.
+     * Its off time does not matter: a flash of the beam as you land or pass is a gate, also with an off time of 40 s.
+     */
+    fun hasLaserGate(level: Level): Boolean = level.rounds.any { round ->
+        actions(round).any { it is Action.Laser && it.off > 0f && it.off < 10f } ||
+            round.traps.any { t -> placeTrigger(t.trigger) && flatten(t.actions).any { it is Action.Laser && it.on < GATE_ON } }
+    }
 
     /** H12, counted from the actions in the level code (all rounds), per act of 16. */
     val CAPS = listOf(
-        Cap("door flees (DoorTo)", 1) { it is Action.DoorTo },
-        Cap("pads/switches (Pad)", 3) { it is Action.Pad },
-        Cap("timed laser gates", 3) { it is Action.Laser && it.off > 0f && it.off < 10f },
-        Cap("Blink-wait", 3) { it is Action.Blink },
-        Cap("gravity flip", 1) { it is Action.Gravity && it.flipped },
-        Cap("controls swap", 2) { it is Action.Swap && it.on },
+        Cap("door flees (DoorTo)", 1, uses { it is Action.DoorTo }),
+        // the finale combines the act on purpose (as in H6): it may bring a switch on top of the three (W2 act 2: 17, 18, 20 + 32)
+        Cap("pads/switches (Pad)", 3, uses { it is Action.Pad }, finaleExtra = 1),
+        Cap("timed laser gates", 3, ::hasLaserGate),
+        Cap("Blink-wait", 3, uses { it is Action.Blink }),
+        Cap("gravity flip", 1, uses { it is Action.Gravity && it.flipped }),
+        Cap("controls swap", 2, uses { it is Action.Swap && it.on }),
     )
 
     /** Every action of every round of [level], [Action.FakeWin.then] included. */
@@ -472,8 +496,10 @@ object DesignRules {
     /** H12: per act, no mechanic of [CAPS] in more of [levels] (number → level) than its cap. */
     fun rotationViolations(levels: Map<Int, Level>): List<String> = levels.keys.groupBy(::act).toSortedMap().flatMap { (a, ns) ->
         CAPS.mapNotNull { cap ->
-            val with = ns.filter { n -> levelActions(levels.getValue(n)).any(cap.counts) }.sorted()
-            if (with.size > cap.max) "act $a: ${cap.what} in ${with.size} levels $with (max ${cap.max})" else null
+            val with = ns.filter { n -> cap.has(levels.getValue(n)) }.sorted()
+            // a finale may add up to finaleExtra levels beyond the cap: it only counts against the cap past that
+            val capped = if (with.count(::isFinale) <= cap.finaleExtra) with.filterNot(::isFinale) else with
+            if (capped.size > cap.max) "act $a: ${cap.what} in ${with.size} levels $with (max ${cap.max}${if (cap.finaleExtra > 0) ", plus the finale" else ""})" else null
         }
     }
 
@@ -492,32 +518,33 @@ object DesignRules {
     fun families(round: Level): Set<String> {
         val out = LinkedHashSet<String>()
         val trapActions = flatten(round.traps.flatMap { it.actions })
-        for (a in flatten(round.start) + trapActions) {
-            when (a) {
-                is Action.Fall -> out += "drop"
-                is Action.Hide -> if (round.glyph(a.group)?.spike != true) out += "drop"
-                is Action.Show -> out += if (round.glyph(a.group)?.spike == true) "spikes" else "secret"
-                is Action.Move, is Action.Chase, is Action.Tilt, is Action.Slope -> out += "move"
-                is Action.DoorTo, is Action.FakeWin, is Action.Extend -> out += "door"
-                is Action.Saw, is Action.PathSaw -> out += "saw"
-                is Action.Swap -> out += "controls"
-                is Action.Gravity, is Action.Flip -> out += "gravity"
-                is Action.Portal, is Action.Reroute -> out += "portal"
-                is Action.Belt -> out += "belt"
-                is Action.Laser -> out += "laser"
-                is Action.Blink -> out += "blink"
-                is Action.Heat, is Action.Heatsink, is Action.HeatSpike -> out += "heat"
-                is Action.Clock, is Action.Toggle, is Action.BitFlip -> out += "power"
-                is Action.Circuit -> if (a.group.isUpperCase() || a in trapActions) out += "power"
-                is Action.Power -> out += when (kind(round, a.id)) { "rail", "trace" -> "power"; else -> kind(round, a.id) }
-                is Action.Fan, is Action.FanSet -> out += "fan"
-                is Action.Undo, is Action.Ghost, is Action.PauseTrap, is Action.FrameCrack, is Action.Roll -> out += "meta"
-                else -> {}
-            }
-        }
+        for (a in flatten(round.start) + trapActions) familyOf(a, round, trapActions)?.let { out += it }
         val secret = round.map.grid.any { row -> row.any { c -> round.glyph(c)?.let { !it.spike && (it.hidden || it.bonk) } == true } }
         if (secret) out += "secret"
         return out
+    }
+
+    /** The effect family of one action (see [families]), null for talk, cards, pads and plain state. [trapActions]: the actions traps fire. */
+    fun familyOf(a: Action, round: Level, trapActions: List<Action> = flatten(round.traps.flatMap { it.actions })): String? = when (a) {
+        is Action.Fall -> "drop"
+        is Action.Hide -> if (round.glyph(a.group)?.spike != true) "drop" else null
+        is Action.Show -> if (round.glyph(a.group)?.spike == true) "spikes" else "secret"
+        is Action.Move, is Action.Chase, is Action.Tilt, is Action.Slope -> "move"
+        is Action.DoorTo, is Action.FakeWin, is Action.Extend -> "door"
+        is Action.Saw, is Action.PathSaw -> "saw"
+        is Action.Swap -> "controls"
+        is Action.Gravity, is Action.Flip -> "gravity"
+        is Action.Portal, is Action.Reroute -> "portal"
+        is Action.Belt -> "belt"
+        is Action.Laser -> "laser"
+        is Action.Blink -> "blink"
+        is Action.Heat, is Action.Heatsink, is Action.HeatSpike -> "heat"
+        is Action.Clock, is Action.Toggle, is Action.BitFlip -> "power"
+        is Action.Circuit -> if (a.group.isUpperCase() || a in trapActions) "power" else null
+        is Action.Power -> when (kind(round, a.id)) { "rail", "trace" -> "power"; else -> kind(round, a.id) }
+        is Action.Fan, is Action.FanSet -> "fan"
+        is Action.Undo, is Action.Ghost, is Action.PauseTrap, is Action.FrameCrack, is Action.Roll -> "meta"
+        else -> null
     }
 
     /** H13: rounds of level [n] with more than [MAX_FAMILIES] effect families per room (an act finale: one more). */
@@ -638,6 +665,93 @@ object DesignRules {
                 "${level.name.en} round ${r + 1}: ${p.card} sits on $on"
             }
         }
+    }
+
+    // ---------- say lint ----------
+
+    /** A line of Mephi's in a level: where it comes from ("Say", "intro" or "hint") and the text. */
+    class Line(val source: String, val text: T)
+
+    /** Every line a level says: all [Action.Say]s of every round, the intro of every round and the hint. */
+    fun lines(level: Level): List<Line> = level.rounds.flatMapIndexed { r, round ->
+        listOf(Line("intro (round ${r + 1})", round.intro)) +
+            actions(round).filterIsInstance<Action.Say>().map { Line("Say (round ${r + 1})", it.text) }
+    } + listOfNotNull(level.hint?.let { Line("hint", it) })
+
+    private fun norm(s: String) = s.trim().lowercase().replace(Regex("\\s+"), " ")
+
+    /**
+     * Say lint: no line (a [Action.Say], an intro or a hint) is said word for word in two levels of the same act, in
+     * English or in German (case and spacing aside). The same line twice in one level (a rematch repeating itself) is
+     * fine. [levels]: number → level; [allow]: lines (normalized text) that are known and still to be fixed.
+     */
+    fun sayViolations(levels: Map<Int, Level>, allow: Set<String> = emptySet()): List<String> =
+        levels.keys.groupBy(::act).toSortedMap().flatMap { (a, ns) ->
+            listOf<Pair<String, (T) -> String>>("EN" to { it.en }, "DE" to { it.de }).flatMap { (lang, pick) ->
+                val seen = LinkedHashMap<String, MutableMap<Int, MutableSet<String>>>()
+                for (n in ns.sorted()) for (l in lines(levels.getValue(n))) {
+                    val key = norm(pick(l.text))
+                    if (key.isEmpty()) continue
+                    seen.getOrPut(key) { LinkedHashMap() }.getOrPut(n) { LinkedHashSet() } += l.source
+                }
+                seen.filter { it.value.size > 1 && it.key !in allow }.map { (text, at) ->
+                    "act $a $lang: \"$text\" in levels ${at.entries.joinToString { "${it.key} (${it.value.joinToString()})" }}"
+                }
+            }
+        }
+
+    // ---------- adjacent levels ----------
+
+    /**
+     * What a level feels like to play, from the clean run of its round 1: the effect family of every real trap in the
+     * order they went off ([families]), the [dominant] one (most traps; the first wins a tie), the [major] ones (at
+     * least [MAJOR_SHARE] of the traps) and the player's direction changes ([Bot.shape]).
+     */
+    class Signature(val dominant: String?, val major: Set<String>, val families: List<String>, val shape: List<String>) {
+        override fun toString() = "dominant $dominant, major $major, traps $families, moves $shape"
+    }
+
+    /** A family is major in a room when this share of its real traps belong to it. */
+    const val MAJOR_SHARE = 0.25f
+
+    fun signature(level: Level, solution: Solution): Signature {
+        val bot = measured(level, 0, solution)
+        val round = level.rounds[0]
+        val per = bot.moments.filter { it.real }.map { m -> m.actions.mapNotNull { familyOf(it, round) }.distinct() }
+        val seq = per.mapNotNull { it.firstOrNull() }
+        val counts = per.flatten().groupingBy { it }.eachCount()
+        val dominant = counts.entries.maxByOrNull { (f, k) -> k * 100 - per.indexOfFirst { f in it } }?.key
+        val major = counts.filter { it.value >= MAJOR_SHARE * per.size - 1e-4f }.keys
+        return Signature(dominant, major, seq, bot.shape())
+    }
+
+    /** Longest common subsequence of [a] and [b] over the longer one: 1 for the same sequence, 0 for nothing in common. */
+    fun similarity(a: List<String>, b: List<String>): Float {
+        if (a.isEmpty() || b.isEmpty()) return 0f
+        val t = Array(a.size + 1) { IntArray(b.size + 1) }
+        for (i in a.indices) for (j in b.indices) t[i + 1][j + 1] = if (a[i] == b[j]) t[i][j] + 1 else maxOf(t[i][j + 1], t[i + 1][j])
+        return t[a.size][b.size].toFloat() / maxOf(a.size, b.size)
+    }
+
+    /** Adjacent levels: the player's moves look at least this much alike ([similarity]). */
+    const val ADJACENT_MOVES = 0.5f
+
+    /**
+     * H6 on the real rooms: two consecutive levels of an act (the second no finale) must not share a major effect
+     * family ([Signature.major]) *and* play alike (the [similarity] of the player's direction changes is at least
+     * [ADJACENT_MOVES]): "the wall rolls in, hop", twice. H6 on the table only compares the first U-code and the
+     * dominant family alone misses a wall that is one trap of four in one room and all three in the next; this reads
+     * the rooms.
+     */
+    fun adjacentViolations(signatures: Map<Int, Signature>): List<String> = signatures.keys.sorted().mapNotNull { n ->
+        val a = signatures.getValue(n)
+        val b = signatures[n + 1] ?: return@mapNotNull null
+        if (isFinale(n + 1) || act(n) != act(n + 1)) return@mapNotNull null
+        val shared = a.major intersect b.major
+        val moves = similarity(a.shape, b.shape)
+        if (shared.isNotEmpty() && moves >= ADJACENT_MOVES) {
+            "levels $n and ${n + 1}: both lean on $shared and play alike (moves ${a.shape} vs ${b.shape}, %.0f %% alike; traps ${a.families} vs ${b.families})".format(100 * moves)
+        } else null
     }
 
     // ---------- the §8 table, recipe v2 ----------

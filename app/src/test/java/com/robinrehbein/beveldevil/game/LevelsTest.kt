@@ -73,6 +73,28 @@ class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle
     }
     private val log = ArrayList<Entry>()
 
+    /**
+     * The run boiled down to its direction changes, for [DesignRules.adjacentViolations]: one token per stretch in one
+     * direction (`R`, `L`, or `W` for standing still), with `^` if the player jumped in it. Stretches under 0.25 s do
+     * not count (a nudge), and equal neighbours merge: `hopR`, `hopR`, wait, `leftTo` is `R^ W L`.
+     */
+    fun shape(): List<String> {
+        val runs = ArrayList<Triple<Char, Int, Boolean>>()
+        for (e in log.filterIsInstance<Entry.Step>()) {
+            val dir = if (e.left && !e.right) 'L' else if (e.right && !e.left) 'R' else 'W'
+            val last = runs.lastOrNull()
+            if (last != null && last.first == dir) runs[runs.size - 1] = Triple(dir, last.second + 1, last.third || e.jumpPressed)
+            else runs += Triple(dir, 1, e.jumpPressed)
+        }
+        val out = ArrayList<Triple<Char, Int, Boolean>>()
+        for (r in runs.filter { it.second * DT >= 0.25f }) {
+            val last = out.lastOrNull()
+            if (last != null && last.first == r.first) out[out.size - 1] = Triple(r.first, last.second + r.second, last.third || r.third)
+            else out += r
+        }
+        return out.map { "${it.first}${if (it.third) "^" else ""}" }
+    }
+
     private fun step() {
         val idle = !input.left && !input.right && world.state == WorldState.PLAYING && world.fake == null
         log += Entry.Step(input.left, input.right, input.jump, input.jumpPressed, input.tilt, input.shake)

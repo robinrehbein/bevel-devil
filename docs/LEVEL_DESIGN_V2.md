@@ -60,13 +60,15 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 | H9 | **Revanche gegen Runde 1** (wo vorhanden, §7): Die Revanche arbeitet gegen das Verhalten aus Runde 1 (Vorbilder: 14r2 Konzept, 20r2 Bluff), braucht eine andere Route, ist mindestens so lang wie Runde 1 und nie leichter. Die Runde-1-Lösung gewinnt sie nie. | `rematchWorksAgainstRoundOne`, vorhanden |
 | H10 | **Still stehen ist 2 s lang sicher**, außer in ausgewiesenen Idle-Leveln. | vorhanden |
 | H11 | **Name, Gag und Story bleiben.** Wenn die Mechanik wechselt, schreibst du den Gag passend neu, auf Englisch und Deutsch, in Mephis Ton. Der Name hat höchstens 26 Zeichen. | vorhanden |
-| H12 | **Rotation pro Akt** (16 Level), gezählt aus den Aktionen im Level-Code, nicht aus der Tabelle: Tür flieht (`DoorTo`) **höchstens 1-mal**, Pads und Schalter (`Pad`) **3-mal**, getaktete Laser-Tore **3-mal**, Blink-Warten (`Blink`) **3-mal**, Schwerkraft-Flip **1-mal**, vertauschte Steuerung (`Swap`) **2-mal**. Die Tabelle in §8 hält dieselben Grenzen für R6/U4, R1/R2/R4 und U9 ein. | `mechanicsRotatePerAct`, Tabelle |
+| H12 | **Rotation pro Akt** (16 Level), gezählt aus den Aktionen im Level-Code, nicht aus der Tabelle: Tür flieht (`DoorTo`) **höchstens 1-mal**, Pads und Schalter (`Pad`) **3-mal** (das Akt-Finale darf einen Schalter obendrauf bringen, es kombiniert den Akt absichtlich), Laser-Tore **3-mal**, Blink-Warten (`Blink`) **3-mal**, Schwerkraft-Flip **1-mal**, vertauschte Steuerung (`Swap`) **2-mal**. Ein **Laser-Tor** ist jeder Laser, der mit einer Auszeit unter 10 s taktet, **und** jeder Laser, den eine Falle auf einen Ortsauslöser hin (`Landed`, `PastX`, `BeforeX`, `Zone`, `Airborne`, `Touch`) für weniger als 2 s zündet, egal wie lang seine Auszeit ist (ein einmaliger Blitz beim Landen ist ein Tor). Die Tabelle in §8 hält dieselben Grenzen für R6/U4, R1/R2/R4 und U9 ein. | `mechanicsRotatePerAct`, Tabelle |
 | H13 | **Höchstens 2 Effekt-Familien pro Raum** (Level-Devil-Median: 2). Ein Akt-Finale darf eine dritte kombinieren, ein U18-Level hat 2 pro Raum. Die Familien stehen in §6a. | `atMostTwoEffectFamiliesPerRoom` |
 | H14 | **Nichts Unsichtbares ist Pflicht:** kein unsichtbarer Pflicht-Block, keine unsichtbare Pflicht-Stufe. Getarnt ist erlaubt: ein sichtbares Hinweis-Glyph (Riss, Glitch-Pixel) höchstens 1 Tile daneben. Keine unsichtbare Regeländerung (zum Beispiel ein Tor, das still seinen Takt ändert). Was fällt, verschwindet oder sich bewegt, hat ein lesbares Vorzeichen (Riss, Wackeln, Flackern). | Review, `TrapInvisibilityTest` |
 | H15 | **Zähne:** Für jede Falle dürfen „stehen bleiben und abwarten“ und „einfach durchlaufen“ nicht beide gewinnen. Eine Falle, die Warten oder Rennen mühelos besiegt, ist Deko. | `everyTrapHasTeeth` |
 | H16 | **Rückweg nur mit neuer Regel** (Vorbild 2-13: kopfüber zurück). Denselben Weg durch dieselben Hindernisse zurücklaufen ist verboten. | Review |
 | H17 | **Kein Füller-Tod in den ersten 2 s:** Wer vom Spawn aus nur rechts hält, stirbt in den ersten 2 s nicht, solange keine echte Falle ausgelöst hat. Sichtbare Stacheln oder ein Strahl direkt vor dem Spawn sind kein Gag. | `noFillerDeathAtTheStart` |
 | H18 | **Rätsel in etwa der Hälfte:** Pro Akt ist etwa die Hälfte der Level ein **Rätselraum** (ein Baustein R1–R12), die andere Hälfte ein dichter **Fallenraum** im Level-Devil-Stil (in §8: R = „–“). | Tabelle |
+| H19 | **Keine Zeile doppelt im Akt (Say-Lint):** Kein Spruch (`Say`), keine Intro und kein Hinweis steht wörtlich in zwei Leveln desselben Aktes, weder auf Englisch noch auf Deutsch (Groß-/Kleinschreibung und Leerzeichen zählen nicht). Dieselbe Zeile zweimal im selben Level (Revanche) ist erlaubt. Jedes Level hat seine eigenen Pointen. | `noRepeatedLinesInAnAct` |
+| H20 | **Nachbarn spielen sich anders (Raum-Abwechslung):** H6 liest nur die Tabelle. Zusätzlich dürfen zwei aufeinanderfolgende Level eines Aktes (das zweite kein Finale) nicht dieselbe Haupt-Effektfamilie *und* dieselbe Lösungsform haben. „Die Wand rollt heran, hüpf“ zweimal hintereinander ist verboten, auch wenn die Tabelle verschiedene Codes zeigt. | `neighboursPlayDifferently` |
 
 ## 3. Weiche Regeln (Handwerk)
 
@@ -81,7 +83,7 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 
 ## 3a. Musterlevel und Anti-Muster
 
-- **Musterlevel:** 2-13 „Works on My Machine“ und 2-21 „Flat Rate“, jeweils in der Fassung nach dem Pilot-Fix. 2-13 zeigt den Rückweg mit neuer Regel (kopfüber zurück) und den sofortigen Lacher (Schwerkraft nach 0,4 s). 2-21 zeigt Köder neben der Tür (Captive Portal) und vier Gags in unter 9 s mit kaum Wartezeit.
+- **Musterlevel:** 2-13 „Works on My Machine“, 2-14 „127.0.0.1“ und 2-15 „Greeting“, jeweils in der Fassung nach dem Pilot-Fix. 2-13 zeigt den Rückweg mit neuer Regel (kopfüber zurück) und den sofortigen Lacher (Schwerkraft nach 0,4 s). 2-14 zeigt Portal-Routing mit echter Routenwahl: eine Spirale aus Einbahn-Links, der naheliegende Link (Loopback) schickt dich heim, dazu eine Revanche gegen das Verhalten aus Runde 1. 2-15 zeigt ein Schalter-Rätsel mit Reihenfolge (zwei Pads, erst die Brücke, dann die Treppe zur Tür) und eine Falle, die die Hilfe ist (die Brücke bröckelt, wer stehen bleibt).
 - **Anti-Muster:** lineare Korridore mit getakteten Toren, wie die alten 2-23 „Information Superhighway“ und 2-24 „Uplink“. Gerade Spuren ohne Routenwahl und Takt-Strahlen hoch und wieder runter sind kein Rätselraum und auch kein Fallenraum, sondern Warten.
 
 ## 4. Rätsel-Bausteine (R)
@@ -341,7 +343,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |15|Greeting|R1|U3|Rätsel|
 |16|Through Traffic (Finale)|R3+R5|U9+U2|Finale|
 
-**Akt 2 „Traffic“** (17–24: nach Rezept v2 neu gebaut, die Zeilen stehen unten. Rotation im Akt: Die eine Tür-Flucht gehört 21 („301 Moved Permanently“), 24 verliert ihre. Ein Schalter steht im Finale 32, der Pilot hat also höchstens 2 Pad-Level. Getaktete Laser-Tore höchstens 3 im ganzen Akt.)
+**Akt 2 „Traffic“** (17–24: nach Rezept v2 neu gebaut, die Zeilen stehen unten. Rotation im Akt: Die eine Tür-Flucht gehört 21 („301 Moved Permanently“), 24 verliert ihre. **Pad-Deckel, Auflösung:** Der Deckel von 3 `Pad`-Leveln pro Akt (H12) gilt auch in Akt 2. Der Pilot darf ihn ausschöpfen (heute 17, 18 und 20). Das Finale 32 behält seinen Schalter (R4), weil ein Akt-Finale den Akt absichtlich kombiniert und einen Schalter **obendrauf** bringen darf (H12, `Cap.finaleExtra`). Zwischen 25 und 31 steht deshalb kein weiteres Pad-Level, und die Tabelle hält höchstens eine Schalter-Zeile (32) außerhalb des Piloten. Laser-Tore (H12, Definition dort) höchstens 3 im ganzen Akt, ein Blitz auf einen Ortsauslöser zählt mit.)
 
 | # | Name | R | U | Raum |
 |---|---|---|---|---|
@@ -466,8 +468,10 @@ Die Tests liegen in `app/src/test/java/com/robinrehbein/beveldevil/game/`: die R
 | `rematchWorksAgainstRoundOne` | H9 | Jede Revanche-Runde: sauberer Lauf ≥ Runde 1, Runde-1-Lösung verliert. |
 | `atMostTwoEffectFamiliesPerRoom` | H13 | Familien aus §6a pro Runde ≤ 2 (Finale 3, U18 2 pro Raum). |
 | `cardsFitTheirTraps` | H8 | Karten-Lint aus §7. |
-| `mechanicsRotatePerAct` | H12 | Rotations-Obergrenzen pro Akt, aus den Aktionen im Code. |
+| `mechanicsRotatePerAct` | H12 | Rotations-Obergrenzen pro Akt, aus den Aktionen im Code. Laser-Tore zählen auch ein Blitz-Laser auf einen Ortsauslöser mit Auszeit ≥ 10 s (`DesignRules.hasLaserGate`); das Finale darf einen Schalter obendrauf bringen. |
 | `spikePopupQuota` | H5 | ≤ 1 Spike-Popup pro Runde, ≤ 4 Level pro Akt (W3: auch `HeatSpike`-Schluss). |
+| `noRepeatedLinesInAnAct` | H19 | Say-Lint: kein `Say`, keine Intro, kein Hinweis wörtlich in zwei Leveln desselben Aktes, EN und DE getrennt geprüft. |
+| `neighboursPlayDifferently` | H20 | Zwei Nachbarn eines Aktes (das zweite kein Finale) teilen nicht eine Haupt-Effektfamilie (Anteil ≥ 25 % der echten Fallen des sauberen Laufs) *und* eine ähnliche Lösungsform (Richtungswechsel des Bots, Ähnlichkeit ≥ 50 %, längste gemeinsame Teilfolge). Fängt „Wand rollt heran, hüpf“ in 2-22 und 2-23, das H6 in der Tabelle übersieht. |
 | `cardsSpreadPerAct` | §7 | Keine Karte öfter als 3-mal pro Akt. |
 
 **Für die Tabelle:** `designTableMatchesTheDoc` (Tabelle im Test = §8), `designTableCoversTheWorldWithItsActStructure` (gültige Codes; Finale mit ≥ 2 Bausteinen und ≥ 2 Überraschungen; ≤ 2 ★ pro Akt; pro Akt ein bis zwei Drittel Rätselräume, H18; Rotation R6/U4 ≤ 1, R1/R2/R4 ≤ 3, U9 ≤ 2 pro Akt, H12), `noSameTwistTwiceInARow` (H6), W2: ≥ 8 Routing-Level, W3: spätestens jedes dritte Level eine andere Familie.
@@ -479,6 +483,9 @@ Weiter gültig: die vorhandenen Tests (eine Karte pro Runde, Runde-1-Lösung ver
 So prüfen die Tests im Detail:
 
 - **H6** vergleicht bei Nachbarn nur die Haupt-Codes (den ersten Code einer Zeile). „3 von 4“ zählt alle Codes einer Zeile. Akt-Finale zählen bei beiden Regeln nicht mit, weil sie den Akt absichtlich kombinieren. In W1 beginnt die Prüfung bei Level 7. Die Leitmechanik (W3: R11 in Akt 2, R10 in Akt 3) ist nur von „3 von 4“ ausgenommen.
+- **H19 (Say-Lint):** Gezählt werden alle `Say`-Aktionen aller Runden (auch in `FakeWin`), die Intro jeder Runde und der Hinweis. Verglichen wird getrennt auf Englisch und Deutsch, ohne Groß-/Kleinschreibung und mit zusammengefassten Leerzeichen. Pro Akt darf jeder Text in höchstens einem Level vorkommen.
+- **H20 (Nachbar-Check):** Die Signatur eines Levels kommt aus dem sauberen Lauf von Runde 1: die Effektfamilien (§6a) der echten Fallen in der Reihenfolge ihres Auslösens, die Haupt-Familien (≥ 25 % der echten Fallen) und die Form der Lösung (`Bot.shape()`: ein Zeichen pro Strecke in eine Richtung, `R`, `L` oder `W` fürs Stillstehen, mit `^` bei Sprung; Strecken unter 0,25 s zählen nicht). Zwei Nachbarn verstoßen, wenn sie eine Haupt-Familie teilen und die Formen zu mindestens 50 % übereinstimmen. Zahlen und Schwellen stehen in `DesignRules` (`MAJOR_SHARE`, `ADJACENT_MOVES`).
+- **TODO-Allowlist:** Ein Fund eines umgebauten Levels, der bekannt ist und gerade behoben wird, kann pro Welt in `todoAllowlist` (`World{n}DesignTest`) stehen. Der Test druckt ihn („TODO allowlisted“), schlägt aber nicht fehl. Jeder Eintrag nennt die Arbeit, die ihn entfernt; die Liste soll leer werden. Stand heute (W2): Laser-Tore 18/20/21/24 (4 > 3), doppelte Sprüche in 17/19/22 und 18/21, Nachbarn 11/12, 20/21 und 22/23.
 - **H5:** Eine Spike-Popup-Falle ist ein `Show`, das eine Gruppe mit `Glyph(spike = true, hidden = true)` sichtbar macht. In W3 gilt dasselbe für `HeatSpike` als Schlussfalle (letzte Falle der Liste, Auslöser `AtDoor` oder Auslöser höchstens 3 Tiles von der Tür entfernt, egal von welcher Seite, auch an der Stelle, an die `DoorTo` die Tür schiebt). Gezählt wird auch, was in einem `FakeWin(..., then)` steckt.
 - **H7 (Spielraum):** Die Lösung läuft zweimal: einmal „spät“ (jede Haltezeit +0,15 s, jedes `rightTo`/`leftTo`-Ziel 1 Tile weiter) und einmal „früh“ (−0,15 s, 1 Tile kürzer). Eine der beiden muss gewinnen. Warten auf eine Bedingung (`waitFor`, `rightUntil`, `waitWhile`, `fidgetUntil`, `untilSaw`) reagiert ebenfalls 0,15 s zu spät oder zu früh. Eine Bedingung auf `player.box.cx` oder `world.time` ist also kein Weg um den Test herum. Nur das Landen (`landRight`) bleibt exakt.
 - **H3 (Dichte):** Die Zeitpunkte sind die, an denen die Aktionen einer Falle laufen (also nach ihrem `delay`). Mehrere Fallen mit demselben Auslöser im selben Moment sind ein Moment. Stillstehen heißt: weder links noch rechts gedrückt, im Spiel und nicht in einem Fake-Sieg.
@@ -533,7 +540,7 @@ Die Level-Tests spielen dieselbe Lösung, damit sie nur an einer Stelle steht: `
 
 Ein Level gilt erst als fertig, wenn keiner der drei einen Blocker oder ein „langweilig“ meldet.
 
-**Pro Block bekommt der Sonnet-Agent:** dieses Dokument, die Musterlevel 2-13 und 2-21 (§3a), seine 8 Level aus §8 und die Leitplanken-Tests. Er liefert: umgebaute Level, Bot-Lösungen, zwei oder mehr Tod-Tests pro Level, aktualisierte Revanche-Tests, Screenshots jedes Raums und einen Bericht (Rätsel- oder Fallenraum, echte Fallen mit Zeitleiste, Dauer, Karte) auf Deutsch.
+**Pro Block bekommt der Sonnet-Agent:** dieses Dokument, die Musterlevel 2-13, 2-14 und 2-15 (§3a), seine 8 Level aus §8 und die Leitplanken-Tests. Er liefert: umgebaute Level, Bot-Lösungen, zwei oder mehr Tod-Tests pro Level, aktualisierte Revanche-Tests, Screenshots jedes Raums und einen Bericht (Rätsel- oder Fallenraum, echte Fallen mit Zeitleiste, Dauer, Karte) auf Deutsch.
 
 **Risiken:**
 - **Schwierigkeit steigt zu stark.** Abhilfe: Hinweis nach 2 Toden in der Runde (vorhanden), kurze Räume (6–9 s, ein Tod kostet wenig), Tutorial-Level bleiben kurz, Verschnaufpausen.
