@@ -13,5 +13,16 @@ object World1RoomsB {
             { rightTo(9.6f).rightJump(0.35f).landRight().rightTo(15.0f).rightJump(0.35f).landRight().rightTo(19.9f).rightJump(0.35f).landRight()
                 .rightJump(0.35f).landRight().rightTo(27.8f).leftTo(26.4f).leftJump(0.35f).landLeft().leftTo(2.0f) },
         ),
+        18 to listOf<Solution>(
+            { rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.35f).landRight().landRight()
+                .leftTo(24.6f).leftJump(0.35f).landLeft()
+                .leftUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.35f).landLeft()
+                .leftTo(9.0f).leftJump(0.35f).landLeft().leftTo(2.5f) },
+            { rightUntil { w -> w.saws.any { it.y < 9f && it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 6.0f } }.rightJump(0.35f).landRight()
+                .rightUntil { w -> w.saws.any { it.y < 9f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 3.4f } }.rightJump(0.35f).landRight()
+                .rightUntil { w -> w.swapped && w.saws.any { it.y > 12f && it.vx < -10f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.4f } }.rightJump(0.35f).landRight()
+                .rightUntil { w -> w.saws.any { it.y > 12f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.rightJump(0.35f).landRight()
+                .rightKeyLeftTo(2.5f) },
+        ),
     )
 }

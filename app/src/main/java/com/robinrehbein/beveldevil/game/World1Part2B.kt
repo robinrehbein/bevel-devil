@@ -1,22 +1,11 @@
 package com.robinrehbein.beveldevil.game
 
-import com.robinrehbein.beveldevil.game.Action.Blink
-import com.robinrehbein.beveldevil.game.Action.Bluff
-import com.robinrehbein.beveldevil.game.Action.DoorTo
-import com.robinrehbein.beveldevil.game.Action.Fall
-import com.robinrehbein.beveldevil.game.Action.Move
-import com.robinrehbein.beveldevil.game.Action.PathSaw
-import com.robinrehbein.beveldevil.game.Action.Play
+import com.robinrehbein.beveldevil.game.Action.*
+import com.robinrehbein.beveldevil.game.Action.Circuit
+import com.robinrehbein.beveldevil.game.Action.Laser
+import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.Saw
-import com.robinrehbein.beveldevil.game.Action.Say
-import com.robinrehbein.beveldevil.game.Action.Show
-import com.robinrehbein.beveldevil.game.Trigger.After
-import com.robinrehbein.beveldevil.game.Trigger.Airborne
-import com.robinrehbein.beveldevil.game.Trigger.Idle
-import com.robinrehbein.beveldevil.game.Trigger.Landed
-import com.robinrehbein.beveldevil.game.Trigger.PastX
-import com.robinrehbein.beveldevil.game.Trigger.Touch
-import com.robinrehbein.beveldevil.game.Trigger.Zone
+import com.robinrehbein.beveldevil.game.Trigger.*
 
 /** World 1, levels 17-24 (block B of the V2 rebuild). */
 object World1Part2B {
@@ -56,39 +45,35 @@ object World1Part2B {
             put(2, 14, 'P'); put(2, 6, 'D')
         },
 
-        // 18 — three saws bob across the path (they start with your first step); the floor where you would wait for the second one drops; a fourth saw comes from the front
-        // MECHANIC: PathSaw
+        // 18 — the hour strikes: two saws roll in along the upper floor, the second one makes you leap off its end, down on the ground
+        // floor the next hour comes at you from the left, and the floor opens up twice on the way home. Rematch: the hours come from behind
+        // MECHANIC: Saw (chimes)
         Level(
             name = T("On the Hour", "Stundenschlag"),
             intro = T("Be right back. Just getting coffee.", "Bin gleich zurück. Nur kurz Kaffee holen."),
             traps = listOf(
-                trap(PastX(2.6f), Play(Card.DEVIL_SAW),
-                    PathSaw(6.5f, 9f to 14.4f, 9f to 7f, delay = 1f),
-                    PathSaw(7.5f, 15f to 7f, 15f to 14.4f),
-                    PathSaw(5f, 21.5f to 14.4f, 21.5f to 7f, delay = 0.5f)),
-                trap(Touch('b'), Fall('b'), delay = 0.6f),
-                trap(PastX(23.4f), Saw(33.5f, 14.4f, -5f, 0f, 0.62f), Say(T("Not everyone works the same shift.", "Nicht alle haben dieselbe Schicht."))),
+                trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(33f, 7.4f, -7f, 0f, 0.62f), Say(T("Ding. One o'clock.", "Ding. Ein Uhr."))),
+                trap(Airborne(19.9f, 24f), Saw(33f, 7.4f, -8f, 0f, 0.62f), Say(T("Ding. Two o'clock. Punctual people leave early.", "Ding. Zwei Uhr. Pünktliche gehen früher."))),
+                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7.5f, 0f, 0.62f), Say(T("Three o'clock. Ground floor.", "Drei Uhr. Erdgeschoss.")), delay = 0.3f),
+                trap(Zone(27.5f, 12f, 30f, 15.5f), Move('g', 0f, 5f, 12f), Say(T("Lunch break. For the floor.", "Mittagspause. Für den Boden."))),
+                trap(Zone(10.5f, 12f, 13f, 15.5f), Move('k', 0f, 5f, 12f), Say(T("Closing time.", "Feierabend."))),
             ),
-            // rematch: the same three saws, but no fourth one: whoever runs on to meet it and jump it runs onto the
-            // floor before the door, and that floor collapses. Jump it from its edge
             rematch = listOf(
                 Round(
-                    T("Rematch. Shift change.", "Revanche. Schichtwechsel."),
+                    T("Rematch. The clock runs backwards now.", "Revanche. Die Uhr läuft jetzt rückwärts."),
                     traps = listOf(
-                        trap(PastX(2.6f),
-                            PathSaw(6.5f, 9f to 14.4f, 9f to 7f, delay = 1f),
-                            PathSaw(7.5f, 15f to 7f, 15f to 14.4f),
-                            PathSaw(5f, 21.5f to 14.4f, 21.5f to 7f, delay = 0.5f)),
-                        trap(Touch('b'), Fall('b'), delay = 0.6f),
-                        trap(Touch('w'), Play(Card.COLLAPSE), Fall('w'), delay = 0.12f),
-                        trap(Touch('w'), Say(T("The fourth saw has the day off. So does the floor.", "Die vierte Säge hat frei. Der Boden auch."))),
+                        trap(PastX(5f), Saw(33f, 7.4f, -10f, 0f, 0.62f), Say(T("Ding. Time zone: behind you.", "Ding. Zeitzone: hinter dir."))),
+                        trap(Landed(14f, 25f), Saw(8f, 7.4f, 17f, 0f, 0.62f), Say(T("The cuckoo came out the back.", "Der Kuckuck kam hinten raus."))),
+                        trap(Landed(27.5f, 31f), Play(Card.TWISTED), Swap(true), Say(T("Daylight saving: left is right.", "Zeitumstellung: links ist rechts."))),
+                        trap(Landed(27.5f, 31f), Saw(33f, 14.4f, -17f, 0f, 0.62f), Say(T("Quarter past. From the other side.", "Viertel nach. Von der anderen Seite.")), delay = 0.5f),
+                        trap(Zone(14.5f, 12f, 17f, 15.5f), Saw(-1.5f, 14.4f, 8f, 0f, 0.62f), Say(T("Half past. The clock is stuck.", "Halb. Die Uhr hängt."))),
                     ),
-                ) { fill(24..26, 15..17, 'w') },
+                ),
             ),
         ) {
-            border(); floor()
-            fill(12..14, 15..17, 'b')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); fill(1..26, 8..8)
+            fill(21..23, 15..17, 'g'); fill(6..7, 15..17, 'k')
+            put(2, 7, 'P'); put(3, 14, 'D')
         },
 
         // 19 — the door comes if you wait, but standing still collapses the start platform; hopping in place meets spikes; pacing to the edge drops it too
