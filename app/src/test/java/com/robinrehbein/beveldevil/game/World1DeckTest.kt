@@ -37,20 +37,15 @@ class World1DeckTest {
         // levels 33-40 are rebuilt: their round 1 is the registered solution (World1RoomsD)
         33 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(33)[0]) },
         37 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(37)[0]) },
-        42 to { b -> b.hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f) },
-        46 to { b -> b.left(1.2f).hopR(23.6f).right(2f) },
-        47 to { b -> b.rightTo(10.5f).jump(0.3f).wait(0.4f).hopR(15.2f).rightJump(0.35f).landRight().right(4f) },
-        48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .right(4f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded }
-            .leftTo(27.6f).leftJump(0.35f).landLeft().leftTo(22.4f).leftJump(0.35f).landLeft()
-            .leftTo(15.4f).leftJump(0.35f).landLeft().left(3f) },
+        // levels 41-48 are rebuilt: their round 1 is the registered solution (World1RoomsE)
+        42 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(42)[0]) },
+        46 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(46)[0]) },
+        47 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(47)[0]) },
+        48 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(48)[0]) },
     )
 
-    /** Round 2 of the levels with a third round, as in the round tests below. */
-    private val round2: Map<Int, (Bot) -> Bot> = mapOf(
-        48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .rightTo(16.6f).rightJump(0.35f).landRight().right(3f) },
-    )
+    /** Round 2 of the levels with a third round, as in the round tests below (none since the rebuild of 48). */
+    private val round2: Map<Int, (Bot) -> Bot> = emptyMap()
 
     @Test
     fun theScriptsCoverEveryRound() {
@@ -227,36 +222,32 @@ class World1DeckTest {
     @Test fun level37RematchTheOldRunFails() = assertTrue(solved(37, 1, 0).world.state != WorldState.WON)
     @Test fun level37RematchStayingOnAStoneDies() = b(37, 1).rightTo(4.0f).rightJump(0.4f).landRight().wait(1.5f).expect(WorldState.DEAD)
 
-    @Test fun level46Rematch() = b(46, 1).jump(0.3f).wait(0.4f).hopR(23.6f).right(2f).expect(WorldState.WON)
+    // levels 42, 46, 47 and 48: the rematch plays against the habit round 1 taught (docs/LEVEL_DESIGN_V2.md H9)
+    @Test fun level42Rematch() = World1DesignTest.play(42, 2)
+    /** Tailwind, round 2: the same room with a new hand (the blinking planks), so the clean run of round 1 never wins it. */
+    @Test fun level42RematchTheOldRunFails() = assertTrue(solved(42, 1, 0).world.state != WorldState.WON)
+
+    @Test fun level46Rematch() = World1DesignTest.play(46, 2)
+    /** Home Stretch, round 2: the old switch is a bluff and the real one sits on a ledge, so the old run fails. */
+    @Test fun level46RematchTheOldRunFails() = assertTrue(solved(46, 1, 0).world.state != WorldState.WON)
     @Test fun level46RematchOldButtonBluffs() {
-        val bot = b(46, 1).left(1.2f).wait(0.5f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.group('w').visible)
+        val level = World1.levels[45]
+        assertTrue("round 2 bluffs with the old button", level.rounds[1].traps.any(::bluff))
+        assertTrue("round 1 does not bluff", level.rounds[0].traps.none(::bluff))
     }
 
-    @Test fun level47Rematch() = b(47, 1).rightTo(9.3f).rightJump(0.35f).landRight().hopR(15.2f).rightJump(0.35f).landRight().right(4f)
-        .expect(WorldState.WON)
-    @Test fun level47RunningJumpWorksInRoundOneToo() = b(47).rightTo(9.3f).rightJump(0.35f).landRight().hopR(15.2f).rightJump(0.35f).landRight().right(4f)
-        .expect(WorldState.WON)
-    @Test fun level47RematchStandingUnderTheSandwichDies() = b(47, 1).rightTo(10.5f).jump(0.3f).wait(0.4f).expect(WorldState.DEAD)
+    @Test fun level47Rematch() = World1DesignTest.play(47, 2)
+    /** sudo make me a sandwich, round 2: the pickle comes down on whoever stands still under the bread, so the old stand-and-butt run dies. */
+    @Test fun level47RematchTheOldRunFails() = assertTrue(solved(47, 1, 0).world.state != WorldState.WON)
 
-    private fun bridge48(round: Int) = b(48, round).rightTo(9f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-
-    @Test fun level48Encore() = bridge48(1).rightTo(16.6f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level48SecondEncore() = bridge48(2).rightTo(23.5f).wait(0.3f).leftTo(17.5f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }.left(4f).expect(WorldState.WON)
-    @Test fun level48EncoresPunishTheRoundBefore() {
-        bridge48(1).right(4f).expect(WorldState.DEAD)
-        val stuck = bridge48(2).rightTo(16.6f).rightJump(0.35f).landRight().right(3f)
-        assertTrue(stuck.world.state != WorldState.WON)
+    @Test fun level48Encore() = World1DesignTest.play(48, 2)
+    /** Exit, round 2: a second switch lies on the way to the door, wired the other way round, so the old run steps on it. */
+    @Test fun level48EncoreTheOldRunFails() = assertTrue(solved(48, 1, 0).world.state != WorldState.WON)
+    @Test fun level48EncoreTheSecondSwitchClosesTheWallAgain() {
+        val run = b(48, 1).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+            .waitFor { World1RoomsE.run { it.ropeUp(14f, 0.9f) } }.rightUntil { it.pads[0].down }.right(0.6f)
+            .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f).right(2f)
+        assertTrue("the wall is shut again, x=${run.world.player.box.cx}", run.world.player.box.cx < 26f)
+        run.expect(WorldState.PLAYING)
     }
-
-    /** Tailwind, round 2: the teeth wait over the first pit. Let them come to the start, then outrun them: they are slower. */
-    @Test fun level42RematchLetItComeThenRun() = b(42, 1)
-        .waitFor { it.group('S').visible && kotlin.math.abs(it.group('S').homeX + it.group('S').ox - it.player.box.cx) < 0.2f }
-        .hopR(9.2f).hopR(14.3f).hopR(20.5f).hopR(25.4f).right(1f).expect(WorldState.WON)
-
-    /** Waiting under the pit's edge for them does not help: they settle overhead and the jump goes into them. */
-    @Test fun level42RematchJumpingUnderTheStalkerDies() = b(42, 1).rightTo(9.4f).wait(1.5f).rightJump(0.35f).landRight().expect(WorldState.DEAD)
 }
