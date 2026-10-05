@@ -25,9 +25,10 @@ class World1DeckTest {
             .rightJump(0.35f).landRight().right(1f).left(2f) },
         6 to { b -> b.rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight()
             .rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f) },
-        8 to { b -> b.rightTo(10f).wait(1f).rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(4f) },
-        12 to { b -> b.hopL(24f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(2f) },
-        15 to { b -> b.rightTo(11.8f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f) },
+        // levels 7-16 are rebuilt: their round 1 is the registered solution (World1RoomsA)
+        8 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(8)[0]) },
+        12 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(12)[0]) },
+        15 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(15)[0]) },
         17 to { b -> b.rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
             .rightTo(24.8f).rightJump(0.35f).landRight().right(2f) },
         18 to { b -> b.rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
@@ -166,22 +167,32 @@ class World1DeckTest {
     @Test fun level06RematchTheOldJumpLandsOnSpikes() =
         b(6, 1).rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
 
-    @Test fun level08Rematch() = b(8, 1).rightTo(9.5f).rightJump(0.2f).rightTo(15.8f).rightJump(0.25f).rightTo(20.8f).rightJump(0.25f).right(4f)
-        .expect(WorldState.WON)
-    @Test fun level08RematchWalkingInIsSpikes() = b(8, 1).rightTo(10f).wait(1f).right(2f).expect(WorldState.DEAD)
-
-    /** Return Trip, round 2: the first landing swaps the controls; walk on pressing right. */
-    @Test fun level12Rematch() = b(12, 1).hopL(24f).rightKeyLeftTo(4f).right(2f).expect(WorldState.WON)
-    @Test fun level12RematchTheOldHopJumpsBack() {
-        val bot = b(12, 1).hopL(24f)
-        val landed = bot.world.player.box.cx
-        bot.leftJump(0.35f).landLeft().expect(WorldState.PLAYING)
-        assertTrue("landed at $landed, now at ${bot.world.player.box.cx}", bot.world.player.box.cx > landed + 1f)
+    // levels 8, 12 and 15: the rematch plays against the habit round 1 taught (docs/LEVEL_DESIGN_V2.md H9)
+    @Test fun level08Rematch() = World1DesignTest.play(8, 2)
+    /** Gravity is opt-in now: walking to the far end turns nothing over, so the way home along the floor is the spike. */
+    @Test fun level08RematchWalkingInTurnsNothingOver() {
+        val walked = b(8, 1).hopR(19.5f, 0.5f).rightTo(25.5f).landRight().wait(0.5f)
+        walked.expect(WorldState.PLAYING)
+        assertEquals(1f, walked.world.gravity, 0f)
+        walked.leftTo(10f).expect(WorldState.DEAD)
     }
 
-    @Test fun level15Rematch() = b(15, 1).rightTo(13.3f).rightJump(0.35f).landRight().rightTo(25.5f).rightJump(0.35f).right(1f).expect(WorldState.WON)
-    @Test fun level15RematchTheOldJumpLandsInTheShiftedHole() = b(15, 1).rightTo(11.8f).rightJump(0.35f).landRight().right(1f)
-        .expect(WorldState.DEAD)
+    @Test fun level12Rematch() = World1DesignTest.play(12, 2)
+    /** Return Trip, round 2: the keys swap in the first steps, so the round 1 start (press left) turns around. */
+    @Test fun level12RematchTheOldFirstStepsTurnAround() {
+        val turned = b(12, 1).left(0.6f)
+        assertTrue("swapped", turned.world.swapped)
+        assertTrue("back at the start, x=${turned.world.player.box.cx}", turned.world.player.box.cx > 28f)
+    }
+
+    @Test fun level15Rematch() = World1DesignTest.play(15, 2)
+    /** Loop, round 2: the door runs to the top left, and when you get close it runs all the way back to where it began. */
+    @Test fun level15RematchTheDoorComesBack() {
+        val run = b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[1])
+        run.expect(WorldState.WON)
+        assertTrue("the door is back on the floor", run.world.door.box.x in 10f..14f && run.world.door.box.y > 12f)
+    }
+    @Test fun level15RematchTheOldWalkEndsOnTheUpperFloorsEdge() = b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[0]).expect(WorldState.PLAYING)
 
     // ---------- Act 2 ----------
 

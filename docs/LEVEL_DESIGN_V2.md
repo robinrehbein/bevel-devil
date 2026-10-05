@@ -271,11 +271,11 @@ Korrekturen für Rezept v2:
 |6|Cozy|–|U7|Tutorial|Tutorial|
 |7|Prefab|–|U1|Falle|Fertigteil-Plattformen sacken unter dir weg, eine nach der anderen|
 |8|Down to Earth|R5|U10|Rätsel|Decke als zweite Ebene, Rückweg über Kopf|
-|9|Potholes|R1|U9|Rätsel|Schalter hinter den Löchern öffnet Tür; Swap auf dem Rückweg|
-|10|Homeward|–|U3|Falle|Köder-Tür bleibt (Deko, kein `DoorTo`), dazu schiebt die Wand den Rückweg zu|
+|9|Potholes|R1|U9|Rätsel|Schalter unten rechts öffnet die Kupferwand vor der Tür; Schlagloch im Deck, die Tasten tauschen nach der Landung dahinter und am Schalter wieder zurück (Swap auf dem Hinweg: mit Swap auf dem Rückweg gewänne Rechtshalten)|
+|10|Homeward|–|U3|Falle|Betonwand im Nacken (Chase), Treppe, Stachelbett oben; die Deko-Tür entfällt (die Karte kennt nur eine Tür)|
 |11|The Creek|–|U1|Falle|Steine sinken weg, sobald du drauf landest|
 |12|Return Trip ★|–|U9|★|gespiegelt, eine starke Pointe|
-|13|Wednesday|R7|U14|Rätsel|zwei Wege, der sichere ist der Bluff|
+|13|Wednesday|R7|U14|Rätsel|der Bluff sind die Stacheln in der Decke (Wackeln), die glatten Deckenteile sind echt; kein `Bluff`/`FakeWin` (Budget 0, Akt 1 ohne Meta)|
 |14|Performance Review|–|U12|Falle|Lift fährt erst richtig, dann falsch|
 |15|Loop|R6|U6|Rätsel|der eine `DoorTo` des Akts: Tür wandert durch den Raum, Stacheln aus der Wand|
 |16|Number 16 (Finale)|R1+R5|U7+U18|Finale|Schalter oben, Säge, die Wand bricht auf (U18 statt Tür-Flucht)|
