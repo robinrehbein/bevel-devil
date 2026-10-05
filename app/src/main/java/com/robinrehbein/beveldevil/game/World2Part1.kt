@@ -229,20 +229,20 @@ object World2Part1 {
             spawn(29); door(1); bits(7)
         },
 
-        // 8 — EASTER EGG: RAM memory test (POST counts up, never finishes)
+        // 8 — EASTER EGG: RAM memory test (POST counts up, 640K). A breather with one punchline: a whole block of floor is "unplugged"
+        // for a moment, and plugged in again as if nothing had happened. Whoever runs on, hops over it or waited for it, falls
         Level(
             name = T("Memory Test", "Speichertest"),
             intro = T("POST: 640K ought to be enough for anybody.", "POST: 640K sollten für jeden reichen."),
             traps = listOf(
-                trap(Touch('b'), Play(Card.SINKING), Move('b', 0f, 12f, 7f), say("RAM check: 3 of 4 blocks OK.", "RAM-Check: 3 von 4 Blöcken OK."), delay = 0.15f),
-                trap(Touch('a'), Fall('a'), delay = 0.3f),
-                trap(Touch('c'), Fall('c'), delay = 0.2f),
+                trap(PastX(8f), Play(Card.SINKING), Move('a', 0f, 9f, 40f), say("RAM check: 3 of 4 blocks OK.", "RAM-Check: 3 von 4 Blöcken OK."), delay = 0.1f),
+                trap(PastX(8f), Move('a', 0f, -9f, 40f), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
+                trap(PastX(23f), Fall('b'), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
             ),
         ) {
             border()
-            fill(0..5, 15..17); fill(26..31, 15..17)
-            fill(7..8, 15..15, 'a'); fill(11..13, 14..14, 'b'); fill(17..19, 15..15, 'c'); fill(23..24, 14..14)
-            spawn(); door(); bits(8)
+            fill(0..15, 15..17); fill(21..26, 15..17); fill(28..31, 15..17); fill(16..20, 15..17, 'a'); fill(27..27, 15..17, 'b')
+            spawn(); door(30); bits(8)
         },
 
         // 9 — EASTER EGG: hot swap (unplug the controls, plug them back in wrong; the hop off the last stone lands in spikes)
