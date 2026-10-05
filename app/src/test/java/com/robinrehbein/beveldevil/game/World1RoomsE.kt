@@ -5,11 +5,27 @@ package com.robinrehbein.beveldevil.game
  * Shared by [World1DesignTest] (the guard rails), [World1Test] (the levels) and [World1DeckTest] (round 1 scripts against the rematches).
  */
 object World1RoomsE {
+    /** Seconds the blinking group [id] stays solid from now: 0 while it is gone (or does not blink yet). */
+    fun World.solidLeft(id: Char): Float = group(id).let { g ->
+        val k = g.blink ?: return 0f
+        if (g.visible) k.on - k.cycle(time - g.blinkT0) else 0f
+    }
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf<Solution>(
             { leftTo(11.0f).waitFor { it.group('S').oy >= 12f }.leftTo(5.6f).jump(0.45f)
                 .waitFor { it.group('T').oy >= 12f }.rightTo(20.0f).waitFor { it.group('U').oy >= 12f }
                 .rightTo(26.0f).rightJump(0.5f).landRight().right(2f) },
+        ),
+        42 to listOf<Solution>(
+            { hopR(8.0f, 0.5f).hopR(14.6f, 0.35f).rightUntil { it.player.box.b > 7f }.waitFor { it.player.grounded }
+                .hopL(21.6f, 0.35f).leftUntil { it.player.box.b > 12f }.waitFor { it.player.grounded }
+                .hopR(11.0f, 0.5f).hopR(17.0f, 0.5f).hopR(22.4f, 0.35f).right(3f) },
+            { hopR(8.0f, 0.5f).hopR(14.6f, 0.35f).rightUntil { it.player.box.b > 7f }.waitFor { it.player.grounded }
+                .hopL(21.6f, 0.35f).leftUntil { it.player.box.b > 12f }.waitFor { it.player.grounded }
+                .rightTo(9.0f).rightJump(0.45f).landRight().rightTo(15.4f).waitFor { it.solidLeft('q') > 1.0f }
+                .rightJump(0.45f).landRight().waitFor { it.solidLeft('r') > 1.0f }
+                .rightTo(21.0f).rightJump(0.45f).landRight().right(3f) },
         ),
     )
 }

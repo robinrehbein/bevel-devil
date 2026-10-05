@@ -285,36 +285,45 @@ object World1Part3 {
             put(17, 14, 'P'); put(30, 14, 'D')
         },
 
-        // 42 — the old wall of teeth chases you and Mephi offers a pause; the pause button is a spike
-        // TWIST: PauseTrap spike
+        // 42 — tailwind: the door stands far away on the ground, the way there leads down three floors, and on every floor a wall of
+        // teeth is at your back: along the top floor (a block and a curb in the way) and off its end, along the middle floor back
+        // to the left and off that end, and along the ground to the door, where a piece of the floor drops on the way
+        // U8: the wall of teeth (wall-move), a floor piece as the second family
         Level(
             name = T("Tailwind", "Rückenwind"),
             intro = T("Look ahead. There's nothing behind you.", "Schau nach vorne. Hinter dir ist nichts."),
-            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'A' to hiddenSpike),
+            hint = T("Every floor has its own wall, and every wall is slower than you. Keep moving and drop at the end of each floor.", "Jedes Stockwerk hat seine eigene Wand, und jede ist langsamer als du. Bleib in Bewegung und spring am Ende jedes Stockwerks runter."),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'Y' to Glyph(spike = true, dir = Dir.LEFT), 'X' to Glyph(spike = true, dir = Dir.RIGHT)),
             traps = listOf(
-                trap(PastX(7f), Play(Card.SPIKE_SEED), Move('W', 30f, 0f, 7.4f), PauseTrap(PauseTrick.SPIKE),
-                    Say(T("Hungry wall! Need a break? Tap pause.", "Hungrige Wand! Pause? Tipp auf Pause."))),
-                trap(Airborne(9.5f, 12.6f), Show('A')),
+                trap(PastX(5.5f), Move('W', 20f, 0f, 6.8f), Say(T("Tailwind! Free of charge. So are the brakes.", "Rückenwind! Gratis. Bremsen auch."))),
+                trap(Landed(22f, 30f), Move('Y', -20f, 0f, 5.5f), Say(T("Second floor, second draft.", "Zweites Stockwerk, zweiter Luftzug."))),
+                trap(Zone(1f, 12f, 9.5f, 15.5f), Move('X', 27f, 0f, 5.5f), Say(T("Ground floor. The draft is stronger here.", "Erdgeschoss. Hier zieht es stärker."))),
+                trap(Zone(15.6f, 13f, 18.5f, 15.5f), Play(Card.COLLAPSE), Fall('a'), Say(T("The floor is on a diet.", "Der Boden macht Diät."))),
             ),
-            // rematch: the wall stays put, and a row of ceiling teeth waits over the first pit. Running on as in round 1
-            // jumps right into it. Let it come to you at the start, then outrun it: it is slower than you
+            // rematch: dead calm on the ground floor. The walls blow upstairs as before, but down below the way is three stones
+            // over the pit that blink in turns: run on as in round 1 and you jump into the gap; this time the floor has to be waited for
             rematch = listOf(
                 Round(
-                    T("Rematch. Someone up there likes you.", "Revanche. Da oben mag dich wer."),
-                    legend = mapOf('S' to Glyph(spike = true, dir = Dir.DOWN, hidden = true)),
+                    T("Rematch. The wind dropped.", "Revanche. Der Wind hat sich gelegt."),
                     traps = listOf(
-                        trap(After(0.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 4f, left = 10f, right = 16f),
-                            Say(T("Personal space is a myth.", "Abstand halten? Nie gehört."))),
+                        trap(PastX(5.5f), Move('W', 20f, 0f, 6.8f), Say(T("Tailwind again. Only upstairs.", "Wieder Rückenwind. Nur oben."))),
+                        trap(Landed(22f, 30f), Move('Y', -20f, 0f, 5.5f), Say(T("Still blowing on this floor.", "Auf diesem Stockwerk weht es noch."))),
+                        trap(Zone(1f, 12f, 9.5f, 15.5f), Play(Card.CRUMBLE), Blink('p', on = 3f, off = 1f), Blink('q', on = 1.8f, off = 1.2f, phase = 0.6f),
+                            Say(T("Dead calm downstairs. The floor takes its time.", "Unten Flaute. Der Boden lässt sich Zeit."))),
+                        trap(Touch('q'), Blink('r', on = 2f, off = 1f, phase = 2f), Say(T("Next stone. Same time zone.", "Nächster Stein. Gleiche Zeitzone."))),
                     ),
-                ) { put(12, 12, 'S'); put(13, 12, 'S') },
+                ) {
+                    pit(12..27); fill(12..15, 15..15, 'p'); fill(18..21, 15..15, 'q'); fill(24..27, 15..15, 'r')
+                    fill(1..1, 11..14, '.'); fill(24..25, 14..14, '.')
+                },
             ),
         ) {
             border(); floor()
-            fill(1..1, 1..14, 'W')
-            put(15, 14, 'A'); put(16, 14, 'A')
-            pit(11..12); pit(21..22)
-            put(17, 14, '#'); put(26, 14, '#')
-            put(5, 14, 'P'); put(29, 14, 'D')
+            fill(1..22, 5..5); fill(10..11, 3..4); fill(16..17, 4..4)
+            fill(9..30, 10..10); fill(19..20, 9..9)
+            fill(1..1, 1..4, 'W'); fill(30..30, 6..9, 'Y'); fill(1..1, 11..14, 'X')
+            pit(13..14); fill(19..20, 15..17, 'a'); fill(24..25, 14..14)
+            put(4, 4, 'P'); put(29, 14, 'D')
         },
 
         // 43 — your last attempt comes back as a deadly ghost one second behind you
