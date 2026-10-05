@@ -185,21 +185,25 @@ object World1Part3 {
             put(1, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 38 — the picture turns upside down over a spike pit; left and right follow the screen; the jump over the spikes lands before more
+        // 38 — clear view: a saw rolls in on the ground and must be hopped; as you land by the stairs the picture turns upside down and a
+        // second saw rolls in from behind: left and right follow the screen now, so you flee to the right with the left key and climb the
+        // stairs mirrored. Upstairs the picture is back, and a rope saw swings across the way home
         // TWIST: Flip
         Level(
             name = T("Clear View", "Durchblick"),
             intro = T("Nice picture today. Sharper than ever.", "Schönes Bild heute. Schärfer als je zuvor."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("When the picture turns over, left and right follow the screen: run from the saw with the key that points to the stairs on screen.", "Wenn das Bild kippt, folgen links und rechts dem Bildschirm: Lauf vor der Säge mit der Taste, die auf dem Bildschirm zur Treppe zeigt."),
             traps = listOf(
-                trap(PastX(6f), Play(Card.UPSIDE_DOWN), Flip(3f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
-                trap(Airborne(10f, 16.5f), Show('A')),
+                trap(PastX(3.5f), Saw(31.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Sharper than ever.", "Gegenverkehr. Schärfer als je zuvor."))),
+                trap(Landed(12f, 23.6f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
+                trap(Landed(12f, 23.6f), Saw(-1.5f, 14.4f, 6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die Säge mag lieber die Originalausrichtung."))),
+                trap(Zone(24.5f, 7f, 26f, 9.5f), PathSaw(7f, 14f to 8.4f, 14f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen für Erwachsene."))),
             ),
         ) {
             border(); floor()
-            fill(13..14, 14..14, '^')
-            put(18, 14, 'A'); put(19, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            fill(24..26, 13..14); fill(28..30, 11..14)
+            fill(2..26, 9..9)
+            put(2, 14, 'P'); put(6, 8, 'D')
         },
 
         // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt; hopping onto it and hopping off it both land on spikes
