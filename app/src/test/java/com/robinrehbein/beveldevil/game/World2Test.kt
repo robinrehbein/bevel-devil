@@ -255,10 +255,14 @@ class World2Test {
 
     @Test
     fun theFirewallOnlyGoesDownWhenYouPauseAndResume() {
+        // the HUD button dodges the first tap; the back button pauses for real
         val bot = b(39).wait(0.5f).tapPause()
         assertEquals(1, bot.world.dodges)
-        b(39).rightTo(13f).wait(0.5f).right(2f).expect(WorldState.DEAD)
-        assertFalse(b(39).wait(0.5f).pauseResume().wait(0.05f).world.beams[0].on)
+        // up to the stuck firewall on the lane, without turning it off and on again: it burns
+        val toTheFirewall = { World2Rooms.l39ToFirewall(b(39)) }
+        toTheFirewall().leftTo(7.5f).left(1f).expect(WorldState.DEAD)
+        assertTrue(toTheFirewall().world.beams.first { it.laser.id == 'F' }.lit)
+        assertFalse(toTheFirewall().pauseResume().wait(0.05f).world.beams.first { it.laser.id == 'F' }.lit)
     }
 
     @Test
@@ -561,7 +565,7 @@ class World2Test {
     @Test fun level38() { World2DesignTest.play(38) }
     /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
     @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
-    @Test fun level39() = b(39).wait(0.4f).pauseResume().hopR(18.6f).right(3f).expect(WorldState.WON)
+    @Test fun level39() { World2DesignTest.play(39) }
     @Test fun level40() = b(40).right(0.60f).rightJump(0.12f).leftJump(0.25f).right(0.60f).rightJump(0.25f)
         .jump(0.16f).right(0.60f).right(0.10f).left(0.03f).leftJump(0.25f).right(0.60f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level41() = b(41).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f) .right(0.60f).expect(WorldState.WON)

@@ -7,7 +7,9 @@ import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.PathSaw
+import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
@@ -18,6 +20,8 @@ import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
+import com.robinrehbein.beveldevil.game.Trigger.Resumed
+import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.Touch
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Zone
@@ -212,6 +216,27 @@ object World2Part3C {
             fill(17..19, 8..8, 'j'); fill(9..11, 8..8, 'k')
             fill(3..5, 6..7); fill(1..2, 4..5)
             spawn(2, 14); door(1, 3)
+        },
+
+        // 39 — contingency plan (a trap room: U16 the pause, with lasers). Along the deck a rule is installed in front of you: a firewall flashes once
+        // (wait until it is dark), and a trip wire at ankle height (hop it). Off the end of the deck, on the lane, another flash, and then the firewall
+        // that is stuck: it is lit all the time and "opens by itself any second now". It does not. Turn it off and on again: pause, and resume
+        Level(
+            name = T("Contingency Plan", "Notfallplan"),
+            intro = T("The firewall is stuck. It'll open by itself any second now.", "Die Firewall klemmt. Die geht gleich von selbst auf."),
+            start = listOf(Laser('F', 11 to 10, 11 to 14)),
+            traps = listOf(
+                trap(PastX(4.5f), Play(Card.SPIKE_SEED), Laser('A', 10 to 1, 10 to 8, on = 1f, off = 60f, delay = 0.55f), say("Rule 1: wait your turn.", "Regel 1: Warte, bis du dran bist.")),
+                trap(PastX(12.5f), Laser('B', 17 to 7, 17 to 8, on = 3f, off = 0f), say("Rule 2: mind your ankles.", "Regel 2: Achte auf deine Knöchel.")),
+                trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('C', 15 to 10, 15 to 14, on = 0.8f, off = 60f, delay = 0.4f), say("Rule 3: the same, one floor down.", "Regel 3: Dasselbe, ein Stockwerk tiefer.")),
+                trap(After(0.3f), PauseTrap(PauseTrick.DODGE)),
+                trap(Resumed(), Power('F', false), say("Session reset. The firewall forgot you.", "Sitzung zurückgesetzt. Die Firewall hat dich vergessen.")),
+            ),
+            hint = T("Have you tried turning it off and on again?", "Hast du schon versucht, es aus- und wieder einzuschalten?"),
+        ) {
+            border(); floor()
+            fill(1..20, 9..9)
+            spawn(2, 8); door(7, 14)
         },
     )
 }
