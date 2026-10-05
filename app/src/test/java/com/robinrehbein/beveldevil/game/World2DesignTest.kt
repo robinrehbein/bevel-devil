@@ -29,12 +29,12 @@ class World2DesignTest : DesignTestBase() {
             2 to d("R3", "U5"),
             3 to d("R6", "U4"),
             4 to d("–", "U6"),
-            5 to d("–", "U1"),
+            5 to d("–", "U7"),
             6 to d("R4", "U11"),
             7 to d("–", "U2"),
             8 to d("–", "U1", breather = true),
             9 to d("–", "U9"),
-            10 to d("R3", "U7"),
+            10 to d("R3", "U1"),
             11 to d("R1", "U15"),
             12 to d("–", "U1"),
             13 to d("R5", "U10"),
@@ -78,10 +78,75 @@ class World2DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (11..24).toSet()
+        val REBUILT: Set<Int> = (1..24).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
+            1 to listOf(
+                { hopR(10.2f).hopR(18.0f).right(1.5f) },
+                { rightTo(17.5f).hopR(18.6f).right(1.5f) },
+            ),
+            2 to listOf(
+                { hopR(15.5f).hopR(21.9f).rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cy < 11.5f }.leftUntil { it.player.box.cx < 20.4f }
+                    .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 10.2f }
+                    .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f) },
+            ),
+            3 to listOf(
+                { hopR(7.2f).hopR(12.8f).hopR(17.2f).rightUntil { it.player.box.cy > 12.5f }.leftUntil { World2Rooms.sawAheadLeft(it, 4.4f) }
+                    .leftJump(0.35f).landLeft().left(3f) },
+            ),
+            4 to listOf(
+                { rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                    .leftJump(0.35f).landLeft().left(3f) },
+                { rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { it.player.box.cx < 26.4f }
+                    .waitFor { it.group('C').oy > 3.0f }.waitFor { it.group('C').oy < 2.5f }.waitFor { it.group('C').oy > 3.0f }.waitFor { it.group('C').oy < 2.5f }
+                    .leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                    .leftJump(0.35f).landLeft().left(3f) },
+            ),
+            5 to listOf(
+                { rightUntil { World2Rooms.sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightUntil { it.player.box.cy > 7f }
+                    .leftUntil { World2Rooms.sawAheadLeft(it, 4.0f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cy > 11f }
+                    .rightUntil { World2Rooms.sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 27.6f }.right(1f) },
+            ),
+            6 to listOf(
+                { leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 2.5f }.rightUntil { it.player.box.cx > 15.3f }.waitFor { w -> w.links[0].on }.rightUntil { it.player.box.cx > 17.5f }
+                    .rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightTo(25.4f).rightJump(0.4f).landRight().right(1f) },
+            ),
+            7 to listOf(
+                { leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .waitFor { it.group('a').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+                    .leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 9.5f && it.player.grounded }.waitFor { it.group('d').let { g -> g.mode == GroupMode.IDLE && g.oy > 2f } }
+                    .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+                { leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+                    .leftUntil { it.player.box.cx < 9.5f && it.player.grounded }
+                    .waitFor { it.group('e').let { g -> g.mode == GroupMode.IDLE && g.oy > 2f } }.waitFor { !it.group('e').visible }
+                    .leftUntil { it.player.box.cx < 5.2f }
+                    .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+            ),
+            8 to listOf(
+                { rightUntil { it.player.box.cx > 15.3f }.waitFor { it.group('a').oy > 3f }.waitFor { it.group('a').oy < 0.3f }.rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
+            ),
+            9 to listOf(
+                { waitFor { it.swapped }.leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.35f).landLeft()
+                    .leftUntil { !it.swapped && it.player.grounded }.leftUntil { it.player.box.cx < 12.5f }.waitFor { World2Rooms.sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+            ),
+            10 to listOf(
+                { leftTo(27.5f).leftJump(0.35f).landLeft()
+                    .leftUntil { it.player.box.cx < 19.4f }.leftJump(0.35f).landLeft()
+                    .leftUntil { it.player.box.cx < 15.2f }.waitFor { w -> w.links.first { it.id == 'b' }.on }.wait(0.35f).left(0.5f)
+                    .waitFor { it.player.grounded }
+                    .leftUntil { it.player.box.cx < 15.0f }.waitFor { w -> w.links.first { it.id == 'c' }.on }.wait(0.35f).left(0.4f)
+                    .leftUntil { it.player.box.cx < 5.45f }.leftJump(0.35f).landLeft().left(1f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)

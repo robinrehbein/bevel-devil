@@ -161,14 +161,14 @@ class World2Test {
     /** The counter just learned (hop the obstacle) followed by the old reflex (keep running) is what the next trap of a chain waits for. */
     @Test
     fun theObviousRunDiesInTheChain() {
-        // 1: the landing behind the second pit has two spikes that only grow while you fly
-        b(1).hopR(10.7f).hopR(18.6f).right(2f).expect(WorldState.DEAD)
-        // 2: the first spike grows a second one in front of the portal
-        b(2).hopR(2.6f).right(2f).expect(WorldState.DEAD)
-        // 3: after the second rack the spikes are there, even if the room is plain
-        b(3).hopR(12.9f).hopR(17.8f).right(3f).expect(WorldState.DEAD)
-        // 4: the gap you aim for is plugged while you fly at it
-        b(4).hopR(9.4f).right(1f).expect(WorldState.DEAD)
+        // 1: the landing after the first pit is a pit too
+        b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
+        // 2: the hop over the loopback grows a spike in the lane behind it
+        b(2).hopR(15.5f).right(3f).expect(WorldState.DEAD)
+        // 3: running on, down the hole and into the lower floor, the saw that rolls at you finds you
+        b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).right(6f).expect(WorldState.DEAD)
+        // 4: the bulb over the upper lane drops as you come near
+        b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
         // 17: running along the roof of the duct runs under the loose piece of the shelf
         b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
         // 18: lingering on the rack after pressing the pad runs into the port scan
@@ -197,8 +197,8 @@ class World2Test {
     /** A chain may end you, but never leaves you alive where the door cannot be reached. */
     @Test
     fun noChainStrandsYouAliveAwayFromTheDoor() {
-        // 3: between the second rack and its spikes there is room to hop out, forwards
-        b(3).hopR(12.9f).hopR(17.8f).hopR(25.2f).expect(WorldState.PLAYING)
+        // 3: the hop over the LEDs is long enough to land clear of them
+        b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
         // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes), never into a closed room
         World2.levels.forEachIndexed { i, l ->
             val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
@@ -219,9 +219,16 @@ class World2Test {
     // ---------- the levels that react to the player in unusual ways ----------
 
     @Test
-    fun dnsChangeSendsYouToTheSpikesAndFlushingFixesIt() {
-        b(6).rightTo(7.5f).wait(0.4f).right(3f).expect(WorldState.DEAD)
-        b(6).rightTo(6.3f).leftTo(3.4f).jump(0.4f).wait(0.4f).also { assertEquals(17 to 14, it.world.links[0].to) }.rightTo(9f).hopR(20.8f).right(1.5f).expect(WorldState.WON)
+    fun theDnsEntryAtTheStartLeadsHomeAndTheLastBlockOfTheStairRepointsAndRestartsIt() {
+        // the portal next to the start sends you back to the start
+        val loop = b(6).right(0.5f).wait(0.2f)
+        loop.expect(WorldState.PLAYING)
+        assertTrue("x=${loop.world.player.box.cx}", loop.world.player.box.cx < 13.6f && loop.world.links[0].to == 12 to 14)
+        // the block at the far end of the stair re-points it and takes it down for a moment
+        val touched = b(6).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+            .leftUntil { it.player.box.cx < 2.5f }.wait(0.2f)
+        assertEquals(18 to 14, touched.world.links[0].to)
+        assertFalse(touched.world.links[0].on)
     }
 
     @Test
@@ -274,22 +281,30 @@ class World2Test {
     }
 
     // ---------- Act 1: Handshake ----------
-    @Test fun level01() = b(1).right(1.20f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
-        .right(1.20f).expect(WorldState.WON)
-    @Test fun level02() = b(2).right(0.25f).rightJump(0.40f).right(0.03f).left(0.10f).rightJump(0.55f).leftJump(0.55f)
-        .right(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level03() = b(3).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).left(0.60f).right(0.25f).left(0.03f) .left(0.25f).leftJump(0.55f).leftJump(0.55f).left(1.20f).leftJump(0.55f).expect(WorldState.WON)
-    @Test fun level04() = b(4).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
-        .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level05() = b(5).right(0.60f).right(0.60f).rightJump(0.25f).left(0.10f).right(0.03f).right(0.03f)
-        .left(0.03f).rightJump(0.12f).leftJump(0.25f).right(0.10f).left(0.03f).rightJump(0.55f).rightJump(0.55f)
-        .rightJump(0.55f).left(0.60f).expect(WorldState.WON)
-    @Test fun level06() = b(6).right(0.60f).left(0.60f).rightJump(0.55f).right(0.25f).hopR(20.8f).right(1.5f).expect(WorldState.WON)
-    @Test fun level07() = b(7).right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f) .right(0.03f).left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.10f) .left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f) .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f) .left(0.03f).left(0.03f).left(0.03f).right(0.03f).right(0.03f).left(0.10f) .rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level08() = b(8).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.25f).right(0.03f).rightJump(0.55f) .right(1.20f).expect(WorldState.WON)
-    @Test fun level09() = b(9).right(0.60f).leftJump(0.55f).leftJump(0.55f).leftJump(0.55f).left(0.25f)
-        .rightJump(0.25f).left(0.10f).right(0.03f).left(0.03f).left(0.10f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level10() = b(10).right(0.60f).rightJump(0.55f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level01() { World2DesignTest.play(1) }
+    /** Hello, World!: hopping the first pit and running on lands in the pit that opens as you touch down. */
+    @Test fun level01TheLandingIsAPitToo() = b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
+    @Test fun level02() { World2DesignTest.play(2) }
+    /** Open Port: the floor portal in the middle is the loopback; the hop over it grows a spike where you run on. */
+    @Test fun level02TheLoopbackSendsYouHome() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 8f) }.expect(WorldState.PLAYING)
+    @Test fun level03() { World2DesignTest.play(3) }
+    /** Reception: hopping the hole in the upper floor, like the door's old neighbour, leaves you holding right at the wall of an upper floor with no door. */
+    @Test fun level03HoppingTheHoleIsTheWrongWay() = b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).hopR(24.6f).right(3f).expect(WorldState.PLAYING)
+    @Test fun level04() { World2DesignTest.play(4) }
+    /** String Lights: the bulb over the lane drops when you come near, so dashing under it is the end. */
+    @Test fun level04DashingUnderTheBulbIsFatal() = b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+        .right(2f).expect(WorldState.DEAD)
+    @Test fun level05() { World2DesignTest.play(5) }
+    /** Null Pointer: the saw on the top floor rolls at you; running into it is the end. */
+    @Test fun level05RunningIntoTheFirstSawIsFatal() = b(5).right(4f).expect(WorldState.DEAD)
+    @Test fun level06() { World2DesignTest.play(6) }
+    @Test fun level07() { World2DesignTest.play(7) }
+    @Test fun level08() { World2DesignTest.play(8) }
+    @Test fun level08RunningOnIntoTheUnpluggedBlockIsFatal() = b(8).right(4f).expect(WorldState.DEAD)
+    @Test fun level09() { World2DesignTest.play(9) }
+    @Test fun level09HoldingRightWalksIntoTheWallAndTheSawFindsYou() = b(9).right(6f).expect(WorldState.DEAD)
+    @Test fun level10() { World2DesignTest.play(10) }
+    @Test fun level10RunningStraightAtTheWallFindsTheFirstHole() = b(10).left(3f).expect(WorldState.DEAD)
     @Test fun level11() { World2DesignTest.play(11) }
     @Test fun level12() { World2DesignTest.play(12) }
     @Test fun level13() { World2DesignTest.play(13) }

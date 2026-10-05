@@ -334,12 +334,12 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |2|Open Port|R3|U5|Rätsel|
 |3|Reception|R6|U4|Rätsel|
 |4|String Lights|–|U6|Falle|
-|5|Null Pointer|–|U1|Falle|
+|5|Null Pointer|–|U7|Falle|
 |6|Address Book|R4|U11|Rätsel|
 |7|Sky Blue|–|U2|Falle|
 |8|Memory Test ★|–|U1|★|
 |9|Cable Mess|–|U9|Falle|
-|10|VPN Tunnel|R3|U7|Rätsel|
+|10|VPN Tunnel|R3|U1|Rätsel|
 |11|Server Room|R1|U15|Rätsel|
 |12|Address Space|–|U1|Falle|
 |13|Works on My Machine|R5|U10|Rätsel|
