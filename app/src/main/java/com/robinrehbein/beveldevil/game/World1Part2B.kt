@@ -131,33 +131,48 @@ object World1Part2B {
             put(2, 14, 'P'); put(5, 8, 'D')
         },
 
-        // 21 — each floor segment you touch deletes the one two segments ahead
-        // EASTER EGG: Segfault (floor segments fault away)
+        // 21 — the door is high up on the left and there is no way up. A strip of the floor sinks as you come, spikes grow after the hop;
+        // on the far bank sits the one slab that is different: step on it and slabs of concrete come down from the ceiling and
+        // build the stairs, while the slab you stand on sinks into the floor. Rematch: concrete only sets while you stand still
+        // MECHANIC: Move (the room rebuilds itself)
         Level(
             name = T("Foundation", "Fundament"),
             intro = T("Concrete. Two inches. Fully inspected.", "Beton. Fünf Zentimeter. Alles geprüft."),
+            legend = mapOf('A' to Glyph(spike = true, hidden = true)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.COLLAPSE), Fall('c'), Say(T("Segmentation fault (core dumped)", "Speicherzugriffsfehler (Speicherabbild erstellt)")), delay = 0.3f),
-                trap(Touch('b'), Fall('d'), delay = 0.3f),
-                trap(Touch('e'), Fall('g'), delay = 0.3f),
-                trap(Touch('f'), Fall('h'), delay = 0.3f),
+                trap(PastX(5.5f), Move('f', 0f, 4f, 12f), Say(T("Floor strip 9 to 11: collected for recycling.", "Bodenstreifen 9 bis 11: wird recycelt."))),
+                trap(Airborne(15f, 18.5f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Rebar. Included in the price.", "Bewehrung. Im Preis inbegriffen."))),
+                trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('s', 0f, 12f, 22f), Move('t', 0f, 10f, 22f), Move('u', 0f, 8f, 22f), Move('k', 0f, 1.6f, 4f),
+                    Say(T("Pour the stairs. Mind your head.", "Treppe gießen. Kopf einziehen."))),
+                trap(Touch('s'), Move('s', 0f, 12f, 12f), Say(T("The first step has set. Elsewhere.", "Die erste Stufe ist abgebunden. Woanders.")), delay = 0.8f),
+                trap(Touch('t'), Move('t', 0f, 12f, 12f), Say(T("Second step: also on its way out.", "Zweite Stufe: ebenfalls auf dem Weg nach draußen.")), delay = 0.8f),
+                trap(Touch('u'), Move('u', 0f, 12f, 12f), delay = 0.8f),
             ),
-            // rematch: "patched": now each segment deletes the very next one
             rematch = listOf(
                 Round(
-                    T("Rematch. I patched the floor. Mostly.", "Revanche. Boden gepatcht. Größtenteils."),
+                    T("Rematch. The concrete needs to cure.", "Revanche. Der Beton muss abbinden."),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.COLLAPSE), Fall('b'), Say(T("Hotfix deployed. On a Friday.", "Hotfix eingespielt. Freitags.")), delay = 0.3f),
-                        trap(Touch('c'), Fall('d'), delay = 0.3f),
-                        trap(Touch('e'), Fall('f'), delay = 0.3f),
-                        trap(Touch('g'), Fall('h'), delay = 0.3f),
+                        trap(Airborne(6.8f, 12.4f), Move('g', 0f, 4f, 14f), Say(T("Landing gear: removed. Nobody hops on my site.", "Fahrwerk: ausgebaut. Auf meiner Baustelle wird nicht gehüpft."))),
+                        trap(Touch('f'), Move('f', 0f, 4f, 12f), Say(T("Walk, don't hop. The strip is still on its break.", "Gehen, nicht hüpfen. Der Streifen hat noch Pause.")), delay = 0.5f),
+                        trap(Touch('b'), Bluff(Card.SPIKE_SEED), Move('b', 0f, 4f, 12f), Say(T("Rebar? ... Never mind. The plank is the problem.", "Bewehrung? ... Egal. Das Brett ist das Problem.")), delay = 0.5f),
+                        trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('s', 0f, 12f, 26f), Move('t', 0f, 10f, 26f), Move('u', 0f, 8f, 26f),
+                            Say(T("Stand still. Let it cure. Then leave.", "Stillhalten. Abbinden lassen. Dann gehen.")), delay = 0.8f),
+                        trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('k', 0f, 1.6f, 4f), delay = 2.1f),
+                        trap(Touch('s'), Move('s', 0f, 12f, 12f), delay = 0.8f),
+                        trap(Touch('t'), Move('t', 0f, 12f, 12f), delay = 0.8f),
+                        trap(Touch('u'), Move('u', 0f, 12f, 12f), delay = 0.8f),
                     ),
-                ),
+                ) { fill(12..14, 15..17, 'g'); fill(15..16, 15..17, 'b') },
             ),
         ) {
-            border(); floor(); pit(4..19)
-            ('a'..'h').forEachIndexed { i, g -> fill(4 + i * 2..5 + i * 2, 15..17, g) }
-            put(2, 14, 'P'); put(28, 14, 'D')
+            border(); floor(); pit(9..11)
+            fill(9..11, 15..15, 'f')
+            pit(15..16)
+            put(22, 14, 'A'); put(23, 14, 'A')
+            fill(27..29, 14..14, 'k')
+            fill(18..23, 1..1, 's'); fill(14..17, 1..1, 't'); fill(10..13, 1..1, 'u')
+            fill(1..9, 9..9)
+            put(2, 14, 'P'); put(3, 8, 'D')
         },
 
         // 22 — three walls open and close in turns; the floor after each one drops when you land on it, and the last landing is a pit

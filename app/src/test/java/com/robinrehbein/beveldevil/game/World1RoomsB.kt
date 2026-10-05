@@ -42,5 +42,13 @@ object World1RoomsB {
                 .leftTo(28.6f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft()
                 .leftTo(14.8f).leftJump(0.35f).landLeft().leftTo(5.5f) },
         ),
+        21 to listOf<Solution>(
+            { hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight()
+                .leftJump(0.35f).landLeft().leftTo(26.0f).leftJump(0.35f).landLeft()
+                .leftTo(20.0f).leftJump(0.35f).landLeft().leftTo(16.0f).leftJump(0.35f).landLeft().leftTo(3.5f) },
+            { rightTo(25.6f).rightJump(0.3f).landRight()
+                .waitFor { it.group('s').oy >= 11.5f }.leftJump(0.35f).landLeft().leftTo(26.0f).leftJump(0.35f).landLeft()
+                .leftTo(20.0f).leftJump(0.35f).landLeft().leftTo(16.0f).leftJump(0.35f).landLeft().leftTo(3.5f) },
+        ),
     )
 }
