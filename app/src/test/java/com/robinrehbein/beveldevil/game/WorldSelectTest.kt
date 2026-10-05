@@ -29,14 +29,16 @@ class WorldSelectTest {
     private fun select(p: Prog) = Game(p, silent).also { it.tapOn(Ui.titlePlay) ; assertEquals(Screen.SELECT, it.screen) }
     /** Puts Bevel into the door and waits for the clear/end screen (long enough to sit through a fake credits roll). */
     private fun Game.win() {
-        repeat(3000) {
+        // a door that travels (a room extension) is only entered once it stands still again; extensions and rematches take their time
+        var lastDoor = Float.NaN
+        repeat(20000) {
             val w = world!!
-            // a door that slips away into a second room (an Extend) is waited for, not chased through its traps
-            if (w.state == WorldState.PLAYING && !w.door.moving) {
-                val d = w.door.box
+            val d = w.door.box
+            if (w.state == WorldState.PLAYING && d.x == lastDoor) {
                 w.player.box.x = d.x + d.w / 2 - w.player.box.w / 2
                 w.player.box.y = d.y + d.h - w.player.box.h
             }
+            lastDoor = d.x
             update(1f / 120f)
             if (screen != Screen.PLAY) return
         }
