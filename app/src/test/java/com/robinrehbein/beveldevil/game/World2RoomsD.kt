@@ -33,9 +33,24 @@ object World2RoomsD {
         .rightUntil { it.player.box.cy < 11f }.rightUntil { it.player.box.cx > 12.6f }.waitFor(cond = World2Rooms.clear('B'))
         .rightUntil { it.player.box.cx > 25.2f }.waitFor(cond = World2Rooms.clear('C')).right(3f)
 
+    /** The ceiling slab (group [id]) has landed and is at rest. */
+    private fun slabDown(w: World, id: Char) = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > 1f }
+
+    /** Mephi has hit undo (the undo trap has sprung). */
+    private fun undone(w: World) = w.sprung.any { s -> s.trap.actions.any { it is Action.Undo } }
+
+    /** 44: stop short of the slab, wait for it to land, hop onto the block and off its far side (the undo throws you back), hop the block again, stop for the second slab, hop it, to the door. */
+    fun l44(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f).rightUntil { undone(it) }
+        .hopR(10.0f, 0.5f).rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).right(3f)
+
+    /** 44, round 2: both slabs as before, and the undo comes right before the door: hop the second block again. */
+    fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f)
+        .rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).rightUntil { undone(it) }.hopR(21.0f, 0.5f).right(3f)
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
         43 to listOf({ l43(this) }),
+        44 to listOf({ l44(this) }, { l44r2(this) }),
     )
 }

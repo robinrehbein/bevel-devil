@@ -130,30 +130,30 @@ object World2Part3D {
             spawn(2, 14); door(29, 14); bits(43)
         },
 
-        // 44 — EASTER EGG: merge conflict markers <<<<<<< ======= >>>>>>>
+        // 44 — rebase (a trap room: U16 Ctrl+Z). A slab drops out of the ceiling as you come near (wait until it lands, hop the block), and when you are
+        // past it Mephi hits undo: you are put back where you were two seconds ago, standing, and the block is still there. Then the second slab. Rematch:
+        // the undo comes right before the door, and throws you back in front of the second slab
         Level(
             name = T("Rebase", "Rebase"),
             intro = T("<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature", "<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature"),
             traps = listOf(
-                trap(PastX(16f), Play(Card.SINKING), Move('w', -7f, 0f, 6f), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen.")),
-                trap(PastX(24f), Fall('c'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig.")),
+                trap(PastX(9f), Play(Card.HEADBUTT), Fall('c'), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen."), delay = 0.35f),
+                trap(PastX(17f), Undo(2f), say("git reset --hard HEAD~1", "git reset --hard HEAD~1")),
+                trap(PastX(19f), Fall('d'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig."), delay = 0.35f),
             ),
-            // rematch: the wall stays, the block holds; right before the door Mephi hits Ctrl+Z and you do it all again
             rematch = listOf(
                 Round(
                     T("Rematch. Force-pushed.", "Revanche. Force-Push."),
                     traps = listOf(
-                        trap(PastX(25.5f), Play(Card.UNDO), Undo(1.6f), say("git reset --hard HEAD~1", "git reset --hard HEAD~1")),
+                        trap(PastX(9f), Fall('c'), say("Your history is mine now.", "Deine Historie gehört jetzt mir."), delay = 0.35f),
+                        trap(PastX(19f), Fall('d'), say("Both changes were mine anyway.", "Beide Änderungen waren sowieso von mir."), delay = 0.35f),
+                        trap(PastX(27.5f), Play(Card.UNDO), Undo(2f), say("git push --force. Oops. Again.", "git push --force. Hoppla. Nochmal.")),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            put(9, 14, '<'); put(9, 13, '<')
-            rack(12, 2, 2)
-            put(16, 14, '>'); put(16, 13, '>')
-            fill(24..26, 13..14, 'w')
-            fill(21..22, 4..5, 'c')
+            fill(13..15, 1..2, 'c'); fill(23..25, 1..2, 'd')
             spawn(); door(); bits(44)
         },
 
