@@ -354,7 +354,8 @@ class World2Test {
     @Test fun level22() = World2Rooms.l22(b(22)).expect(WorldState.WON)
     @Test fun level23() = World2Rooms.l23(b(23)).expect(WorldState.WON)
     @Test fun level24() = World2Rooms.l24(b(24)).expect(WorldState.WON)
-    @Test fun level25() = b(25).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level25() { World2DesignTest.play(25) }
+    @Test fun level25WalkingAcrossTheNodesIsFatal() = b(25).right(4f).expect(WorldState.DEAD)
     @Test fun level26() = b(26).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
     @Test fun level27() = b(27).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f)
         .rightJump(0.55f).right(0.60f).expect(WorldState.WON)

@@ -185,6 +185,7 @@ class World2DesignTest : DesignTestBase() {
                 { rightTo(8.3f).landRight().hopR(18.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(22.0f).leftTo(15.8f)
                     .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },
             ),
+            25 to listOf({ World2Rooms.l25(this) }, { World2Rooms.l25r2(this) }),
         ) +
             World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
             mapOf(

@@ -304,36 +304,43 @@ object World2Part2 {
             spawn(1, 5); door(12, 14); bits(24)
         },
 
-        // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it
+        // 25 — the load balancer, a trap room (U1 the floor goes): over a spike pit three nodes, a conveyor that runs against you and crumbles once
+        // you are on it, a stone that crumbles, and a conveyor that runs against you, faster than you run (hop off it as you land). Then you
+        // climb the rack on the right (the first step crumbles too) and run back over the pit on the top floor, where the stone drops under
+        // whoever stands on it; the door is on the platform at the end.
+        // Rematch: rebalanced. The nodes sit two tiles further on (round 1's hops land in the pit), crumble faster, the first one is longer and
+        // runs slower against you, and up on the top floor the stone is a belt that runs the way you came
         Level(
             name = T("Load Balancer", "Lastverteiler"),
             intro = T("I distribute the load evenly. Onto you.", "Ich verteile die Last gleichmäßig. Auf dich."),
-            start = listOf(Belt('a', 4f), Belt('b', -4f), Belt('c', 4f), Belt('d', -4f)),
+            start = listOf(Belt('a', -6f), Belt('c', -6f)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 0.9f),
-                trap(Touch('b'), Fall('b'), delay = 0.9f),
-                trap(Touch('c'), Fall('c'), delay = 0.9f),
-                trap(Touch('d'), Fall('d'), delay = 0.9f),
+                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 1.1f),
+                trap(Touch('b'), Fall('b'), say("Node 2 passes the load on. Fast.", "Knoten 2 reicht die Last weiter. Schnell."), delay = 0.8f),
+                trap(Touch('p'), Fall('p'), say("The rack is a node, too.", "Das Rack ist auch ein Knoten."), delay = 0.9f),
+                trap(Touch('j'), Fall('j'), say("Rebalanced again. The load stays where it is. So do you.", "Schon wieder neu verteilt. Die Last bleibt, wo sie ist. Du auch."), delay = 0.5f),
             ),
-            // rematch: rebalanced, every belt runs the other way, so round 1's timing throws you off
+            hint = T("Nodes crumble when you stand on them. Do not cross them at a walk.", "Knoten bröckeln, sobald du draufstehst. Geh nicht im Schritt drüber."),
             rematch = listOf(
                 Round(
-                    T("Rebalanced. Same nodes, other way round.", "Neu verteilt. Gleiche Knoten, andersrum."),
-                    start = listOf(Belt('a', -4f), Belt('b', 4f), Belt('c', -4f), Belt('d', 4f)),
+                    T("Rebalanced. Same nodes, other places.", "Neu verteilt. Gleiche Knoten, andere Plätze."),
+                    hint = T("The nodes moved two tiles on. The first one is longer. The stone up top is a belt now.", "Die Knoten sind zwei Felder weitergerückt. Der erste ist länger. Der Stein oben ist jetzt ein Band."),
+                    start = listOf(Belt('a', -5f), Belt('c', 3f), Belt('j', -4f)),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1: overloaded backwards.", "Knoten 1: rückwärts überlastet."), delay = 0.9f),
-                        trap(Touch('b'), Fall('b'), delay = 0.9f),
-                        trap(Touch('c'), Fall('c'), delay = 0.9f),
-                        trap(Touch('d'), Fall('d'), delay = 0.9f),
+                        trap(Touch('a'), Play(Card.COLLAPSE), Fall('a'), say("Node 1: overloaded, but longer.", "Knoten 1: überlastet, aber länger."), delay = 1.5f),
+                        trap(Touch('b'), Fall('b'), delay = 0.7f),
+                        trap(Touch('p'), Fall('p'), delay = 0.7f),
+                        trap(Touch('j'), Fall('j'), delay = 0.8f),
                     ),
-                ),
+                ) { pit(5..22); fill(5..22, 17..17, '^'); fill(5..10, 15..15, 'a'); fill(13..16, 15..15, 'b'); fill(19..22, 15..15, 'c') },
             ),
         ) {
-            border()
-            fill(0..4, 15..17); fill(28..31, 15..17)
-            fill(5..9, 15..15, 'a'); fill(11..15, 15..15, 'b'); fill(17..21, 15..15, 'c'); fill(23..27, 15..15, 'd')
-            fill(5..27, 17..17, '^')
-            spawn(); door(); bits(25)
+            border(); floor()
+            pit(5..20); fill(5..20, 17..17, '^')
+            fill(5..8, 15..15, 'a'); fill(11..14, 15..15, 'b'); fill(17..20, 15..15, 'c')
+            fill(27..29, 13..13, 'p'); fill(30..30, 11..11); fill(22..27, 9..9)
+            fill(15..18, 9..9, 'j'); fill(9..12, 9..9)
+            spawn(1); door(10, 8); bits(25)
         },
 
         // 26 — the gate stays shut for seconds, but idle connections are dropped: keep hopping while you wait. Behind the gate the floor drops, and the hop over it lands in spikes

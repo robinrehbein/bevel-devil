@@ -154,8 +154,9 @@ class World2DeckTest {
     @Test fun l20r2WhoStandsStillOnTheLaneFindsItDark() = World2Rooms.l20r2Stairs(b(20, 2)).rightTo(23.8f).rightJump(0.35f).landRight()
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(3f).leftTo(15.5f).left(2f).expect(WorldState.DEAD)
     @Test fun l20r2HoldingRightIsNotKilledByTheFirstStep() = b(20, 2).right(1.0f).expect(WorldState.PLAYING)
-    @Test fun l25r2() = b(25, 2).hopR(4.2f).hopR(8f).hopR(14f).hopR(20f).right(1f).expect(WorldState.WON)
-    @Test fun l25r2TheRoundOneTimingDies() = b(25, 2).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.DEAD)
+    /** Load Balancer, round 2: the nodes sit two tiles further on, crumble faster, and the stone up top is a belt. */
+    @Test fun l25r2() { World2DesignTest.play(25, round = 2) }
+    @Test fun l25r2TheRoundOneHopsLandInThePit() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
     /** Ticket Number, round 2: the queue (a spike) creeps after you up to the gate; hop over it and back until the gate opens. */
     private fun queue(w: World) = w.group('S').homeX + w.group('S').ox
     @Test fun l26r2() = b(26, 2).rightTo(13.6f).waitFor { queue(it) > it.player.box.cx - 1.6f }.leftJump(0.35f).landLeft()

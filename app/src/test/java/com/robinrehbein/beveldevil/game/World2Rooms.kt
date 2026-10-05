@@ -99,6 +99,20 @@ object World2Rooms {
     fun l24(b: Bot) = b.rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
         .leftUntil { sawAheadLeft(it, 5.5f) }.leftJump(0.35f).landLeft().left(1.5f)
 
+    // ---------- block B (25-32): the rebuilt rooms ----------
+
+    /** 25, from the ground right of the pit: up the rack (three hops), back over the stones of the top floor, to the door on the platform. */
+    fun l25Top(b: Bot) = b.rightTo(24.0f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().leftJump(0.35f).landLeft()
+        .leftTo(22.8f).leftJump(0.35f).landLeft().leftTo(16.2f).leftJump(0.35f).landLeft().left(1.5f)
+
+    /** 25: over the three belts (hop off the end of each, off the third as you land), then [l25Top]. */
+    fun l25(b: Bot) = l25Top(b.rightUntil { it.player.box.cx > 7.2f }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 13.2f }.rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight())
+
+    /** 25, round 2: the belts crumble faster and the second and third sit one tile further on, so the hops start one tile later. */
+    fun l25r2(b: Bot) = l25Top(b.rightUntil { it.player.box.cx > 9.0f }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 15.2f }.rightJump(0.35f).landRight()
+        .rightJump(0.35f).landRight())
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )
