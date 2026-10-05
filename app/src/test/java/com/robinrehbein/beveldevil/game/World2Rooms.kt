@@ -152,6 +152,19 @@ object World2Rooms {
     fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
         .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.b > 12f }.rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
 
+    /** Blinking group [id] is solid during the whole stretch from [from] to [to] seconds ahead. */
+    fun stoneUp(w: World, id: Char, from: Float, to: Float): Boolean {
+        val g = w.group(id)
+        val b = g.blink ?: return false
+        return (0..6).all { k -> b.solidAt(w.time - g.blinkT0 + from + (to - from) * k / 6f) }
+    }
+
+    /** 31: wait on the deck for the first stone, hop over the three stones as each one is up, off the end of the deck, and back left along the lane to the door. */
+    fun l31(b: Bot) = b.rightTo(7.5f).waitFor { stoneUp(it, 's', 0.3f, 0.75f) }.rightJump(0.35f).landRight()
+        .rightTo(12.5f).waitFor { stoneUp(it, 't', 0.3f, 0.75f) }.rightJump(0.35f).landRight()
+        .rightTo(17.4f).waitFor { stoneUp(it, 'u', 0.3f, 0.75f) }.rightJump(0.35f).landRight()
+        .rightUntil { it.player.box.cx > 27.4f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.left(6f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

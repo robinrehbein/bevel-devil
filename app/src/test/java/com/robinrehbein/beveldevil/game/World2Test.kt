@@ -179,8 +179,9 @@ class World2Test {
         b(28).right(3f).expect(WorldState.DEAD)
         // 29: the first pendulum saw sits on the floor for a moment, and running on runs into it
         b(29).right(3f).expect(WorldState.DEAD)
-        // 31 and 32: the hops land in spikes that grew in mid-air
-        b(31).hopR(5.3f).right(5f).expect(WorldState.DEAD)
+        // 31: running on falls into the trench of spikes before the first stone is up
+        b(31).right(3f).expect(WorldState.DEAD)
+        // 32: the hops land in spikes that grew in mid-air
         b(32).hopR(4.5f).right(3f).expect(WorldState.DEAD)
     }
 
@@ -211,9 +212,8 @@ class World2Test {
         }
         // a trap-made portal never sits where the player could be locked into a dead end: its tiles are free in the plain map
         World2.levels.forEach { World(it) }
-        // 31: whoever is too slow for the closing gate does not wait in front of it
-        val late = b(31).rightTo(24f).waitFor(10f) { it.time > 5.2f }.wait(1.0f)
-        late.expect(WorldState.DEAD)
+        // 31: whoever dawdles on the deck is run over by the class wall
+        b(31).rightTo(7.5f).wait(6f).expect(WorldState.DEAD)
     }
 
     // ---------- the levels that react to the player in unusual ways ----------
@@ -368,8 +368,7 @@ class World2Test {
         assertEquals(2, bot.world.level.rooms)
         assertTrue(bot.world.door.tx > 32f)
     }
-    @Test fun level31() = b(31).rightJump(0.55f).rightJump(0.55f).rightJump(0.25f).left(0.10f).right(0.03f)
-        .right(0.03f).leftJump(0.12f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level31() { World2DesignTest.play(31) }
     @Test fun level32() = b(32).rightJump(0.55f).rightJump(0.25f).right(0.03f).left(0.10f).left(0.10f)
         .rightJump(0.55f).right(0.10f).left(0.03f).left(0.03f).rightJump(0.25f).jump(0.16f).leftJump(0.12f)
         .rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)

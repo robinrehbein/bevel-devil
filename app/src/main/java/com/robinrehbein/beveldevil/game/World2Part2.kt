@@ -2,6 +2,7 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
+import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Fall
@@ -488,25 +489,31 @@ object World2Part2 {
             }
         },
 
-        // 31 — EASTER EGG: HTTP 408 Request Timeout (a treadmill against you and a gate that closes for good at 5.2 s); spikes grow under the hops, the belt speeds up
+        // 31 — detention, a puzzle room (R8 the timing plus the way, U3 the wall closes in): you start up on the top deck and the class wall, set with
+        // spikes, slides in behind you from the left, so you cannot wait where you like. Over a trench of spikes three stones blink one after the
+        // other like a wave; you hop from stone to stone as each one comes up, and when you reach the middle one the wall speeds up (detention is
+        // over, go home). At the end of the deck you drop down onto the lane, where the second wall stands against the right wall, and run back
+        // left to the door with it behind you
         Level(
             name = T("Detention", "Nachsitzen"),
             intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),
-            legend = mapOf('A' to hidden, 'C' to hidden),
-            start = listOf(Belt('b', -5f), Laser('L', 27 to 1, 27 to 14, delay = 5.2f)),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'X' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
-                trap(After(0.2f), Play(Card.SINKING), say("408: the server waited for you. Not anymore.", "408: Der Server hat auf dich gewartet. Nicht mehr.")),
-                trap(Airborne(9f, 12f), Show('A'), say("Retry-After: never.", "Retry-After: nie.")),
-                trap(Landed(16f, 22f), Belt('b', -9f), say("Keep-alive rejected.", "Keep-Alive abgelehnt.")),
-                // the gate closes for good at 5.2 s: whoever still stands in front of it loses the connection
-                trap(After(5.6f), Fall('b'), say("Timeout: connection closed.", "Zeitüberschreitung: Verbindung getrennt.")),
+                trap(PastX(5.5f), Play(Card.SINKING), Move('W', 13f, 0f, 3.2f), say("Detention. Sit down. Stay seated.", "Nachsitzen. Setzen. Sitzen bleiben.")),
+                trap(PastX(5f), Blink('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat is leaving.", "Bitte nehmen Sie Platz. Der Platz geht gerade.")),
+                trap(Zone(11f, 6f, 14f, 8.5f), Blink('t', 1.6f, 1.2f, phase = -0.9f)),
+                trap(Zone(16f, 6f, 19f, 8.5f), Blink('u', 1.6f, 1.2f, phase = -0.9f)),
+                trap(Zone(26f, 12f, 31f, 15.5f), Move('X', -25f, 0f, 3.4f), say("The second class has to go home, too.", "Die zweite Klasse muss auch nach Hause.")),
+                trap(Zone(15f, 12f, 17f, 15.5f), Move('X', -10f, 0f, 5f), say("Oh, and they are in a hurry.", "Ach so, und sie haben es eilig.")),
             ),
+            hint = T("The wall is slower than you. The stones are not.", "Die Wand ist langsamer als du. Die Steine nicht."),
         ) {
             border(); floor()
-            fill(3..26, 15..17, 'b')
-            put(15, 14, 'A'); put(16, 14, 'A')
-            put(20, 14, 'C'); put(21, 14, 'C')
-            spawn(); door()
+            fill(1..2, 1..8, 'W'); fill(30..30, 10..14, 'X')
+            fill(1..26, 9..9)
+            fill(10..25, 9..9, '^')
+            fill(11..13, 8..8, 's'); fill(16..18, 8..8, 't'); fill(21..23, 8..8, 'u')
+            spawn(4, 8); door(3, 14); bits(31)
         },
 
         // 32 — act finale: belt, tunnel, timed gate and a belt that turns around in front of it; spikes grow behind the first hop
