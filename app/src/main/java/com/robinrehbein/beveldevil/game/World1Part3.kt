@@ -378,30 +378,29 @@ object World1Part3 {
             put(1, 14, 'P'); put(30, 8, 'D')
         },
 
-        // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes: three pieces of the ground are deleted one after another
-        // just ahead of your feet as you run (hop them), and on the way back along the shelf upstairs, which is protected
-        // ("/home"), two strips of it slide away from under the runner instead
-        // EASTER EGG: sudo rm -rf /. U1: the floor goes (drop), the sliding strips are the second family
+        // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes. A descent: you start on the top floor on the right and run left;
+        // two pieces of the floor are deleted just ahead of your feet, and under the top floor lies a shelf of spikes that catches whoever
+        // falls through. The top floor ends over a shaft: drop down it to the ground floor and run back to the right, where two more
+        // pieces of the ground are deleted ahead of you, down to the door in the bottom right corner
+        // EASTER EGG: sudo rm -rf /. U1: the floor goes (drop), top to bottom
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
-            hint = T("The floor is deleted just ahead of you: hop where it is gone. Upstairs, the strips slide away: hop those too.", "Der Boden wird direkt vor dir gelöscht: Spring, wo er fehlt. Oben gleiten die Streifen weg: Auch darüber hüpfen."),
+            hint = T("The floor is deleted just ahead of you, top floor first: hop where it is gone, drop down the shaft, and hop again on the ground. The shelf in between is all spikes.", "Der Boden wird direkt vor dir gelöscht, zuerst oben: Spring, wo er fehlt, lass dich durch den Schacht fallen und spring unten wieder. Das Regal dazwischen besteht nur aus Stacheln."),
             traps = listOf(
-                trap(PastX(5.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
-                trap(PastX(10f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
-                trap(PastX(15f), Hide('c'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
-                trap(Touch('s'), Hide('s'), Say(T("rm: removing '/stairs' ... in a moment.", "rm: entferne '/stairs' ... gleich.")), delay = 0.9f),
-                trap(Zone(28f, 9f, 31f, 11.5f), Hide('f'), Say(T("rm: removing '/' ... the rest of it. Done.", "rm: entferne '/' ... den Rest. Erledigt."))),
-                trap(Zone(19f, 7f, 21.5f, 9.5f), Move('e', 7f, 0f, 14f), Say(T("mv: moving '/home' ... away from you.", "mv: verschiebe '/home' ... weg von dir."))),
-                trap(Zone(12f, 7f, 14.5f, 9.5f), Move('g', 7f, 0f, 14f)),
+                trap(BeforeX(28.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(BeforeX(20f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
+                trap(Zone(7f, 12f, 10f, 15.5f), Hide('d'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
+                trap(Zone(15f, 12f, 18f, 15.5f), Hide('g'), Say(T("rm: removing '/' ... the rest of it. Done.", "rm: entferne '/' ... den Rest. Erledigt."))),
             ),
         ) {
             border(); floor()
-            fill(3..8, 15..17, 'f'); fill(11..13, 15..17, 'f'); fill(16..18, 15..17, 'f'); fill(21..22, 15..17, 'f')
-            fill(9..10, 15..17, 'a'); fill(14..15, 15..17, 'b'); fill(19..20, 15..17, 'c')
-            fill(2..27, 9..9); fill(15..17, 9..9, 'e'); fill(8..10, 9..9, 'g')
-            pit(23..30); fill(23..27, 13..14, 's'); fill(28..30, 11..14)
-            put(2, 14, 'P'); put(3, 8, 'D')
+            fill(7..21, 5..5); fill(22..24, 5..5, 'a'); fill(25..30, 5..5)
+            fill(14..16, 5..5, 'b')
+            fill(7..30, 10..10)
+            for (x in 7..30) put(x, 9, '^')
+            fill(12..14, 15..17, 'd'); fill(20..22, 15..17, 'g')
+            put(29, 4, 'P'); put(29, 14, 'D')
         },
 
         // 46 — home stretch: the goal is on the left, behind a wall nobody climbs, so the way out is the switch behind you, at the far

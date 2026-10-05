@@ -423,6 +423,11 @@ class World1Test {
     @Test fun level43() = World1DesignTest.play(43)
     @Test fun level44() = World1DesignTest.play(44)
     @Test fun level45() = World1DesignTest.play(45)
+
+    /** 45: the top floor is deleted ahead of you, and the shelf under it is all spikes; on the ground the next pieces go the same way. */
+    @Test fun level45RunningStraightOnFallsOntoTheSpikeShelf() = b(45).left(2.5f).expect(WorldState.DEAD)
+    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
+    @Test fun level45StartingByRunningRightGoesNowhere() = b(45).right(4f).also { assertTrue(it.world.player.box.cx > 29f) }.expect(WorldState.PLAYING)
     @Test fun level46() = World1DesignTest.play(46)
     @Test fun level47() = World1DesignTest.play(47)
     @Test fun level48() = World1DesignTest.play(48)
