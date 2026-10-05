@@ -215,35 +215,40 @@ object World1Part2B {
             put(2, 4, 'P'); put(24, 14, 'D')
         },
 
-        // 24 — two walls of spikes converge and you jump the one that comes at you; the landing is followed by a pit, and the jump over the pit by spikes
-        // EASTER EGG: git merge conflict markers
+        // 24 — merge conflict: HEAD walks after you along the ground floor, the stairs lead up and back along the top floor, and
+        // there the other branch comes the other way and has to be jumped; the door is behind it. Rematch: no stairs, a lift that
+        // goes too far, and two branches in a row
+        // MECHANIC: Chase (two branches)
         Level(
             name = T("Merge Conflict", "Merge-Konflikt"),
             intro = T("<<<<<<< HEAD  Commit message: 'minor changes'.", "<<<<<<< HEAD  Commit-Nachricht: 'kleine Änderungen'."),
-            legend = mapOf('L' to Glyph(spike = true, dir = Dir.RIGHT), 'R' to Glyph(spike = true, dir = Dir.LEFT), 'A' to hiddenSpike),
+            legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(After(2.4f), Play(Card.DEVIL_SAW), Move('R', -20f, 0f, 4.2f), Move('L', 25f, 0f, 3f),
-                    Say(T(">>>>>>> feature/squash-bevel", ">>>>>>> feature/bevel-plattmachen"))),
-                trap(Landed(17.5f, 24f), Fall('c')),
-                trap(Airborne(21f, 26f), Show('A')),
+                trap(PastX(6f), Fall('a'), Say(T("Conflict in floor.txt. Resolving by deleting.", "Konflikt in boden.txt. Wird durch Löschen gelöst."))),
+                trap(PastX(7.5f), Play(Card.STALKER), Chase('h', 6f, left = 0f, right = 26f), Say(T("HEAD is right behind you. Rebase onto me.", "HEAD ist direkt hinter dir. Rebase auf mich."))),
+                trap(PastX(15f), Fall('b'), Say(T("Another conflict. Same resolution.", "Noch ein Konflikt. Gleiche Lösung."))),
+                trap(Zone(20f, 6f, 25f, 9f), Chase('F', 2.5f, left = 0f, right = 16f), Say(T(">>>>>>> feature/squash-bevel", ">>>>>>> feature/bevel-plattmachen"))),
             ),
-            // rematch: the wall you learned to wait for and jump stays put; the one behind you comes, and faster
             rematch = listOf(
                 Round(
                     T("Rematch. Rebased onto your mistakes.", "Revanche. Auf deine Fehler rebased."),
                     traps = listOf(
-                        trap(After(2.4f), Play(Card.DEVIL_SAW), Move('L', 25f, 0f, 3.4f), Say(T("Fast-forward. From behind.", "Fast-Forward. Von hinten."))),
-                        trap(Airborne(21f, 26f), Show('A')),
+                        trap(PastX(6f), Fall('a'), Say(T("Conflict in floor.txt. Again. Merging it away.", "Konflikt in boden.txt. Schon wieder. Wegmergen."))),
+                        trap(PastX(7.5f), Play(Card.GRAND_FINALE), Chase('h', 6f, left = 0f, right = 26f), Say(T("Every branch at once. Squash everything.", "Alle Branches auf einmal. Alles zusammendrücken."))),
+                        trap(PastX(15f), Fall('b')),
+                        trap(Landed(27f, 31f), Move('l', 0f, -12f, 5f), Say(T("Cherry-pick: straight to the top.", "Cherry-pick: direkt nach oben.")), delay = 0.15f),
+                        trap(Zone(20f, 6f, 25f, 9f), Chase('F', 2.5f, left = 0f, right = 16f), Chase('G', 2.5f, left = 0f, right = 16f), Say(T("Two branches. One door.", "Zwei Branches. Eine Tür."))),
                     ),
-                ),
+                ) { fill(26..27, 13..14, '.'); fill(28..30, 11..14, '.'); fill(27..30, 14..14, 'l'); fill(27..30, 1..1, 'C'); put(8, 8, '.'); put(7, 8, 'F'); put(13, 8, 'G') },
             ),
         ) {
-            border(); floor()
-            put(8, 13, 'L'); put(8, 14, 'L')
-            put(22, 13, 'R'); put(22, 14, 'R')
-            fill(22..24, 15..17, 'c')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            put(15, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); pit(9..10); pit(19..20)
+            fill(9..10, 15..17, 'a'); fill(19..20, 15..17, 'b')
+            fill(1..2, 12..14, 'h')
+            fill(26..27, 13..14); fill(28..30, 11..14)
+            fill(4..25, 9..9); fill(8..8, 8..8, 'F')
+            put(4, 14, 'P'); put(5, 8, 'D')
         },
+
     )
 }

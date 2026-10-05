@@ -72,5 +72,13 @@ object World1RoomsB {
                 .rightTo(6.0f).waitFor { w -> w.saws.any { it.path != null && it.x in 8.5f..9.5f && it.y < 11.0f } }.rightTo(13.5f)
                 .waitFor { w -> w.saws.any { it.path != null && it.x > 15f && it.y < 11.0f } }.rightTo(26.0f) },
         ),
+        24 to listOf<Solution>(
+            { hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+                .leftTo(28.6f).leftJump(0.35f).landLeft()
+                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(4.5f) },
+            { hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(25.0f).rightJump(0.3f).landRight().waitFor { it.group('l').oy <= -4f }.leftJump(0.35f).landLeft()
+                .leftUntil { w -> w.group('G').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft()
+                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(4.5f) },
+        ),
     )
 }
