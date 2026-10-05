@@ -291,9 +291,9 @@ object World2Part2 {
             intro = T("The uplink is in the basement. So is the elevator.", "Der Uplink ist im Keller. Der Aufzug auch."),
             legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(PastX(16.8f), Move('V', 0f, 16f, 25f), say("Stalactites. This is a cave now.", "Stalaktiten. Das hier ist jetzt eine Höhle."), delay = 0.3f),
+                trap(PastX(16.8f), Play(Card.HEADBUTT), Move('V', 0f, 16f, 25f), say("Stalactites. This is a cave now.", "Stalaktiten. Das hier ist jetzt eine Höhle."), delay = 0.3f),
                 trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 3.6f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
-                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
+                trap(Landed(26f, 31f), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
             ),
             hint = T("Wait for the stalactites to fall. Then run, and do not stop under the deck.", "Warte, bis die Stalaktiten gefallen sind. Dann lauf, und bleib nicht unter dem Deck stehen."),
         ) {
@@ -422,39 +422,36 @@ object World2Part2 {
             spawn(); door(8, 8); bits(28)
         },
 
-        // 29 — a pendulum saw over a belt that hurries you, and another saw that is right behind you; after the first hop the belt turns against you, and the last hop lands in spikes
+        // 29 — the race condition, a trap room (U7 the saw): three pendulum saws hang over the lane, each one set off when you come within six tiles of it.
+        // It stays down on the floor for a moment and then swings up and down: running on runs into it, the clever way is to stop in front of it and
+        // slip under it when it is up.
+        // Rematch: a thread hunts you from behind, so there is no time to wait it out. The pendulums start swinging at once; the way through is to
+        // run on and stop only for the one that is down when you get there
         Level(
             name = T("Race Condition", "Wettlaufsituation"),
             intro = T("The winner gets a cookie. I have no cookies.", "Der Sieger bekommt einen Keks. Ich habe keine Kekse."),
-            legend = mapOf('A' to hidden),
-            start = listOf(
-                Belt('b', 5f),
-                PathSaw(5f, 16f to 14.4f, 16f to 11.6f),
-                PathSaw(5f, 21f to 14.4f, 21f to 11.6f, delay = 0.56f),
-            ),
+            start = listOf(Belt('b', -5f)),
             traps = listOf(
-                trap(PastX(6f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6f, 0f), say("Thread 3 joins the race.", "Thread 3 steigt ins Rennen ein.")),
-                trap(Landed(12f, 15f), Belt('b', -4f), say("Mutex acquired: by the belt.", "Mutex gesperrt: vom Band.")),
-                trap(Airborne(23f, 25.6f), Show('A'), say("Deadlock.", "Deadlock.")),
+                trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 10f to 14f, 10f to 11.2f, delay = 0.6f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
+                trap(PastX(10f), PathSaw(3f, 16f to 14f, 16f to 11.2f, delay = 0.6f, r = 1f), say("Thread 2 holds it now.", "Jetzt hält es Thread 2.")),
+                trap(PastX(19f), PathSaw(3f, 22f to 14f, 22f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
             ),
-            // rematch: no saw behind you; the belt still turns against you after the first hop, but landing behind the first
-            // pendulum turns it forward again: whoever keeps holding right like in round 1 is rushed into the last spike.
-            // Let it carry you, slip under the second pendulum and jump the spike (the floor behind it stays clean)
+            hint = T("Do not run into the saw. Wait until it is up.", "Lauf nicht in die Säge. Warte, bis sie oben ist."),
             rematch = listOf(
                 Round(
                     T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
+                    hint = T("The second thread laps the lane now. Run when it is up in the corner.", "Der zweite Thread dreht jetzt Runden über die Bahn. Lauf, wenn er oben in der Ecke ist."),
                     traps = listOf(
-                        trap(Landed(12f, 15f), Belt('b', -4f)),
-                        trap(Landed(19f, 24.5f), Play(Card.TWISTED), Belt('b', 3f), say("Priority inversion. The belt goes first.", "Prioritätsumkehr. Das Band hat Vorfahrt.")),
+                        trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 10f to 14f, 10f to 11.2f, delay = 0.4f, r = 1f), say("Thread 1 is the same as before. I am proud of it.", "Thread 1 ist wie vorher. Ich bin stolz auf ihn.")),
+                        trap(PastX(11.5f), PathSaw(10f, 13f to 14f, 22f to 14f, 22f to 6f, 13f to 6f, loop = true, r = 1f), say("Thread 2 has joined the race. It laps.", "Thread 2 ist ins Rennen eingestiegen. Er überrundet.")),
+                        trap(PastX(19.5f), PathSaw(3f, 25f to 14f, 25f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            fill(6..27, 15..15, 'b')
-            put(11, 14, '^'); put(25, 14, '^')
-            put(28, 14, 'A'); put(29, 14, 'A')
-            spawn(); door(30)
+            fill(26..29, 15..15, 'b')
+            spawn(); door(30); bits(29)
         },
 
         // 30 — three one-way portals, each one lands higher up in the air; a spike grows in front of the first, and behind each landing

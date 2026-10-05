@@ -132,6 +132,22 @@ object World2Rooms {
         .wait(0.05f).waitFor(cond = clear('N')).rightUntil { it.player.box.cx > 22.8f }.wait(0.05f).waitFor(cond = clear('P')).rightUntil { it.player.box.b < 9.5f }
         .leftUntil { it.player.box.cx < 19.6f }.wait(0.05f).waitFor(cond = clear('O')).left(3f)
 
+    /** The pendulum saw at [x] stays clear of the lane (up, not coming down) for the next [from]..[to] seconds. */
+    fun pendulumCalm(w: World, x: Float, from: Float = 0.1f, to: Float = 0.5f): Boolean {
+        val s = w.saws.firstOrNull { kotlin.math.abs(it.x - x) < 0.2f && it.path != null } ?: return false
+        return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < 12.2f }
+    }
+
+    /** 29: stop in front of each pendulum saw and slip under it when it is up. */
+    fun l29(b: Bot) = b.rightTo(7.7f).waitFor { pendulumCalm(it, 10f) }.rightUntil { it.player.box.cx > 11.7f }
+        .rightTo(13.7f).waitFor { pendulumCalm(it, 16f) }.rightUntil { it.player.box.cx > 17.7f }
+        .rightTo(19.7f).waitFor { pendulumCalm(it, 22f) }.right(3f)
+
+    /** 29, round 2: slip under the first pendulum as before, wait in front of the lane for the second saw to lap off into the upper corner, run the lane, and slip under the last pendulum. */
+    fun l29r2(b: Bot) = b.rightTo(6.7f).waitFor { pendulumCalm(it, 10f, 0.1f, 0.65f) }.rightUntil { it.player.box.cx > 11.7f }
+        .waitFor { w -> w.saws.any { it.path?.loop == true && it.x > 21f && it.y < 12.2f } }.rightUntil { it.player.box.cx > 21.9f }
+        .waitFor { pendulumCalm(it, 25f) }.right(3f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

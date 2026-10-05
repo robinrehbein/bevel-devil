@@ -177,8 +177,8 @@ class World2Test {
         World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
         // 28: the tunnel drops you in front of the first gate, and running on runs into it
         b(28).right(3f).expect(WorldState.DEAD)
-        // 29: the belt turns against you after the first hop, and the saw behind you does not
-        b(29).hopR(8.6f).right(3f).expect(WorldState.DEAD)
+        // 29: the first pendulum saw sits on the floor for a moment, and running on runs into it
+        b(29).right(3f).expect(WorldState.DEAD)
         // 31 and 32: the hops land in spikes that grew in mid-air
         b(31).hopR(5.3f).right(5f).expect(WorldState.DEAD)
         b(32).hopR(4.5f).right(3f).expect(WorldState.DEAD)
@@ -360,8 +360,7 @@ class World2Test {
     @Test fun level27() { World2DesignTest.play(27) }
     @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
     @Test fun level28() { World2DesignTest.play(28) }
-    @Test fun level29() = b(29).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
-        .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level29() { World2DesignTest.play(29) }
     @Test fun level30() = b(30).hopR(3.2f).hopR(15f).hopR(25f).right(2f).expect(WorldState.WON)
     @Test fun level31() = b(31).rightJump(0.55f).rightJump(0.55f).rightJump(0.25f).left(0.10f).right(0.03f)
         .right(0.03f).leftJump(0.12f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)

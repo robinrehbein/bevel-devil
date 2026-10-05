@@ -161,14 +161,11 @@ class World2DeckTest {
     @Test fun l26r2() { World2DesignTest.play(26, round = 2) }
     @Test fun l26r2TheRoundOneRunMeetsTheQueueHeadOn() = World2Rooms.l26(b(26, 2)).expect(WorldState.DEAD)
     @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
-    /** Race Condition, round 2: the landing behind the first pendulum turns the belt forward; ride it, slip under the second one, jump. */
-    @Test fun l29r2() = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight()
-        .waitFor { w -> w.saws.filter { kotlin.math.abs(it.x - 21f) < 0.5f }.all { it.y < 12.2f } }.rightTo(22.6f).rightJump(0.55f).landRight()
-        .right(1f).expect(WorldState.WON)
-    @Test fun l29r2TheBeltTurnsForwardOnTheLanding() {
-        val bot = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight().wait(0.05f)
-        assertEquals(3f, bot.world.group('b').belt)
-    }
+    /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
+    @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
+    @Test fun l29r2TheRoundOneRunMeetsTheLappingSaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
+    @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.7f).waitFor { World2Rooms.pendulumCalm(it, 10f, 0.1f, 0.65f) }.right(3f).expect(WorldState.DEAD)
+
     // ---------- Act 3: Root ----------
 
     /** sudo !!, round 2: the LED pair slides onto where a full jump lands; a short hop comes down in front of it. */
@@ -196,8 +193,7 @@ class World2DeckTest {
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
             25 to World2Rooms::l25,
             26 to World2Rooms::l26,
-            29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
-                .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) },
+            29 to World2Rooms::l29,
             33 to { b -> b.right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).right(0.03f) },
             34 to { b -> b.right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             41 to { b -> b.rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
