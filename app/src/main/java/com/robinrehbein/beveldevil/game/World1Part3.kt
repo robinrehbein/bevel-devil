@@ -15,6 +15,9 @@ import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Roll
+import com.robinrehbein.beveldevil.game.Action.Extend
+import com.robinrehbein.beveldevil.game.Action.PathSaw
+import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Say
 import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
@@ -37,36 +40,40 @@ object World1Part3 {
     private val ceilingSpike = Glyph(spike = true, dir = Dir.DOWN)
 
     val levels: List<Level> = listOf(
-        // 33 — a hidden pit on the way to the door; the door is a fake: clear screen, then the floor is gone and the door went home
-        // TWIST: FakeWin (clear)
+        // 33 — clear road: the strip of the road is pulled away from under the runner, oncoming traffic, and at the door the end of
+        // the road turns out to be a lie: the wall breaks open and the road goes on, with a ferry that leaves as you board it.
+        // Rematch: Mephi built ahead (the road is longer from the first second), the hop that saved you lands on spikes now
+        // TWIST: Extend (the end was a lie), no FakeWin: a fake screen (3.4 s) cannot meet the density rule
         Level(
             name = T("Clear Road", "Freie Fahrt"),
             intro = T("No traps today. I'm on vacation.", "Heute keine Fallen. Ich habe Urlaub."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("The road is pulled away as you come. At the door the road is not over: the ferry leaves at once.", "Die Straße wird dir weggezogen. An der Tür ist sie nicht zu Ende: Die Fähre legt sofort ab."),
+            rooms = 2,
             traps = listOf(
-                trap(Touch('c'), Fall('c'), delay = 0.06f),
-                trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, Hide('f'), Show('A'), DoorTo(3, 14))),
+                trap(PastX(5.2f), Move('a', -3f, 0f, 9f), Say(T("Roadworks. Unannounced.", "Baustelle. Unangekündigt."))),
+                trap(Landed(12.5f, 17f), Saw(31.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Not a trap. A vehicle.", "Gegenverkehr. Keine Falle. Ein Fahrzeug."))),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14, line = T("Clear road, you said. The road disagrees.", "Freie Fahrt, sagtest du. Die Straße sieht das anders."))),
+                trap(Landed(roomX(1, 12.5f), roomX(1, 16f)), Move('b', -3.5f, 0f, 6f), Say(T("The ferry leaves now. With or without you.", "Die Fähre legt jetzt ab. Mit oder ohne dich."))),
             ),
-            // rematch: no fake this time, but the floor erodes behind the landing and drops right before the door
             rematch = listOf(
                 Round(
-                    T("Rematch. This time the door is real. Honest.", "Revanche. Diesmal ist die Tür echt. Ehrlich."),
+                    T("Rematch. This time I built ahead.", "Revanche. Diesmal habe ich vorgebaut."),
+                    legend = mapOf('A' to hiddenSpike),
+                    hint = T("The road is long from the start. Do not hop where you hopped before.", "Die Straße ist von Anfang an lang. Spring nicht, wo du vorhin gesprungen bist."),
                     traps = listOf(
-                        trap(Touch('c'), Fall('c'), delay = 0.06f),
-                        trap(PastX(23.5f), Say(T("Same trick twice? Please.", "Zweimal derselbe Trick? Ich bitte dich."))),
-                        // the floor erodes behind you, tile by tile, toward the door: nobody waits for a fake here
-                        trap(Landed(21.8f, 25f), Fall('h'), delay = 0.35f),
-                        trap(Landed(21.8f, 25f), Fall('i'), delay = 0.6f),
-                        trap(Touch('g'), Play(Card.COLLAPSE), Fall('g'), delay = 0.06f),
+                        trap(After(0.3f), Extend(into = 1, door = roomX(1, 28) to 14, line = T("Prebuilt. Delivered ahead of schedule.", "Vorgefertigt. Vorzeitig geliefert."))),
+                        trap(Airborne(8.5f, 14f), Show('A'), Say(T("Old habits. Mine too.", "Alte Gewohnheiten. Meine auch."))),
+                        trap(PastX(7f), Play(Card.DEVIL_SAW), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 1.1f), Say(T("Jump rope. You skip, the traffic does not.", "Seilspringen. Du hüpfst, der Verkehr nicht."))),
+                        trap(PastX(20.5f), Move('d', -3f, 0f, 9f), Say(T("The road is a subscription. Cancelled.", "Die Straße ist ein Abo. Gekündigt."))),
+                        trap(PastX(roomX(1, 1.5f)), Move('c', -3f, 0f, 9f), Say(T("Delivered. The road is still on the truck.", "Geliefert. Die Straße liegt noch auf dem Laster."))),
+                        trap(Landed(roomX(1, 12.5f), roomX(1, 16f)), Saw(roomX(1, 31.5f), 14.4f, -6.5f, 0f, 0.62f), Say(T("The ferry has a cargo. It rolls.", "Die Fähre hat Ladung. Sie rollt."))),
                     ),
-                ) { fill(22..23, 15..17, 'h'); fill(24..24, 15..17, 'i'); fill(25..26, 15..17, 'g') },
+                ) { fill(10..12, 15..17, '#'); put(14, 14, 'A'); put(15, 14, 'A'); pit(25..27); fill(25..27, 15..15, 'd'); room(1) { pit(5..7); fill(5..7, 15..15, 'c') } },
             ),
         ) {
             border(); floor()
-            fill(20..21, 15..17, 'c')
-            fill(13..16, 15..17, 'f')
-            put(6, 14, 'A'); put(7, 14, 'A')
-            put(8, 14, 'P'); put(28, 14, 'D')
+            room(0) { pit(10..12); fill(10..12, 15..15, 'a'); put(2, 14, 'P'); put(29, 14, 'D') }
+            room(1) { pit(11..16); fill(13..15, 15..15, 'b') }
         },
 
         // 34 — the pause button dodges; only a real pause (back button) opens the wall
