@@ -162,30 +162,38 @@ object World2Part2 {
                     say("ID scanned. Gate 3 open. The queue at the exit has other plans.", "Ausweis gescannt. Tor 3 offen. Die Schlange am Ausgang hat andere Pläne.")),
             ),
             hint = T("The scanner is up on the ledge. Wait up there.", "Der Scanner steht oben auf dem Sims. Warte dort oben."),
-            // rematch: gate 3 is low and stays shut, the scanner on the ledge is a bluff, and the ledge goes on: over a gap and across a step
-            // that loses its power when you step on it, above a floor of LEDs. The stairs are the same, so round 1's run gets as far as the
-            // ledge: whoever waits up there for gate 3 as in round 1, or drops where round 1 dropped, lands in the LEDs
+            // rematch: stateless inspection, round 2 has no gates and nothing to wait for: the whole connection expires behind you. The floor
+            // under the start is only good for a second (the door is at the far end of it: no running there), the stairs go dark one step
+            // after the other (once, on your heels: not a rhythm), a tripwire flashes over the ledge (hop it), and the ledge drops you down
+            // to the lane on the right, where the floor goes dark from the right to the left on your heels and the door waits at its end.
+            // Round 1's run (up the stairs, wait up on the ledge for the queue) never gets that far: nobody opens a gate, and the ledge is
+            // not where it was
             rematch = listOf(
                 Round(
                     T("Stateless now. I forgot everything. Almost.", "Zustandslos jetzt. Ich merk mir nur noch dich."),
-                    hint = T("The scanner is a bluff. The ledge goes on.", "Der Scanner ist ein Bluff. Der Sims geht weiter."),
+                    hint = T("Nothing expires while you are moving. Everything does when you stop.", "Nichts läuft ab, solange du dich bewegst. Alles, sobald du stehst."),
                     start = listOf(
-                        Laser('K', 25 to 10, 25 to 14),
-                        Circuit('x'), Circuit('w', on = false),
-                        Pad('2', at = 2 to 14, circuits = "w"),
-                        Pad('1', at = 21 to 2),
-                        Circuit('y'),
+                        Circuit('x'), Circuit('w', on = false), Circuit('k'), Circuit('u'),
+                        Circuit('y'), Circuit('z'), Circuit('q'), Circuit('r'),
                     ),
                     traps = listOf(
-                        trap(Pressed('2'), say("Second check started. Same stairs.", "Zweite Kontrolle gestartet. Gleiche Treppe.")),
-                        trap(Landed(6f, 7.9f), Laser('M', 8 to 1, 8 to 14, on = 1.8f, off = 1.4f, phase = 0.5f), say("Gate 2 on a rhythm. Again.", "Tor 2 im Takt. Schon wieder.")),
-                        trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Same floor, same nobody.", "Zweite Kontrolle abgelaufen. Gleicher Boden, gleiches Niemand.")),
-                        trap(Landed(12f, 13.9f), Laser('N', 14 to 1, 14 to 14, on = 1.8f, off = 1.4f, phase = 0.5f), say("The twin again. It never learns.", "Der Zwilling schon wieder. Er lernt nie.")),
-                        trap(Pressed('1'), Bluff(Card.SPIKE_SEED), say("ID scanned. Gate 3 open. (Is it?)", "Ausweis gescannt. Tor 3 offen. (Echt jetzt?)")),
-                        trap(Landed(15f, 16.9f), Circuit('y', on = false), say("Lane floor: expired as well. Nobody renewed it.", "Boden unten: auch abgelaufen. Niemand hat verlängert.")),
-                        trap(Touch('f'), Circuit('f', on = false), say("The ledge expires with your ID.", "Der Sims läuft mit deinem Ausweis ab."), delay = 0.55f),
+                        trap(After(1.15f), Play(Card.SHORT_CIRCUIT), Circuit('x', on = false), say("Session expired. You got a second. Nobody renewed it.", "Sitzung abgelaufen. Du hattest eine Sekunde. Niemand hat verlängert.")),
+                        trap(Landed(6f, 7.9f), Circuit('w', on = true), say("Handshake. One moment, please.", "Handschlag. Einen Moment, bitte."), delay = 0.9f),
+                        trap(Touch('w'), Circuit('w', on = false), say("Idle connection dropped. Step by step.", "Verbindung im Leerlauf getrennt. Stufe für Stufe."), delay = 0.9f),
+                        trap(Touch('w'), Circuit('k', on = false), delay = 1.5f),
+                        trap(Touch('w'), Circuit('u', on = false), delay = 2.1f),
+                        trap(Landed(21.9f, 24.5f), Laser('H', 25 to 4, 26 to 4, on = 0.6f, off = 40f, delay = 0.2f), say("Tripwire. I hid it in plain sight.", "Stolperdraht. Ich habe ihn offen versteckt.")),
+                        trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('y', on = false), say("Lane floor: expired as well. Right to left.", "Boden unten: auch abgelaufen. Von rechts nach links."), delay = 0.7f),
+                        trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('z', on = false), delay = 1.05f),
+                        trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('q', on = false), delay = 1.4f),
+                        trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('r', on = false), delay = 1.75f),
                     ),
-                ) { fill(21..24, 3..3, 'f'); fill(27..28, 3..3); fill(15..20, 15..17, 'y'); fill(21..26, 14..14, '^'); put(29, 14, '.'); put(27, 14, 'D') },
+                ) {
+                    fill(9..10, 11..11, '.'); fill(12..13, 9..9, '.'); fill(15..16, 7..7, '.'); fill(18..19, 5..5, '.'); fill(21..24, 3..3, '.')
+                    fill(10..11, 11..11, 'w'); fill(14..15, 9..9, 'k'); fill(18..19, 7..7, 'u'); fill(22..28, 5..5)
+                    put(29, 14, '.'); put(15, 14, 'D'); put(26, 1, '.'); put(28, 1, '.')
+                    fill(26..28, 15..17, 'y'); fill(23..25, 15..17, 'z'); fill(20..22, 15..17, 'q'); fill(17..19, 15..17, 'r')
+                },
             ),
         ) {
             border(); floor()

@@ -65,8 +65,11 @@ object World2Rooms {
     /** 20: scan, wait until the queue at the exit has passed, walk off the ledge (holding back against the drift) and run for the door. */
     fun l20(b: Bot) = l20ToScanner(b).wait(0.05f).waitFor(cond = clear('K')).rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.rightTo(28.8f).right(1f)
 
-    /** 20, round 2: the scanner is a bluff; jump the gap onto the far ledge and walk back to the door. */
-    fun l20r2(b: Bot) = l20ToLedge(b).rightTo(24.4f).rightJump(0.5f).landRight().rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.leftTo(28.0f).left(1f)
+    /** 20, round 2, up the stairs without a single wait (nothing to wait for, everything expires behind you). */
+    fun l20r2Stairs(b: Bot) = b.hopR(4.1f, 0.3f).waitFor { it.circuits['w']?.powered == true }.hopR(7.6f).hopR(11.6f).hopR(15.6f).hopR(19.4f)
+
+    /** 20, round 2: up the stairs, hop the tripwire on the ledge, off its end, and back left along the lane whose floor goes dark behind you, to the door. */
+    fun l20r2(b: Bot) = l20r2Stairs(b).rightTo(23.8f).rightJump(0.35f).landRight().rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(15.5f).left(1f)
 
     /** 21, into the near portal: the closet between the walls (the port opens on the way in). */
     fun l21ToCloset(b: Bot) = b.rightUntil { it.player.box.cx > 14.2f }

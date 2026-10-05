@@ -144,24 +144,15 @@ class World2DeckTest {
     }
     @Test fun l18r2LingeringOnTheLiftIsFatal() = World2Rooms.l18r2ToPad(b(18, 2)).wait(3f).expect(WorldState.DEAD)
     @Test fun l18r2HasItsOwnHint() = assertTrue(World2.levels[17].rounds[1].hint != null && World2.levels[17].rounds[1].hint!!.en != World2.levels[17].hint!!.en)
-    /** Stateful Inspection, round 2: the scanner is a bluff (gate 3 stays shut), the ledge expires with your ID over a floor of LEDs, and goes on over a gap. */
-    @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)
-    /** Round 1's way (scan, wait up on the ledge for the queue to pass) loses to the ledge that expires: it drops you onto the LEDs. */
-    @Test fun l20r2WaitingOnTheLedgeAsInRoundOneIsFatal() {
-        val bot = World2Rooms.l20ToLedge(b(20, 2)).wait(1.5f)
-        bot.expect(WorldState.DEAD)
-        assertTrue("died at x=${bot.world.player.box.cx}, y=${bot.world.player.box.cy}", bot.world.player.box.cx in 20.5f..26.5f && bot.world.player.box.cy > 14f)
-    }
-    @Test fun l20r2DroppingWhereRoundOneDroppedIsFatal() {
-        val bot = World2Rooms.l20(b(20, 2))
-        bot.expect(WorldState.DEAD)
-        assertTrue("round 1's run dies on the ledge, not after waiting for a gate that never opens (t=${bot.world.time})", bot.world.time < 9f)
-    }
-    @Test fun l20r2TheScannerIsABluff() {
-        val bot = World2Rooms.l20ToLedge(b(20, 2)).wait(0.1f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.beams.isNotEmpty() && bot.world.beams.any { it.laser.id == 'K' && it.lit })
-    }
+    /** Stateful Inspection, round 2: no gates, nothing to wait for: the floor, the stairs and the lane expire on your heels, a tripwire flashes over the ledge. */
+    @Test fun l20r2() { World2DesignTest.play(20, round = 2) }
+    /** Round 1's way (a hop onto the first step, then on without waiting for the next one to light up) drops through the dark step. */
+    @Test fun l20r2RoundOnesHopsDropThroughTheDarkStep() = b(20, 2).hopR(4.1f, 0.24f).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2TheStairsExpireOneAfterTheOtherWhenYouStop() = World2Rooms.l20r2Stairs(b(20, 2)).wait(0.1f).also { it.world.circuits['u']?.let { c -> assertTrue(c.powered) } }
+        .wait(3f).expect(WorldState.PLAYING)
+    @Test fun l20r2TheTripwireFlashesOverTheLedge() = World2Rooms.l20r2Stairs(b(20, 2)).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2WhoStandsStillOnTheLaneFindsItDark() = World2Rooms.l20r2Stairs(b(20, 2)).rightTo(23.8f).rightJump(0.35f).landRight()
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(3f).leftTo(15.5f).left(2f).expect(WorldState.DEAD)
     @Test fun l20r2HoldingRightIsNotKilledByTheFirstStep() = b(20, 2).right(1.0f).expect(WorldState.PLAYING)
     @Test fun l25r2() = b(25, 2).hopR(4.2f).hopR(8f).hopR(14f).hopR(20f).right(1f).expect(WorldState.WON)
     @Test fun l25r2TheRoundOneTimingDies() = b(25, 2).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.DEAD)
