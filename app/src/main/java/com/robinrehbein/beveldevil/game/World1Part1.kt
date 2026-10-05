@@ -318,27 +318,24 @@ object World1Part1 {
             put(2, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 14 — a lift takes you up; spikes appear on the ledge when you arrive; a piece of the ledge crumbles when you run over it
+        // 14 — the door is right behind a wall, so take the lifts: the first one rises to the upper floor and carries on into the
+        // ceiling spikes, a saw rolls at you along the floor, and the second lift goes down, and goes on down into the ground
         Level(
             name = T("Performance Review", "Mitarbeitergespräch"),
             intro = T("Please hold. Your call is important to us.", "Bitte warten. Ihr Anliegen ist uns wichtig."),
-            legend = mapOf('A' to Glyph(spike = true, hidden = true)),
+            hint = T("Lifts go too far. Step off when the floor lines up.", "Aufzüge fahren zu weit. Steig aus, wenn der Boden passt."),
             traps = listOf(
-                // the lift only leaves with somebody above it, and the floor it leaves behind goes with it
-                trap(Zone(11f, 9f, 16f, 14f), Play(Card.SINKING), Move('a', 0f, -7f, 4.5f), Say(T("Ding! Next floor: pointy.", "Ding! Nächste Etage: spitz."))),
-                trap(Zone(11f, 9f, 16f, 14f), Fall('f'), delay = 0.6f),
-                trap(Zone(11f, 5.5f, 16f, 7.6f), Show('A')),
-                trap(Touch('b'), Fall('b'), delay = 0.2f),
+                trap(Zone(4f, 12f, 6f, 15f), Move('a', 0f, -11f, 4.2f), Say(T("Ding! Next floor: pointy.", "Ding! Nächste Etage: spitz."))),
+                trap(PastX(10f), Play(Card.DEVIL_SAW), Saw(26.5f, 8.4f, -5.5f, 0f, 0.62f), Say(T("Feedback is a gift. This one rolls.", "Feedback ist ein Geschenk. Dieses rollt."))),
+                trap(Zone(25f, 7f, 27f, 9.5f), Move('b', 0f, 6.5f, 4f), Say(T("Going down. Further than you asked.", "Abwärts. Weiter, als du wolltest."))),
             ),
         ) {
             border(); floor()
-            // no floor under the ledge: whoever drops through the crumbling piece falls out instead of being stranded below
-            pit(17..29)
-            fill(1..16, 15..17, 'f')
-            fill(11..15, 14..14, 'a')
-            fill(18..30, 7..7); fill(23..24, 7..7, 'b')
-            put(18, 6, 'A'); put(19, 6, 'A')
-            put(2, 14, 'P'); put(29, 6, 'D')
+            fill(4..5, 15..17, 'a')
+            fill(6..7, 10..14)
+            fill(6..24, 9..9); fill(25..26, 9..9, 'b'); fill(27..30, 1..14)
+            put(4, 3, 'v'); put(5, 3, 'v')
+            put(3, 14, 'P'); put(9, 14, 'D')
         },
 
         // 15 — a pit in front of you falls out from under the feet; the door hovers one tile too far left of where it will end up
