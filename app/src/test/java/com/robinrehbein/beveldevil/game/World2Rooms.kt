@@ -148,6 +148,10 @@ object World2Rooms {
         .waitFor { w -> w.saws.any { it.path?.loop == true && it.x > 21f && it.y < 12.2f } }.rightUntil { it.player.box.cx > 21.9f }
         .waitFor { pendulumCalm(it, 25f) }.right(3f)
 
+    /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, through the second tunnel, hop the spikes. */
+    fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
+        .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.b > 12f }.rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

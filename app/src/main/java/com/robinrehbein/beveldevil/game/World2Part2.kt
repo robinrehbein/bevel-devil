@@ -454,28 +454,38 @@ object World2Part2 {
             spawn(); door(30); bits(29)
         },
 
-        // 30 — three one-way portals, each one lands higher up in the air; a spike grows in front of the first, and behind each landing
+        // 30 — hop limit, a puzzle room of two rooms (R3 the portal, R5 the floors, U11 the route is manipulated, U18 the room goes on): the tunnel on the
+        // lane leads up to the ledge, and the ledge piece in front of the door drops out over a row of LEDs as you come near (TTL expired: hop the
+        // hole). At the door the wall breaks open and the door slips into the second room. There you run along the ledge and drop onto a lane
+        // whose pit is crossed by a portal, which is re-pointed as you come near (the exit moves) and out of which you step into spikes that grow
         Level(
             name = T("Hop Limit", "Hop-Limit"),
             intro = T("TTL: 64. No need to rush.", "TTL: 64. Kein Grund zur Eile."),
-            legend = mapOf('A' to hidden, 'B' to hidden, 'Z' to hidden),
+            legend = mapOf('A' to hidden),
+            rooms = 2,
             start = listOf(
-                Portal('1', 7 to 14, 12 to 8, twoWay = false),
-                Portal('2', 18 to 9, 23 to 4, twoWay = false),
-                Portal('3', 29 to 5, 25 to 12, twoWay = false),
+                Portal('a', 9 to 14, 10 to 8, twoWay = false),
+                Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 19f).toInt() to 14, twoWay = false),
             ),
             traps = listOf(
-                trap(Trigger.PastX(3f), Play(Card.SPIKE_SEED), Show('Z'), say("TTL exceeded in transit.", "TTL in der Übertragung überschritten.")),
-                trap(Landed(13.5f, 17f), Show('A'), say("Hop 1 of 3: spikes.", "Hop 1 von 3: Spikes.")),
-                trap(Landed(24f, 27.5f), Show('B'), say("Hop 2 of 3: more spikes.", "Hop 2 von 3: mehr Spikes.")),
+                trap(PastX(16f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
+                trap(Trigger.AtDoor, Play(Card.ANNEX), Action.Extend(into = 1, top = 6, bottom = 8, door = roomX(1, 30f).toInt() to 14)),
+                trap(Zone(roomX(1, 9f), 6f, roomX(1, 11.5f), 9f), Reroute('b', roomX(1, 26f).toInt() to 14), say("Hop 2 of 3: the exit has moved on.", "Hop 2 von 3: Der Ausgang ist weitergezogen.")),
+                trap(Landed(roomX(1, 25.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes.", "Hop 3 von 3: Spikes.")),
             ),
         ) {
             border(); floor()
-            fill(19..20, 1..14)
-            fill(11..18, 10..10); fill(22..29, 6..6)
-            put(16, 9, '^'); put(27, 5, '^')
-            put(6, 14, 'Z'); put(17, 9, 'A'); put(28, 5, 'B')
-            spawn(); door()
+            room(0) {
+                put(1, 14, 'P')
+                fill(10..30, 9..9); fill(19..21, 9..9, 'f')
+                pit(17..23)
+                put(28, 8, 'D')
+            }
+            room(1) {
+                fill(0..11, 9..9)
+                pit(17..23); fill(17..23, 17..17, '^')
+                put(28, 14, 'A'); put(29, 14, 'A')
+            }
         },
 
         // 31 — EASTER EGG: HTTP 408 Request Timeout (a treadmill against you and a gate that closes for good at 5.2 s); spikes grow under the hops, the belt speeds up
