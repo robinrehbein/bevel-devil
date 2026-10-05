@@ -14,5 +14,9 @@ object World1RoomsA {
             { hopR(19.5f, 0.5f).rightTo(27.3f).rightJump(0.5f).landRight().leftTo(13.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
                 .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
         ),
+        9 to listOf<Solution>(
+            { hopR(11.2f, 0.5f).leftUntil { it.pads[0].presses >= 1 }
+                .leftTo(22.4f).leftJump(0.5f).landLeft().leftTo(15.4f).leftJump(0.5f).landLeft().leftTo(1.0f) },
+        ),
     )
 }

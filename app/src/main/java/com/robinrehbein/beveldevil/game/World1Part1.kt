@@ -1,9 +1,11 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.DoorTo
+import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Move
+import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Say
@@ -13,6 +15,7 @@ import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
+import com.robinrehbein.beveldevil.game.Trigger.Pressed
 import com.robinrehbein.beveldevil.game.Trigger.Touch
 import com.robinrehbein.beveldevil.game.Trigger.Zone
 
@@ -205,18 +208,26 @@ object World1Part1 {
             put(2, 14, 'P'); put(2, 1, 'D')
         },
 
-        // 9 — controls swap while you are in the air over the first hole, and swap back in the air over the second
+        // 9 — spawn on the upper floor, the door downstairs behind a copper wall, the switch down on the right. A pothole
+        // opens in the deck ahead of you (the pit under it is real), the keys swap as you land behind it, and they swap
+        // back on the switch; the way home along the ground floor has a pothole of its own
         Level(
             name = T("Potholes", "Schlaglöcher"),
-            intro = T("Two little holes. Easy.", "Zwei kleine Löcher. Einfach."),
+            intro = T("Mind the potholes. The council is me.", "Vorsicht, Schlaglöcher. Die Stadtverwaltung bin ich."),
+            hint = T("The switch is down on the right. Left and right will argue on the way.", "Der Schalter ist unten rechts. Links und rechts streiten sich unterwegs."),
+            start = listOf(Circuit('w'), Pad('1', at = 29 to 14, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(Airborne(12.2f, 14f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."))),
-                trap(Airborne(21.4f, 23f), Swap(false), Say(T("Or is it?", "Oder doch nicht?"))),
+                trap(PastX(7f), Fall('a'), Say(T("Pothole. Fresh from the pothole factory.", "Schlagloch. Frisch aus der Schlaglochfabrik."))),
+                trap(Landed(14.5f, 18.5f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."))),
+                trap(Pressed('1'), Swap(false), Say(T("Keys fixed. Door unlocked. You're welcome.", "Tasten repariert. Tür offen. Gern geschehen."))),
+                trap(Zone(18f, 12f, 24f, 15f), Fall('f'), Say(T("Another pothole. This one is a bonus.", "Noch ein Schlagloch. Das hier ist Bonus."))),
             ),
         ) {
-            border(); floor()
-            fill(12..14, 15..17, '.'); fill(21..23, 15..17, '.')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); pit(12..13)
+            fill(1..24, 9..9); fill(12..13, 9..9, 'a')
+            fill(19..20, 15..17, 'f')
+            fill(4..5, 11..14, 'w')
+            put(2, 8, 'P'); put(2, 14, 'D')
         },
 
         // 10 — the floor under the door gives way when you step on it, the real door waits downstairs; landing spikes on the way back; the door steps away
