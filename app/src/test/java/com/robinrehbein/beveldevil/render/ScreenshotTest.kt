@@ -612,8 +612,8 @@ class ScreenshotTest {
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
             "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) }, "20-r2" to at(20, 1),
             "21" to at(21), "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
-            "22" to at(22), "22-bouncer" to at(22) { rightTo(29.5f).waitFor { it.player.grounded }.wait(1.2f) },
-            "23" to at(23), "23-lane2" to at(23) { rooms.l23ToRamp(this).wait(0.4f) },
+            "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
+            "23" to at(23), "23-lane2" to at(23) { rooms.l23Lane1(this).hopR(8.5f).wait(0.4f) },
             "24" to at(24), "24-floor2" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.3f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }

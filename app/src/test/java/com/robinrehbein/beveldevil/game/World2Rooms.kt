@@ -10,7 +10,7 @@ object World2Rooms {
     fun clear(id: Char) = { w: World -> w.beams.none { it.laser.id == id && (it.lit || it.warn > 0f) } }
 
     /** On the ground, a saw is ahead within [d] tiles. */
-    fun sawAhead(w: World, d: Float) = w.player.grounded && w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= d }
+    fun sawAhead(w: World, d: Float) = w.player.grounded && w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
 
     /** Firewall gate [id] is lit or glowing. */
     fun busy(id: Char) = { w: World -> !clear(id)(w) }
@@ -72,23 +72,24 @@ object World2Rooms {
     /** 21: along the shelf and down through the hole, hop the portal in front of the door. */
     fun l21(b: Bot) = l21ToShelf(b).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.hopR(24.0f).right(2f)
 
-    /** The middle of the bouncer's wall (group w) in tiles. */
-    fun bouncerX(w: World) = w.group('w').homeX + w.group('w').ox
+    /** On the ground, a saw rolls toward the player from the left within [d] tiles. */
+    fun sawAheadLeft(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
 
-    /** 22: along the top floor (wait for the first packet to land, hop it, run on past the second), drop down, hop the bouncer and the pit, to the door. */
-    fun l22(b: Bot) = b.rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
-        .rightJump(0.35f).landRight().rightTo(29.5f).waitFor { it.player.grounded }
-        .leftUntil { it.player.grounded && bouncerX(it) < it.player.box.cx && it.player.box.cx - bouncerX(it) <= 4.0f }.leftJump(0.35f).landLeft()
-        .hopL(7.4f).left(1f)
+    /** 22, up to the lane: along the top floor (hop the bouncer who rolls out of the wall, hop the hole) and down at the right-hand end. */
+    fun l22ToLane(b: Bot) = b.hopR(15.0f).rightUntil { sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightTo(29.5f).waitFor { it.player.grounded }
 
-    /** On the ground, wall group [id] rolls toward the player from the right within [d] tiles. */
-    fun carAhead(w: World, id: Char, d: Float): Boolean = wallOnTheRight(w, id, d)
+    /** 22: then hop the LEDs, hop the second bouncer who rolls out of the back door, hop the pit, to the door. */
+    fun l22(b: Bot) = l22ToLane(b).hopL(22.6f).leftUntil { sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().hopL(7.4f).left(1f)
 
-    /** 23, up to the on-ramp: the tailgater behind you, the spikes and the hole in lane 1. */
-    fun l23ToRamp(b: Bot) = b.hopR(7.6f).hopR(12.8f).hopR(17.8f).hopR(22.7f).rightUntil { it.links[0].hopTime > 0f }
+    /** 23, lane 1: the traffic comes against you, hop the LED on the belt, hop the hole, into the on-ramp (and out on lane 2). */
+    fun l23Lane1(b: Bot) = b.hopR(8.3f).rightTo(19.6f).hopR(19.8f).rightUntil { it.player.box.cy < 10f && it.player.box.cx > 4.0f }
 
-    /** 23: lane 2: hop the truck that comes at you, climb the one that stops in front of the spikes, walk to the door. */
-    fun l23(b: Bot) = l23ToRamp(b).rightUntil { carAhead(it, 'b', 4.5f) }.rightJump(0.35f).landRight().rightTo(19.0f).rightJump(0.4f).landRight().right(3f)
+    /** 23: lane 2: the express belt throws you at the LED (hop it), the wrong-way lane is hopped, not walked (hop after hop until it ends), hop the last LED. */
+    fun l23(b: Bot): Bot {
+        l23Lane1(b).hopR(7.0f)
+        while (b.world.player.box.cx < 21.3f && b.world.state == WorldState.PLAYING) b.rightJump(0.35f).landRight()
+        return b.hopR(22.0f).right(3f)
+    }
 
     /** 24: along the top floor over the stone (keep moving), drop to the second floor, back left over the stepping stones, jump the LEDs under the first stone, to the door. */
     fun l24(b: Bot) = b.rightTo(27f).waitFor { it.player.grounded }.leftTo(14.0f).leftJump(0.35f).landLeft().left(3f)

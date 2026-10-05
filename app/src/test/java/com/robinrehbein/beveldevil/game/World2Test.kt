@@ -437,18 +437,21 @@ class World2Test {
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
     }
 
-    // 22: packets drop from the ceiling on the runner, the second behind him; the bouncer walks toward you, and the floor in front of the door drops
-    @Test fun l22RunningUnderTheFirstPacketIsFatal() = b(22).right(2f).expect(WorldState.DEAD)
-    @Test fun l22StandingUnderTheSecondPacketIsFatal() = b(22).rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
-        .rightJump(0.35f).landRight().rightTo(17.0f).wait(2f).expect(WorldState.DEAD)
-    @Test fun l22StandingStillWhereTheBouncerComesFromIsFatal() = b(22).rightTo(29.5f).wait(8f).expect(WorldState.DEAD)
-    @Test fun l22RunningStraightIntoTheBouncerIsFatal() = b(22).rightTo(29.5f).waitFor { it.player.grounded }.left(4f).expect(WorldState.DEAD)
+    // 22: the first bouncer rolls at you on the top floor, the carpet drops out over LEDs; the second bouncer rolls out of the back door, and the floor in front of the door drops
+    @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).hopR(15.0f).right(4f).expect(WorldState.DEAD)
+    @Test fun l22StandingStillWhereTheFirstBouncerComesFromIsFatal() = b(22).rightTo(10f).wait(6f).expect(WorldState.DEAD)
+    @Test fun l22RunningOverTheCarpetThatDropsLandsOnTheLeds() = b(22).rightTo(14.5f).right(3f).expect(WorldState.DEAD)
+    @Test fun l22StandingStillWhereTheSecondBouncerComesFromIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
+    @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.6f).left(4f).expect(WorldState.DEAD)
 
-    // 23: a truck tailgates you on lane 1, one comes at you on lane 2, and one stops in front of the spikes before the door
-    @Test fun l23StandingStillOnLaneOneIsPushedIntoTheSpikes() = b(23).rightTo(8.8f).wait(8f).expect(WorldState.DEAD)
-    @Test fun l23RunningStraightIntoTheSpikesIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
-    @Test fun l23HoppingTooEarlyDiesAgainstTheLastTruck() = World2Rooms.l23ToRamp(b(23)).rightUntil { World2Rooms.carAhead(it, 'b', 4.5f) }.rightJump(0.35f).landRight()
-        .rightTo(16.5f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
+    // 23: the traffic comes against you on lane 1, the express belt throws you at an LED, the wrong-way lane cannot be walked
+    @Test fun l23RunningStraightIntoTheLedOnTheBeltIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
+    @Test fun l23StandingStillOnTheBeltIsPushedIntoTheLed() = b(23).hopR(8.3f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l23TheExpressBeltThrowsYouAtTheLed() = World2Rooms.l23Lane1(b(23)).right(3f).expect(WorldState.DEAD)
+    @Test fun l23TheWrongWayLaneCannotBeWalked() {
+        val bot = World2Rooms.l23Lane1(b(23)).hopR(8.5f).right(5f)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 15f && bot.world.state == WorldState.PLAYING)
+    }
 
     /** The hops are no gimme: a player who is a second early or late (1.5 tiles, 0.35 s) loses, in either direction. */
     @Test
@@ -459,9 +462,9 @@ class World2Test {
         }
     }
 
-    // 24: the bridge slides away as you come, the wall of spikes knocks back, the stones drop under you
+    // 24: the stone sinks under you, the packet from the ceiling follows you down, the stepping stones drop under you
     @Test fun l24RunningStraightIntoTheGapIsFatal() = b(24).right(4f).expect(WorldState.DEAD)
-    @Test fun l24WaitingOnTheSecondFloorMeetsTheWallOfSpikes() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
+    @Test fun l24WaitingOnTheSecondFloorMeetsThePacket() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
         .wait(3f).expect(WorldState.DEAD)
     @Test fun l24StandingOnTheStoneIsFatal() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
         .leftTo(23.4f).wait(1.5f).expect(WorldState.DEAD)

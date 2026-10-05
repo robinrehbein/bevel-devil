@@ -214,61 +214,60 @@ object World2Part2 {
             spawn(1); door(); bits(21)
         },
 
-        // 22 — the bouncer, a trap room (U2 the ceiling falls, U3 the wall moves): you start up on the top floor and run right; two
-        // packets drop from the ceiling on the way: the first one ahead of you, the second one behind you (keep running). At the end you
-        // drop down to the lane and the door is on the far left, behind the bouncer. He walks toward you to walk you out (hop him,
-        // or he walks you into the wall), and the floor in front of the door drops
+        // 22 — the bouncer, a trap room (U7 the saw, U1 the floor goes): you start up on the top floor and run right; the first bouncer rolls
+        // out of the far wall and walks toward you (hop him), and the carpet in front of the end drops out over a row of LEDs (hop that, too).
+        // At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door to
+        // walk you out (hop him, after the LEDs under the hole), and the floor in front of the door drops
         Level(
             name = T("Bouncer", "Türsteher"),
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             traps = listOf(
-                trap(Zone(7.8f, 5.5f, 8.7f, 7.4f), Play(Card.HEADBUTT), Fall('c'), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
-                trap(Zone(16.6f, 5.5f, 17.4f, 7.4f), Fall('d'), say("Second delivery. You were standing in the way.", "Zweite Lieferung. Du standest im Weg."), delay = 0.55f),
-                trap(Landed(24f, 31f), Move('w', 22f, 0f, 3.5f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
+                trap(PastX(8.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 6.4f, -4.5f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
+                trap(Zone(12.5f, 3f, 14.5f, 7.4f), Hide('c'), say("Guest list updated. The carpet was crossed off.", "Gästeliste aktualisiert. Der Teppich wurde gestrichen.")),
+                trap(Zone(26f, 12.5f, 31f, 15.5f), Saw(-1.5f, 14.4f, 4.5f, 0f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
                 trap(Zone(15f, 13f, 16f, 15.5f), Fall('p'), say("The floor is for guests, too.", "Der Boden ist auch nur für Gäste.")),
             ),
-            hint = T("The bouncer walks toward you. Jump him.", "Der Türsteher kommt auf dich zu. Spring über ihn."),
+            hint = T("The bouncer rolls toward you. Jump him.", "Der Türsteher rollt auf dich zu. Spring über ihn."),
         ) {
             border(); floor()
-            fill(1..28, 7..7)
-            fill(10..11, 1..2, 'c'); fill(17..19, 1..2, 'd')
-            fill(8..9, 13..14, 'w'); fill(4..5, 15..17, 'p')
+            fill(1..28, 7..7); fill(16..17, 7..7, 'c')
+            leds(20..20)
+            fill(4..5, 15..17, 'p')
             spawn(2, 6); put(2, 14, 'D'); bits(22)
         },
 
-        // 23 — the information superhighway, a trap room (U3 the wall moves, R-free): two lanes, joined by a one-way on-ramp (a portal)
-        // at the end of the first. Traffic comes from every side: on lane 1 a wall tailgates you (keep running, hop the LEDs and the
-        // pit), on lane 2 one comes at you (hop it) and a second one stops in front of the LED before the door (climb it)
+        // 23 — the information superhighway, a band puzzle (R10 transport, U12 the traffic turns around): two lanes joined by a one-way on-ramp
+        // (a portal) at the end of the first. Lane 1 is a pit with a belt in it: as you run past the start, the traffic comes against you (hop the
+        // LED on it), and a hole waits behind it. The on-ramp puts you on the express lane (a belt with you: it throws you at an LED: hop it),
+        // and landing behind that LED turns the traffic around: the next lane runs against you faster than you can run, so you hop it
         Level(
             name = T("Information Superhighway", "Datenautobahn"),
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
-            start = listOf(Portal('p', 30 to 14, 2 to 8, twoWay = false)),
+            start = listOf(Portal('p', 28 to 14, 11 to 8, twoWay = false), Belt('b', 6f)),
             traps = listOf(
-                trap(PastX(7.0f), Play(Card.SINKING), Move('a', 27f, 0f, 6f), say("Tailgating. Right from the start.", "Drängeln. Gleich vom Start weg.")),
-                trap(Landed(21f, 24f), Move('f', 0f, 8f, 20f), say("Lane 1 ends in a hole. Roadworks.", "Spur 1 endet im Loch. Baustelle.")),
-                trap(Zone(1f, 7.2f, 6f, 9f), Move('b', -14f, 0f, 7f), say("Lane 2 is a lane, too.", "Spur 2 ist auch eine Spur.")),
-                trap(Zone(6.5f, 7.2f, 9f, 9f), Move('c', -5f, 0f, 6f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
+                trap(PastX(6f), Play(Card.BACKDRAFT), Belt('a', -5.5f), say("Rush hour. Everyone is going your way. The other way.", "Berufsverkehr. Alle wollen in deine Richtung. Die andere.")),
+                trap(PastX(17f), Reroute('p', 2 to 8), say("Route recalculated. The on-ramp is further back now.", "Route neu berechnet. Die Auffahrt liegt jetzt weiter hinten.")),
+                trap(Zone(11f, 5.5f, 14f, 9.3f), Belt('c', -9f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
             ),
-            hint = T("Not every truck wants a hop. One wants a climb.", "Nicht jeder Laster will ein Hüpfen. Einer will eine Klettertour."),
+            hint = T("The lane runs against you. A hop skips the lane.", "Die Spur läuft gegen dich. Ein Hüpfer überspringt die Spur."),
         ) {
             border(); floor()
-            fill(1..2, 13..14, 'a'); put(10, 14, '^'); put(15, 14, '^'); put(20, 14, '^'); fill(24..25, 15..17, 'f')
+            fill(7..13, 15..15, 'a'); put(10, 14, '^'); fill(21..22, 15..17, '.')
             fill(1..30, 9..9)
-            fill(14..15, 7..8, 'b'); fill(27..28, 7..8, 'c'); put(21, 8, '^'); put(1, 8, '^')
-            spawn(4); put(29, 8, 'D'); bits(23)
+            fill(3..9, 9..9, 'b'); put(10, 8, '^'); fill(12..20, 9..9, 'c'); put(24, 8, '^')
+            spawn(3); put(29, 8, 'D'); bits(23)
         },
 
-        // 24 — the uplink, a trap room (U6 spikes from the wall, U1 the floor goes): the uplink is at the top, so you start at the top and go
+        // 24 — the uplink, a trap room (U2 the ceiling falls, U1 the floor goes): the uplink is at the top, so you start at the top and go
         // down (the elevator is out of order). A stone in the top floor sinks when you step on it, and where you drop onto the second floor
-        // a wall of spikes comes out of the right-hand wall behind you. On the way back left the stepping stones drop as you touch them
-        // (keep moving) and the LEDs under the first stone wait on the second floor
+        // a packet from the ceiling follows you down: it lands on whoever stays where they landed (keep moving). On the way back left the
+        // stepping stones drop as you touch them (keep moving) and the LEDs under the first stone wait on the second floor
         Level(
             name = T("Uplink", "Uplink"),
             intro = T("The uplink is at the top. I'm taking the elevator.", "Der Uplink ist ganz oben. Ich nehme den Aufzug."),
-            legend = mapOf('S' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
-                trap(Touch('s'), Play(Card.COLLAPSE), Move('s', 0f, 8f, 25f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink."), delay = 0.5f),
-                trap(Landed(25.5f, 31f), Move('S', -28f, 0f, 4.5f), say("Port knocking. The wall knocks back.", "Port-Knocking. Die Wand klopft zurück.")),
+                trap(Touch('s'), Move('s', 0f, 8f, 25f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink."), delay = 0.5f),
+                trap(Landed(25.5f, 31f), Play(Card.HEADBUTT), Fall('k'), say("Express delivery. Signature required. From above.", "Expresslieferung. Unterschrift erforderlich. Von oben."), delay = 0.5f),
                 trap(Touch('g'), Move('g', 0f, 8f, 25f), say("Floor 2 is under maintenance. As of now.", "Etage 2 ist in Wartung. Ab jetzt."), delay = 0.5f),
                 trap(Touch('i'), Move('i', 0f, 8f, 25f), delay = 0.5f),
             ),
@@ -278,7 +277,7 @@ object World2Part2 {
             fill(1..24, 7..7); fill(11..11, 7..7, 's')
             fill(1..30, 11..11); fill(18..19, 11..11, 'i'); fill(22..23, 11..11, 'g')
             put(11, 10, '^'); put(18, 14, '^'); put(19, 14, '^'); put(22, 14, '^'); put(23, 14, '^')
-            fill(30..30, 8..10, 'S')
+            fill(26..30, 2..3, 'k')
             spawn(2, 6); put(2, 10, 'D'); bits(24)
         },
 
