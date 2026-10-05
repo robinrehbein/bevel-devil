@@ -227,6 +227,9 @@ class World1Test {
     /** 12: after the first landing the keys are swapped, and going on with the old reflex runs back over the spike. */
     @Test fun level12KeepingTheOldKeysRunsIntoTheFirstSpike() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().left(2f).expect(WorldState.DEAD)
 
+    /** 12: walking home with swapped keys but without hopping meets the pit. */
+    @Test fun level12WalkingIntoThePitDies() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().rightKeyLeftTo(11.5f).wait(1f).expect(WorldState.DEAD)
+
     /** 13: the spikes in the ceiling are a bluff, the plain ceiling is not. */
     @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)
     @Test fun level13StandingUnderThePlainCeilingIsFatal() = b(13).rightTo(13.5f).wait(1f).expect(WorldState.DEAD)
@@ -259,6 +262,22 @@ class World1Test {
         val locked = b(16).right(4f)
         locked.expect(WorldState.PLAYING)
         assertTrue(locked.world.group('w').visible && locked.world.player.box.cx < 24f)
+    }
+    /** 16 up to the switch: the ledge behind the stairs gives way under whoever stays on it. */
+    private fun climbed16() = b(16).leftTo(15.0f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft()
+    @Test fun level16TheLedgeGivesWayUnderWhoeverStays() {
+        val stayed = climbed16().wait(1.5f)
+        stayed.expect(WorldState.PLAYING)
+        // down on the floor again with the block, the switch not pressed: the wall is still there
+        assertTrue(stayed.world.player.box.b > 13f && stayed.world.group('w').visible)
+    }
+    /** 16 through the breach: the second room has a pit in the way, and the first three tiles are safe. */
+    @Test fun level16RunningStraightThroughTheBreachMeetsThePit() {
+        val through = climbed16().left(0.7f).landLeft().rightJump(0.5f).landRight().rightTo(7.4f).rightJump(0.35f).landRight()
+            .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
+            .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 3f))
+        through.expect(WorldState.PLAYING)
+        through.right(3f).expect(WorldState.DEAD)
     }
     @Test fun level16TheWallBehindTheDoorBreaksOpen() {
         val b = Bot(World1.levels[15]).apply(World1DesignTest.SOLUTIONS.getValue(16)[0])
