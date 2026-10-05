@@ -322,6 +322,8 @@ Korrekturen für Rezept v2:
 |47|sudo make me a sandwich|R12|U3|Rätsel|
 |48|Exit (Finale)|R1+R5+R7|U14+U18|Finale|
 
+Hinweis Block D (33–40, nach dem Umbau): Die Zeilen bleiben, wie sie sind. Ein `FakeWin` mit Klartext-Bildschirm dauert 3,4 s und lässt sich mit der Dichteregel H3 (höchstens 3 s ohne echte Falle, der Bildschirm löst keine Falle aus) nicht vereinbaren; **33** setzt U14 deshalb als „das Ende war eine Lüge“ um (Tür erreicht, die Wand bricht auf: U18, kein `FakeWin`). 38 dreht nur das Bild (`Flip`), 40 tauscht die Steuerung (`Swap`), `Gravity` bleibt unbenutzt. Stachel-Popups gibt es in 33 (Revanche) und 36, ein Laser-Tor in 40, `DoorTo` nur in 35, Blink gar nicht.
+
 ### Welt 2: Höllen-Rechenzentrum (Thema: Routing, Firewalls, Ports)
 
 Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter Routenwahl (R3 oder R4). Schalter (R1, R2, R4) gibt es wegen der Rotation (H12) höchstens 3 pro Akt, den Pilot eingerechnet.
