@@ -175,13 +175,14 @@ class World2Test {
         World2Rooms.l18ToPad(b(18)).wait(2.5f).expect(WorldState.DEAD)
         // 20: running on right after the ID scan drops you into the queue at the exit gate
         World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
-        // 28: the tunnel drops you next to the IPS beam, and running on runs into it
+        // 28: the tunnel drops you in front of the first gate, and running on runs into it
         b(28).right(3f).expect(WorldState.DEAD)
-        // 29: the belt turns against you after the first hop, and the saw behind you does not
-        b(29).hopR(8.6f).right(3f).expect(WorldState.DEAD)
-        // 31 and 32: the hops land in spikes that grew in mid-air
-        b(31).hopR(5.3f).right(5f).expect(WorldState.DEAD)
-        b(32).hopR(4.5f).right(3f).expect(WorldState.DEAD)
+        // 29: the first pendulum saw sits on the floor for a moment, and running on runs into it
+        b(29).right(3f).expect(WorldState.DEAD)
+        // 31: running on falls into the trench of spikes before the first stone is up
+        b(31).right(3f).expect(WorldState.DEAD)
+        // 32: running on along the belt runs into the LED
+        b(32).right(3f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -211,9 +212,8 @@ class World2Test {
         }
         // a trap-made portal never sits where the player could be locked into a dead end: its tiles are free in the plain map
         World2.levels.forEach { World(it) }
-        // 31: whoever is too slow for the closing gate does not wait in front of it
-        val late = b(31).rightTo(24f).waitFor(10f) { it.time > 5.2f }.wait(1.0f)
-        late.expect(WorldState.DEAD)
+        // 31: whoever dawdles on the deck is run over by the class wall
+        b(31).rightTo(7.5f).wait(6f).expect(WorldState.DEAD)
     }
 
     // ---------- the levels that react to the player in unusual ways ----------
@@ -257,9 +257,8 @@ class World2Test {
     }
 
     @Test
-    fun keepAliveDropsTheFloorWhenYouStandStill() {
-        b(26).rightTo(12f).wait(2.3f).expect(WorldState.DEAD)
-        b(26).rightTo(12f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
+    fun theQueueCatchesWhoStandsStillOnTheMiddleDeck() {
+        b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.wait(6f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -354,20 +353,23 @@ class World2Test {
     @Test fun level22() = World2Rooms.l22(b(22)).expect(WorldState.WON)
     @Test fun level23() = World2Rooms.l23(b(23)).expect(WorldState.WON)
     @Test fun level24() = World2Rooms.l24(b(24)).expect(WorldState.WON)
-    @Test fun level25() = b(25).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level26() = b(26).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
-    @Test fun level27() = b(27).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f)
-        .rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level28() = b(28).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).jump(0.16f)
-        .rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level29() = b(29).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
-        .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level30() = b(30).hopR(3.2f).hopR(15f).hopR(25f).right(2f).expect(WorldState.WON)
-    @Test fun level31() = b(31).rightJump(0.55f).rightJump(0.55f).rightJump(0.25f).left(0.10f).right(0.03f)
-        .right(0.03f).leftJump(0.12f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level32() = b(32).rightJump(0.55f).rightJump(0.25f).right(0.03f).left(0.10f).left(0.10f)
-        .rightJump(0.55f).right(0.10f).left(0.03f).left(0.03f).rightJump(0.25f).jump(0.16f).leftJump(0.12f)
-        .rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level25() { World2DesignTest.play(25) }
+    @Test fun level25WalkingAcrossTheNodesIsFatal() = b(25).right(4f).expect(WorldState.DEAD)
+    @Test fun level26() { World2DesignTest.play(26) }
+    @Test fun level26TheQueueFollowsAndTheNodeIsAnObstacle() = b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.box.cx > 19.6f }.right(4f).expect(WorldState.DEAD)
+    @Test fun level27() { World2DesignTest.play(27) }
+    @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
+    @Test fun level28() { World2DesignTest.play(28) }
+    @Test fun level29() { World2DesignTest.play(29) }
+    @Test fun level30() { World2DesignTest.play(30) }
+    @Test fun level30TheLedgeHoleSwallowsWhoRunsOn() = b(30).rightUntil { it.player.box.b < 9.5f }.right(3f).expect(WorldState.DEAD)
+    @Test fun level30TheBreachMovesTheDoorIntoTheSecondRoom() {
+        val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
+        assertEquals(2, bot.world.level.rooms)
+        assertTrue(bot.world.door.tx > 32f)
+    }
+    @Test fun level31() { World2DesignTest.play(31) }
+    @Test fun level32() { World2DesignTest.play(32) }
 
     // ---------- Act 2, levels 17-24: one-screen puzzle rooms ----------
 
@@ -473,31 +475,17 @@ class World2Test {
     @Test fun l22StandingStillWhereTheSecondBouncerComesFromIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
     @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.6f).left(4f).expect(WorldState.DEAD)
 
-    // 23: the traffic comes against you on lane 1, the express belt throws you at an LED, the wrong-way lane cannot be walked
-    @Test fun l23RunningStraightIntoTheLedOnTheBeltIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
-    @Test fun l23StandingStillOnTheBeltIsPushedIntoTheLed() = b(23).hopR(8.3f).wait(3f).expect(WorldState.DEAD)
-    @Test fun l23TheExpressBeltThrowsYouAtTheLed() = World2Rooms.l23Lane1(b(23)).right(3f).expect(WorldState.DEAD)
-    /** The wrong-way lane cannot be walked: it runs faster than you and hands you back to the LED behind you. */
-    @Test fun l23TheWrongWayLaneCannotBeWalked() {
-        val bot = World2Rooms.l23Lane1(b(23)).hopR(8.5f).right(5f)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 15f && bot.world.state == WorldState.DEAD)
-    }
+    // 23: the on-ramp lift carries you up into the spiked ceiling unless you walk off at the deck, a piece of the deck drops, the exit lift drops away
+    @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(8.6f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(4f).expect(WorldState.DEAD)
+    @Test fun l23StandingOnTheExitLiftIsFatal() = b(23).rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27.2f).wait(2.5f).expect(WorldState.DEAD)
 
-    /** The hops are no gimme: a player who is a second early or late (1.5 tiles, 0.35 s) loses, in either direction. */
-    @Test
-    fun l23NeedsRealTiming() {
-        for (slop in listOf(Slop(0.35f, 1.5f), Slop(-0.35f, -1.5f))) {
-            val bot = DesignRules.play(World2.levels[22], 0, { World2Rooms.l23(this) }, slop)
-            assertTrue("$slop wins", bot.world.state != WorldState.WON)
-        }
-    }
-
-    // 24: the stone sinks under you, the packet from the ceiling follows you down, the stepping stones drop under you
-    @Test fun l24RunningStraightIntoTheGapIsFatal() = b(24).right(4f).expect(WorldState.DEAD)
-    @Test fun l24WaitingOnTheSecondFloorMeetsThePacket() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
-        .wait(3f).expect(WorldState.DEAD)
-    @Test fun l24StandingOnTheStoneIsFatal() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
-        .leftTo(23.4f).wait(1.5f).expect(WorldState.DEAD)
+    // 24: stalactites fall where you run, the deck comes down on the lane, the carpet in front of the door is nothing
+    @Test fun l24RunningUnderTheStalactitesIsFatal() = b(24).right(3f).expect(WorldState.DEAD)
+    @Test fun l24StandingUnderTheDeckIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l24RunningStraightIntoTheSawFromTheBackWallIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.left(5f).expect(WorldState.DEAD)
 
     // ---------- act 2, levels 17-24: what the reviews asked for ----------
 

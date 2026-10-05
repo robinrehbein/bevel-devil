@@ -127,64 +127,45 @@ class World2DeckTest {
     @Test fun l07r2TheStalkerCeilingDropsOnThePlateau() = b(7, 2).leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
-    /** Firewall, round 2: a three-way handshake. One press on the pad is only a SYN (floor and beam stay as they were); step off and on again for the ACK. */
-    @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
-    /** Round 1's way (press once, run for the stairs) runs into the hole that the first press did not close. */
-    @Test fun l18r2TheRoundOneRouteFallsIntoTheHoleThatNeverClosed() {
+    /** Firewall, round 2: the beam over the stairs stays on, the pad is the rack's call button, the way is over the top. */
+    @Test fun l18r2() { World2DesignTest.play(18, round = 2) }
+    /** Round 1's way (press the pad, run back, climb the stairs) ends in the beam that never goes out. */
+    @Test fun l18r2TheRoundOneRouteEndsInTheBeamOverTheStairs() {
         val bot = World2Rooms.l18(b(18, 2))
         bot.expect(WorldState.DEAD)
-        assertTrue("died at x=${bot.world.player.box.cx}, y=${bot.world.player.box.cy}", bot.world.player.box.cx in 16f..19.5f && bot.world.player.box.cy > 14f)
+        assertTrue("the beam over the stairs still burns", bot.world.beams.any { it.laser.id == 'W' && it.lit })
     }
-    @Test fun l18r2OnePressIsOnlyASyn() {
-        val bot = World2Rooms.l18ToPad(b(18, 2)).wait(0.4f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("the floor stays gone", bot.world.group('a').oy > 6f)
+    /** Hopping where round 1 hopped lands in the hole that moved two tiles on. */
+    @Test fun l18r2HoppingWhereRoundOneHoppedLandsInTheHole() = b(18, 2).hopR(15.6f).right(1f).expect(WorldState.DEAD)
+    @Test fun l18r2ThePadCallsTheRack() {
+        val bot = World2Rooms.l18r2ToPad(b(18, 2)).wait(0.3f)
+        assertTrue("the rack rises", bot.world.group('k').oy < -1f)
         assertTrue("the beam over the stairs stays on", bot.world.beams.any { it.laser.id == 'W' && it.lit })
     }
-    @Test fun l18r2TheSecondPressIsTheAck() {
-        val bot = World2Rooms.l18r2ToPad(b(18, 2)).leftTo(24.0f).wait(0.7f)
-        assertTrue("the floor is back", bot.world.group('a').oy < 1f)
-        assertTrue("the beam is off", bot.world.beams.none { it.laser.id == 'W' && it.lit })
-    }
-    @Test fun l18r2TheStairsStillRelightTheBeam() = World2Rooms.l18r2ToPad(b(18, 2)).leftTo(17.0f).leftJump(0.35f).landLeft()
-        .leftTo(13.6f).leftJump(0.4f).landLeft().wait(2f).expect(WorldState.DEAD)
+    @Test fun l18r2LingeringOnTheLiftIsFatal() = World2Rooms.l18r2ToPad(b(18, 2)).wait(3f).expect(WorldState.DEAD)
     @Test fun l18r2HasItsOwnHint() = assertTrue(World2.levels[17].rounds[1].hint != null && World2.levels[17].rounds[1].hint!!.en != World2.levels[17].hint!!.en)
-    /** Stateful Inspection, round 2: the scanner is a bluff (gate 3 stays shut), the ledge expires with your ID over a floor of LEDs, and goes on over a gap. */
-    @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)
-    /** Round 1's way (scan, wait up on the ledge for the queue to pass) loses to the ledge that expires: it drops you onto the LEDs. */
-    @Test fun l20r2WaitingOnTheLedgeAsInRoundOneIsFatal() {
-        val bot = World2Rooms.l20ToLedge(b(20, 2)).wait(1.5f)
-        bot.expect(WorldState.DEAD)
-        assertTrue("died at x=${bot.world.player.box.cx}, y=${bot.world.player.box.cy}", bot.world.player.box.cx in 20.5f..26.5f && bot.world.player.box.cy > 14f)
-    }
-    @Test fun l20r2DroppingWhereRoundOneDroppedIsFatal() {
-        val bot = World2Rooms.l20(b(20, 2))
-        bot.expect(WorldState.DEAD)
-        assertTrue("round 1's run dies on the ledge, not after waiting for a gate that never opens (t=${bot.world.time})", bot.world.time < 9f)
-    }
-    @Test fun l20r2TheScannerIsABluff() {
-        val bot = World2Rooms.l20ToLedge(b(20, 2)).wait(0.1f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.beams.isNotEmpty() && bot.world.beams.any { it.laser.id == 'K' && it.lit })
-    }
+    /** Stateful Inspection, round 2: no gates, nothing to wait for: the floor, the stairs and the lane expire on your heels, a tripwire flashes over the ledge. */
+    @Test fun l20r2() { World2DesignTest.play(20, round = 2) }
+    /** Round 1's way (a hop onto the first step, then on without waiting for the next one to light up) drops through the dark step. */
+    @Test fun l20r2RoundOnesHopsDropThroughTheDarkStep() = b(20, 2).hopR(4.1f, 0.24f).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2TheStairsExpireOneAfterTheOtherWhenYouStop() = World2Rooms.l20r2Stairs(b(20, 2)).wait(0.1f).also { it.world.circuits['u']?.let { c -> assertTrue(c.powered) } }
+        .wait(3f).expect(WorldState.PLAYING)
+    @Test fun l20r2TheTripwireFlashesOverTheLedge() = World2Rooms.l20r2Stairs(b(20, 2)).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2WhoStandsStillOnTheLaneFindsItDark() = World2Rooms.l20r2Stairs(b(20, 2)).rightTo(23.8f).rightJump(0.35f).landRight()
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(3f).leftTo(15.5f).left(2f).expect(WorldState.DEAD)
     @Test fun l20r2HoldingRightIsNotKilledByTheFirstStep() = b(20, 2).right(1.0f).expect(WorldState.PLAYING)
-    @Test fun l25r2() = b(25, 2).hopR(4.2f).hopR(8f).hopR(14f).hopR(20f).right(1f).expect(WorldState.WON)
-    @Test fun l25r2TheRoundOneTimingDies() = b(25, 2).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.DEAD)
-    /** Ticket Number, round 2: the queue (a spike) creeps after you up to the gate; hop over it and back until the gate opens. */
-    private fun queue(w: World) = w.group('S').homeX + w.group('S').ox
-    @Test fun l26r2() = b(26, 2).rightTo(13.6f).waitFor { queue(it) > it.player.box.cx - 1.6f }.leftJump(0.35f).landLeft()
-        .waitFor { !it.beams[0].lit || queue(it) < it.player.box.cx + 1.6f }.rightJump(0.35f).landRight()
-        .waitFor { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
-    @Test fun l26r2KeepAliveHopsLandOnTheQueue() = b(26, 2).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.expect(WorldState.DEAD)
-    @Test fun l26r2StandingStillAnywhereIsFineUntilTheQueueComes() = b(26, 2).rightTo(8f).wait(3f).expect(WorldState.PLAYING)
-    /** Race Condition, round 2: the landing behind the first pendulum turns the belt forward; ride it, slip under the second one, jump. */
-    @Test fun l29r2() = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight()
-        .waitFor { w -> w.saws.filter { kotlin.math.abs(it.x - 21f) < 0.5f }.all { it.y < 12.2f } }.rightTo(22.6f).rightJump(0.55f).landRight()
-        .right(1f).expect(WorldState.WON)
-    @Test fun l29r2TheBeltTurnsForwardOnTheLanding() {
-        val bot = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight().wait(0.05f)
-        assertEquals(3f, bot.world.group('b').belt)
-    }
+    /** Load Balancer, round 2: the nodes sit two tiles further on, crumble faster, and the stone up top is a belt. */
+    @Test fun l25r2() { World2DesignTest.play(25, round = 2) }
+    @Test fun l25r2TheRoundOneHopsLandInThePit() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
+    /** Ticket Number, round 2: both queues come toward you now; hop each of them. */
+    @Test fun l26r2() { World2DesignTest.play(26, round = 2) }
+    @Test fun l26r2TheRoundOneRunMeetsTheQueueHeadOn() = World2Rooms.l26(b(26, 2)).expect(WorldState.DEAD)
+    @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
+    /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
+    @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
+    @Test fun l29r2TheRoundOneRunMeetsTheLappingSaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
+    @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.7f).waitFor { World2Rooms.pendulumCalm(it, 10f, 0.1f, 0.65f) }.right(3f).expect(WorldState.DEAD)
+
     // ---------- Act 3: Root ----------
 
     /** sudo !!, round 2: the LED pair slides onto where a full jump lands; a short hop comes down in front of it. */
@@ -210,10 +191,6 @@ class World2DeckTest {
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },
-            29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
-                .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) },
             33 to { b -> b.right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).right(0.03f) },
             34 to { b -> b.right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             41 to { b -> b.rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },

@@ -608,15 +608,15 @@ class ScreenshotTest {
             "17" to at(17), "17-packet" to at(17) { rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightUntil { it.group('c').mode == com.robinrehbein.beveldevil.game.GroupMode.FALL }.wait(0.15f) },
             "17-ride" to at(17) { rooms.l17(this); this },
             "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.2f) }, "18-r2" to at(18, 1),
-            "18-r2-syn" to at(18, 1) { rooms.l18ToPad(this).wait(0.4f) }, "18-r2-ack" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.3f) },
+            "18-r2-lift" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.5f) }, "18-r2-top" to at(18, 1) { rooms.l18r2ToPad(this).rightUntil { it.group('k').oy < -7.9f }.wait(0.1f) },
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
             "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) }, "20-r2" to at(20, 1),
-            "20-r2-ledge" to at(20, 1) { rooms.l20ToLedge(this).wait(0.3f) },
+            "20-r2-ledge" to at(20, 1) { rooms.l20r2Stairs(this).wait(0.3f) },
             "21" to at(21), "21-closet" to at(21) { rooms.l21ToCloset(this).wait(0.5f) }, "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
             "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
-            "23" to at(23), "23-lane2" to at(23) { rooms.l23Lane1(this).hopR(8.5f).wait(0.4f) },
-            "24" to at(24), "24-floor2" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.3f) },
-            "24-packet" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.7f) },
+            "23" to at(23), "23-lift" to at(23) { rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27f).wait(0.7f) },
+            "24" to at(24), "24-stalactites" to at(24) { rightTo(10.6f).wait(0.2f) },
+            "24-deck" to at(24) { rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(0.8f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }
         for ((name, w) in scenes) {

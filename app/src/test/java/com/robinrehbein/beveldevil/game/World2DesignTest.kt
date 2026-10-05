@@ -48,8 +48,8 @@ class World2DesignTest : DesignTestBase() {
             20 to d("R8", "U13"),
             21 to d("R3", "U11"),
             22 to d("–", "U7"),
-            23 to d("R10", "U12"),
-            24 to d("–", "U2+U1"),
+            23 to d("–", "U12"),
+            24 to d("–", "U2+U7"),
             25 to d("–", "U1"),
             26 to d("–", "U8"),
             27 to d("R10", "U2"),
@@ -57,7 +57,7 @@ class World2DesignTest : DesignTestBase() {
             29 to d("–", "U7"),
             30 to d("R3+R5", "U11+U18"),
             31 to d("R8", "U3"),
-            32 to d("R4+R3+R8", "U12+U13"),
+            32 to d("R4+R3", "U12+U11"),
             // Act 3 "Root"
             33 to d("–", "U14"),
             34 to d("R3+R5", "U10"),
@@ -78,7 +78,7 @@ class World2DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (1..24).toSet()
+        val REBUILT: Set<Int> = (1..32).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
@@ -185,6 +185,14 @@ class World2DesignTest : DesignTestBase() {
                 { rightTo(8.3f).landRight().hopR(18.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(22.0f).leftTo(15.8f)
                     .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },
             ),
+            25 to listOf({ World2Rooms.l25(this) }, { World2Rooms.l25r2(this) }),
+            26 to listOf({ World2Rooms.l26(this) }, { World2Rooms.l26r2(this) }),
+            27 to listOf({ World2Rooms.l27(this) }),
+            28 to listOf({ World2Rooms.l28(this) }),
+            29 to listOf({ World2Rooms.l29(this) }, { World2Rooms.l29r2(this) }),
+            30 to listOf({ World2Rooms.l30(this) }),
+            31 to listOf({ World2Rooms.l31(this) }),
+            32 to listOf({ World2Rooms.l32(this) }),
         ) +
             World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
             mapOf(
