@@ -27,6 +27,12 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
  * World 1, levels 1-16. Act 1, "Die Karten": the classic tricks, one card at a time. From level 3 on the traps come
  * in chains: each next one punishes the counter the last one taught. Triggers sit on the spot (under the feet,
  * mid-jump, right after landing), and the rooms look plain: trap blocks are ordinary floor and ceiling until they fire.
+ *
+ * Levels 1-6 are the short tutorial. Levels 7-16 (rollout block W1-A, docs/LEVEL_DESIGN_V2.md) are rooms of 6-10 s with a
+ * route of two lanes (out, up or over, and back), two to four real traps in a chain, and a different family each: panels
+ * that sink, a room that turns over, a switch and swapped keys, a wall on your heels, stones that crumble, a short
+ * mirrored trip, a ceiling bluff, lifts that go too far, a door that takes the long way; and level 16, the act's finale,
+ * the first room that does not end where it looks like it does (U18).
  */
 object World1Part1 {
     /** A hidden spike group, shown by a trap. */
@@ -188,10 +194,13 @@ object World1Part1 {
             traps = listOf(
                 trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, 12f, 8f), Say(T("Rated for one person. Briefly.", "Zugelassen für eine Person. Kurz.")), delay = 0.5f),
                 trap(Touch('k'), Move('k', 0f, 12f, 8f), Say(T("The ground floor is optional too.", "Das Erdgeschoss ist auch optional.")), delay = 0.5f),
+                // hopping back off the first panel strands nobody: the start floor gives way a moment after it sank
+                trap(Touch('a'), Fall('s'), delay = 2.2f),
                 trap(Touch('d'), Move('d', 0f, 12f, 9f), Say(T("Upper floor. Same panels, better view.", "Obergeschoss. Gleiche Platten, bessere Aussicht.")), delay = 0.5f),
             ),
         ) {
             border(); floor(); pit(17..22)
+            fill(1..16, 15..17, 's')
             fill(18..21, 15..15, 'a'); fill(23..30, 15..15, 'k')
             fill(27..28, 13..14); fill(29..30, 11..14)
             fill(1..28, 9..9); fill(18..20, 9..9, 'd')
@@ -281,11 +290,12 @@ object World1Part1 {
             traps = listOf(
                 trap(BeforeX(16f), Fall('d'), Say(T("Bridge works ahead. Surprise.", "Brückenarbeiten voraus. Überraschung."))),
                 trap(Landed(0f, 4.5f), Fall('h'), Say(T("Special delivery from upstairs.", "Spezialzustellung von oben.")), delay = 0.25f),
-                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), Say(T("This stone is shy.", "Dieser Stein ist schüchtern.")), delay = 0.3f),
+                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), Fall('s'), Say(T("This stone is shy.", "Dieser Stein ist schüchtern.")), delay = 0.3f),
                 trap(Touch('c'), Fall('c'), Say(T("Faster stones. Slower you.", "Schnellere Steine. Langsamerer du.")), delay = 0.12f),
             ),
         ) {
             border(); floor(); pit(4..21)
+            fill(1..3, 15..17, 's')
             fill(5..9, 15..15, 'a'); fill(12..14, 15..15); fill(17..19, 15..15, 'c')
             fill(4..30, 9..9); fill(10..11, 9..9, 'd'); fill(1..3, 1..3, 'h')
             put(28, 8, 'P'); put(28, 14, 'D')
@@ -300,6 +310,7 @@ object World1Part1 {
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
                 trap(Landed(15f, 23.8f), Play(Card.TWISTED), Swap(true), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
+                trap(BeforeX(13.5f), Say(T("That pit is real. Unlike my promises.", "Das Loch ist echt. Anders als meine Versprechen."))),
             ),
             // rematch: the keys are swapped from the first steps, and the spike you hop with them grows where you land
             rematch = listOf(
@@ -345,13 +356,15 @@ object World1Part1 {
             intro = T("Please hold. Your call is important to us.", "Bitte warten. Ihr Anliegen ist uns wichtig."),
             hint = T("Lifts go too far. Step off when the floor lines up.", "Aufzüge fahren zu weit. Steig aus, wenn der Boden passt."),
             traps = listOf(
+                // the lift only leaves with somebody above it, and the floor it leaves behind goes with it
                 trap(Zone(4f, 12f, 6f, 15f), Move('a', 0f, -11f, 4.2f), Say(T("Ding! Next floor: pointy.", "Ding! Nächste Etage: spitz."))),
+                trap(Zone(4f, 12f, 6f, 15f), Move('f', 0f, 12f, 8f), delay = 0.5f),
                 trap(PastX(10f), Play(Card.DEVIL_SAW), Saw(26.5f, 8.4f, -5.5f, 0f, 0.62f), Say(T("Feedback is a gift. This one rolls.", "Feedback ist ein Geschenk. Dieses rollt."))),
                 trap(Zone(25f, 7f, 27f, 9.5f), Move('b', 0f, 6.5f, 4f), Say(T("Going down. Further than you asked.", "Abwärts. Weiter, als du wolltest."))),
             ),
         ) {
             border(); floor()
-            fill(4..5, 15..17, 'a')
+            fill(1..3, 15..17, 'f'); fill(4..5, 15..17, 'a')
             fill(6..7, 10..14)
             fill(6..24, 9..9); fill(25..26, 9..9, 'b'); fill(27..30, 1..14)
             put(4, 3, 'v'); put(5, 3, 'v')

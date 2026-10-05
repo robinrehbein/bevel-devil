@@ -58,6 +58,12 @@ class RoomsTest {
     @Test
     fun oneRoomLevelsAreUnchanged() {
         for (l in Levels.all) {
+            // the U18 levels (docs/LEVEL_DESIGN_V2.md §5a) are the only ones wider than one room: the ones that break a wall open
+            val breaks = l.rounds.any { r -> r.traps.any { t -> t.actions.any { it is Action.Extend } } }
+            if (breaks) {
+                assertTrue(l.name.en, l.rooms >= 2)
+                continue
+            }
             assertEquals(l.name.en, ROOM_COLS, l.cols)
             val w = World(l)
             assertEquals(1, w.rooms)

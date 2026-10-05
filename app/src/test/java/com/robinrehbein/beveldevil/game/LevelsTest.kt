@@ -365,7 +365,9 @@ class LevelsTest {
 
     @Test
     fun naiveRunIsPunished() {
-        for (i in listOf(1, 2, 4, 6, 16)) bot(i).right(8f).expect(WorldState.DEAD)
+        for (i in listOf(1, 2, 4, 6)) bot(i).right(8f).expect(WorldState.DEAD)
+        // 16 is rebuilt: the naive run meets the locked wall and goes nowhere (docs/LEVEL_DESIGN_V2.md H2: it never wins)
+        bot(16).right(8f).expect(WorldState.PLAYING)
     }
 
     @Test
