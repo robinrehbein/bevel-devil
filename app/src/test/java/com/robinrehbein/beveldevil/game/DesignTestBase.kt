@@ -7,33 +7,20 @@ import org.junit.Test
 /**
  * The guard-rail tests of docs/LEVEL_DESIGN_V2.md §9 for one world; see [DesignRules] for the rules and for how a
  * rebuilt level is registered. The table tests run on the whole §8 table from day one; everything that plays a level
- * runs only for [rebuilt] levels, so the rebuild stays green block by block. Levels of the [pilot] are checked against
- * the same rules but only reported (build/reports/pilot-v2-violations.txt), until they are rebuilt and move to [rebuilt].
+ * runs only for [rebuilt] levels, so the rebuild stays green block by block. There is no allowlist: a rebuilt level
+ * either follows every rule or its test is red.
  */
 abstract class DesignTestBase {
     abstract val world: Int
     abstract val levels: List<Level>
     /** §8, level number → design. */
     abstract val design: Map<Int, Design>
-    /** Rows §8 does not fix yet (the pilot): no row in [design], skipped by H6. */
-    open val pending: Set<Int> = emptySet()
     /** Levels that already follow the V2 rules. */
     abstract val rebuilt: Set<Int>
     /** Level number → one solution per round. */
     abstract val solutions: Map<Int, List<Solution>>
     /** Act → its lead mechanic, exempt from "3 of 4" in H6 (§8, World 3). */
     open val lead: Map<Int, String> = emptyMap()
-    /** Levels built before recipe v2 that are to be rebuilt: checked against v2 and reported, not asserted. */
-    open val pilot: Set<Int> = emptySet()
-    /** Level number → one solution per round, for the [pilot]. */
-    open val pilotSolutions: Map<Int, List<Solution>> = emptyMap()
-
-    /**
-     * TODO allowlist: findings of rebuilt levels that are known and still to be fixed, rule code → pieces of the finding's
-     * text. A matching finding is printed ("TODO allowlisted") but does not fail the test. Every entry names the level
-     * work that removes it; an empty map means the rules hold without exceptions.
-     */
-    open val todoAllowlist: Map<String, List<String>> = emptyMap()
 
     private fun level(n: Int) = levels[n - 1]
 
@@ -45,7 +32,7 @@ abstract class DesignTestBase {
     @Test
     fun designTableCoversTheWorldWithItsActStructure() {
         assertTrue(levels.size == 48)
-        assertNone("§8 table of world $world", DesignRules.tableViolations(world, design, (1..48).toSet() - pending))
+        assertNone("§8 table of world $world", DesignRules.tableViolations(world, design, (1..48).toSet()))
     }
 
     /** "U16 (Frame-Crack)" → "U16:FrameCrack"; other notes in brackets are prose. */
@@ -93,7 +80,7 @@ abstract class DesignTestBase {
     private fun perRound(rule: String, scope: Scope, f: (Int, Int, Solution) -> List<String>) =
         scope.solved.flatMap { (n, r, s) -> f(n, r, s).map { Finding(rule, n, it) } }
 
-    /** Rule code → its check. [acts] is the scope the per-act rules count over (for the pilot: rebuilt and pilot together). */
+    /** Rule code → its check. [acts] is the scope the per-act rules count over. */
     private fun rules(scope: Scope, acts: Scope): Map<String, () -> List<Finding>> = linkedMapOf(
         "H3 density" to { perRound("H3", scope) { n, r, s -> DesignRules.densityViolations(level(n), r, s, DesignRules.minDuration(world, n, design[n])) } },
         "H2 naive runs" to { scope.rounds.flatMap { (n, r, _) -> DesignRules.holdRightWithHopsViolations(level(n), r).map { Finding("H2", n, it) } } },
@@ -109,8 +96,18 @@ abstract class DesignTestBase {
                 if (world == 3) DesignRules.spikeQuotaViolations(acts.levels, DesignRules::heatSpikeFinaleCount, "HeatSpike finales") else emptyList())
                 .map { Finding("H5", null, it) }
         },
-        "H19 say lint" to { DesignRules.sayViolations(acts.levels).map { Finding("H19", null, it) } },
-        "H20 adjacent rooms" to { DesignRules.adjacentViolations(signatures(acts)).map { Finding("H20", null, it) } },
+        "H19 say lint" to {
+            // near-duplicate lines (3+ shared words in one act) are a warning only; exact repeats are the gate
+            DesignRules.sayNgramWarnings(acts.levels).forEach { println("H19 warning: $it") }
+            DesignRules.sayViolations(acts.levels).map { Finding("H19", null, it) }
+        },
+        "H20 adjacent rooms" to {
+            val sigs = signatures(acts)
+            // the old percentage similarity is a report only; it never fails
+            DesignRules.adjacentReport(sigs).forEach { println("H20 report: $it") }
+            DesignRules.adjacentViolations(sigs).map { Finding("H20", null, it) }
+        },
+        "H21 moving walls" to { DesignRules.wallMoveViolations(signatures(acts)).map { Finding("H21", null, it) } },
         "§7 card spread" to { DesignRules.cardSpreadViolations(acts.levels).map { Finding("§7", null, it) } },
     )
 
@@ -120,12 +117,7 @@ abstract class DesignTestBase {
 
     private val rebuiltScope get() = Scope(rebuilt, solutions, ::level)
     private fun check(rule: String) {
-        val code = rule.substringBefore(' ')
-        val (known, open) = rules(rebuiltScope, rebuiltScope).getValue(rule)().partition { f ->
-            todoAllowlist[code].orEmpty().any { it in f.text }
-        }
-        for (f in known) println("TODO allowlisted [$code] ${f.text}")
-        assertNone(rule, open.map { "level ${it.level ?: "-"}: ${it.text}" })
+        assertNone(rule, rules(rebuiltScope, rebuiltScope).getValue(rule)().map { "level ${it.level ?: "-"}: ${it.text}" })
     }
 
     // ---------- rebuilt levels ----------
@@ -135,7 +127,6 @@ abstract class DesignTestBase {
         for (n in rebuilt) {
             assertTrue("level $n: V2 rules start at W1-7", DesignRules.ruled(world, n))
             assertTrue("level $n has no row in the design table", n in design)
-            assertTrue("level $n is still in the pilot set", n !in pilot)
             val s = solutions[n]
             assertTrue("level $n needs one solution per round (${level(n).rounds.size}), has ${s?.size ?: 0}", s?.size == level(n).rounds.size)
         }
@@ -153,36 +144,6 @@ abstract class DesignTestBase {
     @Test fun spikePopupQuota() = check("H5 spike popups")
     @Test fun noRepeatedLinesInAnAct() = check("H19 say lint")
     @Test fun neighboursPlayDifferently() = check("H20 adjacent rooms")
+    @Test fun atMostThreeMovingWallLevelsPerAct() = check("H21 moving walls")
     @Test fun cardsSpreadPerAct() = check("§7 card spread")
-
-    // ---------- the pilot: reported, not asserted ----------
-
-    /**
-     * Every v2 rule on the [pilot] levels (the per-act rules counted over rebuilt and pilot levels together), written to
-     * build/reports/pilot-v2-violations.txt. Expected to find violations until the pilot is rebuilt; the suite stays
-     * green, the rules stay as strict as for [rebuilt] levels.
-     */
-    @Test
-    fun pilotV2Report() {
-        if (pilot.isEmpty()) return
-        val scope = Scope(pilot, pilotSolutions, ::level)
-        val acts = Scope(pilot + rebuilt, pilotSolutions + solutions, ::level)
-        val findings = rules(scope, acts).values.flatMap { it() }
-        val out = StringBuilder()
-        out.append("Recipe v2 (docs/LEVEL_DESIGN_V2.md) against the pilot of world $world, levels ${pilot.sorted()}: ${findings.size} violations\n")
-        for (n in pilot.sorted()) {
-            val l = level(n)
-            val mine = findings.filter { it.level == n }
-            out.append("\n== $world-$n ${l.name.en} (${mine.size}) ==\n")
-            l.rounds.indices.forEach { r -> pilotSolutions[n]?.getOrNull(r)?.let { out.append("   round ${r + 1}: ${DesignRules.timeline(l, r, it)}\n") } }
-            for (f in mine) out.append("[${f.rule}] ${f.text}\n")
-        }
-        out.append("\n== per act (over rebuilt and pilot levels) ==\n")
-        for (f in findings.filter { it.level == null }) out.append("[${f.rule}] ${f.text}\n")
-        val file = File("build/reports/pilot-v2-violations${if (world == 2) "" else "-w$world"}.txt")
-        file.parentFile.mkdirs()
-        file.writeText(out.toString())
-        println(out)
-        assertTrue(file.exists())
-    }
 }

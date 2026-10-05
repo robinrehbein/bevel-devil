@@ -459,24 +459,18 @@ object DesignRules {
     /** A [Cap] test: some action of some round of the level satisfies [p]. */
     private fun uses(p: (Action) -> Boolean): (Level) -> Boolean = { l -> levelActions(l).any(p) }
 
-    /**
-     * Triggers that fire where the player is ([Trigger.Landed], [Trigger.PastX], [Trigger.BeforeX], [Trigger.Zone],
-     * [Trigger.Airborne], [Trigger.Touch]): a beam that flashes there is a gate, however the level words it.
-     */
-    private fun placeTrigger(t: Trigger) = t is Trigger.Landed || t is Trigger.PastX || t is Trigger.BeforeX ||
-        t is Trigger.Zone || t is Trigger.Airborne || t is Trigger.Touch
-
-    /** A trap-fired laser lit for less than [GATE_ON] s: a gate, whatever its off time (a one-shot flash is a gate too). */
+    /** A laser lit for less than [GATE_ON] s: a gate, whatever fires it and whatever its off time. */
     const val GATE_ON = 2f
 
     /**
-     * H12, timed laser gates: a laser that cycles with an off time under 10 s, or any laser a trap fires on a place
-     * trigger ([placeTrigger]: [Trigger.Landed], [Trigger.PastX], zones, ...) that is lit for less than [GATE_ON] s.
-     * Its off time does not matter: a flash of the beam as you land or pass is a gate, also with an off time of 40 s.
+     * H12, timed laser gates: a laser that cycles with an off time under 10 s, or any laser a trap fires, on any trigger
+     * ([Trigger.Landed], [Trigger.PastX], zones, but also [Trigger.Pressed], [Trigger.After], [Trigger.Idle] ...), that is
+     * lit for less than [GATE_ON] s. Its off time does not matter: a flash of the beam as you land, pass or press a pad
+     * is a gate, also with an off time of 40 s. A beam that is never dark (off 0) from the start is a fixture, no gate.
      */
     fun hasLaserGate(level: Level): Boolean = level.rounds.any { round ->
         actions(round).any { it is Action.Laser && it.off > 0f && it.off < 10f } ||
-            round.traps.any { t -> placeTrigger(t.trigger) && flatten(t.actions).any { it is Action.Laser && it.on < GATE_ON } }
+            round.traps.any { t -> flatten(t.actions).any { it is Action.Laser && it.on < GATE_ON } }
     }
 
     /** H12, counted from the actions in the level code (all rounds), per act of 16. */
@@ -508,7 +502,8 @@ object DesignRules {
      * effect (pads are how the player switches an effect). A copper rail declared at the start that only pads switch is a
      * lock (puzzle block R1), not an effect either.
      *
-     * drop: Fall, Hide of a solid group · spikes: Show of spikes · move: Move, Chase, Tilt, Slope · door: DoorTo, FakeWin,
+     * drop: Fall, Hide of a solid group · spikes: Show of spikes · move: Move, Chase, Tilt, Slope (with `split`, see
+     * [familyOf]: Move is floor-move, wall-move or ceiling-move, a Move that drops a floor is drop) · door: DoorTo, FakeWin,
      * Extend · saw: Saw, PathSaw · controls: Swap · gravity: Gravity, Flip · portal: Portal, Reroute, Power of a portal ·
      * belt: Belt, Power of a belt · laser: Laser, Power of a laser · blink: Blink · heat: Heat, Heatsink, HeatSpike ·
      * power: Clock, Toggle, BitFlip, Power of a circuit, a live trace, a Circuit set by a trap · fan: Fan, FanSet, Power of
@@ -524,12 +519,18 @@ object DesignRules {
         return out
     }
 
-    /** The effect family of one action (see [families]), null for talk, cards, pads and plain state. [trapActions]: the actions traps fire. */
-    fun familyOf(a: Action, round: Level, trapActions: List<Action> = flatten(round.traps.flatMap { it.actions })): String? = when (a) {
+    /**
+     * The effect family of one action (see [families]), null for talk, cards, pads and plain state. [trapActions]: the
+     * actions traps fire. With [split] (the adjacency rule H20 and the wall cap H21) a [Action.Move] is told apart by
+     * what it moves ([moveFamily]: floor-move, wall-move, ceiling-move) and a floor that moves down counts as drop; H13
+     * counts without it, so moving two things stays one family there.
+     */
+    fun familyOf(a: Action, round: Level, trapActions: List<Action> = flatten(round.traps.flatMap { it.actions }), split: Boolean = false): String? = when (a) {
         is Action.Fall -> "drop"
         is Action.Hide -> if (round.glyph(a.group)?.spike != true) "drop" else null
         is Action.Show -> if (round.glyph(a.group)?.spike == true) "spikes" else "secret"
-        is Action.Move, is Action.Chase, is Action.Tilt, is Action.Slope -> "move"
+        is Action.Move -> if (split) moveFamily(a, round) else "move"
+        is Action.Chase, is Action.Tilt, is Action.Slope -> "move"
         is Action.DoorTo, is Action.FakeWin, is Action.Extend -> "door"
         is Action.Saw, is Action.PathSaw -> "saw"
         is Action.Swap -> "controls"
@@ -545,6 +546,30 @@ object DesignRules {
         is Action.Fan, is Action.FanSet -> "fan"
         is Action.Undo, is Action.Ghost, is Action.PauseTrap, is Action.FrameCrack, is Action.Roll -> "meta"
         else -> null
+    }
+
+    /**
+     * What a [Action.Move] moves, from the tiles of its group in the map. A flat slab with something solid above it (a
+     * tile of another group, the border) hangs from the ceiling: `ceiling-move`. Otherwise count the faces the player
+     * can meet: tiles of the group with free air above them (top faces) and with free air beside them (side faces). More
+     * side than top faces (a column, a block standing on the floor, a truck) is a `wall-move`; the rest (a platform, a
+     * piece of the floor embedded in the ground) is a floor, which moves down (dy > 0) as a `drop` like a Fall and
+     * otherwise as a `floor-move`. A group that is not in the map counts as `floor-move`.
+     */
+    fun moveFamily(a: Action.Move, round: Level): String {
+        val ts = tiles(round, a.group)
+        if (ts.isEmpty()) return "floor-move"
+        val grid = round.map.grid
+        fun at(x: Int, y: Int): Char? = grid.getOrNull(y)?.getOrNull(x)
+        val free = { c: Char? -> c != null && c != a.group && !solid(round, c) }
+        val hanging = ts.any { (x, y) -> y == 0 || (at(x, y - 1)?.let { it != a.group && solid(round, it) } == true) }
+        val h = ts.maxOf { it.second } - ts.minOf { it.second } + 1
+        val w = ts.maxOf { it.first } - ts.minOf { it.first } + 1
+        if (hanging && h <= w) return "ceiling-move"
+        val top = ts.count { (x, y) -> free(at(x, y - 1)) }
+        val side = ts.sumOf { (x, y) -> listOf(at(x - 1, y), at(x + 1, y)).count(free) }
+        if (side > top) return "wall-move"
+        return if (a.dy > 0f) "drop" else "floor-move"
     }
 
     /** H13: rounds of level [n] with more than [MAX_FAMILIES] effect families per room (an act finale: one more). */
@@ -598,11 +623,15 @@ object DesignRules {
         return out
     }
 
-    /** H17: holding right from the spawn dies within [FILLER_WINDOW] s before any real trap went off. */
+    /**
+     * H17: holding right from the spawn dies within [FILLER_WINDOW] s before any real trap went off. A pad press does not
+     * count as a trap that went off (a [Trigger.Pressed] moment): a pad near the spawn must not excuse a death that
+     * happens right at the start.
+     */
     fun fillerDeathViolations(level: Level, round: Int): List<String> {
         val bot = Bot(level, round).right(FILLER_WINDOW)
         val w = bot.world
-        if (w.state != WorldState.DEAD || bot.moments.any { it.real && it.time <= w.time }) return emptyList()
+        if (w.state != WorldState.DEAD || bot.moments.any { it.real && it.trigger !is Trigger.Pressed && it.time <= w.time }) return emptyList()
         return listOf("${level.name.en} round ${round + 1}: holding right dies at t=%.2f (x=%.1f) before any trap went off (filler death)".format(w.time, w.player.box.cx))
     }
 
@@ -683,9 +712,10 @@ object DesignRules {
     /**
      * Say lint: no line (a [Action.Say], an intro or a hint) is said word for word in two levels of the same act, in
      * English or in German (case and spacing aside). The same line twice in one level (a rematch repeating itself) is
-     * fine. [levels]: number → level; [allow]: lines (normalized text) that are known and still to be fixed.
+     * fine. [levels]: number → level. No allowlist: fix the line. Near-duplicates are only warned about,
+     * see [sayNgramWarnings].
      */
-    fun sayViolations(levels: Map<Int, Level>, allow: Set<String> = emptySet()): List<String> =
+    fun sayViolations(levels: Map<Int, Level>): List<String> =
         levels.keys.groupBy(::act).toSortedMap().flatMap { (a, ns) ->
             listOf<Pair<String, (T) -> String>>("EN" to { it.en }, "DE" to { it.de }).flatMap { (lang, pick) ->
                 val seen = LinkedHashMap<String, MutableMap<Int, MutableSet<String>>>()
@@ -694,9 +724,40 @@ object DesignRules {
                     if (key.isEmpty()) continue
                     seen.getOrPut(key) { LinkedHashMap() }.getOrPut(n) { LinkedHashSet() } += l.source
                 }
-                seen.filter { it.value.size > 1 && it.key !in allow }.map { (text, at) ->
+                seen.filter { it.value.size > 1 }.map { (text, at) ->
                     "act $a $lang: \"$text\" in levels ${at.entries.joinToString { "${it.key} (${it.value.joinToString()})" }}"
                 }
+            }
+        }
+
+    /** Words too common to make two lines alike (English and German); the n-gram warning ignores them. */
+    val COMMON_WORDS = setOf(
+        "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "at", "for", "with", "is", "are", "was", "were", "be", "it", "its",
+        "you", "your", "i", "me", "my", "we", "this", "that", "not", "no", "do", "dont", "don't", "did", "so", "as", "if", "then", "now",
+        "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "und", "oder", "aber", "von", "zu", "zum", "zur", "in",
+        "im", "auf", "an", "am", "mit", "ist", "sind", "war", "es", "du", "dich", "dir", "dein", "deine", "ich", "mich", "mir", "wir",
+        "nicht", "kein", "keine", "so", "wenn", "dann", "jetzt", "doch", "nur", "auch", "noch", "mal", "hier",
+    )
+
+    private fun words(s: String) = norm(s).split(Regex("[^\\p{L}\\p{N}']+")).filter { it.isNotEmpty() && it !in COMMON_WORDS }
+
+    /**
+     * Say lint, report only: two levels of the same act that share [n] or more consecutive words (very common words
+     * ([COMMON_WORDS]) dropped first) in a line, in English or in German. Warnings only, they never fail a test; the
+     * gate is [sayViolations] (exact repeats). A level repeating itself is fine.
+     */
+    fun sayNgramWarnings(levels: Map<Int, Level>, n: Int = 3): List<String> =
+        levels.keys.groupBy(::act).toSortedMap().flatMap { (a, ns) ->
+            listOf<Pair<String, (T) -> String>>("EN" to { it.en }, "DE" to { it.de }).flatMap { (lang, pick) ->
+                val seen = LinkedHashMap<List<String>, MutableMap<Int, String>>()
+                for (m in ns.sorted()) for (l in lines(levels.getValue(m))) {
+                    val ws = words(pick(l.text))
+                    for (i in 0..ws.size - n) seen.getOrPut(ws.subList(i, i + n)) { LinkedHashMap() }.putIfAbsent(m, l.source)
+                }
+                // one warning per pair of levels, naming the shared phrases, instead of one per phrase
+                val pairs = LinkedHashMap<List<Int>, MutableList<String>>()
+                for ((gram, at) in seen) if (at.size > 1) pairs.getOrPut(at.keys.sorted()) { ArrayList() } += gram.joinToString(" ")
+                pairs.map { (lv, grams) -> "act $a $lang: levels $lv share ${grams.joinToString { "\"$it\"" }}" }
             }
         }
 
@@ -704,25 +765,27 @@ object DesignRules {
 
     /**
      * What a level feels like to play, from the clean run of its round 1: the effect family of every real trap in the
-     * order they went off ([families]), the [dominant] one (most traps; the first wins a tie), the [major] ones (at
-     * least [MAJOR_SHARE] of the traps) and the player's direction changes ([Bot.shape]).
+     * order they went off ([families]), the [dominant] one and the player's direction changes ([Bot.shape]). The
+     * dominant family is the one with the most *lethal* moments of the clean run ([Weight.LETHAL]; a moment counts for
+     * every family of its actions); a tie goes to the family that went off first. Null: no lethal moment at all.
      */
-    class Signature(val dominant: String?, val major: Set<String>, val families: List<String>, val shape: List<String>) {
-        override fun toString() = "dominant $dominant, major $major, traps $families, moves $shape"
+    class Signature(val dominant: String?, val families: List<String>, val shape: List<String>) {
+        override fun toString() = "dominant $dominant, traps $families, moves $shape"
     }
-
-    /** A family is major in a room when this share of its real traps belong to it. */
-    const val MAJOR_SHARE = 0.25f
 
     fun signature(level: Level, solution: Solution): Signature {
         val bot = measured(level, 0, solution)
         val round = level.rounds[0]
-        val per = bot.moments.filter { it.real }.map { m -> m.actions.mapNotNull { familyOf(it, round) }.distinct() }
-        val seq = per.mapNotNull { it.firstOrNull() }
-        val counts = per.flatten().groupingBy { it }.eachCount()
-        val dominant = counts.entries.maxByOrNull { (f, k) -> k * 100 - per.indexOfFirst { f in it } }?.key
-        val major = counts.filter { it.value >= MAJOR_SHARE * per.size - 1e-4f }.keys
-        return Signature(dominant, major, seq, bot.shape())
+        val real = bot.moments.filter { it.real }
+        val familiesOf = { m: Moment -> m.actions.mapNotNull { familyOf(it, round, split = true) }.distinct() }
+        val seq = real.mapNotNull { familiesOf(it).firstOrNull() }
+        return Signature(dominantFamily(real.filter { it.weight == Weight.LETHAL }.map(familiesOf)), seq, bot.shape())
+    }
+
+    /** The family in most of [lethal] (one list of families per lethal moment, in order); a tie: the earliest. Null if none. */
+    fun dominantFamily(lethal: List<List<String>>): String? {
+        val counts = lethal.flatten().groupingBy { it }.eachCount()
+        return counts.entries.maxByOrNull { (f, k) -> k * 1000 - lethal.indexOfFirst { f in it } }?.key
     }
 
     /** Longest common subsequence of [a] and [b] over the longer one: 1 for the same sequence, 0 for nothing in common. */
@@ -733,26 +796,36 @@ object DesignRules {
         return t[a.size][b.size].toFloat() / maxOf(a.size, b.size)
     }
 
-    /** Adjacent levels: the player's moves look at least this much alike ([similarity]). */
-    const val ADJACENT_MOVES = 0.5f
+    /** The pairs H20 looks at: n and n + 1 of the same act, the second no finale. */
+    private fun neighbours(signatures: Map<Int, Signature>) = signatures.keys.sorted().mapNotNull { n ->
+        val b = signatures[n + 1] ?: return@mapNotNull null
+        if (isFinale(n + 1) || act(n) != act(n + 1)) null else Triple(n, signatures.getValue(n), b)
+    }
 
     /**
-     * H6 on the real rooms: two consecutive levels of an act (the second no finale) must not share a major effect
-     * family ([Signature.major]) *and* play alike (the [similarity] of the player's direction changes is at least
-     * [ADJACENT_MOVES]): "the wall rolls in, hop", twice. H6 on the table only compares the first U-code and the
-     * dominant family alone misses a wall that is one trap of four in one room and all three in the next; this reads
-     * the rooms.
+     * H20, binary: two consecutive levels of an act (the second no finale) must differ in their dominant effect family
+     * ([Signature.dominant]). The percentage of [similarity] never decides, see [adjacentReport].
      */
-    fun adjacentViolations(signatures: Map<Int, Signature>): List<String> = signatures.keys.sorted().mapNotNull { n ->
-        val a = signatures.getValue(n)
-        val b = signatures[n + 1] ?: return@mapNotNull null
-        if (isFinale(n + 1) || act(n) != act(n + 1)) return@mapNotNull null
-        val shared = a.major intersect b.major
-        val moves = similarity(a.shape, b.shape)
-        if (shared.isNotEmpty() && moves >= ADJACENT_MOVES) {
-            "levels $n and ${n + 1}: both lean on $shared and play alike (moves ${a.shape} vs ${b.shape}, %.0f %% alike; traps ${a.families} vs ${b.families})".format(100 * moves)
+    fun adjacentViolations(signatures: Map<Int, Signature>): List<String> = neighbours(signatures).mapNotNull { (n, a, b) ->
+        if (a.dominant != null && a.dominant == b.dominant) {
+            "levels $n and ${n + 1}: both are dominated by ${a.dominant} (traps ${a.families} vs ${b.families}; moves ${a.shape} vs ${b.shape})"
         } else null
     }
+
+    /** H20, report only (printed, never failing): how alike two neighbours play, in per cent ([similarity] of the moves). */
+    fun adjacentReport(signatures: Map<Int, Signature>): List<String> = neighbours(signatures).map { (n, a, b) ->
+        "levels $n and ${n + 1}: dominant ${a.dominant} vs ${b.dominant}, moves %.0f %% alike (${a.shape} vs ${b.shape})".format(100 * similarity(a.shape, b.shape))
+    }
+
+    /** H21: levels per act whose dominant family is wall-move at most. */
+    const val WALL_MOVE_CAP = 3
+
+    /** H21: per act at most [WALL_MOVE_CAP] of the levels in [signatures] are dominated by a moving wall. */
+    fun wallMoveViolations(signatures: Map<Int, Signature>): List<String> =
+        signatures.keys.groupBy(::act).toSortedMap().mapNotNull { (a, ns) ->
+            val walls = ns.filter { signatures.getValue(it).dominant == "wall-move" }.sorted()
+            if (walls.size > WALL_MOVE_CAP) "act $a: ${walls.size} levels dominated by a moving wall $walls (max $WALL_MOVE_CAP)" else null
+        }
 
     // ---------- the §8 table, recipe v2 ----------
 

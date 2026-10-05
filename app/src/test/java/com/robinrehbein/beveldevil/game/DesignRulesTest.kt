@@ -189,7 +189,7 @@ class DesignRulesTest {
         val noPuzzles = World2DesignTest.DESIGN + (33..47).filter { !World2DesignTest.DESIGN.getValue(it).breather }.associateWith { d("–", "U1") }
         assertEquals(listOf("act 3: 0 of 14 rows are puzzle rooms (about half)"), DesignRules.puzzleShareViolations(2, noPuzzles))
         // a trap room needs no block any more, a breather still has at most one
-        assertEquals(emptyList<String>(), DesignRules.tableViolations(2, World2DesignTest.DESIGN, (1..48).toSet() - World2DesignTest.PILOT))
+        assertEquals(emptyList<String>(), DesignRules.tableViolations(2, World2DesignTest.DESIGN, (1..48).toSet()))
         // W1's tutorial does not count
         assertEquals(emptyList<String>(), DesignRules.tableViolations(1, World1DesignTest.DESIGN, (1..48).toSet()))
     }
@@ -346,6 +346,13 @@ class DesignRulesTest {
         assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Landed(10f, 14f), flash)))
         assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.PastX(10f), flash)))
         assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Zone(10f, 5f, 14f, 9f), flash)))
+        // whatever the trigger: a pad press, a timer, standing idle, touching a block
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Pressed('1'), flash)))
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash)))
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Idle(1f), flash)))
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.Touch('a'), flash)))
+        // a short on-time without any off time (a one-shot) is one too
+        assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash.copy(off = 0f))))
         // the cycling gate is still one
         assertTrue(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash.copy(on = 1f, off = 2f))))
     }
@@ -353,9 +360,12 @@ class DesignRulesTest {
     @Test
     fun aLongBeamOrAnAlwaysLitLaserIsNoGate() {
         val flash = Action.Laser('G', 15 to 8, 15 to 10, on = 0.7f, off = 40f)
-        // lit for 5 s: a wall of light, not a gate; a laser from the start that is never dark is a fixture
+        // lit for 5 s: a wall of light, not a gate, whatever fires it
         assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.PastX(10f), flash.copy(on = 5f))))
-        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash, start = listOf(flash.copy(id = 'H', off = 0f)))))
+        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.After(1f), flash.copy(on = 5f))))
+        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.Pressed('1'), flash.copy(on = 5f))))
+        // a laser from the start that is never dark is a fixture
+        assertFalse(DesignRules.hasLaserGate(gateRoom(Trigger.PastX(10f), flash.copy(on = 5f), start = listOf(flash.copy(id = 'H', off = 0f)))))
         assertFalse(DesignRules.hasLaserGate(DesignDemos.corridor()))
     }
 
@@ -417,35 +427,61 @@ class DesignRulesTest {
         assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(14 to a, 17 to a)))
         // twice in one level
         assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to talker("one", "Again." to "Nochmal.", "Again." to "Nochmal."))))
-        // the allowlist silences a known line
-        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to a, 18 to a), allow = setOf("mind your head.", "kopf einziehen.", "one")))
+    }
+
+    @Test
+    fun threeSharedWordsInAnActAreOnlyAWarning() {
+        val a = talker("one", "Watch the loose red wire carefully." to "Pass auf das lose rote Kabel auf.")
+        val b = talker("two", "Careful, the loose red wire bites." to "Vorsicht, das Kabel beißt.")
+        // not word for word: no violation, but a warning that names the phrase
+        assertEquals(emptyList<String>(), DesignRules.sayViolations(mapOf(17 to a, 18 to b)))
+        val w = DesignRules.sayNgramWarnings(mapOf(17 to a, 18 to b))
+        assertEquals(w.toString(), 1, w.size)
+        assertTrue(w[0], w[0].startsWith("act 2 EN: levels [17, 18] share") && "loose red wire" in w[0])
+        // the German lines share fewer than three words once the common ones are dropped
+        assertTrue(w.none { " DE" in it })
+    }
+
+    @Test
+    fun commonWordsTwoSharedWordsOtherActsAndOneLevelAreNoWarning() {
+        // "the end of the day" is all common words and two real ones
+        val a = talker("one", "At the end of the day, red wire." to "x")
+        val b = talker("two", "In the end of the day, green cable." to "y")
+        assertEquals(emptyList<String>(), DesignRules.sayNgramWarnings(mapOf(17 to a, 18 to b)))
+        // three shared words in two acts
+        val c = talker("three", "Watch the loose red wire carefully." to "z")
+        val e = talker("four", "Careful, the loose red wire bites." to "w")
+        assertEquals(emptyList<String>(), DesignRules.sayNgramWarnings(mapOf(14 to c, 17 to e)))
+        // a level that repeats its own words
+        assertEquals(emptyList<String>(), DesignRules.sayNgramWarnings(mapOf(17 to talker("o", "Loose red wire." to "a", "Loose red wire again." to "b"))))
     }
 
     // ---------- adjacent rooms (H20) ----------
 
-    private fun sig(dominant: String, major: Set<String>, shape: String, vararg families: String) =
-        DesignRules.Signature(dominant, major, families.toList(), shape.split(' '))
+    private fun sig(dominant: String?, shape: String, vararg families: String) =
+        DesignRules.Signature(dominant, families.toList(), shape.split(' '))
 
     @Test
-    fun theWallRollsInHopTwiceInARowIsCaught() {
-        // 2-22 and 2-23 as the review found them: one wall of four traps in one room, all of them in the next, run and hop
-        val l22 = sig("drop", setOf("drop", "move"), "R^ L^", "drop", "drop", "move", "drop")
-        val l23 = sig("move", setOf("move"), "R^", "move", "move", "move")
+    fun twoNeighboursWithTheSameDominantFamilyAreCaughtHoweverTheyPlay() {
+        // 2-22 and 2-23 as the review found them: the wall dominates both
+        val l22 = sig("wall-move", "R^ L^", "wall-move", "wall-move", "drop")
+        val l23 = sig("wall-move", "R^", "wall-move", "wall-move", "wall-move")
         val v = DesignRules.adjacentViolations(mapOf(22 to l22, 23 to l23))
-        assertEquals(1, v.size)
-        assertTrue(v[0], v[0].startsWith("levels 22 and 23: both lean on [move] and play alike"))
-        // H6 alone (first U-code) did not see it
-        assertEquals(emptyList<String>(), DesignRules.h6Violations(mapOf(22 to d("–", "U2+U3"), 23 to d("–", "U3"))).filter { "main twist" in it })
+        assertEquals(v.toString(), 1, v.size)
+        assertTrue(v[0], v[0].startsWith("levels 22 and 23: both are dominated by wall-move"))
+        // the same dominant family with a completely different way of playing is caught as well
+        val other = sig("wall-move", "L W R W L", "wall-move")
+        assertEquals(1, DesignRules.adjacentViolations(mapOf(17 to l22, 18 to other)).size)
     }
 
     @Test
-    fun neighboursThatDifferInEffectOrInPlayAreFine() {
-        val wall = sig("move", setOf("move"), "R^ L^", "move", "move")
-        // another effect, same moves
-        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 18 to sig("drop", setOf("drop"), "R^ L^", "drop"))))
-        // same effect, a different way of playing it (standing, going back, two stretches vs five)
-        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 18 to sig("move", setOf("move"), "L W R W L", "move"))))
-        // same everything, but a finale (it combines the act on purpose), or the next act
+    fun neighboursWithAnotherDominantFamilyAreFineWhateverElseTheyShare() {
+        val wall = sig("wall-move", "R^ L^", "wall-move", "wall-move", "drop", "drop")
+        // another dominant family, same moves, the other family even shows up in both rooms
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to wall, 18 to sig("drop", "R^ L^", "drop", "drop", "wall-move"))))
+        // no lethal moment, no dominant family: nothing to compare
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to sig(null, "R", "door"), 18 to sig(null, "R", "door"))))
+        // same dominant family, but a finale (it combines the act on purpose), or the next act
         assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(31 to wall, 32 to wall)))
         assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(16 to wall, 17 to wall)))
         // not neighbours
@@ -453,16 +489,122 @@ class DesignRulesTest {
     }
 
     @Test
+    fun thePercentageIsOnlyAReport() {
+        val a = sig("drop", "R^ L^", "drop")
+        val b = sig("floor-move", "R^ L^", "floor-move")
+        // the moves are 100 % alike: reported, but no violation
+        assertEquals(emptyList<String>(), DesignRules.adjacentViolations(mapOf(17 to a, 18 to b)))
+        val r = DesignRules.adjacentReport(mapOf(17 to a, 18 to b))
+        assertEquals(1, r.size)
+        assertTrue(r[0], "100 % alike" in r[0] && r[0].startsWith("levels 17 and 18"))
+        assertEquals(emptyList<String>(), DesignRules.adjacentReport(mapOf(16 to a, 17 to b)))
+    }
+
+    @Test
+    fun theDominantFamilyIsTheOneWithMostLethalMomentsAndATieGoesToTheEarliest() {
+        assertEquals("b", DesignRules.dominantFamily(listOf(listOf("a"), listOf("b"), listOf("b"))))
+        assertEquals("a", DesignRules.dominantFamily(listOf(listOf("a"), listOf("b"))))
+        assertEquals("b", DesignRules.dominantFamily(listOf(listOf("b", "a"), listOf("a", "b"))))
+        assertEquals(null, DesignRules.dominantFamily(emptyList()))
+    }
+
+    /** A room whose clean run meets two door changes (route, not lethal) and one lethal drop: a held-right run. */
+    private val routeHeavy = Level(T("r", "r"), T("r", "r"),
+        traps = listOf(
+            trap(Trigger.PastX(6f), Action.DoorTo(28, 14)),
+            trap(Trigger.PastX(8f), Action.DoorTo(29, 14)),
+            trap(Trigger.PastX(10f), Action.Fall('a')),
+        )) { border(); floor(); fill(14..15, 15..17, 'a'); put(2, 14, 'P'); put(29, 14, 'D') }
+
+    @Test
+    fun onlyLethalMomentsMakeAFamilyDominant() {
+        val s = DesignRules.signature(routeHeavy, { right(4f) })
+        assertEquals(s.toString(), "drop", s.dominant)
+        assertEquals(s.toString(), listOf("door", "door", "drop"), s.families)
+    }
+
+    @Test
     fun theSignatureOfARoomReadsItsTrapsAndItsMoves() {
         val s = DesignRules.signature(puzzle, solution)
         assertEquals("drop", s.dominant)
-        assertEquals(setOf("drop", "spikes"), s.major)
         assertEquals(listOf("spikes", "drop", "drop", "drop"), s.families)
         // right, wait for the block, right, back left: no stretch under a quarter second counts
         assertTrue(s.shape.toString(), s.shape.first() == "R^" && s.shape.last().startsWith("L"))
         assertEquals(1f, DesignRules.similarity(listOf("a", "b"), listOf("a", "b")))
         assertEquals(0.5f, DesignRules.similarity(listOf("a", "b"), listOf("b")))
         assertEquals(0f, DesignRules.similarity(emptyList(), listOf("b")))
+    }
+
+    // ---------- what moves: floor, wall, ceiling ----------
+
+    /** A room with a floor slab 'f', a wall 'w' and a ceiling slab 'c'. */
+    private val movers = Level(T("m", "m"), T("m", "m")) {
+        border(); floor()
+        fill(10..13, 12..12, 'f')      // a platform: air above it
+        fill(16..16, 8..11, 'w')       // a column
+        fill(20..23, 1..1, 'c')        // hangs under the top border
+        fill(24..25, 13..14, 't')      // a truck: a 2 x 2 block standing on the floor
+        fill(26..27, 15..17, 'e')      // a piece of the ground itself
+        put(2, 14, 'P'); put(29, 14, 'D')
+    }
+
+    @Test
+    fun aMoveIsToldApartByWhatItMoves() {
+        fun fam(g: Char, dx: Float, dy: Float, split: Boolean = true) =
+            DesignRules.familyOf(Action.Move(g, dx, dy, 2f), movers, split = split)
+        assertEquals("floor-move", fam('f', 3f, 0f))
+        assertEquals("floor-move", fam('f', 0f, -2f))
+        assertEquals("wall-move", fam('w', 3f, 0f))
+        assertEquals("wall-move", fam('w', 0f, -3f))
+        assertEquals("ceiling-move", fam('c', 0f, 3f))
+        assertEquals("ceiling-move", fam('c', 4f, 0f))
+        // a block that stands on the floor is a wall, a piece of the ground is a floor
+        assertEquals("wall-move", fam('t', 5f, 0f))
+        assertEquals("drop", fam('e', 0f, 8f))
+        assertEquals("floor-move", fam('e', 0f, -1f))
+        // a floor that moves down is a drop, like a Fall
+        assertEquals("drop", fam('f', 0f, 2f))
+        assertEquals("drop", DesignRules.familyOf(Action.Fall('f'), movers, split = true))
+        // without the split (H13) every Move is "move"
+        assertEquals("move", fam('w', 3f, 0f, split = false))
+        assertEquals("move", fam('f', 0f, 2f, split = false))
+        // Chase and the like stay "move"
+        assertEquals("move", DesignRules.familyOf(Action.Chase('w', 2f), movers, split = true))
+    }
+
+    // ---------- moving walls per act (H21) ----------
+
+    @Test
+    fun aFourthMovingWallLevelInAnActIsCaught() {
+        val wall = sig("wall-move", "R", "wall-move")
+        val floor = sig("floor-move", "R", "floor-move")
+        val four = (17..20).associateWith { wall }
+        val v = DesignRules.wallMoveViolations(four)
+        assertEquals(v.toString(), listOf("act 2: 4 levels dominated by a moving wall [17, 18, 19, 20] (max 3)"), v)
+        // three are fine, and so are four when one of them is dominated by something else, or when they sit in two acts
+        assertEquals(emptyList<String>(), DesignRules.wallMoveViolations(four - 20))
+        assertEquals(emptyList<String>(), DesignRules.wallMoveViolations(four + (20 to floor)))
+        assertEquals(emptyList<String>(), DesignRules.wallMoveViolations(mapOf(15 to wall, 16 to wall, 17 to wall, 18 to wall)))
+    }
+
+    // ---------- the pad does not excuse a death at the start (H17) ----------
+
+    @Test
+    fun aPadPressedRightAtTheStartIsNoTrapThatWentOff() {
+        // the pad lies on the way, spikes behind it: holding right presses it (a lethal trap elsewhere fires), then dies
+        val room = Level(T("p", "p"), T("p", "p"),
+            start = listOf(Action.Pad('1', at = 3 to 14)),
+            traps = listOf(trap(Trigger.Pressed('1'), Action.Fall('a')))) {
+            border(); floor(); fill(14..15, 15..17, 'a'); put(5, 14, '^'); put(2, 14, 'P'); put(29, 14, 'D')
+        }
+        val v = DesignRules.fillerDeathViolations(room, 0)
+        assertEquals(v.toString(), 1, v.size)
+        // the same room with a trap on the way that is no pad: the death has a cause
+        val onTheWay = Level(T("p", "p"), T("p", "p"),
+            traps = listOf(trap(Trigger.PastX(3f), Action.Fall('a')))) {
+            border(); floor(); fill(14..15, 15..17, 'a'); put(5, 14, '^'); put(2, 14, 'P'); put(29, 14, 'D')
+        }
+        assertEquals(emptyList<String>(), DesignRules.fillerDeathViolations(onTheWay, 0))
     }
 
     @Test

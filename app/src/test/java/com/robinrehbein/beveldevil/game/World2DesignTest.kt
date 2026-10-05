@@ -8,16 +8,12 @@ class World2DesignTest : DesignTestBase() {
     override val world = 2
     override val levels get() = World2.levels
     override val design = DESIGN
-    override val pending = PILOT
     override val rebuilt = REBUILT
     override val solutions = SOLUTIONS
-    override val pilot = PILOT_V2
-    override val pilotSolutions = PILOT_SOLUTIONS
-    override val todoAllowlist = TODO_ALLOWLIST
 
     /**
      * §8, World 2: at least 8 levels with real portal routing (R3, R4). Switches (R1, R2, R4) are capped at 3 per act by
-     * the rotation rule H12 ([DesignRules.tableRotationViolations]), the pilot included.
+     * the rotation rule H12 ([DesignRules.tableRotationViolations]).
      */
     @Test
     fun portalRoutingIsEverywhere() {
@@ -26,20 +22,6 @@ class World2DesignTest : DesignTestBase() {
     }
 
     companion object {
-        /**
-         * TODO ALLOWLIST (remove each entry when the level work lands; an entry that no finding matches any more can go):
-         * findings of the new lints that the review of 2-11..2-24 found and another agent is fixing.
-         *
-         * - H20 adjacent rooms: 11/12 (both lean on a moving wall and hop), 18/19 (both lean on a floor that moves away, hop, 50 %),
-         *   22/23 (the wall rolls in, hop).
-         */
-        val TODO_ALLOWLIST: Map<String, List<String>> = mapOf(
-            "H20" to listOf("levels 11 and 12:", "levels 18 and 19:", "levels 22 and 23:"),
-        )
-
-        /** The pilot (11-24) is rebuilt; every row is fixed in [DESIGN]. */
-        val PILOT: Set<Int> = emptySet()
-
         /** §8, World 2 "Höllen-Rechenzentrum". A row without block ("–") and without ★ is a trap room. */
         val DESIGN: Map<Int, Design> = mapOf(
             // Act 1 "Handshake"
@@ -94,16 +76,6 @@ class World2DesignTest : DesignTestBase() {
             47 to d("R5", "U9+U10"),
             48 to d("R4+R3", "U11+U9+U18"),
         )
-
-        /**
-         * The pilot rooms built before recipe v2. [DesignTestBase.pilotV2Report] checks them against every v2 rule and
-         * writes the violations to build/reports/pilot-v2-violations.txt; a rebuilt pilot level moves to [REBUILT] (with
-         * its row in [DESIGN], out of [PILOT]) and its solutions to [SOLUTIONS].
-         */
-        val PILOT_V2: Set<Int> = emptySet()
-
-        /** The pilot's solutions, one per round (round 1 first); empty since the pilot is rebuilt. */
-        val PILOT_SOLUTIONS: Map<Int, List<Solution>> = emptyMap()
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
         val REBUILT: Set<Int> = (11..24).toSet()
