@@ -154,8 +154,10 @@ class World2Test {
 
     @Test
     fun metaTwistLevelsKeepShortChains() {
-        // the three meta twists (ghost, pause dodge, lag roll) and the shake level stay at two traps
-        for (n in listOf(36, 39, 40, 43)) assertEquals("level $n", 2, chain(World2.levels[n - 1]))
+        // the shake level stays at two traps; the rebuilt rooms of the ghost, the pause and the lag roll (36, 39, 40) carry the meta trick
+        // beside two to four real traps (docs/LEVEL_DESIGN_V2.md H4), so their chains are as long as the density rules ask
+        for (n in listOf(43)) assertEquals("level $n", 2, chain(World2.levels[n - 1]))
+        for (n in listOf(36, 39, 40)) assertTrue("level $n", chain(World2.levels[n - 1]) in 2..6)
     }
 
     /** The counter just learned (hop the obstacle) followed by the old reflex (keep running) is what the next trap of a chain waits for. */
@@ -232,12 +234,15 @@ class World2Test {
     }
 
     @Test
-    fun theFloorBeneathBobbyTablesIsAWormhole() {
-        // falling into the hole is the way on; jumping over it leaves you in front of the LED field
-        b(38).hopR(5.9f).right(1f).expect(WorldState.DEAD)
-        val fell = b(38).right(0.6f).wait(1.4f)
-        assertTrue("x=${fell.world.player.box.cx}", fell.world.player.box.cx in 23f..26f)
-        fell.expect(WorldState.PLAYING)
+    fun theHolesBeneathBobbyTablesAreWormholes() {
+        // the first hole leads home, alive
+        val home = b(38).rightTo(14.4f).wait(1.2f)
+        home.expect(WorldState.PLAYING)
+        assertTrue("x=${home.world.player.box.cx}", home.world.player.box.cx < 6f)
+        // the second one leads up to the roof, at the far right end
+        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.wait(0.1f)
+        roof.expect(WorldState.PLAYING)
+        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx > 26f && roof.world.player.box.b < 8.5f)
     }
 
     @Test
@@ -250,10 +255,14 @@ class World2Test {
 
     @Test
     fun theFirewallOnlyGoesDownWhenYouPauseAndResume() {
+        // the HUD button dodges the first tap; the back button pauses for real
         val bot = b(39).wait(0.5f).tapPause()
         assertEquals(1, bot.world.dodges)
-        b(39).rightTo(13f).wait(0.5f).right(2f).expect(WorldState.DEAD)
-        assertFalse(b(39).wait(0.5f).pauseResume().wait(0.05f).world.beams[0].on)
+        // up to the stuck firewall on the lane, without turning it off and on again: it burns
+        val toTheFirewall = { World2Rooms.l39ToFirewall(b(39)) }
+        toTheFirewall().leftTo(7.5f).left(1f).expect(WorldState.DEAD)
+        assertTrue(toTheFirewall().world.beams.first { it.laser.id == 'F' }.lit)
+        assertFalse(toTheFirewall().pauseResume().wait(0.05f).world.beams.first { it.laser.id == 'F' }.lit)
     }
 
     @Test
@@ -262,13 +271,15 @@ class World2Test {
     }
 
     @Test
-    fun replayAttackPunishesRepeatingYourself() {
-        val first = { b(36).rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f) }
-        first().wait(0.8f).expect(WorldState.PLAYING)
-        // same plan again: the replay of the last attempt catches you on the island
-        val second = first().right(5f).also { it.expect(WorldState.DEAD) }.retry()
-        second.rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f).wait(2.5f).expect(WorldState.DEAD)
-        assertEquals(Card.GHOST_BLOCK, second.world.lastCard)
+    fun replayAttackPunishesStandingStillWhileYourLastRunComes() {
+        // first attempt: run right until the first saw gets you; the log keeps the run
+        val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
+        // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
+        val second = first.retry().right(0.9f).wait(2.5f)
+        second.expect(WorldState.DEAD)
+        assertEquals(Card.DEVIL_SAW, second.world.lastCard)
+        // without a previous attempt nothing replays: standing there for as long is fine
+        b(36).right(0.9f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -513,19 +524,53 @@ class World2Test {
     }
 
     // ---------- Act 3: Root ----------
-    @Test fun level33() = b(33).right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) .right(0.03f).expect(WorldState.WON)
-    @Test fun level34() = b(34).right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
-        .right(0.60f).expect(WorldState.WON)
-    @Test fun level35() = b(35).rightJump(0.55f).right(0.10f).left(0.10f).left(0.03f).left(0.10f).rightJump(0.55f)
-        .right(0.10f).right(0.03f).left(0.03f).left(0.10f).left(0.03f).rightJump(0.25f).left(0.10f).right(0.03f)
-        .right(0.03f).left(0.25f).rightJump(0.55f).rightJump(0.12f).right(0.10f).right(0.03f).right(0.03f)
-        .right(0.10f).leftJump(0.12f).left(0.10f).left(0.10f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
-    @Test fun level36() = b(36).rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f).waitFor { !it.beams[1].lit }.right(6f).retry().waitUntil(2.7f).rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level37() = b(37).rightJump(0.40f).rightJump(0.40f).rightJump(0.40f).right(1.20f).right(0.25f).rightJump(0.25f) .right(0.60f).expect(WorldState.WON)
-    @Test fun level38() = b(38).right(0.60f).wait(1.00f).right(0.10f).rightJump(0.55f).expect(WorldState.WON)
-    @Test fun level39() = b(39).wait(0.4f).pauseResume().hopR(18.6f).right(3f).expect(WorldState.WON)
-    @Test fun level40() = b(40).right(0.60f).rightJump(0.12f).leftJump(0.25f).right(0.60f).rightJump(0.25f)
-        .jump(0.16f).right(0.60f).right(0.10f).left(0.03f).leftJump(0.25f).right(0.60f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level33() { World2DesignTest.play(33) }
+    /** sudo !!: the hole opens in the lane as you pass, and holding right runs into it. */
+    @Test fun level33RunningOnAlongTheLaneFindsTheHole() = b(33).right(3f).expect(WorldState.DEAD)
+    /** sudo !!: stopping where the block falls is right, but running on under it is the end. */
+    @Test fun level33RunningOnUnderTheDeckBlockIsFatal() = b(33).hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .hopL(23.2f, 0.5f).left(3f).expect(WorldState.DEAD)
+    @Test fun level34() { World2DesignTest.play(34) }
+    /** Reverse Proxy: the wall of links at the right end of the ceiling is the loopback, it hands you back at the start of the ceiling. */
+    @Test fun level34TheObviousLinksLoopYouBack() {
+        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.rightUntil { it.player.box.cx > 24.5f }.wait(0.3f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 17f)
+    }
+    /** Reverse Proxy: the dark link in the top left is dead until you pass the middle of the ceiling. */
+    @Test fun level34TheDarkLinkIsDeadAtFirst() = assertFalse(b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.world.links.first { it.id == '3' }.on)
+    @Test fun level35() { World2DesignTest.play(35) }
+    /** Pipeline: standing still on the belt in the duct is carried out of it, and the floor behind you has opened: you end up on the lane again. */
+    @Test fun level35StandingInTheDuctIsCarriedOutAndDropsToTheLane() {
+        val bot = b(35).hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+            .rightUntil { it.player.box.cx > 15f }.wait(3f)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 12f)
+    }
+    /** Pipeline: running straight on along the lane falls into the first hole. */
+    @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
+    @Test fun level36() { World2DesignTest.play(36) }
+    @Test fun level37() { World2DesignTest.play(37) }
+    /** Two-Factor Auth: without the first switch the wall holds, whatever you do on the lane. */
+    @Test fun level37TheFirstWallHoldsWithoutTheSwitch() {
+        val bot = b(37).right(3f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 14f)
+    }
+    /** Two-Factor Auth: waiting on the first switch for the result is the end, the ceiling over it comes down. */
+    @Test fun level37WaitingOnTheFirstSwitchIsFatal() = b(37).leftTo(2.5f).wait(2f).expect(WorldState.DEAD)
+    /** Two-Factor Auth: standing on the second switch for the result is the end, too. */
+    @Test fun level37WaitingOnTheSecondSwitchIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f).wait(2f).expect(WorldState.DEAD)
+    @Test fun level38() { World2DesignTest.play(38) }
+    /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
+    @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level39() { World2DesignTest.play(39) }
+    @Test fun level40() { World2DesignTest.play(40) }
+    /** Ping Pong: the wall that wakes up as you pass the middle comes for whoever stands still. */
+    @Test fun level40TheWallComesForWhoStandsStill() = b(40).leftTo(20f).wait(6f).expect(WorldState.DEAD)
+    /** Ping Pong: and running straight into it is the end, too. */
+    @Test fun level40RunningStraightIntoTheWallIsFatal() = b(40).left(5f).expect(WorldState.DEAD)
     @Test fun level41() = b(41).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f) .right(0.60f).expect(WorldState.WON)
     @Test fun level42() = b(42).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f).expect(WorldState.WON)
     @Test fun level43() = b(43).shake().rightTo(23.5f).waitFor { it.beams[0].lit }.waitFor { !it.beams[0].lit }.hopR(24.6f).right(2f).expect(WorldState.WON)

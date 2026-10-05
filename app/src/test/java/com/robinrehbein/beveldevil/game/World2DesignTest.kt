@@ -78,7 +78,7 @@ class World2DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (1..32).toSet()
+        val REBUILT: Set<Int> = (1..40).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
@@ -185,6 +185,14 @@ class World2DesignTest : DesignTestBase() {
                 { rightTo(8.3f).landRight().hopR(18.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(22.0f).leftTo(15.8f)
                     .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },
             ),
+            33 to listOf({ World2Rooms.l33(this) }, { World2Rooms.l33r2(this) }),
+            34 to listOf({ World2Rooms.l34(this) }, { World2Rooms.l34r2(this) }),
+            35 to listOf({ World2Rooms.l35(this) }),
+            36 to listOf({ World2Rooms.l36(this) }),
+            37 to listOf({ World2Rooms.l37(this) }),
+            38 to listOf({ World2Rooms.l38(this) }),
+            39 to listOf({ World2Rooms.l39(this) }),
+            40 to listOf({ World2Rooms.l40(this) }),
             25 to listOf({ World2Rooms.l25(this) }, { World2Rooms.l25r2(this) }),
             26 to listOf({ World2Rooms.l26(this) }, { World2Rooms.l26r2(this) }),
             27 to listOf({ World2Rooms.l27(this) }),

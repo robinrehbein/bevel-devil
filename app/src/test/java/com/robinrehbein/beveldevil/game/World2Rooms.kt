@@ -172,6 +172,57 @@ object World2Rooms {
         .leftUntil { it.player.box.b > 12f }.landLeft().rightJump(0.35f).landRight()
         .hopR(6.4f).rightUntil { it.player.box.cx > 16.9f }.right(4f)
 
+    // ---------- block C (33-40): the rebuilt rooms ----------
+
+    /** 33: along the lane (hop the hole, hop it again), up the two steps and left onto the deck, stop when the block drops, climb it and hop the spikes to the door. */
+    fun l33(b: Bot) = b.hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(23.2f, 0.5f)
+        .leftUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopL(15.6f, 0.5f).hopL(8.2f, 0.5f).left(1.5f)
+
+    /** 33, round 2: hop the LEDs where round 1 hopped the hole, hop the hole that opens under the echo, up the steps, along the deck without stopping (the block drops late), hop the spikes. */
+    fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.2f, 0.5f)
+        .hopL(8.2f, 0.5f).left(1.5f)
+
+    /** 34: along the lane until the gravity turns over, up onto the ceiling and back left along it, into the link that comes up, off the ledge, hop the LEDs and run to the door. */
+    fun l34(b: Bot) = b.rightTo(14f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cy > 8f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(15.4f, 0.5f).right(3f)
+
+    /** 34, round 2: hop the LEDs, on along the lane to the far end where the gravity turns over, left along the ceiling, wait for the stale link to be renewed and step in; drop off the ledge, hop the LEDs again and run to the door. */
+    fun l34r2(b: Bot) = b.hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cx < 18.2f }
+        .waitFor { w -> w.links.first { it.id == '3' }.to == 10 to 10 }.leftUntil { it.player.box.cy > 8f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(17.8f, 0.5f).right(3.5f)
+
+    /** 35: left along the lane (hop the two holes), up the two steps, onto the deck and right through the duct against its belt, hop along the second belt to the door. */
+    fun l35(b: Bot) = b.hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+        .rightUntil { it.player.box.cx > 23f }.hopR(24.4f, 0.5f).hopR(26.0f, 0.5f).right(2f)
+
+    /** 36: along the deck (hop the saw that rolls at you, hop the second one as you land), off its end, left along the lane (hop the saw from the left, wait for the guard to turn, run past it) to the door. */
+    fun l36(b: Bot) = b.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.5f).landRight().rightUntil { sawAhead(it, 4.9f) }.rightJump(0.5f).landRight()
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { sawAheadRight(it, 4.3f) }.leftJump(0.5f).landLeft()
+        .leftUntil { sawAheadRight(it, 5.7f) }.leftJump(0.5f).landLeft().left(2.5f)
+
+    /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */
+    fun sawAheadRight(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
+
+    /** 37: left onto the first switch, back right through the dark wall, stop where the block drops and climb it, up onto the steps, over to the roof and onto the second switch, run on off the roof and through the wall to the door. */
+    fun l37(b: Bot) = b.leftTo(2.5f).rightTo(5.5f)
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
+        .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f)
+
+    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole, along the roof from the far end to the door, never standing on the planks. */
+    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.leftTo(7.0f).leftJump(0.5f).landLeft().hopL(4.4f, 0.5f).left(1f)
+
+    /** 39: along the deck (stop for the flash, hop the trip wire), off its end, left along the lane (stop for the flash), turn the stuck firewall off and on again, to the door. */
+    fun l39ToFirewall(b: Bot) = b.rightUntil { it.player.box.cx > 7.8f }.waitFor(cond = clear('A')).hopR(15.0f, 0.5f)
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { it.player.box.cx < 18.2f }.waitFor(cond = clear('C'))
+        .leftTo(13.5f)
+
+    fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(7.5f).left(1f)
+
+    /** 40: left along the lane until the wall that stalks you is five tiles away, hop it (it turns around after you), run to the door. */
+    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 4.0f) }.leftJump(0.5f).landLeft().left(3f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )
