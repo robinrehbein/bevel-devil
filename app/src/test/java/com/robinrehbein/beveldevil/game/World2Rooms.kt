@@ -113,6 +113,14 @@ object World2Rooms {
     fun l25r2(b: Bot) = l25Top(b.rightUntil { it.player.box.cx > 9.0f }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 15.2f }.rightJump(0.35f).landRight()
         .rightJump(0.35f).landRight())
 
+    /** 26: hop the piece that drops on the top deck, off its left end onto the middle deck, right along it (the queue follows), through the gap to the lane, left to the door (hop the low block). */
+    fun l26(b: Bot) = b.leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.grounded && it.player.box.b > 9.5f }
+        .rightTo(18.2f).rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(17.2f).leftJump(0.35f).landLeft().left(1.5f)
+
+    /** 26, round 2: along the top deck and off its left end, right along the middle deck (hop the queue that comes toward you), through the gap, left along the lane (hop the second queue) to the door. */
+    fun l26r2(b: Bot) = b.leftUntil { it.player.box.b > 8f }.rightUntil { wallOnTheRight(it, 'S', 2.55f) }.rightJump(0.5f).landRight()
+        .rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { wallOnTheLeft(it, 'Q', 2.7f) }.leftJump(0.5f).landLeft().left(2.5f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

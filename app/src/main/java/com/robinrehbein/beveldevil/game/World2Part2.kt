@@ -343,36 +343,41 @@ object World2Part2 {
             spawn(1); door(10, 8); bits(25)
         },
 
-        // 26 — the gate stays shut for seconds, but idle connections are dropped: keep hopping while you wait. Behind the gate the floor drops, and the hop over it lands in spikes
+        // 26 — the queue, a trap room (U8 the stalker): you start on the top deck at the right and run left; the deck piece ahead drops as you
+        // come near (hop it) and at the left end you fall onto the middle deck, where you run right. As you land the queue starts: a block of
+        // spikes at the left end that follows you along the deck (keep moving, it is slower than you). At the right end you fall onto the lane
+        // and run left to the door, and a second queue starts at the right wall behind you and follows you; a low block on the lane to hop.
+        // Rematch: the queues are waiting in front of you. The first one hangs at the far right of the middle deck (its end is open now) and
+        // the second one stands on the lane next to the door; both come toward you, slowly, and have to be hopped (the one at the deck
+        // as you come up to it, then you fall to the lane; round 1's run walks into it)
         Level(
             name = T("Ticket Number", "Wartenummer"),
-            intro = T("The gate opens shortly. Please linger.", "Das Tor öffnet gleich. Bitte kurz verweilen."),
-            legend = mapOf('A' to hidden),
-            start = listOf(Laser('L', 15 to 1, 15 to 14, on = 3.5f, off = 1.6f)),
+            intro = T("Your number is 41. Now serving: 3. Please walk.", "Ihre Nummer ist 41. Aufgerufen wird: 3. Bitte gehen Sie."),
             traps = listOf(
-                trap(Idle(1.5f), Play(Card.CRUMBLE), Fall('a'), say("Connection closed: idle timeout.", "Verbindung beendet: Leerlauf-Timeout.")),
-                trap(PastX(15.4f), Fall('b'), say("Session expired.", "Sitzung abgelaufen.")),
-                trap(Airborne(18.2f, 21f), Show('A'), say("Re-login required.", "Erneute Anmeldung nötig.")),
+                trap(BeforeX(26f), Fall('f'), say("Number 40 was called. The floor was number 39.", "Nummer 40 wurde aufgerufen. Der Boden war Nummer 39."), delay = 0.15f),
+                trap(Zone(0f, 8f, 24f, 10.6f), Play(Card.STALKER), Chase('S', speed = 5f, left = 0f, right = 24f), say("The queue moves up. Onto you.", "Die Schlange rückt auf. Auf dich.")),
+                trap(Zone(23f, 12f, 31f, 15.6f), Chase('Q', speed = 5.5f, left = 28f, right = 0f), say("A second queue. Same service.", "Eine zweite Schlange. Gleicher Service.")),
             ),
-            // rematch: idling is fine now, but the queue moves up: a spike pops up behind you and creeps after you, right up to
-            // the gate. Hopping on the spot (round 1's keep-alive) lands on it; jump over it and back until the gate opens
+            hint = T("The queue is slower than you. Do not stand in line.", "Die Schlange ist langsamer als du. Stell dich nicht an."),
             rematch = listOf(
                 Round(
-                    T("Your number was called. Take a new one.", "Nummer 2, bitte. Ach, du schon wieder."),
-                    legend = mapOf('S' to hidden),
+                    T("Number 42. Please come to counter 2. The queue is already there.", "Nummer 42. Bitte zu Schalter 2. Die Schlange ist schon da."),
+                    hint = T("The queues stand in front of you now and come toward you. Hop them.", "Die Schlangen stehen jetzt vor dir und kommen dir entgegen. Spring drüber."),
                     traps = listOf(
-                        trap(PastX(10.5f), Play(Card.STALKER), Show('S'), Chase('S', speed = 3f, left = 4f, right = 4.5f),
-                            say("The queue moves up. Onto you.", "Die Schlange rückt auf. Auf dich.")),
-                        trap(PastX(15.4f), Fall('b')),
-                        trap(Airborne(18.2f, 21f), Show('A'), say("Please wait quietly.", "Bitte leise warten.")),
+                        trap(Zone(0f, 8f, 24f, 10.6f), Play(Card.STALKER), Chase('S', speed = 2.5f, left = 19f, right = 0f), say("The queue moves up. Toward you.", "Die Schlange rückt auf. Auf dich zu.")),
+                        trap(Zone(22f, 9.9f, 31f, 15.6f), Chase('Q', speed = 3.5f, left = 0f, right = 17f), say("The second queue was already waiting.", "Die zweite Schlange wartete schon.")),
                     ),
-                ) { put(9, 14, 'S') },
+                ) {
+                    fill(0..1, 9..9, '.'); fill(28..30, 10..10, '.'); put(29, 9, 'S')
+                    put(30, 14, '.'); put(14, 14, '.'); put(11, 14, 'Q'); door(7, 14)
+                },
             ),
         ) {
             border(); floor()
-            fill(9..13, 15..17, 'a'); fill(18..20, 15..17, 'b')
-            put(23, 14, 'A'); put(24, 14, 'A')
-            spawn(); door(); bits(26)
+            fill(14..30, 5..5); fill(20..22, 5..5, 'f')
+            fill(0..24, 10..10); fill(28..30, 10..10)
+            fill(0..1, 9..9, 'S'); put(30, 14, 'Q'); put(14, 14, '#')
+            spawn(29, 4); door(4, 14); bits(26)
         },
 
         // 27 — EASTER EGG: DDoS (Distributed Denial of Stairs, on a belt that runs against you); after the stairs the belt speeds up against you

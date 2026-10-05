@@ -157,13 +157,10 @@ class World2DeckTest {
     /** Load Balancer, round 2: the nodes sit two tiles further on, crumble faster, and the stone up top is a belt. */
     @Test fun l25r2() { World2DesignTest.play(25, round = 2) }
     @Test fun l25r2TheRoundOneHopsLandInThePit() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
-    /** Ticket Number, round 2: the queue (a spike) creeps after you up to the gate; hop over it and back until the gate opens. */
-    private fun queue(w: World) = w.group('S').homeX + w.group('S').ox
-    @Test fun l26r2() = b(26, 2).rightTo(13.6f).waitFor { queue(it) > it.player.box.cx - 1.6f }.leftJump(0.35f).landLeft()
-        .waitFor { !it.beams[0].lit || queue(it) < it.player.box.cx + 1.6f }.rightJump(0.35f).landRight()
-        .waitFor { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
-    @Test fun l26r2KeepAliveHopsLandOnTheQueue() = b(26, 2).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.expect(WorldState.DEAD)
-    @Test fun l26r2StandingStillAnywhereIsFineUntilTheQueueComes() = b(26, 2).rightTo(8f).wait(3f).expect(WorldState.PLAYING)
+    /** Ticket Number, round 2: both queues come toward you now; hop each of them. */
+    @Test fun l26r2() { World2DesignTest.play(26, round = 2) }
+    @Test fun l26r2TheRoundOneRunMeetsTheQueueHeadOn() = World2Rooms.l26(b(26, 2)).expect(WorldState.DEAD)
+    @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
     /** Race Condition, round 2: the landing behind the first pendulum turns the belt forward; ride it, slip under the second one, jump. */
     @Test fun l29r2() = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight()
         .waitFor { w -> w.saws.filter { kotlin.math.abs(it.x - 21f) < 0.5f }.all { it.y < 12.2f } }.rightTo(22.6f).rightJump(0.55f).landRight()
@@ -197,8 +194,8 @@ class World2DeckTest {
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },
+            25 to World2Rooms::l25,
+            26 to World2Rooms::l26,
             29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
                 .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) },
             33 to { b -> b.right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).right(0.03f) },
