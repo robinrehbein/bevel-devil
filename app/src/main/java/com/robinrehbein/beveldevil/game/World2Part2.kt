@@ -257,7 +257,7 @@ object World2Part2 {
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
             traps = listOf(
                 trap(PastX(2.6f), Play(Card.SINKING), Fall('g'), say("Merge lane closed. Merge anyway.", "Einfädelspur gesperrt. Bitte trotzdem einfädeln."), delay = 0.1f),
-                trap(Touch('a'), Move('a', 0f, -13f, 3.5f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
+                trap(Touch('a'), Move('a', 0f, -13f, 3f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
                 trap(PastX(15f), Move('b', -3f, 0f, 14f), say("Roadworks ahead. Nobody told the road.", "Baustelle voraus. Der Straße hat's keiner gesagt.")),
                 trap(Touch('c'), Move('c', 0f, -4f, 12f), say("Express lift to the exit. Doors closing.", "Expresslift zur Ausfahrt. Türen schließen.")),
                 trap(Touch('c'), Fall('c'), say("Out of service. Effective immediately.", "Außer Betrieb. Ab sofort."), delay = 0.8f),
@@ -271,7 +271,7 @@ object World2Part2 {
             fill(12..12, 10..14); fill(12..27, 9..9); fill(19..21, 9..9, 'b'); fill(26..27, 9..9, 'c')
             fill(28..30, 1..14)
             fill(13..25, 5..5)
-            spawn(1); door(14, 4); bits(23)
+            spawn(1); door(18, 4); bits(23)
         },
 
         // 24 — the uplink, a trap room (U2 the ceiling comes down, with a saw from the side as the last surprise): the elevator is out of order and the
@@ -284,8 +284,8 @@ object World2Part2 {
             legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
                 trap(PastX(16.8f), Move('V', 0f, 16f, 25f), say("Stalactites. This is a cave now.", "Stalaktiten. Das hier ist jetzt eine Höhle."), delay = 0.3f),
-                trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 2.8f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
-                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 8f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
+                trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 3.6f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
+                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
             ),
             hint = T("Wait for the stalactites to fall. Then run, and do not stop under the deck.", "Warte, bis die Stalaktiten gefallen sind. Dann lauf, und bleib nicht unter dem Deck stehen."),
         ) {
@@ -293,7 +293,7 @@ object World2Part2 {
             fill(0..26, 6..6)
             fill(20..21, 1..2, 'V')
             fill(19..26, 7..8, 'r')
-            spawn(1, 5); door(9, 14); bits(24)
+            spawn(1, 5); door(12, 14); bits(24)
         },
 
         // 25 — four belts over a spike pit, each going the other way and crumbling when you step on it
