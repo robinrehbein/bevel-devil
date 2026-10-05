@@ -271,32 +271,29 @@ object World1Part1 {
             put(28, 8, 'P'); put(28, 14, 'D')
         },
 
-        // 12 — spawn on the right, door on the left; jump the spike and spikes sprout behind the landing; the next hop lands before a pit
+        // 12 — spawn on the right, door on the left. Hop the spike and the keys swap as you land; the next hop and the next spike
+        // are done with swapped hands
         Level(
             name = T("Return Trip", "Rückreise"),
             intro = T("The door is on the left. I know. Unusual.", "Die Tür ist links. Ich weiß. Ungewohnt."),
+            hint = T("After the first hop your keys change sides. Think before you press.", "Nach dem ersten Sprung wechseln die Tasten die Seite. Erst denken, dann drücken."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
-                trap(Airborne(19f, 21.6f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Spikes read right to left too.", "Spikes lesen auch von rechts nach links."))),
-                trap(Airborne(16.4f, 18f), Fall('c')),
+                trap(Landed(15f, 23.8f), Play(Card.TWISTED), Swap(true), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
             ),
-            // rematch: no spikes this time; the first landing swaps the controls, so the hop-hop rhythm of round 1
-            // jumps back the way you came. Walk on, pressing right
+            // rematch: the keys are swapped from the first steps, and the spike you hop with them grows where you land
             rematch = listOf(
                 Round(
                     T("Rematch. Same trip, other luggage.", "Revanche. Gleiche Reise, anderes Gepäck."),
                     traps = listOf(
-                        trap(Landed(16.5f, 21.6f), Play(Card.TWISTED), Swap(true),
-                            Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
-                        trap(Airborne(16.4f, 18f), Fall('c')),
+                        trap(BeforeX(28.2f), Swap(true), Say(T("Keys packed already. Left is right. Again.", "Tasten schon gepackt. Links ist rechts. Wieder."))),
+                        trap(Landed(4f, 10.6f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Souvenirs grow where you land.", "Souvenirs wachsen, wo du landest."))),
                     ),
-                ),
+                ) { put(24, 14, '.'); put(6, 14, 'A'); put(29, 14, '.'); put(30, 14, 'P') },
             ),
         ) {
-            border(); floor()
-            put(22, 14, '^')
-            put(15, 14, 'A'); put(16, 14, 'A')
-            fill(11..12, 15..17, 'c')
+            border(); floor(); pit(11..12)
+            put(24, 14, '^'); put(6, 14, '^')
             put(29, 14, 'P'); put(2, 14, 'D')
         },
 

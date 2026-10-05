@@ -36,5 +36,9 @@ object World1RoomsA {
                 .rightTo(3.6f).rightJump(0.12f).landRight().rightTo(8.8f).rightJump(0.5f).landRight()
                 .rightTo(13.8f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(3f) },
         ),
+        12 to listOf<Solution>(
+            { leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
+            { leftUntil { it.swapped }.hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
+        ),
     )
 }
