@@ -188,6 +188,7 @@ class World2DesignTest : DesignTestBase() {
             33 to listOf({ World2Rooms.l33(this) }, { World2Rooms.l33r2(this) }),
             34 to listOf({ World2Rooms.l34(this) }, { World2Rooms.l34r2(this) }),
             35 to listOf({ World2Rooms.l35(this) }),
+            36 to listOf({ World2Rooms.l36(this) }),
             25 to listOf({ World2Rooms.l25(this) }, { World2Rooms.l25r2(this) }),
             26 to listOf({ World2Rooms.l26(this) }, { World2Rooms.l26r2(this) }),
             27 to listOf({ World2Rooms.l27(this) }),

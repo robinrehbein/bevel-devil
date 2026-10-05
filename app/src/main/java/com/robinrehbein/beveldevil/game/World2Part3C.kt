@@ -3,10 +3,13 @@ package com.robinrehbein.beveldevil.game
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
+import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
+import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
@@ -133,6 +136,26 @@ object World2Part3C {
             fill(21..22, 15..17, 'a'); fill(15..16, 15..17, 'b')
             fill(9..10, 13..14); fill(3..8, 11..14)
             spawn(28, 14); door(29, 8)
+        },
+
+        // 36 — access log (a trap room: U16 the replay, with saws). Along the deck a saw rolls at you, and as you land from the hop a second, faster one;
+        // off the end of the deck you drop onto the lane, a saw rolls in from the left, and a guard patrols in front of the door. Every attempt is
+        // written to the log, and from the second attempt on the log is replayed against you: your last try walks the deck again as a ghost,
+        // a second behind you
+        Level(
+            name = T("Access Log", "Zugriffsprotokoll"),
+            intro = T("Nothing new here. Honestly.", "Nichts Neues hier. Ehrlich."),
+            traps = listOf(
+                trap(PastX(4.5f), Play(Card.DEVIL_SAW), Saw(32f, 8.4f, -6f, 0f), say("Login 1: it comes to you.", "Login 1: Er kommt zu dir.")),
+                trap(Landed(18f, 27f), Saw(32f, 8.4f, -9f, 0f), say("Login 2: same, but in a hurry.", "Login 2: Genauso, aber eilig.")),
+                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7f, 0f), say("Login 3: from the other side.", "Login 3: Von der anderen Seite.")),
+                trap(Landed(6f, 16f), Saw(-1.5f, 14.4f, 12f, 0f), say("Login 4: the guard has a bad temper.", "Login 4: Der Wächter hat schlechte Laune.")),
+                trap(PastX(2.6f), Ghost(0.4f), say("Replay attack: I sent your last run again.", "Replay-Angriff: Ich habe deinen letzten Versuch nochmal gesendet.")),
+            ),
+        ) {
+            border(); floor()
+            fill(1..27, 9..9)
+            spawn(2, 8); door(2, 14)
         },
     )
 }

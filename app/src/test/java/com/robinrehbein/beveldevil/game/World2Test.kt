@@ -154,8 +154,10 @@ class World2Test {
 
     @Test
     fun metaTwistLevelsKeepShortChains() {
-        // the three meta twists (ghost, pause dodge, lag roll) and the shake level stay at two traps
-        for (n in listOf(36, 39, 40, 43)) assertEquals("level $n", 2, chain(World2.levels[n - 1]))
+        // the shake level stays at two traps; the rebuilt rooms of the ghost, the pause and the lag roll (36, 39, 40) carry the meta trick
+        // beside two to four real traps (docs/LEVEL_DESIGN_V2.md H4), so their chains are as long as the density rules ask
+        for (n in listOf(43)) assertEquals("level $n", 2, chain(World2.levels[n - 1]))
+        for (n in listOf(36, 39, 40)) assertTrue("level $n", chain(World2.levels[n - 1]) in 2..6)
     }
 
     /** The counter just learned (hop the obstacle) followed by the old reflex (keep running) is what the next trap of a chain waits for. */
@@ -262,13 +264,15 @@ class World2Test {
     }
 
     @Test
-    fun replayAttackPunishesRepeatingYourself() {
-        val first = { b(36).rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f) }
-        first().wait(0.8f).expect(WorldState.PLAYING)
-        // same plan again: the replay of the last attempt catches you on the island
-        val second = first().right(5f).also { it.expect(WorldState.DEAD) }.retry()
-        second.rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f).wait(2.5f).expect(WorldState.DEAD)
-        assertEquals(Card.GHOST_BLOCK, second.world.lastCard)
+    fun replayAttackPunishesStandingStillWhileYourLastRunComes() {
+        // first attempt: run right until the first saw gets you; the log keeps the run
+        val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
+        // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
+        val second = first.retry().right(0.9f).wait(2.5f)
+        second.expect(WorldState.DEAD)
+        assertEquals(Card.DEVIL_SAW, second.world.lastCard)
+        // without a previous attempt nothing replays: standing there for as long is fine
+        b(36).right(0.9f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -537,7 +541,7 @@ class World2Test {
     }
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
-    @Test fun level36() = b(36).rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f).waitFor { !it.beams[1].lit }.right(6f).retry().waitUntil(2.7f).rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level36() { World2DesignTest.play(36) }
     @Test fun level37() = b(37).rightJump(0.40f).rightJump(0.40f).rightJump(0.40f).right(1.20f).right(0.25f).rightJump(0.25f) .right(0.60f).expect(WorldState.WON)
     @Test fun level38() = b(38).right(0.60f).wait(1.00f).right(0.10f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level39() = b(39).wait(0.4f).pauseResume().hopR(18.6f).right(3f).expect(WorldState.WON)
