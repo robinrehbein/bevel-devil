@@ -49,5 +49,11 @@ object World1RoomsA {
                 .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightTo(25.6f)
                 .waitFor { it.group('b').oy >= 2.6f }.leftTo(9.0f) },
         ),
+        15 to listOf<Solution>(
+            { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
+                .leftJump(0.5f).landLeft().leftTo(1.5f) },
+            { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
+                .leftJump(0.5f).landLeft().left(3.2f).landLeft().rightTo(12.0f) },
+        ),
     )
 }

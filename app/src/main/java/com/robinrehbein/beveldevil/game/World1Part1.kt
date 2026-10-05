@@ -33,6 +33,24 @@ object World1Part1 {
     private val hiddenCeilingSpike = Glyph(spike = true, dir = Dir.DOWN, hidden = true)
     private val ceilingSpike = Glyph(spike = true, dir = Dir.DOWN)
 
+    /**
+     * The door runs from you in several hops (up, across, down), so it never flies through the player. The hops are chained
+     * with delays from their flight times; [first] runs with the first hop.
+     */
+    private fun flee(trigger: Trigger, fromCol: Int, fromRow: Int, first: List<Action>, vararg hops: DoorTo): List<Trap> {
+        var x = fromCol - 0.1f
+        var y = fromRow + 1f - 1.6f
+        var t = 0f
+        return hops.mapIndexed { i, h ->
+            val trap = Trap(trigger, (if (i == 0) first else emptyList()) + h, delay = t)
+            val nx = h.col - 0.1f
+            val ny = h.row + 1f - 1.6f
+            t += kotlin.math.hypot(nx - x, ny - y) / h.speed + 0.03f
+            x = nx; y = ny
+            trap
+        }
+    }
+
     val levels: List<Level> = listOf(
         // 1 — the floor in front of you collapses; then the door takes two steps away from you
         Level(
@@ -338,31 +356,38 @@ object World1Part1 {
             put(3, 14, 'P'); put(9, 14, 'D')
         },
 
-        // 15 — a pit in front of you falls out from under the feet; the door hovers one tile too far left of where it will end up
-        // EASTER EGG: off-by-one error (i <= n)
+        // 15 — EASTER EGG: off-by-one error. The door stands in the middle of the floor; as you come close it takes the long way
+        // to the top left, over the stairs at the far right. Spiked blocks come down on the floor and on the upper floor.
+        // Rematch: the upper floor ends early and the door comes back to where it began (the loop closes)
         Level(
             name = T("Loop", "Schleife"),
             intro = T("for (i = 0; i < n; i++)  ... All correct. Guaranteed.", "for (i = 0; i < n; i++)  ... Alles korrekt. Garantiert."),
-            traps = listOf(
-                trap(Touch('a'), Fall('a'), delay = 0.06f),
-                trap(Airborne(24.3f, 26.2f), Play(Card.DECOY), DoorTo(30, 13, speed = 20f), Say(T("Index out of bounds. One tile to the right.", "Index außerhalb. Ein Feld weiter rechts."))),
+            hint = T("Follow the door. The long way round.", "Folge der Tür. Den langen Weg."),
+            legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN), 'E' to Glyph(spike = true, dir = Dir.DOWN)),
+            traps = flee(PastX(7f), 14, 14, listOf(Play(Card.DECOY), Say(T("Index out of bounds. The door took the long way.", "Index außerhalb. Die Tür nimmt den langen Weg."))),
+                DoorTo(14, 2, speed = 14f), DoorTo(2, 8, speed = 14f)) + listOf(
+                trap(Zone(22f, 12f, 23f, 15f), Move('C', 0f, 4.2f, 9f), Say(T("Iteration one. Mind your head.", "Durchlauf eins. Kopf einziehen."))),
+                trap(Zone(22f, 5f, 23f, 9.5f), Move('E', 0f, 6.2f, 9f), Say(T("Iteration two. Same head.", "Durchlauf zwei. Derselbe Kopf."))),
             ),
-            // rematch: everything moved one tile to the right, the hole in the floor too: the old jump lands in it
+            // rematch: the door runs to the top left again, and when you get close it runs all the way back; the upper floor
+            // has a hole at its end now, so the way back down is a fall
             rematch = listOf(
                 Round(
                     T("Rematch. I shifted everything by one.", "Revanche. Alles um eins verschoben."),
-                    traps = listOf(
-                        trap(Touch('g'), Fall('g'), delay = 0.06f),
-                        trap(Landed(14.5f, 17.8f), Fall('g')),
-                        trap(Airborne(24.3f, 26.2f), Play(Card.DECOY), DoorTo(30, 13, speed = 20f), Say(T("Consistently off by one. That's a feature.", "Konsequent um eins daneben. Ist ein Feature."))),
-                    ),
-                ) { fill(15..17, 15..17, 'g') },
+                    traps = flee(PastX(7f), 14, 14, listOf(Play(Card.SHY_DOOR), Say(T("Off by one. Again.", "Um eins daneben. Schon wieder."))),
+                        DoorTo(14, 2, speed = 14f), DoorTo(2, 8, speed = 14f)) + listOf(
+                        trap(Zone(22f, 12f, 23f, 15f), Move('C', 0f, 4.2f, 9f)),
+                        trap(Zone(22f, 5f, 23f, 9.5f), Move('E', 0f, 6.2f, 9f)),
+                    ) + flee(Zone(1f, 5f, 9f, 9.5f), 2, 8, listOf(Say(T("Loop closed. The door is back at the start.", "Schleife geschlossen. Die Tür ist wieder am Anfang."))),
+                        DoorTo(2, 2, speed = 14f), DoorTo(12, 2, speed = 14f), DoorTo(12, 14, speed = 14f)),
+                ) { fill(1..4, 9..9, '.') },
             ),
         ) {
             border(); floor()
-            fill(13..14, 15..17, 'a')
-            fill(27..30, 14..14, '^')
-            put(2, 14, 'P'); put(29, 13, 'D')
+            fill(27..28, 13..14); fill(29..30, 11..14)
+            fill(1..28, 9..9)
+            fill(21..22, 10..10, 'C'); fill(22..23, 1..2, 'E')
+            put(2, 14, 'P'); put(14, 14, 'D')
         },
 
         // 16 — everything at once: a saw behind you, a pit, spikes behind the landing, and the door takes the ceiling with it
