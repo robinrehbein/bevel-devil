@@ -611,10 +611,12 @@ class ScreenshotTest {
             "18-r2-syn" to at(18, 1) { rooms.l18ToPad(this).wait(0.4f) }, "18-r2-ack" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.3f) },
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
             "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) }, "20-r2" to at(20, 1),
-            "21" to at(21), "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
+            "20-r2-ledge" to at(20, 1) { rooms.l20ToLedge(this).wait(0.3f) },
+            "21" to at(21), "21-closet" to at(21) { rooms.l21ToCloset(this).wait(0.5f) }, "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
             "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
             "23" to at(23), "23-lane2" to at(23) { rooms.l23Lane1(this).hopR(8.5f).wait(0.4f) },
             "24" to at(24), "24-floor2" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.3f) },
+            "24-packet" to at(24) { rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }.wait(0.7f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }
         for ((name, w) in scenes) {
