@@ -384,8 +384,8 @@ class DesignRulesTest {
 
     @Test
     fun theRealUplinkCountsAsALaserGate() {
-        // 2-24: "a gate flashes where you land" (Zone trigger, on 0.7 s, off 40 s)
-        assertTrue(DesignRules.hasLaserGate(World2.levels[23]))
+        // 2-18: the beam over the stairs flashes where you land (PastX trigger, on 0.4 s, off 40 s)
+        assertTrue(DesignRules.hasLaserGate(World2.levels[17]))
     }
 
     // ---------- say lint (H19) ----------
