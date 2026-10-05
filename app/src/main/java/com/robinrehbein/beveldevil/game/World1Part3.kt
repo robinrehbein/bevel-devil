@@ -206,23 +206,27 @@ object World1Part3 {
             put(2, 14, 'P'); put(6, 8, 'D')
         },
 
-        // 39 — a pit too wide to jump; the platform at its edge slides with the phone's tilt; hopping onto it and hopping off it both land on spikes
-        // MOTION: Tilt
+        // 39 — hardware store: a ceiling tile drops in aisle 6; the pit is too wide to jump, and the only way across is the shelf at its edge,
+        // which slides with the tilt of your phone (a ferry): the far bank gives way as you pass, so jump off the ferry's end onto the
+        // stairs. Upstairs, on the way back, the next ceiling tile comes down where you hurry
+        // MOTION: Tilt (one of the two phone-motion levels of the act)
         Level(
             name = T("Hardware Store", "Baumarkt"),
             intro = T("I built something wide. No instructions.", "Ich habe was Breites gebaut. Ohne Anleitung."),
-            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
+            hint = T("The shelf at the edge of the pit slides when you tilt the phone. Hold it tilted, and jump off the shelf's end.", "Das Regal am Rand des Lochs gleitet, wenn du das Handy kippst. Halte es schräg und spring am Ende vom Regal ab."),
+            start = listOf(Tilt('a', left = 0f, right = 7f, speed = 8f)),
             traps = listOf(
-                trap(Airborne(5.5f, 9.6f), Show('B')),
-                trap(Airborne(22f, 28f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Nobody said you could jump.", "Springen hat niemand erlaubt."))),
+                trap(PastX(3f), Play(Card.HEADBUTT), Fall('s'), Shake(0.4f), Say(T("Aisle 6: ceiling tiles. Falling prices.", "Gang 6: Deckenplatten. Fallende Preise."))),
+                trap(PastX(17f), Fall('g'), Say(T("The far bank is a display model.", "Das andere Ufer ist ein Ausstellungsstück."))),
+                trap(Zone(24.5f, 7f, 26f, 9.5f), Fall('t'), Shake(0.5f), Say(T("Ceiling tiles upstairs, too. Mind your head.", "Deckenplatten gibt's oben auch. Kopf einziehen.")), delay = 0.45f),
             ),
-            start = listOf(Tilt('a', left = 0f, right = 13f, speed = 6f)),
         ) {
-            border(); floor(); pit(8..23)
-            put(9, 14, 'B'); put(10, 14, 'B')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            fill(8..10, 15..15, 'a')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); pit(10..19)
+            fill(10..12, 15..15, 'a'); fill(20..21, 15..17, 'g')
+            fill(6..8, 1..1, 's'); fill(24..26, 1..1, 't')
+            fill(22..26, 13..14); fill(28..30, 11..14)
+            fill(10..26, 9..9)
+            put(1, 14, 'P'); put(10, 8, 'D')
         },
 
         // 40 — at the first step everything flips: gravity and controls. Walk the ceiling.

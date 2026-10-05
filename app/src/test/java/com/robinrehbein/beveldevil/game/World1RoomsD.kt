@@ -41,6 +41,13 @@ object World1RoomsD {
                 .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
                 .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
         ),
+        // 39: let the ceiling tile land and hop it, board the shelf, tilt and ride it across, jump off its end onto the stairs, up, back along
+        // the upper floor, let the second tile land and hop it
+        39 to listOf<Solution>(
+            { rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightTo(10.6f).tilt(1f)
+                .waitFor { it.group('a').ox >= 6.9f }.rightTo(19.2f).rightJump(0.5f).landRight().rightTo(26.0f).rightJump(0.5f).landRight()
+                .leftTo(29.9f).leftJump(0.5f).landLeft().left(6f) },
+        ),
         // 38: hop the oncoming saw, let the picture turn, flee the second saw to the stairs with the mirrored keys, climb, the picture is
         // back: leave step 2 to the upper floor, let the rope go up, hop home
         38 to listOf<Solution>(
