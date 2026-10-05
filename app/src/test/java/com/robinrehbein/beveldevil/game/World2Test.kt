@@ -287,9 +287,9 @@ class World2Test {
     /** String Lights: the bulb over the lane drops when you come near, so dashing under it is the end. */
     @Test fun level04DashingUnderTheBulbIsFatal() = b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
         .right(2f).expect(WorldState.DEAD)
-    @Test fun level05() = b(5).right(0.60f).right(0.60f).rightJump(0.25f).left(0.10f).right(0.03f).right(0.03f)
-        .left(0.03f).rightJump(0.12f).leftJump(0.25f).right(0.10f).left(0.03f).rightJump(0.55f).rightJump(0.55f)
-        .rightJump(0.55f).left(0.60f).expect(WorldState.WON)
+    @Test fun level05() { World2DesignTest.play(5) }
+    /** Null Pointer: the saw on the top floor rolls at you; running into it is the end. */
+    @Test fun level05RunningIntoTheFirstSawIsFatal() = b(5).right(4f).expect(WorldState.DEAD)
     @Test fun level06() = b(6).right(0.60f).left(0.60f).rightJump(0.55f).right(0.25f).hopR(20.8f).right(1.5f).expect(WorldState.WON)
     @Test fun level07() = b(7).right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f) .right(0.03f).left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.10f) .left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f) .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f) .left(0.03f).left(0.03f).left(0.03f).right(0.03f).right(0.03f).left(0.10f) .rightJump(0.55f).right(0.60f).expect(WorldState.WON)
     @Test fun level08() = b(8).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.25f).right(0.03f).rightJump(0.55f) .right(1.20f).expect(WorldState.WON)

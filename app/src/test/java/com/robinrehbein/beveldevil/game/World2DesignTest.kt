@@ -29,12 +29,12 @@ class World2DesignTest : DesignTestBase() {
             2 to d("R3", "U5"),
             3 to d("R6", "U4"),
             4 to d("–", "U6"),
-            5 to d("–", "U1"),
+            5 to d("–", "U7"),
             6 to d("R4", "U11"),
             7 to d("–", "U2"),
             8 to d("–", "U1", breather = true),
             9 to d("–", "U9"),
-            10 to d("R3", "U7"),
+            10 to d("R3", "U1"),
             11 to d("R1", "U15"),
             12 to d("–", "U1"),
             13 to d("R5", "U10"),
@@ -104,11 +104,16 @@ class World2DesignTest : DesignTestBase() {
                     .leftJump(0.35f).landLeft().left(3f) },
                 { rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
                     .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
-                    .waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
                     .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
-                    .waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
-                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { it.player.box.cx < 26.4f }
+                    .waitFor { it.group('C').oy > 3.0f }.waitFor { it.group('C').oy < 2.5f }.waitFor { it.group('C').oy > 3.0f }.waitFor { it.group('C').oy < 2.5f }
+                    .leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
                     .leftJump(0.35f).landLeft().left(3f) },
+            ),
+            5 to listOf(
+                { rightUntil { World2Rooms.sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightUntil { it.player.box.cy > 7f }
+                    .leftUntil { World2Rooms.sawAheadLeft(it, 4.0f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cy > 11f }
+                    .rightUntil { World2Rooms.sawAhead(it, 4.4f) }.rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 27.6f }.right(1f) },
             ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()

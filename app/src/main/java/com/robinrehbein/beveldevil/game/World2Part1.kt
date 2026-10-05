@@ -126,19 +126,20 @@ object World2Part1 {
             rematch = listOf(
                 Round(
                     T("Off by one. I count twice now.", "Um eins daneben. Ich zähle jetzt doppelt."),
-                    hint = T("Every bulb flickers twice. Count them.", "Jede Birne flackert zweimal. Zähl mit."),
+                    hint = T("A bulb hangs under the lane, too. It flickers twice.", "Unter der Etage hängt auch eine Birne. Sie flackert zweimal."),
+                    legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN)),
                     traps = listOf(
-                        trap(PastX(11.5f), Play(Card.SINKING), Move('A', 0f, 7f, 30f), say("Flicker. Flicker.", "Flacker. Flacker."), delay = 0.1f),
-                        trap(PastX(11.5f), Move('A', 0f, -7f, 40f), delay = 0.5f),
-                        trap(PastX(11.5f), Move('A', 0f, 7f, 30f), delay = 0.75f),
-                        trap(PastX(11.5f), Move('A', 0f, -7f, 40f), delay = 1.15f),
+                        trap(PastX(11.5f), Play(Card.SINKING), Move('A', 0f, 7f, 30f), say("Same bulb. Different cable.", "Gleiche Birne. Anderes Kabel."), delay = 0.1f),
+                        trap(PastX(11.5f), Move('A', 0f, -7f, 14f), delay = 0.8f),
                         trap(PastX(17.5f), Move('B', 0f, 7f, 30f), delay = 0.1f),
-                        trap(PastX(17.5f), Move('B', 0f, -7f, 40f), delay = 0.5f),
-                        trap(PastX(17.5f), Move('B', 0f, 7f, 30f), delay = 0.75f),
-                        trap(PastX(17.5f), Move('B', 0f, -7f, 40f), delay = 1.15f),
-                        trap(PastX(25.3f), Move('G', 12f, 0f, 6f)),
+                        trap(PastX(17.5f), Move('B', 0f, -7f, 14f), delay = 1.0f),
+                        trap(Zone(25.4f, 12f, 28.5f, 15.5f), Move('C', 0f, 4f, 30f), say("Flicker. Flicker.", "Flacker. Flacker."), delay = 0.1f),
+                        trap(Zone(25.4f, 12f, 28.5f, 15.5f), Move('C', 0f, -4f, 40f), delay = 0.5f),
+                        trap(Zone(25.4f, 12f, 28.5f, 15.5f), Move('C', 0f, 4f, 30f), delay = 0.75f),
+                        trap(Zone(25.4f, 12f, 28.5f, 15.5f), Move('C', 0f, -4f, 40f), delay = 1.15f),
+                        trap(Zone(19f, 12f, 20.5f, 15.5f), Move('G', 12f, 0f, 6f)),
                     ),
-                ),
+                ) { fill(22..23, 10..10, 'C') },
             ),
         ) {
             border(); floor()
@@ -149,24 +150,23 @@ object World2Part1 {
             spawn(); door(11); bits(4)
         },
 
-        // 5 — EASTER EGG: NullPointerException (the bonk block is real; landing behind the wall drops the floor; the hop over that lands in spikes)
+        // 5 — EASTER EGG: NullPointerException. A snake through three floors: along the top to the right, down to the middle floor and back to
+        // the left, down to the ground floor and to the door on the right. Every floor has its own saw: the one that rolls at you, the one that
+        // swings in the gap, and the one that "follows you home"
         Level(
             name = T("Null Pointer", "Nullzeiger"),
             intro = T("Nothing there. Literally.", "Da ist nichts. Wortwörtlich."),
-            legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true), 'A' to hidden, 'B' to hidden),
             traps = listOf(
-                trap(Touch('b'), Play(Card.GHOST_BLOCK), Show('A'), say("NullPointerException: block is null. It was there all along.", "NullPointerException: Block ist null. War aber die ganze Zeit da.")),
-                trap(Landed(19f, 21.6f), Fall('f'), say("Garbage collected.", "Vom Garbage Collector abgeholt."), delay = 0.08f),
-                trap(Airborne(23.2f, 25.6f), Show('B'), say("Use after free.", "Use after free.")),
+                trap(PastX(6.5f), Play(Card.DEVIL_SAW), Saw(33f, 4.4f, -7f, 0f), say("Not null. Pointing at you.", "Nicht null. Zeigt auf dich.")),
+                trap(Zone(21f, 7.5f, 24f, 9.5f), PathSaw(4f, 8f to 8.4f, 18f to 8.4f), say("A pointer to a pointer. It patrols.", "Ein Zeiger auf einen Zeiger. Er patrouilliert.")),
+                trap(Landed(0f, 6f), Saw(-1f, 14.4f, 7.5f, 0f), say("The segfault follows you home. Politely.", "Der Segfault folgt dir nach Hause. Höflich.")),
+                trap(Zone(11f, 12f, 13f, 15.5f), Saw(29f, 14.4f, -7f, 0f), say("The door sends its regards.", "Die Tür lässt grüßen.")),
             ),
+            hint = T("Three floors: right, left, right. Every floor has its own saw.", "Drei Etagen: rechts, links, rechts. Auf jeder läuft eine Säge."),
         ) {
             border(); floor()
-            rack(17, 2, 3)
-            put(15, 13, 'b')
-            put(17, 11, 'A'); put(18, 11, 'A')
-            fill(22..24, 15..17, 'f')
-            put(27, 14, 'B'); put(28, 14, 'B')
-            spawn(); door(); bits(5)
+            fill(1..20, 5..5); fill(5..26, 9..9)
+            spawn(2, 4); door(28); bits(5)
         },
 
         // 6 — EASTER EGG: "It's always DNS" (Reroute: the portal's exit moves onto spikes, the floating block flushes the cache; behind the exit grows a last pair)
