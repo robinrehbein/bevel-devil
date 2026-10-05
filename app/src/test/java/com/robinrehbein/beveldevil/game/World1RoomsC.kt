@@ -49,5 +49,8 @@ object World1RoomsC {
                 .leftUntil { w -> w.saws.any { it.y in 7f..9.2f && w.player.box.cx - it.x in 0f..4.6f } }.leftJump(0.35f).landLeft()
                 .leftTo(2.5f) },
         ),
+        29 to listOf<Solution>(
+            { rightTo(18.8f).rightTo(19.4f).rightJump(0.5f).landRight().rightTo(25.2f).rightJump(0.5f).landRight().right(2f) },
+        ),
     )
 }

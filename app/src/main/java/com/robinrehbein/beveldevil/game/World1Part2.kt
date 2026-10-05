@@ -142,5 +142,30 @@ object World1Part2 {
             put(1, 14, 'P'); put(2, 8, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(12)
+        // 29 — hike: a treadmill takes you the wrong way through the mountain, a rock follows you along the tunnel, the belt speeds up twice
+        // (the low roof keeps you from hopping over the problem), and at the end the stepping stones are pulled away from you one after the other
+        // MECHANIC: Belt (the treadmill) + Move (the rock, the stones pulled away)
+        Level(
+            name = T("Hike", "Bergtour"),
+            intro = T("The journey is the destination. Allegedly.", "Der Weg ist das Ziel. Angeblich."),
+            hint = T("The belt runs against you, and faster the further you go. The stones at the end run away: jump from the very edge.", "Das Band läuft gegen dich, und weiter hinten schneller. Die Steine am Ende laufen weg: spring ganz vom Rand."),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
+            start = listOf(Belt('b', -4.5f)),
+            traps = listOf(
+                trap(PastX(7f), Play(Card.SINKING), Move('W', 28f, 0f, 1.5f), Say(T("A rock follows you. Not a big one. Yet.", "Ein Fels folgt dir. Kein großer. Noch nicht."))),
+                trap(PastX(10.5f), Belt('b', -5.6f), Say(T("Treadmill, level two. Don't mind the incline.", "Laufband, Stufe zwei. Die Steigung ignorierst du einfach."))),
+                trap(PastX(15.5f), Belt('b', -6.0f), Say(T("Level three. The mountain is slightly steeper here.", "Stufe drei. Der Berg ist hier etwas steiler."))),
+                trap(PastX(18.8f), Move('p', 1f, 0f, 6f), Say(T("The first stone leaves. It has a train to catch.", "Der erste Stein verabschiedet sich. Er hat einen Zug."))),
+                trap(Landed(22f, 25f), Move('q', 3.5f, 0f, 7f), Say(T("The summit is a bit further. About three tiles.", "Der Gipfel ist etwas weiter weg. Etwa drei Kacheln."))),
+            ),
+        ) {
+            border()
+            fill(1..5, 15..17); fill(29..30, 15..17)
+            fill(6..19, 15..15, 'b'); fill(21..23, 15..15, 'p'); fill(26..28, 15..15, 'q')
+            fill(8..17, 1..13)
+            put(1, 14, 'W')
+            put(2, 14, 'P'); put(30, 14, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(13)
 }
