@@ -265,22 +265,33 @@ object World2Part1 {
             spawn(2, 8); door(2); bits(9)
         },
 
-        // 10 — a portal hangs in mid-air above an LED field; hidden spikes wait where you land, and a saw waits at the door
+        // 10 — a routing puzzle: a wall splits the room and the door is on the other side of it. Three tunnels wait in the room (the nearest hangs in mid-air above the floor, a hop away)
+        // floor, the nearest one only goes home. The right one is closed until it has been knocked on (stand at its mouth for a moment) and
+        // comes out on a long shelf above the room; the second tunnel up there is off as well and wakes up when you walk past. The floor
+        // goes missing three times on the way: twice on the way to the tunnels, once behind the wall
         Level(
             name = T("VPN Tunnel", "VPN-Tunnel"),
             intro = T("Your connection is secure. Really secure.", "Deine Verbindung ist sicher. Wirklich sicher."),
-            legend = mapOf('A' to hidden, 'C' to hidden),
-            start = listOf(Portal('1', 10 to 12, 21 to 12)),
-            traps = listOf(
-                trap(Landed(21f, 23.8f), Play(Card.SPIKE_SEED), Show('A'), say("Tunnel established. Spikes included.", "Tunnel steht. Spikes inklusive.")),
-                trap(Airborne(25.6f, 28.6f), Saw(33.5f, 14.4f, -5f, 0f), say("Packet loss. Incoming.", "Paketverlust. Kommt rein.")),
+            start = listOf(
+                Portal('a', 22 to 12, 30 to 14, twoWay = false),
+                Portal('b', 13 to 14, 30 to 8, twoWay = false), Power('b', false),
+                Portal('c', 13 to 8, 9 to 14, twoWay = false), Power('c', false),
             ),
+            traps = listOf(
+                trap(BeforeX(28.4f), Play(Card.CRUMBLE), Fall('a'), say("Tunnel established. One packet dropped.", "Tunnel steht. Ein Paket verloren."), delay = 0.1f),
+                trap(BeforeX(18.4f), Fall('e'), say("Second hop: encrypted. So is the floor.", "Zweiter Hop: verschlüsselt. Der Boden auch."), delay = 0.1f),
+                trap(Zone(14f, 10f, 17f, 15.5f), Power('b', true), say("Port knocking. Please stay on the line.", "Port-Knocking. Bitte bleiben Sie in der Leitung."), delay = 1.3f),
+                trap(Zone(20f, 7f, 23f, 9.5f), Power('c', true), say("Keepalive received. Eventually.", "Keepalive empfangen. Irgendwann."), delay = 1.5f),
+                trap(BeforeX(7.4f), Fall('f'), say("Third hop: the same, but worse.", "Dritter Hop: dasselbe, nur schlimmer."), delay = 0.1f),
+            ),
+            hint = T("The nearest tunnel only leads home. Wait at the mouth of the next one until it opens, then look up.", "Der nächste Tunnel führt nur nach Hause. Warte vor dem übernächsten, bis er aufgeht, und schau dann nach oben."),
         ) {
             border(); floor()
-            leds(9..20)
-            put(24, 14, 'C'); put(25, 14, 'C')
-            put(26, 14, 'A'); put(27, 14, 'A')
-            spawn(); door(); bits(10)
+            fill(10..11, 0..14)
+            fill(12..30, 9..10)
+            fill(25..25, 15..17, 'a'); fill(17..17, 15..17, 'e'); fill(3..3, 15..17, 'f')
+            fill(0..2, 14..14)
+            spawn(29); door(1, 13); bits(10)
         },
 
         // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a rack gate (a slab that slides into the floor), the

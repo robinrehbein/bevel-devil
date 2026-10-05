@@ -303,7 +303,8 @@ class World2Test {
     @Test fun level08RunningOnIntoTheUnpluggedBlockIsFatal() = b(8).right(4f).expect(WorldState.DEAD)
     @Test fun level09() { World2DesignTest.play(9) }
     @Test fun level09HoldingRightWalksIntoTheWallAndTheSawFindsYou() = b(9).right(6f).expect(WorldState.DEAD)
-    @Test fun level10() = b(10).right(0.60f).rightJump(0.55f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level10() { World2DesignTest.play(10) }
+    @Test fun level10RunningStraightAtTheWallFindsTheFirstHole() = b(10).left(3f).expect(WorldState.DEAD)
     @Test fun level11() { World2DesignTest.play(11) }
     @Test fun level12() { World2DesignTest.play(12) }
     @Test fun level13() { World2DesignTest.play(13) }
