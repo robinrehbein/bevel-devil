@@ -516,28 +516,39 @@ object World2Part2 {
             spawn(4, 8); door(3, 14); bits(31)
         },
 
-        // 32 — act finale: belt, tunnel, timed gate and a belt that turns around in front of it; spikes grow behind the first hop
+        // 32 — the act finale, a puzzle room (R4 the switch, R3 the portals, R8 the timing; U12 the transport goes wrong, with U13 given up because the one
+        // laser level is 28): the lane is split by two firewalls and the door is behind the second one. The first firewall is crossed by a tunnel, and
+        // the belt behind it turns around as you step on it (hop it, or you are carried into the spikes). The tunnel up to the deck is the only
+        // way on: up there you walk back left against a belt that turns up as you come near, to the switch at the far end, which powers the tunnel
+        // under the second firewall. Then back down to the lane, the same way again, and through the second tunnel; the spikes in front of the door
+        // grow as you come out
         Level(
             name = T("Core Switch", "Core-Switch"),
             intro = T("Finally, the data-center basement. This is where I live.", "Endlich der Rechenzentrumskeller. Hier wohne ich."),
             legend = mapOf('A' to hidden),
             start = listOf(
-                Belt('a', 4f), Belt('b', 3f),
+                Belt('a', -6.5f), Belt('b', 3f), Belt('c', 5f),
                 Portal('1', 13 to 14, 17 to 14, twoWay = false),
-                Portal('2', 24 to 14, 28 to 14, twoWay = false),
-                Laser('G', 21 to 1, 21 to 14, on = 0.9f, off = 1.8f, phase = 1.0f),
+                Portal('2', 21 to 14, 26 to 14, twoWay = false), Power('2', false),
+                Portal('3', 23 to 14, 28 to 8, twoWay = false), Power('3', false),
+                Pad('1', at = 4 to 8),
             ),
             traps = listOf(
-                trap(Airborne(6f, 9.4f), Show('A'), say("Broadcast storm.", "Broadcast-Sturm.")),
+                trap(Zone(4f, 12f, 6f, 15.5f), Power('3', true), say("Tunnel 3 is enabled for you. For the moment.", "Tunnel 3 ist für dich freigeschaltet. Vorerst.")),
                 trap(PastX(18.5f), Play(Card.GRAND_FINALE), Belt('b', -9f), say("Spanning tree recalculated. Your belt now runs the other way.", "Spanning Tree neu berechnet. Dein Band läuft jetzt andersrum.")),
+                trap(Zone(15f, 6f, 18f, 9f), Belt('c', 10f), say("Priority traffic. You are not priority.", "Priorisierter Verkehr. Du nicht.")),
+                trap(Pressed('1'), Power('2', true), Belt('b', 3f), say("Switch thrown. Tunnel 2 is up and the belt is back. Probably.", "Schalter umgelegt. Tunnel 2 ist oben und das Band wieder da. Wahrscheinlich.")),
+                trap(Zone(26.5f, 6f, 31f, 9.3f), Show('A'), say("Broadcast storm.", "Broadcast-Sturm.")),
+                trap(Landed(0f, 2.9f), Reroute('1', 19 to 14), say("DNS changed. Tunnel 1 comes out further on now.", "DNS geändert. Tunnel 1 kommt jetzt weiter hinten raus.")),
             ),
         ) {
             border(); floor()
-            fill(3..12, 15..15, 'a'); fill(17..24, 15..15, 'b')
-            fill(14..15, 1..14); fill(25..26, 1..14)
+            fill(3..30, 9..9)
+            fill(14..15, 10..14); fill(24..25, 10..14)
+            fill(3..12, 15..15, 'a'); fill(17..20, 15..15, 'b'); fill(8..21, 9..9, 'c')
             put(8, 14, '^'); put(16, 14, '^')
-            put(10, 14, 'A'); put(11, 14, 'A')
-            spawn(); door()
+            put(23, 8, 'A'); put(24, 8, 'A')
+            spawn(1); door(29)
         },
     )
 }

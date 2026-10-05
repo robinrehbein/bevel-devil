@@ -191,9 +191,6 @@ class World2DeckTest {
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            25 to World2Rooms::l25,
-            26 to World2Rooms::l26,
-            29 to World2Rooms::l29,
             33 to { b -> b.right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).right(0.03f) },
             34 to { b -> b.right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             41 to { b -> b.rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },

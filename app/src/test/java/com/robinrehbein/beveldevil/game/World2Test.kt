@@ -181,8 +181,8 @@ class World2Test {
         b(29).right(3f).expect(WorldState.DEAD)
         // 31: running on falls into the trench of spikes before the first stone is up
         b(31).right(3f).expect(WorldState.DEAD)
-        // 32: the hops land in spikes that grew in mid-air
-        b(32).hopR(4.5f).right(3f).expect(WorldState.DEAD)
+        // 32: running on along the belt runs into the LED
+        b(32).right(3f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -369,9 +369,7 @@ class World2Test {
         assertTrue(bot.world.door.tx > 32f)
     }
     @Test fun level31() { World2DesignTest.play(31) }
-    @Test fun level32() = b(32).rightJump(0.55f).rightJump(0.25f).right(0.03f).left(0.10f).left(0.10f)
-        .rightJump(0.55f).right(0.10f).left(0.03f).left(0.03f).rightJump(0.25f).jump(0.16f).leftJump(0.12f)
-        .rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level32() { World2DesignTest.play(32) }
 
     // ---------- Act 2, levels 17-24: one-screen puzzle rooms ----------
 

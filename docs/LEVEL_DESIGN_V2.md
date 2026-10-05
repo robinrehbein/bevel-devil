@@ -366,7 +366,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |29|Race Condition|–|U7|Falle|
 |30|Hop Limit|R3+R5|U11+U18|Rätsel|
 |31|Detention|R8|U3|Rätsel|
-|32|Core Switch (Finale)|R4+R3+R8|U12+U13|Finale|
+|32|Core Switch (Finale)|R4+R3|U12+U11|Finale|
 
 **Akt 3 „Root“**
 

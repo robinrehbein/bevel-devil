@@ -165,6 +165,13 @@ object World2Rooms {
         .rightTo(17.4f).waitFor { stoneUp(it, 'u', 0.3f, 0.75f) }.rightJump(0.35f).landRight()
         .rightUntil { it.player.box.cx > 27.4f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.left(6f)
 
+    /** 32: along the belt, hop the LED, through the tunnel, hop the belt that turns, up the tunnel to the deck, back left (hop the LED, hop the belt that turns up), onto the switch, down to the lane, hop the spikes, the same way again, and let the belt carry you into the second tunnel. */
+    fun l32(b: Bot) = b.hopR(6.4f).rightUntil { it.player.box.cx > 16.9f }.rightJump(0.35f).landRight()
+        .rightUntil { it.player.box.b < 9.5f }.hopL(26.6f)
+        .leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftTo(4.6f)
+        .leftUntil { it.player.box.b > 12f }.landLeft().rightJump(0.35f).landRight()
+        .hopR(6.4f).rightUntil { it.player.box.cx > 16.9f }.right(4f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )
