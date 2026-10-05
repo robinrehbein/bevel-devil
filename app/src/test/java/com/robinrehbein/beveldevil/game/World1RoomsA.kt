@@ -1,0 +1,12 @@
+package com.robinrehbein.beveldevil.game
+
+/** Bot solutions of World 1, block A (levels 7-16), one per round; shared by the design tests and the level tests. */
+object World1RoomsA {
+    val solutions: Map<Int, List<Solution>> = mapOf(
+        7 to listOf<Solution>(
+            { hopR(16.0f).rightTo(21.4f).rightJump(0.3f).landRight()
+                .rightTo(26.2f).rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightTo(30.5f)
+                .leftJump(0.35f).landLeft().leftTo(1.5f) },
+        ),
+    )
+}

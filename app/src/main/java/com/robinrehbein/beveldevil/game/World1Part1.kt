@@ -154,24 +154,23 @@ object World1Part1 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 7 — two platforms sink as soon as you stand on them; the last one grows spikes as you fly towards it
+        // 7 — a building site: the first prefab panel sinks as you land, so does the bank behind it, and the upper floor you
+        // climb to is prefab too: its panel over the pit goes the moment you stand on it
         Level(
             name = T("Prefab", "Plattenbau"),
             intro = T("They still build things properly down here.", "Hier unten baut man noch mit Qualität."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("Prefab panels sink the moment you land. Keep hopping.", "Fertigteile sinken, sobald du landest. Hüpf weiter."),
             traps = listOf(
-                trap(Touch('b'), Play(Card.SINKING), Move('b', 0f, 12f, 7f), Say(T("Solid ground, limited offer.", "Fester Boden, nur kurz gültig.")), delay = 0.12f),
-                trap(Touch('c'), Move('c', 0f, 12f, 9f), delay = 0.08f),
-                // hopping back off the first slab strands nobody: the start side gives way a moment after it sank
-                trap(Touch('b'), Fall('s'), delay = 2.5f),
-                trap(Airborne(22f, 23.6f), Show('A')),
+                trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, 12f, 8f), Say(T("Rated for one person. Briefly.", "Zugelassen für eine Person. Kurz.")), delay = 0.5f),
+                trap(Touch('k'), Move('k', 0f, 12f, 8f), Say(T("The ground floor is optional too.", "Das Erdgeschoss ist auch optional.")), delay = 0.5f),
+                trap(Touch('d'), Move('d', 0f, 12f, 9f), Say(T("Upper floor. Same panels, better view.", "Obergeschoss. Gleiche Platten, bessere Aussicht.")), delay = 0.5f),
             ),
         ) {
-            border(); floor()
-            fill(7..26, 15..17, '.')
-            fill(1..6, 15..17, 's'); fill(9..11, 13..13, 's'); fill(14..16, 13..13, 'b'); fill(19..21, 13..13, 'c'); fill(23..26, 13..13)
-            put(23, 12, 'A'); put(24, 12, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); pit(17..22)
+            fill(18..21, 15..15, 'a'); fill(23..30, 15..15, 'k')
+            fill(27..28, 13..14); fill(29..30, 11..14)
+            fill(1..28, 9..9); fill(18..20, 9..9, 'd')
+            put(2, 14, 'P'); put(2, 8, 'D')
         },
 
         // 8 — gravity flips over a spike floor as you reach it, flips back mid-way, then again as you land, then back for the door
