@@ -513,7 +513,12 @@ class World2Test {
     }
 
     // ---------- Act 3: Root ----------
-    @Test fun level33() = b(33).right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) .right(0.03f).expect(WorldState.WON)
+    @Test fun level33() { World2DesignTest.play(33) }
+    /** sudo !!: the hole opens in the lane as you pass, and holding right runs into it. */
+    @Test fun level33RunningOnAlongTheLaneFindsTheHole() = b(33).right(3f).expect(WorldState.DEAD)
+    /** sudo !!: stopping where the block falls is right, but running on under it is the end. */
+    @Test fun level33RunningOnUnderTheDeckBlockIsFatal() = b(33).hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .hopL(23.2f, 0.5f).left(3f).expect(WorldState.DEAD)
     @Test fun level34() = b(34).right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
         .right(0.60f).expect(WorldState.WON)
     @Test fun level35() = b(35).rightJump(0.55f).right(0.10f).left(0.10f).left(0.03f).left(0.10f).rightJump(0.55f)

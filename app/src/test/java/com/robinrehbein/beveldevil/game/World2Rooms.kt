@@ -172,6 +172,17 @@ object World2Rooms {
         .leftUntil { it.player.box.b > 12f }.landLeft().rightJump(0.35f).landRight()
         .hopR(6.4f).rightUntil { it.player.box.cx > 16.9f }.right(4f)
 
+    // ---------- block C (33-40): the rebuilt rooms ----------
+
+    /** 33: along the lane (hop the hole, hop it again), up the two steps and left onto the deck, stop when the block drops, climb it and hop the spikes to the door. */
+    fun l33(b: Bot) = b.hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(23.2f, 0.5f)
+        .leftUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopL(15.6f, 0.5f).hopL(8.2f, 0.5f).left(1.5f)
+
+    /** 33, round 2: hop the LEDs where round 1 hopped the hole, hop the hole that opens under the echo, up the steps, along the deck without stopping (the block drops late), hop the spikes. */
+    fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.2f, 0.5f)
+        .hopL(8.2f, 0.5f).left(1.5f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

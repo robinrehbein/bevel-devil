@@ -35,7 +35,7 @@ object World2Part3 {
     private val ghost = Glyph(spike = false, hidden = true, bonk = true)
     private val hiddenSolid = Glyph(spike = false, hidden = true)
 
-    val levels: List<Level> = listOf(
+    private val old: List<Level> = listOf(
 
         // 33 — EASTER EGG: sudo !! (repeat the last command, but as root)
         Level(
@@ -424,4 +424,6 @@ object World2Part3 {
             spawn(); door(30)
         },
     )
+
+    val levels: List<Level> = World2Part3C.levels + old.drop(World2Part3C.levels.size)
 }
