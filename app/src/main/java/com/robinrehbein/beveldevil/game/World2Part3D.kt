@@ -75,33 +75,38 @@ object World2Part3D {
             spawn(2, 14); door(2, 9); bits(41)
         },
 
-        // 42 — EASTER EGG: honeypot (the easy path is the trap)
+        // 42 — gold mine (a puzzle room: R5 two floors, R7 the bait; U15 the easy way is the trap). You start on the deck over the lane, the door is
+        // below you on the lane, and the hole in the deck right next to the start is the shortcut: spikes grow where you land in it. The way is the
+        // long one: along the deck (a cart rolls at you), off its end, and back along the lane (a cart rolls out of the mine from the left) over the gold
+        // pile, which is the one place to stand while it passes. Rematch: the gold is the honeypot now and gives way under you
         Level(
             name = T("Gold Mine", "Goldgrube"),
             intro = T("Take the easy way. You've earned it.", "Nimm den leichten Weg. Du hast ihn dir verdient."),
             legend = mapOf('A' to hidden),
             traps = listOf(
-                trap(Touch('h'), Play(Card.SPIKE_SEED), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
-                trap(Touch('x'), Fall('x'), delay = 0.3f),
-                trap(Touch('y'), Fall('y'), delay = 0.3f),
+                trap(Landed(6f, 8.9f), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
+                trap(PastX(11f), Play(Card.DEVIL_SAW), Saw(26f, 9.4f, -5.5f, 0f), say("Cart 1: ore on the way out.", "Lore 1: Erz auf dem Weg nach draußen.")),
+                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7f, 0f), say("Cart 2: it knows the mine better than you.", "Lore 2: Sie kennt die Grube besser als du.")),
+                trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Cart 3: express to the exit.", "Lore 3: Express zum Ausgang.")),
             ),
-            // rematch: the honeypot is harmless now, and the high road you learned is the trap
             rematch = listOf(
                 Round(
-                    T("Honeypot refilled. Help yourself.", "Honeypot nachgefüllt. Bärenhunger?"),
+                    T("Honeypot refilled. Hole patched. Help yourself.", "Honeypot nachgefüllt. Loch geflickt. Bedien dich."),
                     traps = listOf(
-                        trap(Touch('h'), say("Honeypot! Or just honey?", "Honeypot! Oder nur Honig?")),
-                        trap(Touch('x'), Play(Card.SPIKE_SEED), Show('A'), Fall('x'), say("High road, low blow.", "Wer hoch steigt, fällt in Spikes."), delay = 0.12f),
-                        trap(Touch('y'), Fall('y'), delay = 0.12f),
+                        trap(Touch('h'), say("Gold touched. Nobody minds. Yet.", "Gold berührt. Keinen stört's. Noch.")),
+                        trap(PastX(11f), Saw(26f, 9.4f, -5.5f, 0f), say("The cart is early. Mind the gold.", "Die Lore ist früh dran. Achtung, das Gold.")),
+                        trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 5f, 0f), say("Second cart. Same mine.", "Zweite Lore. Gleiche Grube.")),
+                        trap(Touch('i'), Play(Card.COLLAPSE), Hide('i'), say("All that glitters is a trapdoor.", "Es ist nicht alles Gold, was glänzt, manches ist eine Falltür."), delay = 0.3f),
+                        trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Third cart. No parking.", "Dritte Lore. Parken verboten.")),
                     ),
-                ),
+                ) { fill(12..15, 13..13, 'i'); fill(13..14, 12..12, 'i'); fill(7..8, 10..10); fill(6..9, 14..14, '.') },
             ),
         ) {
             border(); floor()
-            fill(10..11, 14..14, 'h')
-            leds(13..22, c = 'A')
-            fill(7..8, 13..14); fill(10..13, 11..11, 'x'); fill(16..19, 11..11, 'y')
-            spawn(); door(); bits(42)
+            fill(1..6, 10..10); fill(9..27, 10..10)
+            fill(11..16, 14..14); fill(12..15, 13..13)
+            leds(6..9, c = 'A')
+            put(3, 9, 'P'); door(2, 14); bits(42)
         },
 
         // 43 — EASTER EGG: percussive maintenance (shake the phone: the loose patch cable re-seats, the portal exit jumps
