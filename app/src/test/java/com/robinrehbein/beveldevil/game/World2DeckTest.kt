@@ -133,15 +133,20 @@ class World2DeckTest {
     @Test fun l07r2WaitingForTheFirstCeilingIsFatal() = b(7, 2).rightTo(7.6f).wait(1f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
-    /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; a saw inspects the floor after it. */
+    /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; the beam lights on the way up, a saw inspects the floor after it. */
     @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
     @Test fun l18r2TheRoundOneRouteDoesNotWin() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f); assertTrue(it.world.state != WorldState.WON) }.let { }
-    @Test fun l18r2RunningForTheDoorAfterThePadMeetsTheSaw() = b(18, 2).hopR(10f).wait(0.15f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
-        .leftJump(0.4f).landLeft().leftTo(2.4f).rightUntil { it.player.box.cx > 11.3f && it.player.grounded && it.player.box.b < 13.5f }
-        .rightTo(14.5f).waitFor(cond = World2Rooms.clear('L')).right(3f).expect(WorldState.DEAD)
-    /** Stateful Inspection, round 2: the second check is a bluff, but jumping it crosses a fresh beam. */
+    @Test fun l18r2RunningForTheDoorAfterThePadMeetsTheSaw() = b(18, 2).hopR(10.3f).wait(0.15f).leftTo(13.6f).leftJump(0.4f).landLeft().leftTo(9.6f).leftJump(0.4f).landLeft().leftTo(5.6f).leftJump(0.4f)
+        .waitFor { it.player.grounded }.rightUntil { World2Rooms.sawAhead(it, 4.3f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun l18r2HasItsOwnHint() = assertTrue(World2.levels[17].rounds[1].hint != null && World2.levels[17].rounds[1].hint!!.en != World2.levels[17].hint!!.en)
+    /** Stateful Inspection, round 2: the scanner is a bluff, round 1's drop lands in the LEDs under a low gate; the ledge goes on. */
     @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)
-    @Test fun l20r2JumpingTheSecondCheckIsFatal() = World2Rooms.l20(b(20, 2)).expect(WorldState.DEAD)
+    @Test fun l20r2DroppingWhereRoundOneDroppedIsFatal() = World2Rooms.l20(b(20, 2)).expect(WorldState.DEAD)
+    @Test fun l20r2TheScannerIsABluff() {
+        val bot = World2Rooms.l20r2ToLedge(b(20, 2)).wait(0.1f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue(bot.world.beams.isNotEmpty() && bot.world.beams.any { it.laser.id == 'K' && it.lit })
+    }
     @Test fun l25r2() = b(25, 2).hopR(4.2f).hopR(8f).hopR(14f).hopR(20f).right(1f).expect(WorldState.WON)
     @Test fun l25r2TheRoundOneTimingDies() = b(25, 2).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.DEAD)
     /** Ticket Number, round 2: the queue (a spike) creeps after you up to the gate; hop over it and back until the gate opens. */

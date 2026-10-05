@@ -171,9 +171,9 @@ class World2Test {
         b(4).hopR(9.4f).right(1f).expect(WorldState.DEAD)
         // 17: running along the roof of the duct runs under the loose piece of the shelf
         b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
-        // 18: running back right after pressing the pad runs into the port scan
-        World2Rooms.l18ToPad(b(18)).left(3f).expect(WorldState.DEAD)
-        // 20: running for gate 2 right after the ID scan: it remembered you and is still shut
+        // 18: lingering on the rack after pressing the pad runs into the port scan
+        World2Rooms.l18ToPad(b(18)).wait(2.5f).expect(WorldState.DEAD)
+        // 20: running on right after the ID scan drops you into the queue at the exit gate
         World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
         // 28: the tunnel drops you next to the IPS beam, and running on runs into it
         b(28).right(3f).expect(WorldState.DEAD)
@@ -190,7 +190,7 @@ class World2Test {
         val shelf = World2Rooms.l17(b(17))
         assertEquals(5f, shelf.world.group('b').belt)
         // the port scan glows before it fires: there is time to see it coming from the rack
-        val glow = World2Rooms.l18ToPad(b(18)).wait(0.3f).world.beams.first { it.laser.id == 'H' }
+        val glow = World2Rooms.l18ToPad(b(18)).wait(0.3f).world.beams.first { it.laser.id == 'K' }
         assertTrue(glow.warn > 0f && !glow.lit)
     }
 
@@ -385,45 +385,111 @@ class World2Test {
     @Test fun l17HoppingInTheDuctHitsItsCeiling() = b(17).rightTo(1.9f).rightJump(0.15f).landRight().right(0.6f).rightJump(0.3f).wait(0.5f).expect(WorldState.DEAD)
     @Test fun l17RunningUnderTheLooseShelfPieceIsFatal() = b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
 
-    // 18: the scan after the pad, and the beam over the stairs coming back
-    @Test fun l18LeavingTheRackDuringTheScanIsFatal() = World2Rooms.l18ToPad(b(18)).left(3f).expect(WorldState.DEAD)
-    @Test fun l18PausingOnTheMiddleStepIsFatal() = World2Rooms.l18ToPad(b(18)).wait(0.1f)
-        .waitFor { w -> w.beams.any { it.laser.id == 'S' && it.lit } }.waitFor(cond = World2Rooms.clear('S'))
-        .leftTo(17.5f).waitFor(cond = World2Rooms.clear('L')).leftTo(13.8f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f)
-        .expect(WorldState.DEAD)
+    // 18: the hole in the floor, the gate that counts to one, the scan on the rack, the beam over the stairs coming back
+    @Test fun l18RunningStraightPastTheHoleFalls() = b(18).right(4f).expect(WorldState.DEAD)
+    @Test fun l18LingeringOnTheRackAfterThePadIsFatal() = World2Rooms.l18ToPad(b(18)).wait(2.5f).expect(WorldState.DEAD)
+    @Test fun l18PausingOnTheMiddleStepIsFatal() = World2Rooms.l18ToPad(b(18)).leftTo(17.0f).leftJump(0.35f).landLeft()
+        .leftTo(13.6f).leftJump(0.4f).landLeft().wait(2f).expect(WorldState.DEAD)
+    @Test fun l18ThePadPutsTheFloorBack() {
+        val bot = World2Rooms.l18ToPad(b(18)).leftTo(24f)
+        assertEquals(0f, bot.world.group('a').oy, 0.01f)
+    }
 
-    // 19: the stairs swap the controls, the top floor restores them, and a packet falls from the ceiling on the runner
+    // 19: the stairs swap the controls, the top floor restores them, and a wall drives toward the runner
     @Test fun l19TheStairsSwapTheControls() = assertTrue(b(19).hopR(6.8f).wait(0.1f).world.swapped)
     @Test fun l19TheTopFloorRestoresTheControls() = assertTrue(!World2Rooms.l19ToShelf(b(19)).wait(0.2f).world.swapped)
-    @Test fun l19RunningStraightAlongTheTopFloorMeetsTheFallingPacket() = World2Rooms.l19ToShelf(b(19)).leftTo(25.6f).leftJump(0.35f).landLeft().left(3f).expect(WorldState.DEAD)
-
-    // 20: the second check closes gate 3, and gate 2 remembers you
-    @Test fun l20WalkingOverTheSecondCheckIsFatal() = World2Rooms.l20ToScanner(b(20)).waitFor(cond = World2Rooms.busy('M'))
-        .waitFor(cond = World2Rooms.clear('M')).rightTo(30f).expect(WorldState.DEAD)
-    @Test fun l20RunningForGateTwoAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
-
-    // 21: the throttle forbids jumping, in the cage and over the hole; the portal next to the door is a captive portal
-    private fun throttled(w: World) = w.beams.any { it.laser.id == 'U' && it.lit }
-    @Test fun l21ThePortalLeadsIntoTheCage() {
-        val bot = World2Rooms.l21ToCage(b(21))
-        assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx > 24f && bot.world.player.box.b < 9f)
+    @Test fun l19RunningStraightAlongTheTopFloorIsPushedBackByTheWall() {
+        val bot = World2Rooms.l19ToShelf(b(19)).leftTo(25.6f).leftJump(0.35f).landLeft().left(3f)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.state != WorldState.WON && bot.world.player.box.cx > 14f)
     }
-    @Test fun l21JumpingOnTheTopFloorAfterAcceptingIsFatal() = World2Rooms.l21ToCage(b(21)).leftTo(24f).waitFor(cond = ::throttled).jump(0.3f).wait(0.5f).expect(WorldState.DEAD)
-    @Test fun l21JumpingOverTheHoleIsFatal() = World2Rooms.l21ToCage(b(21)).leftTo(13f).waitFor(cond = ::throttled).hopL(11.4f).left(1f).expect(WorldState.DEAD)
+    @Test fun l19WaitingOnTheStairsLetsTheWallParkOnTheLanding() {
+        val bot = World2Rooms.l19ToShelf(b(19)).wait(3f)
+        assertTrue("wall at ${World2Rooms.wallX(bot.world, 'w')}", World2Rooms.wallX(bot.world, 'w') in 19.5f..21.5f)
+    }
 
-    // 22: packets drop from the ceiling on the runner, the bouncer walks toward you, and the floor in front of the door drops
+    // 20: gate 2 flashes, the second check closes gate 3, the stairs and the floor go dark behind you, the queue waits at the exit
+    @Test fun l20RunningStraightAtTheFirstGateIsFatal() = b(20).right(3f).expect(WorldState.DEAD)
+    @Test fun l20RunningOffTheLedgeAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
+    @Test fun l20TheStairsGoDarkBehindYou() {
+        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['w']?.powered == true)
+        assertTrue(World2Rooms.l20ToScanner(b(20)).wait(0.3f).world.circuits['w']?.powered == false)
+    }
+    @Test fun l20TheFloorBehindYouGoesDarkOnTheFirstStep() {
+        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['x']?.powered == true)
+        assertTrue(World2Rooms.l20ToScanner(b(20)).world.circuits['x']?.powered == false)
+    }
+    @Test fun l20TheHopperWhoSkipsTheSecondCheckMeetsGateThree() = b(20).rightJump(0.35f).landRight().right(8f).expect(WorldState.DEAD)
+    @Test fun l20TheFirstCheckPowersTheStairs() {
+        assertTrue(b(20).world.circuits['w']?.powered == false)
+        assertTrue(b(20).rightTo(6.3f).wait(0.1f).world.circuits['w']?.powered == true)
+    }
+
+    // 21: the near portal is a closet, the treadmill drags you toward the LED, the portal next to the door is a captive portal
+    @Test fun l21TheNearPortalIsACloset() {
+        val bot = b(21).rightUntil { it.links[0].hopTime > 0f }.wait(0.5f)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx in 14.9f..16f)
+        bot.right(3f).expect(WorldState.PLAYING)
+    }
+    @Test fun l21StandingOnTheTreadmillIsFatal() = b(21).hopR(5.1f).rightUntil { it.links[1].hopTime > 0f }.wait(4f).expect(WorldState.DEAD)
+    @Test fun l21JumpingUnderTheSpikedCeilingIsFatal() = World2Rooms.l21ToShelf(b(21)).jump(0.3f).wait(0.5f).expect(WorldState.DEAD)
+    @Test fun l21WalkingIntoTheCaptivePortalSendsYouBackUp() {
+        val bot = World2Rooms.l21ToShelf(b(21)).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.rightTo(25.9f).wait(0.3f)
+        assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
+    }
+
+    // 22: packets drop from the ceiling on the runner, the second behind him; the bouncer walks toward you, and the floor in front of the door drops
     @Test fun l22RunningUnderTheFirstPacketIsFatal() = b(22).right(2f).expect(WorldState.DEAD)
+    @Test fun l22StandingUnderTheSecondPacketIsFatal() = b(22).rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .rightJump(0.35f).landRight().rightTo(17.0f).wait(2f).expect(WorldState.DEAD)
     @Test fun l22StandingStillWhereTheBouncerComesFromIsFatal() = b(22).rightTo(29.5f).wait(8f).expect(WorldState.DEAD)
     @Test fun l22RunningStraightIntoTheBouncerIsFatal() = b(22).rightTo(29.5f).waitFor { it.player.grounded }.left(4f).expect(WorldState.DEAD)
 
-    // 23: the cars roll toward you; standing still is walked into the wall, running straight is run over
-    @Test fun l23StandingStillOnceTheTrafficRollsIsWalkedIntoTheWall() = b(23).rightTo(3.6f).wait(8f).expect(WorldState.DEAD)
-    @Test fun l23RunningStraightIntoTheFirstCarIsFatal() = b(23).right(8f).expect(WorldState.DEAD)
+    // 23: a truck tailgates you on lane 1, one comes at you on lane 2, and one stops in front of the spikes before the door
+    @Test fun l23StandingStillOnLaneOneIsPushedIntoTheSpikes() = b(23).rightTo(8.8f).wait(8f).expect(WorldState.DEAD)
+    @Test fun l23RunningStraightIntoTheSpikesIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
+    @Test fun l23HoppingTooEarlyDiesAgainstTheLastTruck() = World2Rooms.l23ToRamp(b(23)).rightUntil { World2Rooms.carAhead(it, 'b', 4.5f) }.rightJump(0.35f).landRight()
+        .rightTo(16.5f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
 
-    // 24: the packet on the first floor drops on the runner, the gate flashes where you land on the second, the hole drops you onto the spikes
-    @Test fun l24RunningUnderThePacketIsFatal() = b(24).right(2f).expect(WorldState.DEAD)
-    @Test fun l24RunningStraightOnTheSecondFloorMeetsTheGate() = b(24).rightTo(9.0f).waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
-        .rightJump(0.35f).landRight().rightTo(19.2f).leftUntil { it.player.grounded }.left(3f).expect(WorldState.DEAD)
+    /** The hops are no gimme: a player who is a second early or late (1.5 tiles, 0.35 s) loses, in either direction. */
+    @Test
+    fun l23NeedsRealTiming() {
+        for (slop in listOf(Slop(0.35f, 1.5f), Slop(-0.35f, -1.5f))) {
+            val bot = DesignRules.play(World2.levels[22], 0, { World2Rooms.l23(this) }, slop)
+            assertTrue("$slop wins", bot.world.state != WorldState.WON)
+        }
+    }
+
+    // 24: the bridge slides away as you come, the wall of spikes knocks back, the stones drop under you
+    @Test fun l24RunningStraightIntoTheGapIsFatal() = b(24).right(4f).expect(WorldState.DEAD)
+    @Test fun l24WaitingOnTheSecondFloorMeetsTheWallOfSpikes() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
+        .wait(3f).expect(WorldState.DEAD)
+    @Test fun l24StandingOnTheStoneIsFatal() = b(24).rightTo(12.9f).rightJump(0.4f).landRight().rightTo(27f).waitFor { it.player.grounded }
+        .leftTo(23.4f).wait(1.5f).expect(WorldState.DEAD)
+
+    // ---------- act 2, levels 17-24: what the reviews asked for ----------
+
+    /** The firewall gates that flash and make you wait appear in two rooms at most (18 and 20). */
+    @Test
+    fun gateWaitsAreRareInActTwo() {
+        val levels = (17..24).filter { n -> World2.levels[n - 1].rounds.any { r -> (r.start + r.traps.flatMap { it.actions }).any { it is Action.Laser && it.off > 0f } } }
+        assertTrue("timed or one-shot beams in $levels", levels.size <= 2)
+    }
+
+    /** The ceiling packet (fall, wait, hop) in two rooms at most. */
+    @Test
+    fun ceilingPacketsAreRareInActTwo() {
+        val levels = (17..24).filter { n -> Card.HEADBUTT in DesignRules.cards(World2.levels[n - 1]) }
+        assertTrue("falling packets in $levels", levels.size <= 2)
+    }
+
+    /** Mephi does not repeat himself in the rooms 17-24 (a line, in either language, is said once). */
+    @Test
+    fun mephisLinesOfActTwoRoomsAreDistinct() {
+        val lines = (17..24).flatMap { n -> World2.levels[n - 1].rounds.flatMap { r -> r.traps.flatMap { it.actions }.filterIsInstance<Action.Say>().map { n to it.text } } }
+        val en = lines.groupBy { it.second.en }.filterValues { it.size > 1 }
+        val de = lines.groupBy { it.second.de }.filterValues { it.size > 1 }
+        assertTrue("repeated lines: ${en.keys + de.keys}", en.isEmpty() && de.isEmpty())
+    }
 
     // ---------- Act 3: Root ----------
     @Test fun level33() = b(33).right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) .right(0.03f).expect(WorldState.WON)
