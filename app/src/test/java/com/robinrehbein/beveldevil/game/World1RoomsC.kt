@@ -62,8 +62,15 @@ object World1RoomsC {
             { leftTo(30.0f).leftJump(0.5f).landLeft().leftTo(27.6f).leftJump(0.5f).landLeft()
                 .leftTo(25.6f).leftJump(0.5f).landLeft().leftTo(23.6f).leftJump(0.5f).landLeft()
                 .leftTo(18.2f).waitFor { w -> w.saws.any { it.path?.points?.firstOrNull()?.first == 16.5f && it.y > 8.2f } }.leftJump(0.4f).landLeft()
-                .leftTo(14.0f).leftJump(0.35f).landLeft().dump("u3")
+                .leftTo(14.0f).leftJump(0.35f).landLeft()
                 .leftTo(8.0f).waitFor { w -> w.saws.any { it.path?.points?.firstOrNull()?.first == 6f && it.y > 10.5f } }.left(3f) },
+        ),
+        32 to listOf<Solution>(
+            { rightTo(12.4f).waitFor { it.solidLeft('b') > 1.0f }.rightTo(20.5f)
+                .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
+                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 5.0f)).waitFor { it.solidLeft('d') > 1.0f }
+                .rightTo(roomX(1, 13.6f)).waitFor { it.solidLeft('c') > 1.0f }
+                .rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(5f) },
         ),
     )
 }

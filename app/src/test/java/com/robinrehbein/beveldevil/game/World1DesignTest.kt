@@ -65,10 +65,10 @@ class World1DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (7..24).toSet()
+        val REBUILT: Set<Int> = (7..32).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
-        val SOLUTIONS: Map<Int, List<Solution>> = World1RoomsA.solutions + World1RoomsB.solutions
+        val SOLUTIONS: Map<Int, List<Solution>> = World1RoomsA.solutions + World1RoomsB.solutions + World1RoomsC.solutions
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World1Test]). */
         fun play(n: Int, round: Int = 1) =

@@ -218,5 +218,36 @@ object World1Part2 {
             put(30, 14, 'P'); put(2, 6, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(15)
+        // 32 — the act finale: an island that gives way, a blinking bridge, a switch that opens the wall to the door and a saw that rolls in when
+        // you press it. At the door the wall behind it breaks open, the door slips into a second room, and there a bridge blinks, a piece of floor
+        // gives way and a second saw rolls in
+        // MECHANIC: Blink + Pad + Saw + Fall + Extend
+        Level(
+            name = T("Beta Test", "Betaversion"),
+            intro = T("Please send feedback via the form. There is none.", "Bitte Feedback über das Formular senden. Es gibt keins."),
+            hint = T("Bridges blink, floors give way, the switch wakes the saw. The room is bigger than it looks.", "Brücken blinken, Böden geben nach, der Schalter weckt die Säge. Der Raum ist größer, als er aussieht."),
+            rooms = 2,
+            start = listOf(
+                Circuit('w'), Pad('1', at = 20 to 14, circuits = "w", mode = PadMode.OFF),
+                Blink('b', on = 2f, off = 1.6f, phase = 2.4f), Blink('d', on = 2f, off = 1.6f, phase = 1.2f), Blink('c', on = 2f, off = 1.6f, phase = 2.4f),
+            ),
+            traps = listOf(
+                trap(Touch('f'), Play(Card.COLLAPSE), Fall('f'), Say(T("You stood on it. That's a regression.", "Du standest drauf. Das ist ein Rückschritt.")), delay = 1.2f),
+                trap(Pressed('1'), Saw(31.5f, 14.4f, -5.5f, 0f, 0.62f), Say(T("Switch accepted. Known issue: the saw.", "Schalter angenommen. Bekanntes Problem: die Säge."))),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14)),
+                trap(Touch('g'), Fall('g'), Say(T("Stable build. Not.", "Stabiler Build. Nicht.")), delay = 1.7f),
+                trap(Touch('e'), Fall('e'), Say(T("Hotfix: the floor.", "Hotfix: der Boden.")), delay = 1.0f),
+                trap(PastX(roomX(1, 14.5f)), Saw(roomX(1, 31.5f), 14.4f, -5f, 0f, 0.62f), Say(T("Second room, second build. Same bugs.", "Zweiter Raum, zweiter Build. Dieselben Fehler."))),
+            ),
+        ) {
+            border(); floor()
+            room(0) {
+                pit(14..18); fill(10..13, 15..17, 'f'); fill(14..18, 15..15, 'b')
+                fill(22..23, 1..14, 'w')
+                put(2, 14, 'P'); put(29, 14, 'D')
+            }
+            room(1) { fill(2..4, 15..17, 'g'); pit(6..9); fill(6..9, 15..15, 'd'); fill(10..12, 15..17, 'e'); pit(15..19); fill(15..19, 15..15, 'c') }
+        },
+
+    )
 }
