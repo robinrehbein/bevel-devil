@@ -121,8 +121,7 @@ class World2DeckTest {
 
     @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
     @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
-    @Test fun l04r2() = b(4, 2).rightTo(12.2f).wait(0.4f).rightJump(0.22f).wait(0.5f).rightJump(0.35f).landRight()
-        .rightTo(19.4f).rightJump(0.35f).landRight().rightTo(22.4f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
+    @Test fun l04r2() { World2DesignTest.play(4, round = 2) }
     /** Sky Blue, round 2: the first ceiling stalks you and drops where round 1 dropped it; run under it, stop before the second. */
     @Test fun l07r2() = b(7, 2).rightTo(14.6f).wait(0.8f).hopR(15.3f).rightTo(21.7f).leftTo(20.8f).wait(1f).hopR(21.3f).right(1f).expect(WorldState.WON)
     @Test fun l07r2TheCeilingFollowsYouAndStandingUnderItIsSafe() {
@@ -217,8 +216,11 @@ class World2DeckTest {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
             1 to { b -> b.hopR(10.2f).hopR(18.0f).right(1.5f) },
-            4 to { b -> b.right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
-                .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
+            4 to { b -> b.rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+                .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                .leftJump(0.35f).landLeft().left(3f) },
             7 to { b -> b.right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f)
                 .rightJump(0.55f).right(0.25f).right(0.10f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
                 .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f)

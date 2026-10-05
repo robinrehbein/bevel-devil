@@ -108,35 +108,45 @@ object World2Part1 {
             spawn(2, 10); door(30, 10); bits(3)
         },
 
-        // 4 — EASTER EGG: off-by-one (the safe gap in the LED row is index 14, and it moves; the hop over the rack lands in spikes; the door steps aside)
+        // 4 — EASTER EGG: off-by-one. The door is in plain sight behind a wall; the way is a stair up, the upper lane under the string of lights
+        // (ceiling bulbs that drop when you come near and go back up on their own), a drop at its end and the lower lane back, where an LED strip
+        // slides at you. Round 2 counts again: each bulb drops twice, so "wait until it is up, then run" from round 1 runs into the second drop
         Level(
             name = T("String Lights", "Lichterkette"),
             intro = T("Nice lighting. I laid the cables myself.", "Schönes Licht hier. Ich habe die Kabel selbst verlegt."),
-            legend = mapOf('A' to hidden, 'B' to hidden),
+            legend = mapOf('A' to Glyph(spike = true, dir = Dir.DOWN), 'B' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(PastX(11.6f), Play(Card.SPIKE_SEED), Show('A'), say("Off by one. Classic.", "Um eins daneben. Klassiker.")),
-                trap(Airborne(20.4f, 22.6f), Show('B'), say("Buffer overflow: two more.", "Pufferüberlauf: noch zwei.")),
-                trap(PastX(24.8f), DoorTo(28, 14, speed = 30f), say("You counted from zero, I counted from one.", "Du hast bei null angefangen, ich bei eins.")),
+                trap(PastX(11.5f), Play(Card.HEADBUTT), Move('A', 0f, 7f, 30f), say("Lights on. Mind your head.", "Licht an. Kopf einziehen."), delay = 0.1f),
+                trap(PastX(11.5f), Move('A', 0f, -7f, 14f), delay = 0.8f),
+                trap(PastX(17.5f), Move('B', 0f, 7f, 30f), say("Bulb two. I counted from zero.", "Birne zwei. Ich habe bei null angefangen."), delay = 0.1f),
+                trap(PastX(17.5f), Move('B', 0f, -7f, 14f), delay = 1.0f),
+                trap(PastX(25.3f), Move('G', 12f, 0f, 6f), say("The cable runs the other way, too.", "Das Kabel läuft auch andersrum.")),
             ),
-            // rematch: gap 14 stays open this time, the other gap gets plugged while you fly at it
+            hint = T("Wait until the bulb is back up, then run.", "Warte, bis die Birne wieder oben ist, dann lauf."),
             rematch = listOf(
                 Round(
-                    T("Packet lost. Sending it again.", "Paket verloren, nochmal. Wie bei der Post."),
-                    legend = mapOf('C' to hidden),
+                    T("Off by one. I count twice now.", "Um eins daneben. Ich zähle jetzt doppelt."),
+                    hint = T("Every bulb flickers twice. Count them.", "Jede Birne flackert zweimal. Zähl mit."),
                     traps = listOf(
-                        trap(PastX(11.6f), say("Off by one. Again?", "Um eins daneben. Schon wieder?")),
-                        trap(Airborne(12.6f, 15.4f), Play(Card.SPIKE_SEED), Show('C'), say("Now I count from two.", "Jetzt zähle ich ab zwei.")),
-                        trap(Airborne(20.4f, 22.6f), Show('B')),
-                        trap(PastX(24.8f), DoorTo(28, 14, speed = 30f)),
+                        trap(PastX(11.5f), Play(Card.SINKING), Move('A', 0f, 7f, 30f), say("Flicker. Flicker.", "Flacker. Flacker."), delay = 0.1f),
+                        trap(PastX(11.5f), Move('A', 0f, -7f, 40f), delay = 0.5f),
+                        trap(PastX(11.5f), Move('A', 0f, 7f, 30f), delay = 0.75f),
+                        trap(PastX(11.5f), Move('A', 0f, -7f, 40f), delay = 1.15f),
+                        trap(PastX(17.5f), Move('B', 0f, 7f, 30f), delay = 0.1f),
+                        trap(PastX(17.5f), Move('B', 0f, -7f, 40f), delay = 0.5f),
+                        trap(PastX(17.5f), Move('B', 0f, 7f, 30f), delay = 0.75f),
+                        trap(PastX(17.5f), Move('B', 0f, -7f, 40f), delay = 1.15f),
+                        trap(PastX(25.3f), Move('G', 12f, 0f, 6f)),
                     ),
-                ) { put(16, 14, 'C') },
+                ),
             ),
         ) {
             border(); floor()
-            put(13, 14, '^'); put(15, 14, '^'); put(17, 14, '^'); put(14, 14, 'A')
-            rack(21, 2, 2)
-            put(25, 14, 'B'); put(26, 14, 'B')
-            spawn(); door(27); bits(4)
+            fill(4..5, 13..14); fill(6..7, 11..14); fill(8..9, 9..14)
+            fill(10..26, 9..9)
+            fill(15..16, 1..1, 'A'); fill(21..22, 1..1, 'B')
+            fill(12..13, 14..14, 'G')
+            spawn(); door(11); bits(4)
         },
 
         // 5 — EASTER EGG: NullPointerException (the bonk block is real; landing behind the wall drops the floor; the hop over that lands in spikes)

@@ -96,6 +96,20 @@ class World2DesignTest : DesignTestBase() {
                 { hopR(7.2f).hopR(12.8f).hopR(17.2f).rightUntil { it.player.box.cy > 12.5f }.leftUntil { World2Rooms.sawAheadLeft(it, 4.4f) }
                     .leftJump(0.35f).landLeft().left(3f) },
             ),
+            4 to listOf(
+                { rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                    .leftJump(0.35f).landLeft().left(3f) },
+                { rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                    .waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                    .waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
+                    .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
+                    .leftJump(0.35f).landLeft().left(3f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)

@@ -323,8 +323,9 @@ class DesignRulesTest {
 
     @Test
     fun mechanicsRotateOverAnAct() {
-        // the door flees in 2-3 and 2-4: twice in act 1
-        val levels = mapOf(3 to World2.levels[2], 4 to World2.levels[3])
+        // the door flees in 2-3 and in a second room of act 1 (built here, 2-4 no longer has a fleeing door): twice in act 1
+        val second = Level(T("d", "d"), T("d", "d"), traps = listOf(trap(Trigger.PastX(5f), Action.DoorTo(10, 14)))) { border(); floor(); put(2, 14, 'P'); put(29, 14, 'D') }
+        val levels = mapOf(3 to World2.levels[2], 4 to second)
         assertEquals(
             listOf("act 1: door flees (DoorTo) in 2 levels [3, 4] (max 1)"),
             DesignRules.rotationViolations(levels).filter { "DoorTo" in it },

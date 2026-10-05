@@ -167,8 +167,8 @@ class World2Test {
         b(2).hopR(15.5f).right(3f).expect(WorldState.DEAD)
         // 3: running on, down the hole and into the lower floor, the saw that rolls at you finds you
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).right(6f).expect(WorldState.DEAD)
-        // 4: the gap you aim for is plugged while you fly at it
-        b(4).hopR(9.4f).right(1f).expect(WorldState.DEAD)
+        // 4: the bulb over the upper lane drops as you come near
+        b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
         // 17: running along the roof of the duct runs under the loose piece of the shelf
         b(17).rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().right(2f).expect(WorldState.DEAD)
         // 18: lingering on the rack after pressing the pad runs into the port scan
@@ -283,8 +283,10 @@ class World2Test {
     @Test fun level03() { World2DesignTest.play(3) }
     /** Reception: hopping the hole in the upper floor, like the door's old neighbour, leaves you holding right at the wall of an upper floor with no door. */
     @Test fun level03HoppingTheHoleIsTheWrongWay() = b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).hopR(24.6f).right(3f).expect(WorldState.PLAYING)
-    @Test fun level04() = b(4).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
-        .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level04() { World2DesignTest.play(4) }
+    /** String Lights: the bulb over the lane drops when you come near, so dashing under it is the end. */
+    @Test fun level04DashingUnderTheBulbIsFatal() = b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
+        .right(2f).expect(WorldState.DEAD)
     @Test fun level05() = b(5).right(0.60f).right(0.60f).rightJump(0.25f).left(0.10f).right(0.03f).right(0.03f)
         .left(0.03f).rightJump(0.12f).leftJump(0.25f).right(0.10f).left(0.03f).rightJump(0.55f).rightJump(0.55f)
         .rightJump(0.55f).left(0.60f).expect(WorldState.WON)
