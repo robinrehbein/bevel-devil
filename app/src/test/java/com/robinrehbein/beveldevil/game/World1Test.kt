@@ -397,6 +397,17 @@ class World1Test {
     /** 40: after the panic the keys are swapped, so holding right runs back to the start. */
     @Test fun level40HoldingRightRunsBack() = b(40).right(5f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 5f) }.expect(WorldState.PLAYING)
     @Test fun level40TheMemoryTestBeamStopsTheRunner() = b(40).rightUntil { it.swapped }.leftKeyRightTo(25f).expect(WorldState.DEAD)
+    /** 40: the keys come back at the end of the shelf and swap again on the ground floor: the old reflex runs into the pit. */
+    @Test fun level40TheKeysSwapAgainOnTheGroundFloor() {
+        val run = b(40).rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
+            .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+        assertTrue(run.world.swapped)
+        run.leftTo(8f).expect(WorldState.PLAYING)
+        assertTrue("the old key now runs away from the door, x=${run.world.player.box.cx}", run.world.player.box.cx > 18f)
+    }
+    @Test fun level40ThePitOnTheGroundIsReal() = b(40).rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }
+        .leftKeyRightTo(21.0f).leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+        .rightKeyLeftTo(3.2f).expect(WorldState.DEAD)
     // ---------- Act 3, levels 41-48 (block E): rebuilt, their clean run is the registered solution (World1RoomsE); the rematches of 42, 46, 47 and 48 are in World1DeckTest ----------
     @Test fun level41() = World1DesignTest.play(41)
     @Test fun level42() = World1DesignTest.play(42)

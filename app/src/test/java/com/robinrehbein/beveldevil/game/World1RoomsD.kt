@@ -41,12 +41,12 @@ object World1RoomsD {
                 .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
                 .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
         ),
-        // 40: the keys swap at the first steps: wait for the first beam to go dark, cross, up the stairs (the keys come back on the last
-        // step), back along the upper floor once the second beam is dark
+        // 40: the keys swap at the first steps: wait for the beam to go dark, cross, the keys come back at the end of the shelf, drop down the
+        // shaft, run back along the ground floor; the keys swap again halfway (reboot) and the pit is hopped with them
         40 to listOf<Solution>(
-            { rightUntil { it.swapped }.leftKeyRightTo(13.6f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
-                .leftJump(0.5f).landLeft().leftKeyRightTo(26.0f).leftJump(0.5f).landLeft().leftTo(29.9f).leftJump(0.5f).landLeft()
-                .leftTo(17.4f).waitFor { w -> !w.beams.any { it.laser.id == 'B' && it.lit } }.left(5f) },
+            { rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
+                .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+                .hopSL(13.6f, 0.4f).rightKeyLeftTo(3.2f).right(1f) },
         ),
         // 39: let the ceiling tile land and hop it, board the shelf, tilt and ride it across, jump off its end onto the stairs, up, back along
         // the upper floor, let the second tile land and hop it
