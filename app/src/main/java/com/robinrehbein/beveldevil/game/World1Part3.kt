@@ -353,23 +353,28 @@ object World1Part3 {
             put(2, 14, 'P'); put(3, 8, 'D')
         },
 
-        // 44 — a wall to the ceiling that only comes down when you shake the phone
-        // MOTION: Shaken
+        // 44 — wallflower: the pit is floored with four shy planks that only dance when you step on the one before: the next one is
+        // gone for a moment, so you have to wait on the plank you stand on. The wall to the ceiling behind them does not budge, it
+        // only comes down when you shake the phone, and the bit of floor beyond it drops as you pass, in front of the stairs to the door.
+        // MOTION: Shaken (one of the two phone-motion levels of the act). U16: shake. Blink planks (the one lethal family), a floor piece
         Level(
             name = T("Wallflower", "Mauerblümchen"),
             intro = T("The wall won't budge. Neither will I.", "Die Wand bewegt sich nicht. Ich auch nicht."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("Each plank is shy: it is gone until you stand on the one before it. Wait for it. The wall comes down if you shake the phone.", "Jede Diele ist schüchtern: Sie fehlt, bis du auf der davor stehst. Warte auf sie. Die Wand fällt, wenn du das Handy schüttelst."),
             traps = listOf(
+                trap(PastX(6.5f), Blink('p', on = 3.4f, off = 1f), Say(T("Planks! Shy ones.", "Dielen! Schüchterne."))),
+                trap(Touch('p'), Blink('q', on = 2.6f, off = 1.15f, phase = 2.6f), Say(T("Wallflowers only dance when nobody looks.", "Mauerblümchen tanzen nur, wenn keiner hinsieht."))),
+                trap(Touch('q'), Blink('r', on = 2.6f, off = 1.15f, phase = 2.6f)),
+                trap(Touch('r'), Blink('s', on = 2.6f, off = 1.15f, phase = 2.6f)),
                 trap(Shaken, Play(Card.COLLAPSE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!"))),
-                trap(Airborne(17f, 19.7f), Show('A')),
-                trap(Touch('f'), Fall('f'), delay = 0.06f),
+                trap(PastX(24.6f), Fall('f'), Say(T("Flowers wilt. So does floor.", "Blumen welken. Boden auch."))),
             ),
         ) {
-            border(); floor()
-            fill(20..20, 1..14, 'a')
-            put(18, 14, 'A'); put(19, 14, 'A')
-            fill(24..25, 15..17, 'f')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); pit(5..24)
+            fill(5..9, 15..15, 'p'); fill(10..14, 15..15, 'q'); fill(15..19, 15..15, 'r'); fill(20..24, 15..15, 's')
+            fill(25..25, 1..14, 'a'); fill(26..26, 15..17, 'f')
+            fill(27..28, 13..14); fill(29..29, 11..14); fill(30..30, 9..14)
+            put(1, 14, 'P'); put(30, 8, 'D')
         },
 
         // 45 — the floor is deleted when you are halfway; the shelf above it is not, but climbing onto it sprouts spikes
