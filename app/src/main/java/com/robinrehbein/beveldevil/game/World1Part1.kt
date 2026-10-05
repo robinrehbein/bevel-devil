@@ -252,23 +252,23 @@ object World1Part1 {
             put(26, 14, 'P'); put(29, 8, 'D')
         },
 
-        // 11 — stepping stones over a pit; the second one crumbles slowly, the third quickly, the last grows a spike as you fly at it
+        // 11 — a deck over the creek: a pothole opens in it ahead of you, you drop off its end onto the left bank where the
+        // ceiling drops a delivery, and the way home is the creek itself: stones that crumble, one of them in no time
         Level(
             name = T("The Creek", "Bachlauf"),
-            intro = T("The last jump is the hard one. Focus.", "Der letzte Sprung ist der schwerste. Konzentrier dich."),
-            legend = mapOf('A' to hiddenSpike),
+            intro = T("Fresh water, fresh stones. Don't get attached.", "Frisches Wasser, frische Steine. Bind dich nicht."),
+            hint = T("The stones don't like being stood on. Hop on, hop off.", "Die Steine mögen es nicht, wenn man auf ihnen steht. Drauf, runter."),
             traps = listOf(
-                trap(Touch('b'), Play(Card.CRUMBLE), Fall('b'), Say(T("Stone number two says bye.", "Stein Nummer zwei sagt tschüss.")), delay = 0.45f),
-                trap(Touch('c'), Fall('c'), delay = 0.2f),
-                trap(Airborne(21.3f, 22.6f), Show('A')),
-                // the bank and the first stone give way behind you: hopping back after stone two leads nowhere, so it ends
-                trap(Touch('b'), Fall('s'), delay = 2.2f),
+                trap(BeforeX(16f), Fall('d'), Say(T("Bridge works ahead. Surprise.", "Brückenarbeiten voraus. Überraschung."))),
+                trap(Landed(0f, 4.5f), Fall('h'), Say(T("Special delivery from upstairs.", "Spezialzustellung von oben.")), delay = 0.25f),
+                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), Say(T("This stone is shy.", "Dieser Stein ist schüchtern.")), delay = 0.3f),
+                trap(Touch('c'), Fall('c'), Say(T("Faster stones. Slower you.", "Schnellere Steine. Langsamerer du.")), delay = 0.12f),
             ),
         ) {
-            border(); floor(); pit(6..27)
-            fill(1..5, 15..17, 's'); fill(8..10, 14..14, 's'); fill(13..15, 14..14, 'b'); fill(18..20, 14..14, 'c'); fill(23..26, 13..13)
-            put(25, 12, 'A')
-            put(2, 14, 'P'); put(30, 14, 'D')
+            border(); floor(); pit(4..21)
+            fill(5..9, 15..15, 'a'); fill(12..14, 15..15); fill(17..19, 15..15, 'c')
+            fill(4..30, 9..9); fill(10..11, 9..9, 'd'); fill(1..3, 1..3, 'h')
+            put(28, 8, 'P'); put(28, 14, 'D')
         },
 
         // 12 — spawn on the right, door on the left; jump the spike and spikes sprout behind the landing; the next hop lands before a pit

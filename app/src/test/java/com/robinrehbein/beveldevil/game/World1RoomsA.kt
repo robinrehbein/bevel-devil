@@ -1,6 +1,15 @@
 package com.robinrehbein.beveldevil.game
 
 /** Bot solutions of World 1, block A (levels 7-16), one per round; shared by the design tests and the level tests. */
+/** Debug helper (temporary): appends the bot's state to /tmp/w1dbg.txt. */
+fun Bot.dbg(tag: String): Bot {
+    val p = world.player
+    for (pc in world.pieces) if (pc.box.x > p.box.x - 1.5f && pc.box.x < p.box.r + 1.5f && pc.box.y > p.box.y - 1.5f && pc.box.y < p.box.b + 1.5f)
+        java.io.File("/tmp/w1dbg.txt").appendText("   piece x=%.2f y=%.2f solid=%s spike=%s grp=%s\n".format(pc.box.x, pc.box.y, pc.solid, pc.spike, pc.group?.id))
+    java.io.File("/tmp/w1dbg.txt").appendText("%s t=%.2f x=%.2f y=%.2f vx=%.2f vy=%.2f g=%s %s\n".format(tag, world.time, p.box.cx, p.box.b, p.vx, p.vy, p.grounded, world.state))
+    return this
+}
+
 object World1RoomsA {
     val solutions: Map<Int, List<Solution>> = mapOf(
         7 to listOf<Solution>(
@@ -21,6 +30,11 @@ object World1RoomsA {
         10 to listOf<Solution>(
             { leftTo(6.6f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(0.5f).rightJump(0.5f).landRight()
                 .rightTo(8.2f).rightJump(0.5f).landRight().rightTo(12.6f).rightJump(0.5f).landRight().right(3f) },
+        ),
+        11 to listOf<Solution>(
+            { leftTo(12.6f).leftJump(0.5f).landLeft().left(1.0f).landLeft()
+                .rightTo(3.6f).rightJump(0.12f).landRight().rightTo(8.8f).rightJump(0.5f).landRight()
+                .rightTo(13.8f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(3f) },
         ),
     )
 }
