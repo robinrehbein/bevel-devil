@@ -401,21 +401,25 @@ object World2Part2 {
             spawn(1, 14); door(29, 11); bits(27)
         },
 
-        // 28 — a VPN tunnel goes under the firewall; walking into it re-points it to the edge of the IPS beam, which warms up on the far side; past the beam, two spikes
+        // 28 — a VPN tunnel under the firewall, a trap room (U13 the laser, R3 the portal): the firewall is a wall of light you cannot cross, the
+        // tunnel is the only way past it. Walking into the tunnel re-points it (DNS changed): you come out right in front of the IPS, which starts a
+        // gate as you appear (run on and you are in it), and a second one as you pass the first. At the end of the lane a second tunnel leads up to the
+        // walkway under the ceiling, where you run back to the door, and a third gate starts as you come out.
         Level(
             name = T("Split Tunnel", "Split Tunnel"),
             intro = T("The tunnel is the only shortcut. I swear.", "Der Tunnel ist die einzige Abkürzung. Ich schwöre."),
-            legend = mapOf('A' to hidden),
-            start = listOf(Laser('L', 15 to 1, 15 to 14), Portal('1', 11 to 14, 19 to 14)),
+            start = listOf(Laser('F', 8 to 10, 8 to 14), Portal('1', 5 to 14, 11 to 14, twoWay = false), Portal('2', 28 to 14, 30 to 8, twoWay = false)),
             traps = listOf(
-                trap(Zone(9.6f, 12.5f, 10.8f, 15f), Reroute('1', 22 to 14), say("Split tunnel: your exit has moved.", "Split Tunnel: Dein Ausgang ist umgezogen.")),
-                trap(PastX(19.2f), Play(Card.SPIKE_SEED), Laser('M', 23 to 14, 26 to 14, on = 0.8f, off = 1.8f, delay = 0.35f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
-                trap(PastX(24.6f), Show('A'), say("Intrusion logged.", "Eindringen protokolliert.")),
+                trap(Zone(3.4f, 12f, 4.9f, 15f), Reroute('1', 13 to 14), say("Split tunnel: your exit has moved.", "Split Tunnel: Dein Ausgang ist umgezogen.")),
+                trap(Zone(12.4f, 12f, 13.8f, 15f), Play(Card.SPIKE_SEED), Laser('M', 17 to 10, 17 to 14, on = 0.4f, off = 2.0f, delay = 0.2f), say("IPS: tunnel detected. New rule installed.", "IPS: Tunnel erkannt. Neue Regel installiert.")),
+                trap(PastX(17.6f), Laser('N', 22 to 10, 22 to 14, on = 0.4f, off = 2.0f, delay = 0.3f), say("Rule 2. Same rhythm, other hole.", "Regel 2. Gleicher Takt, anderes Loch.")),
+                trap(PastX(22.6f), Laser('P', 26 to 10, 26 to 14, on = 0.4f, off = 2.0f, delay = 0.2f), say("Rule 3. I have a lot of rules.", "Regel 3. Ich habe viele Regeln.")),
+                trap(Zone(18f, 6f, 24f, 9f), Laser('O', 14 to 1, 14 to 8, on = 0.4f, off = 2.0f, delay = 0.9f), say("Rule 4. This one is a rule I made up just now.", "Regel 4. Diese Regel habe ich mir gerade ausgedacht.")),
             ),
         ) {
             border(); floor()
-            put(28, 14, 'A'); put(29, 14, 'A')
-            spawn(); door(30); bits(28)
+            fill(2..30, 9..9)
+            spawn(); door(8, 8); bits(28)
         },
 
         // 29 — a pendulum saw over a belt that hurries you, and another saw that is right behind you; after the first hop the belt turns against you, and the last hop lands in spikes

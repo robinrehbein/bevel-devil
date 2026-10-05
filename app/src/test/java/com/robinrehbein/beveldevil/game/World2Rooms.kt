@@ -127,6 +127,11 @@ object World2Rooms {
         .leftTo(12.2f).waitFor { it.group('e').oy > 10.9f }.rightTo(12.6f).rightJump(0.3f).landRight()
         .rightUntil { it.group('f').mode == GroupMode.FALL }.waitFor { it.group('f').oy > 9.9f }.hopR(21.1f).right(3f)
 
+    /** 28: into the tunnel, out of it in front of the first gate; wait for each gate to go dark, cross, on into the second tunnel, and back along the walkway to the door. */
+    fun l28(b: Bot) = b.rightUntil { it.player.box.cx > 13.3f }.wait(0.05f).waitFor(cond = clear('M')).rightUntil { it.player.box.cx > 17.8f }
+        .wait(0.05f).waitFor(cond = clear('N')).rightUntil { it.player.box.cx > 22.8f }.wait(0.05f).waitFor(cond = clear('P')).rightUntil { it.player.box.b < 9.5f }
+        .leftUntil { it.player.box.cx < 19.6f }.wait(0.05f).waitFor(cond = clear('O')).left(3f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

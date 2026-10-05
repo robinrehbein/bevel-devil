@@ -175,7 +175,7 @@ class World2Test {
         World2Rooms.l18ToPad(b(18)).wait(2.5f).expect(WorldState.DEAD)
         // 20: running on right after the ID scan drops you into the queue at the exit gate
         World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
-        // 28: the tunnel drops you next to the IPS beam, and running on runs into it
+        // 28: the tunnel drops you in front of the first gate, and running on runs into it
         b(28).right(3f).expect(WorldState.DEAD)
         // 29: the belt turns against you after the first hop, and the saw behind you does not
         b(29).hopR(8.6f).right(3f).expect(WorldState.DEAD)
@@ -359,8 +359,7 @@ class World2Test {
     @Test fun level26TheQueueFollowsAndTheNodeIsAnObstacle() = b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.box.cx > 19.6f }.right(4f).expect(WorldState.DEAD)
     @Test fun level27() { World2DesignTest.play(27) }
     @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
-    @Test fun level28() = b(28).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).jump(0.16f)
-        .rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level28() { World2DesignTest.play(28) }
     @Test fun level29() = b(29).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
         .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level30() = b(30).hopR(3.2f).hopR(15f).hopR(25f).right(2f).expect(WorldState.WON)
