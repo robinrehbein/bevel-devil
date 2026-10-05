@@ -119,8 +119,8 @@ class World2DeckTest {
 
     // ---------- Act 1: Handshake ----------
 
-    @Test fun l01r2() = b(1, 2).rightTo(17.5f).hopR(18.9f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.7f).right(0.5f).expect(WorldState.DEAD)
+    @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
+    @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
     @Test fun l04r2() = b(4, 2).rightTo(12.2f).wait(0.4f).rightJump(0.22f).wait(0.5f).rightJump(0.35f).landRight()
         .rightTo(19.4f).rightJump(0.35f).landRight().rightTo(22.4f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
     /** Sky Blue, round 2: the first ceiling stalks you and drops where round 1 dropped it; run under it, stop before the second. */
@@ -216,7 +216,7 @@ class World2DeckTest {
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            1 to { b -> b.right(1.20f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(1.20f) },
+            1 to { b -> b.hopR(10.2f).hopR(18.0f).right(1.5f) },
             4 to { b -> b.right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
                 .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             7 to { b -> b.right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f)

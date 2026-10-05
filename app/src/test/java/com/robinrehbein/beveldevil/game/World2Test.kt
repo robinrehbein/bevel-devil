@@ -161,8 +161,8 @@ class World2Test {
     /** The counter just learned (hop the obstacle) followed by the old reflex (keep running) is what the next trap of a chain waits for. */
     @Test
     fun theObviousRunDiesInTheChain() {
-        // 1: the landing behind the second pit has two spikes that only grow while you fly
-        b(1).hopR(10.7f).hopR(18.6f).right(2f).expect(WorldState.DEAD)
+        // 1: the landing after the first pit is a pit too
+        b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
         // 2: the first spike grows a second one in front of the portal
         b(2).hopR(2.6f).right(2f).expect(WorldState.DEAD)
         // 3: after the second rack the spikes are there, even if the room is plain
@@ -274,8 +274,9 @@ class World2Test {
     }
 
     // ---------- Act 1: Handshake ----------
-    @Test fun level01() = b(1).right(1.20f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
-        .right(1.20f).expect(WorldState.WON)
+    @Test fun level01() { World2DesignTest.play(1) }
+    /** Hello, World!: hopping the first pit and running on lands in the pit that opens as you touch down. */
+    @Test fun level01TheLandingIsAPitToo() = b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
     @Test fun level02() = b(2).right(0.25f).rightJump(0.40f).right(0.03f).left(0.10f).rightJump(0.55f).leftJump(0.55f)
         .right(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level03() = b(3).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).left(0.60f).right(0.25f).left(0.03f) .left(0.25f).leftJump(0.55f).leftJump(0.55f).left(1.20f).leftJump(0.55f).expect(WorldState.WON)

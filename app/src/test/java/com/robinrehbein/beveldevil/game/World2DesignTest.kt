@@ -82,6 +82,10 @@ class World2DesignTest : DesignTestBase() {
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
+            1 to listOf(
+                { hopR(10.2f).hopR(18.0f).right(1.5f) },
+                { rightTo(17.5f).hopR(18.6f).right(1.5f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)

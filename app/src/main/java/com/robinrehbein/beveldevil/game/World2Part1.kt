@@ -35,33 +35,29 @@ object World2Part1 {
 
     val levels: List<Level> = listOf(
 
-        // 1 — EASTER EGG: Hello, World! (the floor driver segfaults; landing drops the next piece; the landing after that grows spikes)
+        // 1 — EASTER EGG: Hello, World! A breather with one gag: the floor driver segfaults twice, and the second time it is
+        // the landing. Round 2 plays against round 1's reflex: the first pit is a bluff, and the hop over nothing lands in spikes
         Level(
             name = T("Hello, World!", "Hallo, Welt!"),
             intro = T("Print it, then walk to the door.", "Gib es aus, dann lauf zur Tür."),
-            legend = mapOf('A' to hidden),
+            legend = mapOf('C' to hidden),
             traps = listOf(
-                trap(PastX(10.6f), Play(Card.COLLAPSE), Fall('a'), say("Hello, World! Segfault in the floor driver.", "Hallo, Welt! Segfault im Boden-Treiber.")),
-                trap(Landed(14.6f, 18.5f), Fall('b'), say("Hello again, World.", "Hallo nochmal, Welt.")),
-                trap(Airborne(20f, 23.5f), Show('A'), say("Warning: 2 new spikes installed.", "Warnung: 2 neue Spikes installiert.")),
+                trap(PastX(9f), Play(Card.COLLAPSE), Fall('a'), say("Hello, World! Segfault in the floor driver.", "Hallo, Welt! Segfault im Boden-Treiber.")),
+                trap(Landed(14.4f, 17f), Fall('b'), say("Hello again, World.", "Hallo nochmal, Welt."), delay = 0.1f),
             ),
-            // rematch: the first pit is a bluff now; whoever hops it anyway lands in fresh spikes, the second pit drops early
             rematch = listOf(
                 Round(
                     T("Retransmit. Same text, new bugs.", "Nochmal gesendet. Diesmal mit Bonus-Bugs."),
-                    legend = mapOf('C' to hidden),
                     traps = listOf(
-                        trap(PastX(10.6f), Bluff(Card.COLLAPSE)),
-                        trap(Airborne(11.2f, 14.6f), Show('C'), say("Jumped to conclusions.", "Voreilig gesprungen.")),
-                        trap(PastX(19.2f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
-                        trap(Airborne(20f, 23.5f), Show('A')),
+                        trap(PastX(9f), Bluff(Card.COLLAPSE)),
+                        trap(Airborne(2f, 16.5f), Show('C'), say("Jumped to conclusions.", "Voreilig gesprungen.")),
+                        trap(PastX(17f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
                     ),
-                ) { put(15, 14, 'C'); put(16, 14, 'C') },
+                ) { fill(11..19, 14..14, 'C') },
             ),
         ) {
             border(); floor()
-            fill(12..14, 15..17, 'a'); fill(20..22, 15..17, 'b')
-            put(25, 14, 'A'); put(26, 14, 'A')
+            fill(11..13, 15..17, 'a'); fill(20..22, 15..17, 'b')
             spawn(); door(); bits(1)
         },
 
