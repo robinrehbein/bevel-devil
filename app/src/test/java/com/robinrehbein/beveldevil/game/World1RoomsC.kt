@@ -52,5 +52,11 @@ object World1RoomsC {
         29 to listOf<Solution>(
             { rightTo(18.8f).rightTo(19.4f).rightJump(0.5f).landRight().rightTo(25.2f).rightJump(0.5f).landRight().right(2f) },
         ),
+        30 to listOf<Solution>(
+            { rightTo(8.6f).waitFor { it.group('a').oy >= 11.9f }.rightJump(0.5f).landRight()
+                .waitFor { it.group('c').oy >= 9.9f }.rightJump(0.5f).landRight()
+                .waitFor { it.group('f').oy >= 7.9f }.rightJump(0.5f).landRight()
+                .leftKeyRightTo(21.7f).leftJump(0.5f).landLeft().leftKeyRightTo(25.6f).leftJump(0.35f).landLeft().left(1.5f) },
+        ),
     )
 }

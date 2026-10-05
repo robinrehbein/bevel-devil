@@ -167,5 +167,31 @@ object World1Part2 {
             put(2, 14, 'P'); put(30, 14, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(13)
+        // 30 — tetrominoes drop from the ceiling one after the other as you reach each step and build the stairs to the ledge; a runner
+        // gets the next piece on his head, so you wait for every stack to land before you climb it. On the last step Mephi swaps your keys:
+        // player two is on the controller
+        // EASTER EGG: Tetris (O-pieces stack up, "Line clear!")
+        Level(
+            name = T("Arcade", "Spielhalle"),
+            intro = T("I'm about to play something. Go on ahead.", "Ich spiele gleich was. Geh ruhig schon vor."),
+            hint = T("Let every stack land before you climb it. On the last step the keys swap.", "Lass jeden Stapel erst landen, bevor du hochkletterst. Auf der letzten Stufe tauschen die Tasten."),
+            traps = listOf(
+                trap(PastX(8f), Play(Card.HEADBUTT), Fall('a'), Say(T("Next piece: staircase.", "Nächster Stein: Treppe."))),
+                trap(Landed(11f, 15f), Fall('b'), Say(T("That doesn't fit. Dropping it anyway.", "Das passt nicht. Ich lasse ihn trotzdem fallen."))),
+                trap(Landed(11f, 15f), Fall('c'), delay = 0.4f),
+                trap(Landed(15f, 19f), Fall('d'), Say(T("Level up. Gravity doubled.", "Level up. Schwerkraft verdoppelt."))),
+                trap(Landed(15f, 19f), Fall('e'), delay = 0.4f),
+                trap(Landed(15f, 19f), Fall('f'), delay = 0.8f),
+                trap(Landed(19f, 23f), Swap(true), Say(T("Player two joins. Player one's keys are now player two's.", "Spieler zwei steigt ein. Die Tasten von Spieler eins gehören jetzt ihm."))),
+            ),
+        ) {
+            border(); floor()
+            fill(11..14, 1..2, 'a')
+            fill(15..18, 3..4, 'b'); fill(15..18, 1..2, 'c')
+            fill(19..22, 5..6, 'd'); fill(19..22, 3..4, 'e'); fill(19..22, 1..2, 'f')
+            fill(24..30, 8..14)
+            put(27, 7, '#'); put(1, 14, 'P'); put(30, 7, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(14)
 }
