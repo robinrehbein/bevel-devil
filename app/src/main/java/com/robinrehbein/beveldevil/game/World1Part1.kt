@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.DoorTo
+import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
@@ -13,6 +14,7 @@ import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
+import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
@@ -230,22 +232,24 @@ object World1Part1 {
             put(2, 8, 'P'); put(2, 14, 'D')
         },
 
-        // 10 — the floor under the door gives way when you step on it, the real door waits downstairs; landing spikes on the way back; the door steps away
+        // 10 — the way home runs left along the ground floor with a concrete wall on your heels, up a stair, and back along the
+        // upper floor; the wall picks up speed at the stair, and a spike bed grows where the hop over the step lands
         Level(
             name = T("Homeward", "Heimweg"),
             intro = T("I aired the place out just for you.", "Ich habe extra für dich gelüftet."),
+            hint = T("The wall is slower than you. Don't stop to look at it.", "Die Wand ist langsamer als du. Bleib nicht stehen, um sie anzuschauen."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
-                trap(Touch('a'), Play(Card.DECOY), Fall('a'), DoorTo(3, 14, speed = 10f), Say(T("That door was decoration.", "Die Tür war nur Deko."))),
-                trap(Airborne(14.6f, 17f), Show('A')),
-                trap(Landed(7f, 10.5f), DoorTo(1, 14, speed = 8f), Say(T("Two more steps. Promise.", "Noch zwei Schritte. Versprochen."))),
+                trap(BeforeX(24f), Play(Card.STALKER), Chase('a', speed = 3.5f, left = 28f, right = 0f), Say(T("Draft! Mind the wall.", "Zugluft! Vorsicht, die Wand."))),
+                trap(Zone(1f, 11f, 8f, 15f), Chase('a', speed = 5f, left = 28f, right = 0f), Say(T("It's picking up speed.", "Sie nimmt Fahrt auf."))),
+                trap(Airborne(8f, 11.5f), Show('A'), Say(T("Mind the carpet. It's new.", "Vorsicht, der Teppich. Ganz neu."))),
             ),
         ) {
             border(); floor()
-            fill(1..19, 9..9); fill(20..30, 9..9, 'a')
-            put(17, 14, '^')
-            put(11, 14, 'A'); put(12, 14, 'A')
-            put(2, 8, 'P'); put(28, 8, 'D')
+            fill(29..30, 12..14, 'a')
+            fill(3..4, 13..14); fill(1..2, 11..14)
+            fill(3..30, 9..9); put(9, 8, '#'); fill(14..15, 8..8, 'A')
+            put(26, 14, 'P'); put(29, 8, 'D')
         },
 
         // 11 — stepping stones over a pit; the second one crumbles slowly, the third quickly, the last grows a spike as you fly at it

@@ -18,5 +18,9 @@ object World1RoomsA {
             { hopR(11.2f, 0.5f).leftUntil { it.pads[0].presses >= 1 }
                 .leftTo(22.4f).leftJump(0.5f).landLeft().leftTo(15.4f).leftJump(0.5f).landLeft().leftTo(1.0f) },
         ),
+        10 to listOf<Solution>(
+            { leftTo(6.6f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(0.5f).rightJump(0.5f).landRight()
+                .rightTo(8.2f).rightJump(0.5f).landRight().rightTo(12.6f).rightJump(0.5f).landRight().right(3f) },
+        ),
     )
 }
