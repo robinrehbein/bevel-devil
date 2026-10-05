@@ -473,24 +473,10 @@ class World2Test {
     @Test fun l22StandingStillWhereTheSecondBouncerComesFromIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
     @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.6f).left(4f).expect(WorldState.DEAD)
 
-    // 23: the traffic comes against you on lane 1, the express belt throws you at an LED, the wrong-way lane cannot be walked
-    @Test fun l23RunningStraightIntoTheLedOnTheBeltIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
-    @Test fun l23StandingStillOnTheBeltIsPushedIntoTheLed() = b(23).hopR(8.3f).wait(3f).expect(WorldState.DEAD)
-    @Test fun l23TheExpressBeltThrowsYouAtTheLed() = World2Rooms.l23Lane1(b(23)).right(3f).expect(WorldState.DEAD)
-    /** The wrong-way lane cannot be walked: it runs faster than you and hands you back to the LED behind you. */
-    @Test fun l23TheWrongWayLaneCannotBeWalked() {
-        val bot = World2Rooms.l23Lane1(b(23)).hopR(8.5f).right(5f)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 15f && bot.world.state == WorldState.DEAD)
-    }
-
-    /** The hops are no gimme: a player who is a second early or late (1.5 tiles, 0.35 s) loses, in either direction. */
-    @Test
-    fun l23NeedsRealTiming() {
-        for (slop in listOf(Slop(0.35f, 1.5f), Slop(-0.35f, -1.5f))) {
-            val bot = DesignRules.play(World2.levels[22], 0, { World2Rooms.l23(this) }, slop)
-            assertTrue("$slop wins", bot.world.state != WorldState.WON)
-        }
-    }
+    // 23: the on-ramp lift carries you up into the spiked ceiling unless you walk off at the deck, a piece of the deck drops, the exit lift drops away
+    @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(8.6f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(4f).expect(WorldState.DEAD)
+    @Test fun l23StandingOnTheExitLiftIsFatal() = b(23).rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27.2f).wait(2.5f).expect(WorldState.DEAD)
 
     // 24: the stone sinks under you, the packet from the ceiling follows you down, the stepping stones drop under you
     @Test fun l24RunningStraightIntoTheGapIsFatal() = b(24).right(4f).expect(WorldState.DEAD)

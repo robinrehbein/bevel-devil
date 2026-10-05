@@ -90,15 +90,8 @@ object World2Rooms {
     /** 22: then hop the LEDs, hop the second bouncer who rolls out of the back door, hop the pit, to the door. */
     fun l22(b: Bot) = l22ToLane(b).hopL(22.6f).leftUntil { sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().hopL(7.4f).left(1f)
 
-    /** 23, lane 1: the traffic comes against you, hop the LED on the belt, hop the hole, into the on-ramp (and out on lane 2). */
-    fun l23Lane1(b: Bot) = b.hopR(8.3f).rightTo(19.6f).hopR(19.8f).rightUntil { it.player.box.cy < 10f && it.player.box.cx > 4.0f }
-
-    /** 23: lane 2: the express belt throws you at the LED (hop it), the wrong-way lane is hopped, not walked (hop after hop until it ends), hop the last LED. */
-    fun l23(b: Bot): Bot {
-        l23Lane1(b).hopR(7.0f)
-        while (b.world.player.box.cx < 21.3f && b.world.state == WorldState.PLAYING) b.rightJump(0.35f).landRight()
-        return b.hopR(22.0f).right(3f)
-    }
+    /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
+    fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(15f).left(1f)
 
     /** 24: along the top floor over the stone (keep moving), drop to the second floor, back left over the stepping stones, jump the LEDs under the first stone, to the door. */
     fun l24(b: Bot) = b.rightTo(27f).waitFor { it.player.grounded }.leftTo(14.0f).leftJump(0.35f).landLeft().left(3f)

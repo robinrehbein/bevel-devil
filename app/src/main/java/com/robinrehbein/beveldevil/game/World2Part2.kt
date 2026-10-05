@@ -243,26 +243,31 @@ object World2Part2 {
             spawn(2, 6); put(2, 14, 'D'); bits(22)
         },
 
-        // 23 — the information superhighway, a band puzzle (R10 transport, U12 the traffic turns around): two lanes joined by a one-way on-ramp
-        // (a portal) at the end of the first. Lane 1 is a pit with a belt in it: as you run past the start, the traffic comes against you (hop the
-        // LED on it), and a hole waits behind it. The on-ramp puts you on the express lane (a belt with you: it throws you at an LED: hop it),
-        // and landing behind that LED turns the traffic around: the next lane runs against you faster than you can run, so you hop it
+        // 23 — the information superhighway, a trap room (U12 the transport goes wrong, floor-move and drop): lifts. A piece of the on-ramp is
+        // missing (it drops as you come near: hop it), and the on-ramp itself is a lift flush with the road; it carries whoever steps on it up,
+        // past the deck (walk off to the right) and on into a ceiling of spikes. Along the deck a piece of the road is closed for repairs (hop it),
+        // and the last lift, to the exit deck, is out of service as soon as it has arrived: it rises four tiles, and a moment later it drops away
+        // under whoever stays on it (walk off to the left onto the exit deck, where the door is)
         Level(
             name = T("Information Superhighway", "Datenautobahn"),
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
-            start = listOf(Portal('p', 28 to 14, 11 to 8, twoWay = false), Belt('b', 6f)),
             traps = listOf(
-                trap(PastX(6f), Belt('a', -5.5f), say("Rush hour. Everyone is going your way. The other way.", "Berufsverkehr. Alle wollen in deine Richtung. Die andere.")),
-                trap(PastX(17f), Play(Card.DECOY), Reroute('p', 2 to 8), say("Route recalculated. The on-ramp is further back now.", "Route neu berechnet. Die Auffahrt liegt jetzt weiter hinten.")),
-                trap(Zone(12f, 5.5f, 14f, 9.3f), Belt('c', -9f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
+                trap(PastX(2.6f), Play(Card.SINKING), Fall('g'), say("Merge lane closed. Merge anyway.", "Einfädelspur gesperrt. Bitte trotzdem einfädeln."), delay = 0.1f),
+                trap(Touch('a'), Move('a', 0f, -13f, 3.5f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
+                trap(PastX(15f), Move('b', -3f, 0f, 14f), say("Roadworks ahead. Nobody told the road.", "Baustelle voraus. Der Straße hat's keiner gesagt.")),
+                trap(Touch('c'), Move('c', 0f, -4f, 12f), say("Express lift to the exit. Doors closing.", "Expresslift zur Ausfahrt. Türen schließen.")),
+                trap(Touch('c'), Fall('c'), say("Out of service. Effective immediately.", "Außer Betrieb. Ab sofort."), delay = 0.8f),
             ),
-            hint = T("The lane runs against you. A hop skips the lane.", "Die Spur läuft gegen dich. Ein Hüpfer überspringt die Spur."),
+            hint = T("Do not ride to the top. Get off where the deck is.", "Fahr nicht bis nach oben. Steig aus, wo das Deck ist."),
         ) {
             border(); floor()
-            fill(7..13, 15..15, 'a'); put(10, 14, '^'); fill(21..22, 15..17, '.')
-            fill(1..30, 9..9)
-            fill(3..9, 9..9, 'b'); put(10, 8, '^'); fill(10..20, 9..9, 'c'); put(24, 8, '^')
-            spawn(3); put(29, 8, 'D'); bits(23)
+            fill(7..8, 15..17, 'g')
+            fill(10..11, 15..15, 'a'); ceilingSpikes(10..11)
+            pit(12..27); fill(12..27, 17..17, '^')
+            fill(12..12, 10..14); fill(12..27, 9..9); fill(19..21, 9..9, 'b'); fill(26..27, 9..9, 'c')
+            fill(28..30, 1..14)
+            fill(13..25, 5..5)
+            spawn(1); door(14, 4); bits(23)
         },
 
         // 24 — the uplink, a trap room (U2 the ceiling falls, U1 the floor goes): the uplink is at the top, so you start at the top and go

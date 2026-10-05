@@ -357,7 +357,7 @@ Für Welt 2 gilt zusätzlich: Mindestens 8 Level haben Portal-Routing mit echter
 |20|Stateful Inspection|R8|U13|Rätsel|
 |21|Flat Rate|R3|U11|Rätsel|
 |22|Bouncer|–|U7|Falle|
-|23|Information Superhighway|R10|U12|Rätsel|
+|23|Information Superhighway|–|U12|Falle|
 |24|Uplink|–|U2+U1|Falle|
 |25|Load Balancer|–|U1|Falle|
 |26|Ticket Number|–|U8|Falle|
