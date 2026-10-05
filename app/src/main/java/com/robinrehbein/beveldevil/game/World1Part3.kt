@@ -142,32 +142,47 @@ object World1Part3 {
             put(3, 14, 'P'); put(6, 8, 'D')
         },
 
-        // 37 — reach the door and I overwrite history: it moves back to the start and spikes appear
-        // EASTER EGG: git push --force
+        // 37 — force push: as you pass the first marks the floor behind you is deleted, tile pair by tile pair, chasing you to the stairs;
+        // the first step is gone as soon as you have left it, and upstairs history is rewritten behind you again, all the way to the door.
+        // Rematch: Mephi pushed first: the floor ahead is already gone, the stones that are left give way under whoever lands on them,
+        // and upstairs the rewrite is faster
+        // TWIST: Fall / Hide (the floor is not there)
         Level(
             name = T("git push --force", "git push --force"),
             intro = T("Mephi already pushed. You just need to pull.", "Mephi hat schon gepusht. Du musst nur noch pullen."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("History is rewritten behind you: do not stop. The first step is deleted once you have left it.", "Die Historie wird hinter dir umgeschrieben: Bleib nicht stehen. Die erste Stufe ist gelöscht, sobald du sie verlassen hast."),
             traps = listOf(
-                trap(PastX(23f), Play(Card.SHY_DOOR), DoorTo(29, 0, speed = 25f), Show('A'), Say(T("History rewritten. You're welcome.", "Historie umgeschrieben. Gern geschehen."))),
-                trap(PastX(23f), DoorTo(2, 14, speed = 20f), delay = 0.8f),
-            ),
-            // rematch: the door stays this time. Whoever stops where it fled in round 1 to wait for the push stands on a
-            // floor that gives way under loiterers: run through to the door
+                trap(PastX(8f), Play(Card.COLLAPSE), Fall('a'), delay = 0.2f),
+                trap(PastX(8f), Say(T("Force-pushed. Your commits are gone.", "Force-gepusht. Deine Commits sind weg."))),
+                trap(Landed(21f, 24f), Hide('u'), Say(T("The merge base is deleted too.", "Die Merge-Basis ist auch gelöscht.")), delay = 0.7f),
+                trap(Zone(21f, 7f, 23f, 9.5f), Say(T("Rewriting history upstairs, too.", "Oben wird die Historie auch umgeschrieben."))),
+            ) + (1..8).map { k -> trap(PastX(8f), Fall('a' + k), delay = 0.2f + 0.33f * k) } +
+                (0..9).map { k -> trap(Zone(21f, 7f, 23f, 9.5f), Hide('j' + k), delay = 0.4f + 0.33f * k) },
             rematch = listOf(
                 Round(
-                    T("Rematch. I pushed first this time.", "Revanche. Diesmal hab ich zuerst gepusht."),
+                    T("Rematch. I pushed first this time.", "Revanche. Ich war schneller beim Pushen."),
+                    hint = T("The floor ahead is already deleted. The stones that are left give way under you: hop on, do not stay.", "Der Boden vor dir ist schon gelöscht. Die Steine, die bleiben, geben nach: Hüpf weiter, bleib nicht stehen."),
                     traps = listOf(
-                        trap(Touch('w'), Play(Card.CRUMBLE), Say(T("Merge pending. Floor deprecated.", "Merge läuft. Boden veraltet."))),
-                        trap(Touch('w'), Fall('w'), delay = 0.8f),
-                    ),
-                ) { fill(22..25, 15..17, 'w') },
+                        trap(PastX(2.7f), Play(Card.CRUMBLE), Fall('b'), Fall('d'), Fall('f'), Say(T("Merge conflict. I resolved it for you.", "Merge-Konflikt. Ich habe ihn für dich gelöst."))),
+                        trap(Touch('a'), Fall('a'), delay = 0.35f),
+                        trap(Touch('c'), Fall('c'), delay = 0.35f),
+                        trap(Touch('e'), Fall('e'), delay = 0.35f),
+                        trap(Touch('g'), Fall('g'), Say(T("Stale branch. Deleted.", "Veralteter Branch. Gelöscht.")), delay = 0.35f),
+                        trap(Landed(21f, 24f), Hide('u'), delay = 0.7f),
+                    ) + (0..9).map { k -> trap(Zone(21f, 7f, 23f, 9.5f), Hide('j' + k), delay = 0.3f + 0.3f * k) },
+                ) {
+                    fill(3..20, 15..17, '#')
+                    fill(3..5, 15..17, 'a'); fill(6..7, 15..17, 'b'); fill(8..10, 15..17, 'c'); fill(11..12, 15..17, 'd')
+                    fill(13..15, 15..17, 'e'); fill(16..17, 15..17, 'f'); fill(18..20, 15..17, 'g')
+                },
             ),
         ) {
-            border(); floor(); pit(11..12)
-            put(18, 14, '#')
-            put(5, 14, 'A'); put(6, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor()
+            for (k in 0..8) fill((3 + 2 * k)..(4 + 2 * k), 15..17, 'a' + k)
+            fill(21..23, 13..14, 'u'); fill(24..30, 11..14)
+            fill(2..23, 9..9)
+            for (k in 0..9) fill((22 - 2 * k)..(23 - 2 * k), 9..9, 'j' + k)
+            put(1, 14, 'P'); put(2, 8, 'D')
         },
 
         // 38 — the picture turns upside down over a spike pit; left and right follow the screen; the jump over the spikes lands before more
