@@ -193,5 +193,30 @@ object World1Part2 {
             put(27, 7, '#'); put(1, 14, 'P'); put(30, 7, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(14)
+        // 31 — meadow, and the door is on the left: the short way is the river, the island in the middle looks like a picnic spot, and the
+        // moment you head for the bank mowers start to bob up and down in the water. The way is the long one, up the stairs and along the
+        // upper meadow, where a mower swings across the first gap, the middle stretch crumbles under you and a second swing waits at the last gap
+        // MECHANIC: PathSaw (the mowers in the river, the swings on the upper meadow)
+        Level(
+            name = T("Meadow", "Wiesengrund"),
+            intro = T("Sunny day. Birds singing. Nothing with teeth.", "Sonniger Tag. Vögel zwitschern. Nichts mit Zähnen."),
+            hint = T("The river is for mowers. Take the stairs, and keep moving on the upper meadow.", "Der Fluss gehört den Mähern. Nimm die Treppe, und bleib oben in Bewegung."),
+            traps = listOf(
+                trap(BeforeX(24.6f), Play(Card.DEVIL_SAW), PathSaw(7f, 20f to 17.4f, 20f to 12.6f), PathSaw(7f, 12f to 17.4f, 12f to 12.6f, delay = 0.5f),
+                    Say(T("Sunbathers, please leave the water. The mowers are in.", "Sonnenanbeter bitte das Wasser verlassen. Die Mäher sind drin."))),
+                trap(Touch('i'), Fall('i'), Say(T("Picnic is over. The blanket too.", "Das Picknick ist vorbei. Die Decke auch.")), delay = 0.9f),
+                trap(Touch('k'), Fall('k'), Say(T("The far bank is a lawn on loan.", "Das andere Ufer ist ein Rasen auf Pump.")), delay = 0.6f),
+                trap(BeforeX(22f), PathSaw(8f, 16.5f to 8.8f, 16.5f to 2.0f, delay = 0.2f), Say(T("Swing set. Please take turns.", "Schaukel. Bitte der Reihe nach."))),
+                trap(Touch('u'), Fall('u'), Say(T("The upper meadow is a bit loose.", "Die obere Wiese ist etwas locker.")), delay = 0.35f),
+                trap(BeforeX(11.5f), PathSaw(12f, 6f to 12.5f, 6f to 2.0f), Say(T("Second swing. Same rules.", "Zweite Schaukel. Gleiche Regeln."))),
+            ),
+        ) {
+            border(); floor(); pit(1..22)
+            fill(15..17, 15..15, 'i')
+            fill(27..28, 13..14); fill(25..26, 11..14); fill(23..24, 9..14); fill(21..22, 7..14)
+            fill(17..20, 7..7); fill(13..15, 7..7, 'u'); fill(1..10, 7..7); fill(6..7, 15..17, 'k')
+            put(30, 14, 'P'); put(2, 6, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(15)
 }

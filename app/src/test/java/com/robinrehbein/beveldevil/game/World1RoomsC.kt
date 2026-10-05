@@ -58,5 +58,12 @@ object World1RoomsC {
                 .waitFor { it.group('f').oy >= 7.9f }.rightJump(0.5f).landRight()
                 .leftKeyRightTo(21.7f).leftJump(0.5f).landLeft().leftKeyRightTo(25.6f).leftJump(0.35f).landLeft().left(1.5f) },
         ),
+        31 to listOf<Solution>(
+            { leftTo(30.0f).leftJump(0.5f).landLeft().leftTo(27.6f).leftJump(0.5f).landLeft()
+                .leftTo(25.6f).leftJump(0.5f).landLeft().leftTo(23.6f).leftJump(0.5f).landLeft()
+                .leftTo(18.2f).waitFor { w -> w.saws.any { it.path?.points?.firstOrNull()?.first == 16.5f && it.y > 8.2f } }.leftJump(0.4f).landLeft()
+                .leftTo(14.0f).leftJump(0.35f).landLeft().dump("u3")
+                .leftTo(8.0f).waitFor { w -> w.saws.any { it.path?.points?.firstOrNull()?.first == 6f && it.y > 10.5f } }.left(3f) },
+        ),
     )
 }
