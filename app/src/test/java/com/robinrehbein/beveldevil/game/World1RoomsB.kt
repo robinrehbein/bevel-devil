@@ -11,6 +11,18 @@ fun World.solidLeft(id: Char): Float = group(id).let { g ->
     if (!g.visible) 0f else if (k == null) 9f else k.on - k.cycle(time - g.blinkT0)
 }
 
+/** Seconds until beam [id] fires again (0 while lit, 5 if it stays dark for good or is not there yet). */
+fun World.darkLeft(id: Char): Float {
+    val b = beams.firstOrNull { it.laser.id == id } ?: return 0f
+    if (b.lit) return 0f
+    var d = 0f
+    while (d < 5f) { if (b.laser.litAt(time + d - b.t0 - b.warm)) return d; d += 0.02f }
+    return 5f
+}
+
+/** Beam [id] is dark and stays dark for the time a crossing takes. */
+fun World.gateOpen(id: Char, margin: Float = 0.9f): Boolean = beams.any { it.laser.id == id } && darkLeft(id) > margin
+
 object World1RoomsB {
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
@@ -49,6 +61,10 @@ object World1RoomsB {
             { rightTo(25.6f).rightJump(0.3f).landRight()
                 .waitFor { it.group('s').oy >= 11.5f }.leftJump(0.35f).landLeft().leftTo(26.0f).leftJump(0.35f).landLeft()
                 .leftTo(20.0f).leftJump(0.35f).landLeft().leftTo(16.0f).leftJump(0.35f).landLeft().leftTo(3.5f) },
+        ),
+        22 to listOf<Solution>(
+            { rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight()
+                .leftTo(21.0f).waitFor { it.gateOpen('B') }.leftTo(2.5f) },
         ),
     )
 }

@@ -175,27 +175,22 @@ object World1Part2B {
             put(2, 14, 'P'); put(3, 8, 'D')
         },
 
-        // 22 — three walls open and close in turns; the floor after each one drops when you land on it, and the last landing is a pit
-        // MECHANIC: Blink (walls)
+        // 22 — the airlock: along the upper floor through a pulsing beam to the pad, which cuts the lock on the ground floor; the
+        // cycle fails and Mephi rewinds you a moment, then you drop to the ground floor and the next beam pulses on the way to the door
+        // MECHANIC: laser gate (R1 switch + door cage)
         Level(
             name = T("Airlock", "Schleuse"),
-            intro = T("Tuesday is field-trip day. For the walls.", "Dienstag ist Wandertag. Für die Wände."),
+            intro = T("Cycle time: a few seconds. Survivors: variable.", "Zykluszeit: wenige Sekunden. Überlebende: variabel."),
+            start = listOf(Circuit('w'), Pad('1', at = 25 to 7, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(Touch('f'), Play(Card.COLLAPSE), Fall('f'), Say(T("Please wait here.", "Bitte hier warten.")), delay = 0.5f),
-                trap(Touch('g'), Fall('g'), delay = 0.8f),
-                trap(Landed(24f, 28f), Fall('h')),
-            ),
-            start = listOf(
-                Blink('a', on = 1.6f, off = 1.6f, phase = 0f),
-                Blink('b', on = 1.6f, off = 1.6f, phase = 1.6f),
-                Blink('c', on = 1.6f, off = 1.6f, phase = 0f),
+                trap(PastX(6f), Laser('A', 12 to 1, 12 to 7, on = 0.9f, off = 1.5f, delay = 0.2f), Say(T("Outer door: pulsing. Please wait for the green.", "Außentür: pulsiert. Bitte auf Grün warten."))),
+                trap(Pressed('1'), Play(Card.UNDO), Undo(1.1f), Say(T("Pressure test failed. Rewinding the last bit.", "Drucktest fehlgeschlagen. Das letzte Stück wird zurückgespult."))),
+                trap(Zone(22f, 12f, 25f, 15.5f), Laser('B', 18 to 9, 18 to 14, on = 0.6f, off = 1.5f, delay = 0.1f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend."))),
             ),
         ) {
-            border(); floor()
-            fill(9..9, 1..14, 'a'); fill(15..15, 1..14, 'b'); fill(21..21, 1..14, 'c')
-            fill(10..11, 14..14, '^'); fill(16..17, 14..14, '^'); fill(22..23, 14..14, '^')   // right behind each door
-            fill(12..14, 15..17, 'f'); fill(18..20, 15..17, 'g'); fill(27..28, 15..17, 'h')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor(); fill(1..26, 8..8)
+            fill(5..6, 9..14, 'w')
+            put(2, 7, 'P'); put(3, 14, 'D')
         },
 
         // 23 — a long blinking bridge with a saw bobbing through the middle; the ledge you wait on crumbles, the middle of the bridge is a hidden gap, jumping off its end lands on spikes
