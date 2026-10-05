@@ -29,6 +29,7 @@ import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
+import com.robinrehbein.beveldevil.game.Trigger.Zone
 import com.robinrehbein.beveldevil.game.Trigger.Shaken
 import com.robinrehbein.beveldevil.game.Trigger.Touch
 
@@ -76,20 +77,27 @@ object World1Part3 {
             room(1) { pit(11..16); fill(13..15, 15..15, 'b') }
         },
 
-        // 34 — the pause button dodges; only a real pause (back button) opens the wall
+        // 34 — monday morning: the way is closed for a break right at the start. The HUD pause button dodges your finger; only a real
+        // pause (back button) opens the wall, and the floor behind it takes its break too. Then a second pit opens as you land, the way up
+        // leads back along the upper floor, and there a slab from the ceiling takes its break right where you hurry
         // TWIST: PauseTrap dodge + Resumed
         Level(
             name = T("Monday Morning", "Montagmorgen"),
             intro = T("Everything is a bit slow today. Coffee is brewing.", "Heute ist alles etwas langsam. Der Kaffee läuft."),
+            hint = T("The wall is closed for a break. Pause the game: the back button works, the button on screen runs away.", "Die Wand hat Pause. Pausiere das Spiel: Die Zurück-Taste geht, der Knopf auf dem Bildschirm läuft weg."),
             traps = listOf(
-                trap(After(0.3f), Play(Card.SHY_DOOR), PauseTrap(PauseTrick.DODGE)),
-                trap(Resumed(), Hide('w'), Hide('a'), Say(T("Refreshed? The floor took a break too.", "Erholt? Der Boden macht jetzt auch Pause."))),
+                trap(After(0.2f), PauseTrap(PauseTrick.DODGE)),
+                trap(Zone(5.6f, 10f, 8f, 15f), Say(T("Closed for a break. Pause the game to open it.", "Wegen Pause geschlossen. Pausier das Spiel, dann geht's auf."))),
+                trap(Resumed(), Play(Card.CRUMBLE), Hide('w'), Hide('a'), Say(T("Refreshed? The floor took a break too.", "Erholt? Der Boden macht jetzt auch Pause."))),
+                trap(Landed(12.5f, 15.5f), Fall('g'), Say(T("Second pit. Same excuse.", "Zweites Loch. Gleiche Ausrede.")), delay = 0.15f),
+                trap(Zone(23.5f, 7f, 25.9f, 9.5f), Fall('s'), Say(T("The ceiling is on a break. In your direction.", "Die Decke macht Pause. In deine Richtung."))),
             ),
         ) {
             border(); floor()
-            fill(22..22, 1..14, 'w')
-            fill(12..14, 15..17, 'a')
-            put(2, 14, 'P'); put(28, 14, 'D')
+            fill(8..8, 10..14, 'w'); fill(9..11, 15..17, 'a'); fill(16..18, 15..17, 'g')
+            fill(22..25, 13..14); fill(26..30, 11..14)
+            fill(2..25, 9..9); fill(20..22, 1..1, 's')
+            put(3, 14, 'P'); put(2, 8, 'D')
         },
 
         // 35 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.

@@ -17,5 +17,12 @@ object World1RoomsD {
             { rightTo(14.0f).waitFor { it.ropeUp(17f, 1.1f) }.hopR(23.8f, 0.4f).rightUntil(4f) { it.cracks.any { c -> c.fell } }.hopR(roomX(1, 4.6f), 0.4f).rightTo(roomX(1, 10.4f)).rightJump(0.4f).landRight()
                 .rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(3f) },
         ),
+        // 34: at the wall pause for real (the pit opens behind it), hop it and the second pit, up the stairs and back along the upper floor,
+        // let the slab land and hop it
+        34 to listOf<Solution>(
+            { rightTo(7.0f).tapPause().pauseResume().hopR(8.6f, 0.4f).hopR(15.4f, 0.4f).rightTo(20.4f).rightJump(0.5f).landRight()
+                .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft()
+                .waitFor { it.group('s').oy >= 6.9f }.leftJump(0.4f).landLeft().left(3f) },
+        ),
     )
 }
