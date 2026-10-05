@@ -2,6 +2,7 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Chase
+import com.robinrehbein.beveldevil.game.Action.Extend
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
@@ -14,6 +15,7 @@ import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
+import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
@@ -390,22 +392,29 @@ object World1Part1 {
             put(2, 14, 'P'); put(14, 14, 'D')
         },
 
-        // 16 — everything at once: a saw behind you, a pit, spikes behind the landing, and the door takes the ceiling with it
+        // 16 — the act finale, and the first room that does not end where it looks like it does. The door is locked; the switch is
+        // upstairs on a ledge that gives way behind you; a saw rolls in on the way back down. At the door the wall breaks open,
+        // the door slips into a second room, and there is another saw
         Level(
             name = T("Number 16", "Die Nummer 16"),
             intro = T("Last level of this floor. Be nice to me.", "Letztes Level dieses Stockwerks. Sei nett zu mir."),
-            legend = mapOf('A' to Glyph(spike = true, hidden = true)),
+            hint = T("The switch is upstairs. The room is bigger than it looks.", "Der Schalter ist oben. Der Raum ist größer, als er aussieht."),
+            rooms = 2,
+            start = listOf(Circuit('w'), Pad('1', at = 3 to 8, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(PastX(3f), Play(Card.GRAND_FINALE), Saw(-1.5f, 14.4f, 6f, 0f, 0.62f), Say(T("Grand finale! Everything at once!", "Finale! Alles gleichzeitig!"))),
-                trap(Touch('a'), Fall('a'), delay = 0.1f),
-                trap(Landed(11.6f, 13.6f), Show('A')),
-                trap(PastX(24.5f), DoorTo(20, 1, speed = 14f, hanging = true), Gravity(true), Say(T("Come and get it.", "Hol sie dir doch."))),
+                trap(Touch('k'), Fall('k'), Say(T("Upstairs is rented out. The floor is not included.", "Oben ist vermietet. Der Boden ist nicht inklusive.")), delay = 0.45f),
+                trap(Landed(0f, 3f), Saw(31.5f, 14.4f, -5.5f, 0f, 0.62f), Say(T("Housekeeping! Mind the saw.", "Zimmerservice! Vorsicht, Säge.")), delay = 0.6f),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14)),
+                trap(PastX(roomX(1, 4f)), Saw(roomX(1, 31.5f), 14.4f, -6f, 0f, 0.62f), Say(T("Second room, second saw. I like symmetry.", "Zweiter Raum, zweite Säge. Ich mag Symmetrie."))),
             ),
         ) {
             border(); floor()
-            fill(9..11, 15..17, 'a')
-            put(14, 14, 'A'); put(15, 14, 'A')
-            put(2, 14, 'P'); put(28, 14, 'D')
+            room(0) {
+                fill(9..11, 13..14); fill(6..8, 11..11); put(3, 9, '#'); fill(4..5, 9..9, 'k')
+                fill(24..25, 1..14, 'w')
+                put(22, 14, 'P'); put(28, 14, 'D')
+            }
+            room(1) { pit(12..13) }
         },
     )
 }

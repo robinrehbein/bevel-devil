@@ -6,6 +6,7 @@ fun Bot.dbg(tag: String): Bot {
     val p = world.player
     for (pc in world.pieces) if (pc.box.x > p.box.x - 1.5f && pc.box.x < p.box.r + 1.5f && pc.box.y > p.box.y - 1.5f && pc.box.y < p.box.b + 1.5f)
         java.io.File("/tmp/w1dbg.txt").appendText("   piece x=%.2f y=%.2f solid=%s spike=%s grp=%s\n".format(pc.box.x, pc.box.y, pc.solid, pc.spike, pc.group?.id))
+    java.io.File("/tmp/w1dbg.txt").appendText("   saws=" + world.saws.joinToString { "(%.1f,%.1f)".format(it.x, it.y) } + "\n")
     java.io.File("/tmp/w1dbg.txt").appendText("%s t=%.2f x=%.2f y=%.2f vx=%.2f vy=%.2f g=%s %s\n".format(tag, world.time, p.box.cx, p.box.b, p.vx, p.vy, p.grounded, world.state))
     return this
 }
@@ -54,6 +55,13 @@ object World1RoomsA {
                 .leftJump(0.5f).landLeft().leftTo(1.5f) },
             { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
                 .leftJump(0.5f).landLeft().left(3.2f).landLeft().rightTo(12.0f) },
+        ),
+        16 to listOf<Solution>(
+            { leftTo(15.0f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(0.7f).landLeft()
+                .rightJump(0.5f).landRight().rightTo(7.4f).rightJump(0.35f).landRight()
+                .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
+                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 10.6f)).rightJump(0.5f).landRight()
+                .rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(5f) },
         ),
     )
 }
