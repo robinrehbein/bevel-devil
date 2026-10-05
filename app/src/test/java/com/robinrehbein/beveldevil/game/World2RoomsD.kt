@@ -28,8 +28,14 @@ object World2RoomsD {
         .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().leftJump(0.5f).landLeft()
         .leftUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.leftJump(0.5f).landLeft().left(3f)
 
+    /** 43: along the lane until the beam has flashed, up to the port, shake the cable, through the port onto the deck, wait out the two flashes, drop off the end to the door. */
+    fun l43(b: Bot) = b.rightUntil { it.player.box.cx > 7.0f }.waitFor(cond = World2Rooms.clear('A')).rightUntil { it.player.box.cx > 9.4f }.shake(0.1f)
+        .rightUntil { it.player.box.cy < 11f }.rightUntil { it.player.box.cx > 12.6f }.waitFor(cond = World2Rooms.clear('B'))
+        .rightUntil { it.player.box.cx > 25.2f }.waitFor(cond = World2Rooms.clear('C')).right(3f)
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
+        43 to listOf({ l43(this) }),
     )
 }

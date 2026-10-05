@@ -109,26 +109,25 @@ object World2Part3D {
             put(3, 9, 'P'); door(2, 14); bits(42)
         },
 
-        // 43 — EASTER EGG: percussive maintenance (shake the phone: the loose patch cable re-seats, the portal exit jumps
-        // from the spike pit to the far side of the wall, and a laser guards the way to the door)
+        // 43 — workshop (a trap room: U16 percussive maintenance, shake the phone). The lane ends in a wall, and the only way on is the cable port at
+        // the foot of it, which comes out above a bed of LEDs. A beam flashes across the lane as you come near (wait until it is dark). Shake the phone and
+        // the loose cable re-seats: the port now comes out on the deck over the start, and the deck is a corridor of flashing beams on the way to the door
         Level(
             name = T("Workshop", "Werkstatt"),
             intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
-            legend = mapOf('A' to hidden),
-            start = listOf(
-                Portal('1', 10 to 14, 17 to 13, twoWay = false),
-                Laser('G', 25 to 1, 25 to 14, on = 1f, off = 1.8f, phase = 1f),
-            ),
+            start = listOf(Portal('1', 10 to 14, 17 to 13, twoWay = false)),
             traps = listOf(
-                trap(Shaken, Play(Card.HEADBUTT), Reroute('1', 21 to 14), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
-                trap(Trigger.PastX(22f), Show('A'), say("Now it is screwed on properly.", "Jetzt ist es ordentlich festgeschraubt.")),
+                trap(PastX(4f), Play(Card.SPIKE_SEED), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
+                trap(Shaken, Reroute('1', 3 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
+                trap(Zone(6f, 7f, 9f, 10.6f), Laser('B', 14 to 1, 14 to 9, on = 0.9f, off = 60f, delay = 0.5f), say("Now it is screwed on properly. Mostly.", "Jetzt ist es ordentlich festgeschraubt. Größtenteils.")),
+                trap(Zone(18f, 7f, 22f, 10.6f), Laser('C', 27 to 1, 27 to 14, on = 0.9f, off = 60f, delay = 0.5f), say("One more screw. Stand clear.", "Noch eine Schraube. Bitte zurücktreten.")),
             ),
+            hint = T("It has a loose cable. Have you tried hitting it?", "Da sitzt ein Kabel locker. Schon mal draufgehauen?"),
         ) {
             border(); floor()
-            put(26, 14, 'A'); put(27, 14, 'A')
-            fill(12..13, 1..14)
-            fill(16..19, 14..14, '^')
-            spawn(); door(29)
+            fill(12..13, 11..14); fill(1..25, 10..10)
+            leds(16..19)
+            spawn(2, 14); door(29, 14); bits(43)
         },
 
         // 44 — EASTER EGG: merge conflict markers <<<<<<< ======= >>>>>>>
