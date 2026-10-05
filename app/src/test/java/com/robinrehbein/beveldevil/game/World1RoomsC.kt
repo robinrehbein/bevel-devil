@@ -21,5 +21,8 @@ object World1RoomsC {
                 .leftJump(0.5f).landLeft()
                 .leftUntil { it.near('T', 3.4f) }.leftJump(0.5f).landLeft().leftTo(2.5f) },
         ),
+        27 to listOf<Solution>(
+            { hopR(7.4f, 0.5f).rightTo(16.6f).rightJump(0.4f).landRight().right(3f) },
+        ),
     )
 }

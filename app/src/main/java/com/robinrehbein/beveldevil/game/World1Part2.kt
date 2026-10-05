@@ -83,5 +83,28 @@ object World1Part2 {
             put(2, 14, 'P'); put(2, 4, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(10)
+        // 27 — the answer: 0b101010. A cosmic ray flips bits in the floor: the floor ahead goes 111111 -> 101010, and when you land on the
+        // third cell it flips again, so the pits fill in and the cells you trusted are gone; the last cell goes with a final flip
+        // EASTER EGG: 42 / Hitchhiker's Guide / binary 101010 / bit flip (cosmic ray)
+        Level(
+            name = T("42", "42"),
+            intro = T("The answer to everything. I forgot the question.", "Die Antwort auf alles. Die Frage habe ich vergessen."),
+            hint = T("Ones become zeroes and zeroes become ones. Keep walking.", "Einsen werden zu Nullen und Nullen zu Einsen. Geh einfach weiter."),
+            traps = listOf(
+                trap(PastX(4.5f), Shake(0.5f)),
+                trap(PastX(4.5f), Play(Card.COLLAPSE), Hide('b'), Hide('d'), Hide('f'), Say(T("Bit flip! Cosmic ray. Not my fault.", "Bit gekippt! Kosmische Strahlung. Nicht meine Schuld.")), delay = 0.3f),
+                trap(Landed(11f, 13.99f), Hide('e'), Show('b'), Show('d'), Show('f'), Shake(0.5f), Say(T("And back. Zero is one now.", "Und zurück. Null ist jetzt eins."))),
+                trap(Landed(11f, 13.99f), Hide('c'), delay = 0.6f),
+                trap(Landed(20f, 22.99f), Hide('f'), Say(T("Six times nine, in base 13.", "Sechs mal neun, zur Basis 13.")), delay = 0.45f),
+            ),
+        ) {
+            border(); floor(); pit(5..22)
+            fill(5..7, 15..17, 'a'); fill(8..10, 15..17, 'b'); fill(11..13, 15..17, 'c')
+            fill(14..16, 15..17, 'd'); fill(17..19, 15..17, 'e'); fill(20..22, 15..17, 'f')
+            art(14, 3, "#.#", "#.#", "###", "..#", "..#")   // 4
+            art(18, 3, "###", "..#", "###", "#..", "###")   // 2
+            put(2, 14, 'P'); put(29, 14, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(11)
 }
