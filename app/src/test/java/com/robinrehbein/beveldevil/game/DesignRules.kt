@@ -46,8 +46,17 @@ import org.junit.Assert.assertTrue
  * - H12 [rotationViolations]: per act at most [CAPS] levels with a door that flees, pads, timed lasers, blinking,
  *   gravity flip, swapped controls (counted from the actions in the level code),
  * - H13 [familyViolations]: at most [MAX_FAMILIES] effect families ([families]) per room,
- * - H15 [teethViolations]: no lethal trap of the clean run is beaten both by standing still and by running straight on,
- * - H17 [fillerDeathViolations]: holding right from the spawn does not die in the first [FILLER_WINDOW] s before a trap went off.
+ * - H15 [teethViolations]: every lethal trap of the clean run beats standing still or running straight on, itself
+ *   (the probe ends differently without the trap's lethal actions),
+ * - H17 [fillerDeathViolations]: holding right from the spawn does not die in the first [FILLER_WINDOW] s, unless a trap
+ *   that went off caused it,
+ * - H19 [sayViolations]: no line twice in an act (case, punctuation and spacing aside),
+ * - H20 [adjacentViolations] / H21 [wallMoveViolations]: neighbours share no dominant family in any pair of rounds (a tie:
+ *   all tied families), at most [WALL_MOVE_CAP] wall-move levels per act,
+ * - trap ablation [decorations]: a trap that changes no probe is decoration and counts for none of H3, H15, H17, H20,
+ * - §11 [ROLLOUT], [budgetViolations], [partialBlocks]: the rollout blocks and their share of the act caps.
+ *
+ * The kit is locked during the rollout ([KitLock]): only the orchestrator changes this file and [DesignTestBase].
  */
 typealias Solution = Bot.() -> Unit
 
@@ -341,17 +350,38 @@ object DesignRules {
      * real action ran.
      */
     class Moment(val trigger: Trigger, val triggered: Float, var time: Float, var weight: Weight, val actions: MutableList<Action>) {
+        /** One trap of the moment: when its actions ran and what they weighed. */
+        class Part(val trap: Trap, val time: Float, val weight: Weight, val actions: List<Action>, val lethal: List<Action> = emptyList(), val real: List<Action> = emptyList())
+        val parts = ArrayList<Part>()
         val real get() = weight != Weight.NONE
+        val traps get() = parts.map { it.trap }
+        /** The actions of the moment that can kill ([Weight.LETHAL]): what H20 counts the families of. */
+        val lethalActions get() = parts.flatMap { it.lethal }
+        /** The actions of the moment that weigh something ([Weight.ROUTE] or [Weight.LETHAL]). */
+        val realActions get() = parts.flatMap { it.real }
+
+        /** This moment as it counts once the traps in [decoration] ([decorations]) are left out. */
+        fun without(decoration: Set<Trap>): Moment {
+            val keep = parts.filter { it.trap !in decoration }
+            val weight = keep.maxOfOrNull { it.weight } ?: Weight.NONE
+            val time = keep.firstOrNull { it.weight != Weight.NONE }?.time ?: keep.firstOrNull()?.time ?: time
+            return Moment(trigger, triggered, time, weight, keep.flatMap { it.actions }.toMutableList()).also { it.parts += keep }
+        }
+
         override fun toString() = "t=%.2f %s".format(time, actions.filterNot { it is Action.Say || it is Action.Play }.joinToString("+") { it::class.simpleName ?: "?" })
     }
 
     /** Adds the trap [s] that just sprang in [w] (an attempt at [round]) to [moments]. */
     fun addMoment(moments: MutableList<Moment>, s: World.Sprung, round: Level, w: World) {
         val acts = flatten(s.trap.actions)
-        val weight = acts.maxOfOrNull { weigh(it, round, w) } ?: Weight.NONE
+        val weights = acts.map { weigh(it, round, w) }
+        val weight = weights.maxOrNull() ?: Weight.NONE
+        val part = Moment.Part(s.trap, s.time, weight, acts, acts.filterIndexed { i, _ -> weights[i] == Weight.LETHAL },
+            acts.filterIndexed { i, _ -> weights[i] != Weight.NONE })
         val same = moments.lastOrNull { it.trigger == s.trap.trigger && abs(it.triggered - s.triggered) < 1e-4f }
-        if (same == null) { moments += Moment(s.trap.trigger, s.triggered, s.time, weight, acts.toMutableList()); return }
+        if (same == null) { moments += Moment(s.trap.trigger, s.triggered, s.time, weight, acts.toMutableList()).also { it.parts += part }; return }
         same.actions += acts
+        same.parts += part
         if (!same.real && weight != Weight.NONE) same.time = s.time
         if (weight > same.weight) same.weight = weight
     }
@@ -408,11 +438,118 @@ object DesignRules {
     /** One clean run of [round] of [level], with its moments and idle time. */
     fun cleanRun(level: Level, round: Int, solution: Solution): Bot = play(level, round, solution)
 
+    // ---------- trap ablation: what a trap really does ----------
+
+    /**
+     * How a run ended, to tell whether taking a trap out changed anything: the state, the time and where the player
+     * was ([Bot.world]), or that the run threw (a trap the rest of the room depends on, say a portal a later trap
+     * reroutes, cannot be taken out).
+     */
+    data class Outcome(val state: WorldState?, val time: Int, val x: Int, val y: Int) {
+        companion object {
+            fun of(b: Bot) = Outcome(b.world.state, Math.round(b.world.time / Bot.DT), Math.round(b.world.player.box.cx * 100), Math.round(b.world.player.box.b * 100))
+            val THREW = Outcome(null, 0, 0, 0)
+        }
+    }
+
+    /** Plays [run] and returns how it ended; a run that throws is [Outcome.THREW]. */
+    fun outcome(run: () -> Bot): Outcome = try { Outcome.of(run()) } catch (_: RuntimeException) { Outcome.THREW }
+
+    /** [round] (one of [Level.rounds], or a level of one round) without the traps in [drop]: same map, start, legend and hint. */
+    fun without(round: Level, drop: Set<Trap>): Level {
+        val grid = round.map.grid
+        return Level(round.name, round.intro, round.legend, round.traps.filterNot { it in drop }, round.start, hint = round.hint, rooms = round.rooms) {
+            for (y in grid.indices) for (x in grid[y].indices) this.grid[y][x] = grid[y][x]
+        }
+    }
+
+    /**
+     * [round] with the actions in [drop] (the very instances, also inside a [Action.FakeWin]) taken out of its traps: the
+     * trap still goes off and does the rest (a gate it opens, a line it says), only what the dropped actions did is gone.
+     */
+    fun withoutActions(round: Level, drop: Collection<Action>): Level {
+        fun keep(a: Action) = drop.none { it === a }
+        fun strip(acts: List<Action>): List<Action> = acts.filter(::keep).map { a -> if (a is Action.FakeWin) a.copy(then = strip(a.then)) else a }
+        val grid = round.map.grid
+        // a trap keeps its identity when nothing of it is dropped, so traps can still be told apart by instance
+        val traps = round.traps.map { t -> if (flatten(t.actions).all(::keep)) t else Trap(t.trigger, strip(t.actions), t.delay) }
+        return Level(round.name, round.intro, round.legend, traps, round.start, hint = round.hint, rooms = round.rooms) {
+            for (y in grid.indices) for (x in grid[y].indices) this.grid[y][x] = grid[y][x]
+        }
+    }
+
+    /** The patient probe of the teeth test: from the moment [triggered] held, stand still [PROBE_WAIT] s, then play the rest of [solution]. */
+    fun patientProbe(level: Level, round: Int, solution: Solution, triggered: Float): Bot {
+        val b = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.WAIT, PROBE_WAIT) { it.world.time >= triggered - 1e-4f })
+        try { b.solution() } catch (_: Bot.ProbeDone) {}
+        return b
+    }
+
+    /** The reckless probe of the teeth test: from the moment [triggered] held, keep holding the key (right if none) [PROBE_RUN] s. */
+    fun recklessProbe(level: Level, round: Int, solution: Solution, triggered: Float): Bot {
+        val b = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.RUN, PROBE_RUN) { it.world.time >= triggered - 1e-4f })
+        try { b.solution() } catch (_: Bot.ProbeDone) {}
+        return b
+    }
+
+    /**
+     * The probes trap ablation compares ([decorations]): the clean run, the run H3 measures without idle waits, holding
+     * right, holding right hopping every 0.7 s, waiting it out ([PROBE_WAIT] s still, then holding right), and for a
+     * trap that went off in the clean run the two teeth probes from its trigger (stand still, run through).
+     */
+    private fun baseProbes(level: Level, round: Int, solution: Solution): List<(Level, Int) -> Bot> = listOf(
+        { l, r -> play(l, r, solution) },
+        { l, r -> Bot(l, r, skipIdle = true).apply(solution) },
+        { l, r -> naive(l, r, null) },
+        { l, r -> naive(l, r, 0.7f) },
+        { l, r -> naive(l, r, null, PROBE_WAIT) },
+    )
+
+    private val decorationCache = java.util.Collections.synchronizedMap(java.util.IdentityHashMap<Level, MutableMap<Any, Set<Trap>>>())
+
+    /**
+     * Trap ablation, the principled answer to "a trap that does nothing": for every trap of [round] of [level] that
+     * weighs something ([Weight]) and went off in one of the probes (together with the traps on the same trigger: they
+     * are one moment) ([baseProbes]: the clean run, the brisk run, holding
+     * right plain or hopping, waiting it out, and the teeth probes from its trigger), the room is played again without
+     * it. If no probe ends any differently (state, time, place), the trap is **decoration**: it does not count for the
+     * density H3, for the teeth H15, for the dominant family H20/H21, nor as the trap that excuses a death at the start
+     * H17. A trap whose removal makes a run throw (something later needs it) is no decoration.
+     */
+    fun decorations(level: Level, round: Int, solution: Solution): Set<Trap> {
+        val stage = level.rounds[round]
+        return decorationCache.getOrPut(stage) { java.util.Collections.synchronizedMap(java.util.IdentityHashMap()) }.getOrPut(solution) {
+            val probes = baseProbes(level, round, solution)
+            val runs = probes.map { p -> try { p(level, round) } catch (_: RuntimeException) { null } }
+            val base = runs.map { it?.let(Outcome::of) ?: Outcome.THREW }
+            val clean = runs[0]
+            // what weighed something when it went off, in any probe
+            val weighed = runs.filterNotNull().flatMap { b -> b.moments.flatMap { m -> m.parts.filter { it.weight != Weight.NONE }.map { it.trap } } }.toSet()
+            val firedAt = clean?.moments?.flatMap { m -> m.parts.map { it.trap to m.triggered } }?.toMap().orEmpty()
+            // traps with the same trigger go off together and are one moment: they are taken out together (six tiles of
+            // one bridge that crumble one after the other are one trap, not six that each change nothing on their own)
+            stage.traps.filter { it in weighed }.groupBy { it.trigger }.values.filter { unit ->
+                val cut = without(stage, unit.toSet())
+                val same = probes.indices.all { k -> base[k] == outcome { probes[k](cut, 0) } }
+                same && (unit.firstNotNullOfOrNull { firedAt[it] }?.let { at ->
+                    outcome { patientProbe(level, round, solution, at) } == outcome { patientProbe(cut, 0, solution, at) } &&
+                        outcome { recklessProbe(level, round, solution, at) } == outcome { recklessProbe(cut, 0, solution, at) }
+                } ?: true)
+            }.flatten().toSet()
+        }
+    }
+
+    /** The moments of [bot] (a run of [round] of [level]) as they count: decoration ([decorations]) left out. */
+    fun counted(bot: Bot, level: Level, round: Int, solution: Solution): List<Moment> {
+        val deco = decorations(level, round, solution)
+        return bot.moments.map { it.without(deco) }
+    }
+
     /**
      * H3 (recipe v2, density over duration): the clean run wins, lasts at least [min] (also with idle waits skipped,
      * see [cleanRunViolations]), never goes more than [GAP] s without a real trap (from the start to the first, between
      * two, from the last to the door), and the player stands still at most [WAIT_SHARE] of it, at most [WAIT_STRETCH] s
-     * in one go.
+     * in one go. Decoration ([decorations]) is no real trap.
      */
     fun densityViolations(level: Level, round: Int, solution: Solution, min: Float): List<String> {
         val clean = cleanRun(level, round, solution)
@@ -422,7 +559,7 @@ object DesignRules {
         val bot = measured(level, round, solution)
         val w = bot.world
         val run = if (bot.skipIdle) " (without its idle waits, which the room does not need)" else ""
-        val marks = (listOf(0f) + bot.moments.filter { it.real }.map { it.time } + w.time).sorted()
+        val marks = (listOf(0f) + counted(bot, level, round, solution).filter { it.real }.map { it.time } + w.time).sorted()
         for ((a, b) in marks.zipWithNext()) if (b - a > GAP + 1e-3f) {
             val what = if (a == 0f && b == w.time) "start to door" else if (a == 0f) "start to first trap" else if (b == w.time) "last trap to door" else "between traps"
             out += "$where: no real trap for %.2f s (t=%.2f–%.2f, %s; max %.0f s)%s".format(b - a, a, b, what, GAP, run)
@@ -445,12 +582,15 @@ object DesignRules {
         return if (brisk.world.state == WorldState.WON && brisk.world.time < clean.world.time - 1e-3f) brisk else clean
     }
 
-    /** The real traps of the run H3 measures ([measured]), for reports. */
+    /** The real traps of the run H3 measures ([measured]), for reports; decoration is named apart. */
     fun timeline(level: Level, round: Int, solution: Solution): String {
         val bot = measured(level, round, solution)
         val brisk = if (bot.skipIdle) ", idle waits skipped (not needed)" else ""
-        return "run %.2f s (%s%s), still %.2f s, real traps: %s".format(bot.world.time, bot.world.state, brisk, bot.idleTime,
-            bot.moments.filter { it.real }.joinToString().ifEmpty { "none" })
+        val deco = decorations(level, round, solution)
+        val dropped = bot.moments.filter { m -> m.real && m.parts.any { it.trap in deco } }
+        return "run %.2f s (%s%s), still %.2f s, real traps: %s%s".format(bot.world.time, bot.world.state, brisk, bot.idleTime,
+            counted(bot, level, round, solution).filter { it.real }.joinToString().ifEmpty { "none" },
+            if (dropped.isEmpty()) "" else "; decoration (changes nothing): ${dropped.joinToString()}")
     }
 
     /** H12: a rotating mechanic and how many levels of an act may use it ([has]: the level uses it). */
@@ -459,19 +599,56 @@ object DesignRules {
     /** A [Cap] test: some action of some round of the level satisfies [p]. */
     private fun uses(p: (Action) -> Boolean): (Level) -> Boolean = { l -> levelActions(l).any(p) }
 
-    /** A laser lit for less than [GATE_ON] s: a gate, whatever fires it and whatever its off time. */
+    /** A laser lit for at most [GATE_ON] s at a time: a gate, whatever fires it and whatever its off time. */
     const val GATE_ON = 2f
+    /** A laser (or clocked live trace) that cycles with an off time under this is a gate, whatever its on time. */
+    const val GATE_OFF = 10f
 
     /**
-     * H12, timed laser gates: a laser that cycles with an off time under 10 s, or any laser a trap fires, on any trigger
-     * ([Trigger.Landed], [Trigger.PastX], zones, but also [Trigger.Pressed], [Trigger.After], [Trigger.Idle] ...), that is
-     * lit for less than [GATE_ON] s. Its off time does not matter: a flash of the beam as you land, pass or press a pad
-     * is a gate, also with an off time of 40 s. A beam that is never dark (off 0) from the start is a fixture, no gate.
+     * H12, timed laser gates: the ids of [round]'s lasers and live traces that are gates. The lit window is what counts,
+     * from any trigger ([Trigger.Landed], [Trigger.PastX], zones, but also [Trigger.Pressed], [Trigger.After],
+     * [Trigger.Idle] ...):
+     *
+     * - a [Action.Laser] (start or trap) that cycles with an off time under [GATE_OFF] s;
+     * - a [Action.Laser] lit for at most [GATE_ON] s at a time that cycles (off > 0, also off ≥ [GATE_OFF] from the
+     *   start) or that a trap fires (a flash as you land, pass or press a pad is a gate, also a one-shot);
+     * - a laser a trap switches on ([Action.Power] on, or a [Action.Laser] fired by a trap) and a trap switches off
+     *   ([Action.Power] off): the pair is a gate, unless every such pair hangs on the same trigger and the beam stays
+     *   lit longer than [GATE_ON] s (delay of the off minus delay of the on). Pairs on different triggers count as a
+     *   gate: the player's timing decides how long the beam is lit;
+     * - a trap that switches on ([Action.Power]) a laser whose own cycle is lit for at most [GATE_ON] s;
+     * - a live trace (an uppercase circuit) on a [Action.Clock] with an off time under [GATE_OFF] s or an on time of at
+     *   most [GATE_ON] s: an electric gate.
+     *
+     * A beam that is never dark (off 0) from the start and that no trap switches is a fixture, no gate.
      */
-    fun hasLaserGate(level: Level): Boolean = level.rounds.any { round ->
-        actions(round).any { it is Action.Laser && it.off > 0f && it.off < 10f } ||
-            round.traps.any { t -> flatten(t.actions).any { it is Action.Laser && it.on < GATE_ON } }
+    fun laserGates(round: Level): Set<Char> {
+        val out = LinkedHashSet<Char>()
+        val start = flatten(round.start)
+        val fired = round.traps.flatMap { t -> flatten(t.actions).map { t to it } }
+        val lasers = (start + fired.map { it.second }).filterIsInstance<Action.Laser>()
+        val ids = lasers.map { it.id }.toSet()
+        for (l in lasers) if (l.off > 0f && l.off < GATE_OFF) out += l.id
+        for (l in start.filterIsInstance<Action.Laser>()) if (l.off > 0f && l.on <= GATE_ON) out += l.id
+        for ((_, a) in fired) if (a is Action.Laser && a.on <= GATE_ON) out += a.id
+        for (id in ids) {
+            val ons = fired.filter { (_, a) -> (a is Action.Laser && a.id == id) || (a is Action.Power && a.id == id && a.on) }
+            val offs = fired.filter { (_, a) -> a is Action.Power && a.id == id && !a.on }
+            if (ons.isNotEmpty() && offs.isNotEmpty()) {
+                val long = ons.all { (t1, _) -> offs.all { (t2, _) -> t1.trigger == t2.trigger && t2.delay - t1.delay > GATE_ON } }
+                if (!long) out += id
+            }
+            val short = lasers.any { it.id == id && it.off > 0f && it.on <= GATE_ON }
+            if (short && fired.any { (_, a) -> a is Action.Power && a.id == id && a.on }) out += id
+        }
+        for (a in start + fired.map { it.second }) {
+            if (a is Action.Clock && a.group.isUpperCase() && a.group !in ids && a.off > 0f && (a.off < GATE_OFF || a.on <= GATE_ON)) out += a.group
+        }
+        return out
     }
+
+    /** H12: some round of [level] has a timed laser gate ([laserGates]). */
+    fun hasLaserGate(level: Level): Boolean = level.rounds.any { laserGates(it).isNotEmpty() }
 
     /** H12, counted from the actions in the level code (all rounds), per act of 16. */
     val CAPS = listOf(
@@ -526,11 +703,14 @@ object DesignRules {
      * counts without it, so moving two things stays one family there.
      */
     fun familyOf(a: Action, round: Level, trapActions: List<Action> = flatten(round.traps.flatMap { it.actions }), split: Boolean = false): String? = when (a) {
-        is Action.Fall -> "drop"
+        // a ceiling that falls is the ceiling coming down, not the floor going away
+        is Action.Fall -> if (split && hangs(round, a.group)) "ceiling-move" else "drop"
         is Action.Hide -> if (round.glyph(a.group)?.spike != true) "drop" else null
         is Action.Show -> if (round.glyph(a.group)?.spike == true) "spikes" else "secret"
         is Action.Move -> if (split) moveFamily(a, round) else "move"
-        is Action.Chase, is Action.Tilt, is Action.Slope -> "move"
+        // a stalker is a wall that walks with you: under the split it is a wall-move, whatever shape it has
+        is Action.Chase -> if (split) "wall-move" else "move"
+        is Action.Tilt, is Action.Slope -> "move"
         is Action.DoorTo, is Action.FakeWin, is Action.Extend -> "door"
         is Action.Saw, is Action.PathSaw -> "saw"
         is Action.Swap -> "controls"
@@ -549,26 +729,41 @@ object DesignRules {
     }
 
     /**
-     * What a [Action.Move] moves, from the tiles of its group in the map. A flat slab with something solid above it (a
-     * tile of another group, the border) hangs from the ceiling: `ceiling-move`. Otherwise count the faces the player
-     * can meet: tiles of the group with free air above them (top faces) and with free air beside them (side faces). More
-     * side than top faces (a column, a block standing on the floor, a truck) is a `wall-move`; the rest (a platform, a
-     * piece of the floor embedded in the ground) is a floor, which moves down (dy > 0) as a `drop` like a Fall and
-     * otherwise as a `floor-move`. A group that is not in the map counts as `floor-move`.
+     * What a [Action.Move] moves, by its motion first and its shape second. A group that hangs from the ceiling
+     * ([hangs]) is a `ceiling-move` when it is a flat slab (at least as wide as high), however it moves, and when it moves
+     * straight up or down (a rack lowered from the ceiling). Anything else that moves sideways (dx != 0) and is at least 2 tiles high is a `wall-move` (a flat wide wall
+     * that slides at you is a wall, not a floor). What is left moves down (dy > 0) as a `drop` like a Fall, unless it
+     * moves straight up or down (dx == 0) and has more free side than top faces (a column, a block standing on the
+     * floor): then it is a `wall-move` too. The rest (a platform, a piece of the ground) is a `floor-move`. A group that
+     * is not in the map counts as `floor-move`.
      */
+    /**
+     * [group] hangs from the ceiling: every tile of its top row has something solid directly above it (a tile of another
+     * group, the border) or is the top row of the map. A floor block that merely touches a side wall does not hang.
+     */
+    fun hangs(round: Level, group: Char): Boolean {
+        val ts = tiles(round, group)
+        if (ts.isEmpty()) return false
+        val top = ts.minOf { it.second }
+        return ts.filter { it.second == top }.all { (x, y) -> y == 0 || round.map.grid[y - 1][x].let { it != group && solid(round, it) } }
+    }
+
     fun moveFamily(a: Action.Move, round: Level): String {
         val ts = tiles(round, a.group)
         if (ts.isEmpty()) return "floor-move"
         val grid = round.map.grid
         fun at(x: Int, y: Int): Char? = grid.getOrNull(y)?.getOrNull(x)
         val free = { c: Char? -> c != null && c != a.group && !solid(round, c) }
-        val hanging = ts.any { (x, y) -> y == 0 || (at(x, y - 1)?.let { it != a.group && solid(round, it) } == true) }
+        val hanging = hangs(round, a.group)
         val h = ts.maxOf { it.second } - ts.minOf { it.second } + 1
         val w = ts.maxOf { it.first } - ts.minOf { it.first } + 1
-        if (hanging && h <= w) return "ceiling-move"
-        val top = ts.count { (x, y) -> free(at(x, y - 1)) }
-        val side = ts.sumOf { (x, y) -> listOf(at(x - 1, y), at(x + 1, y)).count(free) }
-        if (side > top) return "wall-move"
+        if (hanging && (h <= w || a.dx == 0f)) return "ceiling-move"
+        if (a.dx != 0f && h >= 2) return "wall-move"
+        if (a.dx == 0f) {
+            val top = ts.count { (x, y) -> free(at(x, y - 1)) }
+            val side = ts.sumOf { (x, y) -> listOf(at(x - 1, y), at(x + 1, y)).count(free) }
+            if (side > top) return "wall-move"
+        }
         return if (a.dy > 0f) "drop" else "floor-move"
     }
 
@@ -580,27 +775,37 @@ object DesignRules {
     }
 
     /**
-     * H15, teeth: for every lethal moment of the clean run ([Weight.LETHAL]), two probes start from the step its trigger
-     * held (the moment the player can still decide; a delayed trap runs its actions later).
-     * The patient one stands still [PROBE_WAIT] s and then plays the rest of the solution; the reckless one keeps holding
-     * the key it held (right if none) for [PROBE_RUN] s without jumping. If the patient one still wins *and* the reckless
-     * one is still alive, the trap neither punishes waiting nor running: decoration. Route changes (door, gravity,
+     * H15, teeth: for every lethal moment of the clean run ([Weight.LETHAL], decoration left out, see [decorations]), two
+     * probes start from the step its trigger held (the moment the player can still decide; a delayed trap runs its
+     * actions later). The patient one stands still [PROBE_WAIT] s and then plays the rest of the solution
+     * ([patientProbe]); the reckless one keeps holding the key it held (right if none) for [PROBE_RUN] s without jumping
+     * ([recklessProbe]). The trap has teeth only if it is what beats one of them: the patient one loses, or the reckless
+     * one dies, **and** the same probe ends differently in the room without the moment's lethal actions ([withoutActions];
+     * what else the moment does, say open a gate, stays). A probe
+     * that dies to something else (spikes that were there anyway) proves nothing. Route changes (door, gravity,
      * controls, portals) have their teeth in the new way, which H2 checks for the whole room, and are not probed.
      */
     fun teethViolations(level: Level, round: Int, solution: Solution): List<String> {
         val clean = cleanRun(level, round, solution)
         if (clean.world.state != WorldState.WON) return emptyList()
-        val lethal = clean.moments.filter { it.weight == Weight.LETHAL }
+        val stage = level.rounds[round]
+        val lethal = counted(clean, level, round, solution).filter { it.weight == Weight.LETHAL }
         return lethal.mapNotNull { m ->
-            // the runs are identical up to the moment the trap's trigger held: that is where the player decides
-            val at = { b: Bot -> b.world.time >= m.triggered - 1e-4f }
-            val patient = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.WAIT, PROBE_WAIT, at))
-            try { patient.solution() } catch (_: Bot.ProbeDone) {}
-            val reckless = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.RUN, PROBE_RUN, at))
-            try { reckless.solution() } catch (_: Bot.ProbeDone) {}
-            if (patient.world.state == WorldState.WON && reckless.ranThrough) {
-                "${level.name.en} round ${round + 1}: the trap at $m has no teeth (standing still ${PROBE_WAIT.toInt()} s wins, running straight on survives)"
-            } else null
+            val patient = patientProbe(level, round, solution, m.triggered)
+            val reckless = recklessProbe(level, round, solution, m.triggered)
+            // only what can kill is taken out: a moment that opens a gate and fires a beam keeps the open gate
+            val cut = withoutActions(stage, m.lethalActions)
+            val patientBitten = patient.world.state != WorldState.WON &&
+                Outcome.of(patient) != outcome { patientProbe(cut, 0, solution, m.triggered) }
+            val recklessBitten = !reckless.ranThrough &&
+                Outcome.of(reckless) != outcome { recklessProbe(cut, 0, solution, m.triggered) }
+            when {
+                patientBitten || recklessBitten -> null
+                patient.world.state == WorldState.WON && reckless.ranThrough ->
+                    "${level.name.en} round ${round + 1}: the trap at $m has no teeth (standing still ${PROBE_WAIT.toInt()} s wins, running straight on survives)"
+                else ->
+                    "${level.name.en} round ${round + 1}: the trap at $m has no teeth (what beats the probes is not this trap: without it, standing still ${PROBE_WAIT.toInt()} s and running straight on end the same)"
+            }
         }
     }
 
@@ -624,14 +829,24 @@ object DesignRules {
     }
 
     /**
-     * H17: holding right from the spawn dies within [FILLER_WINDOW] s before any real trap went off. A pad press does not
-     * count as a trap that went off (a [Trigger.Pressed] moment): a pad near the spawn must not excuse a death that
-     * happens right at the start.
+     * H17: holding right from the spawn dies within [FILLER_WINDOW] s, and no trap that went off before is what killed
+     * the player. Excused is only a death that a real trap ([Weight] above NONE) causes: the room without every real action
+     * ([Weight] above NONE) of the traps that went off before the death ([withoutActions]) has to end that run differently (alive, or dead somewhere else or at
+     * another time). A trap that changes nothing near the spawn (a Toggle, Swap or Fall far away, decoration) does not
+     * excuse spikes in front of it. A pad press does not count as a trap that went off (a [Trigger.Pressed] moment): a
+     * pad near the spawn must not excuse a death that happens right at the start.
      */
     fun fillerDeathViolations(level: Level, round: Int): List<String> {
         val bot = Bot(level, round).right(FILLER_WINDOW)
         val w = bot.world
-        if (w.state != WorldState.DEAD || bot.moments.any { it.real && it.trigger !is Trigger.Pressed && it.time <= w.time }) return emptyList()
+        if (w.state != WorldState.DEAD) return emptyList()
+        val causes = bot.moments.filter { it.trigger !is Trigger.Pressed && it.time <= w.time }
+            .flatMap { m -> m.parts.filter { it.weight != Weight.NONE && it.time <= w.time }.flatMap { it.real } }
+        if (causes.isNotEmpty()) {
+            val cut = withoutActions(level.rounds[round], causes)
+            if (outcome { Bot(cut, 0).right(FILLER_WINDOW) } != Outcome.of(bot)) return emptyList()
+            return listOf("${level.name.en} round ${round + 1}: holding right dies at t=%.2f (x=%.1f), and it dies the same without the traps that went off before (filler death)".format(w.time, w.player.box.cx))
+        }
         return listOf("${level.name.en} round ${round + 1}: holding right dies at t=%.2f (x=%.1f) before any trap went off (filler death)".format(w.time, w.player.box.cx))
     }
 
@@ -696,6 +911,14 @@ object DesignRules {
         }
     }
 
+    // ---------- cards still waiting for their first level ----------
+
+    /**
+     * Cards that `everyLevelPlaysACard` lets off for now: ANNEX (U18, docs/LEVEL_DESIGN_V2.md §5a), but only while no level
+     * plays it ([played]: the cards the shipped levels deal). As soon as one level plays it, nothing is pending any more.
+     */
+    fun pendingCards(played: Collection<Card>): Set<Card> = if (Card.ANNEX in played) emptySet() else setOf(Card.ANNEX)
+
     // ---------- say lint ----------
 
     /** A line of Mephi's in a level: where it comes from ("Say", "intro" or "hint") and the text. */
@@ -709,9 +932,12 @@ object DesignRules {
 
     private fun norm(s: String) = s.trim().lowercase().replace(Regex("\\s+"), " ")
 
+    /** A line as the say lint compares it: case, punctuation and spacing aside ("Nope." and "nope!" are one line). */
+    fun sayKey(s: String) = s.lowercase().replace(Regex("[\\p{P}\\p{S}]+"), " ").trim().replace(Regex("\\s+"), " ")
+
     /**
      * Say lint: no line (a [Action.Say], an intro or a hint) is said word for word in two levels of the same act, in
-     * English or in German (case and spacing aside). The same line twice in one level (a rematch repeating itself) is
+     * English or in German (case, punctuation and spacing aside: [sayKey]). The same line twice in one level (a rematch repeating itself) is
      * fine. [levels]: number → level. No allowlist: fix the line. Near-duplicates are only warned about,
      * see [sayNgramWarnings].
      */
@@ -719,13 +945,16 @@ object DesignRules {
         levels.keys.groupBy(::act).toSortedMap().flatMap { (a, ns) ->
             listOf<Pair<String, (T) -> String>>("EN" to { it.en }, "DE" to { it.de }).flatMap { (lang, pick) ->
                 val seen = LinkedHashMap<String, MutableMap<Int, MutableSet<String>>>()
+                val first = HashMap<String, String>()
                 for (n in ns.sorted()) for (l in lines(levels.getValue(n))) {
-                    val key = norm(pick(l.text))
+                    // a line of nothing but punctuation ("...", "?!") still counts, as itself
+                    val key = sayKey(pick(l.text)).ifEmpty { norm(pick(l.text)) }
                     if (key.isEmpty()) continue
+                    first.putIfAbsent(key, norm(pick(l.text)))
                     seen.getOrPut(key) { LinkedHashMap() }.getOrPut(n) { LinkedHashSet() } += l.source
                 }
-                seen.filter { it.value.size > 1 }.map { (text, at) ->
-                    "act $a $lang: \"$text\" in levels ${at.entries.joinToString { "${it.key} (${it.value.joinToString()})" }}"
+                seen.filter { it.value.size > 1 }.map { (key, at) ->
+                    "act $a $lang: \"${first.getValue(key)}\" in levels ${at.entries.joinToString { "${it.key} (${it.value.joinToString()})" }}"
                 }
             }
         }
@@ -764,28 +993,34 @@ object DesignRules {
     // ---------- adjacent levels ----------
 
     /**
-     * What a level feels like to play, from the clean run of its round 1: the effect family of every real trap in the
-     * order they went off ([families]), the [dominant] one and the player's direction changes ([Bot.shape]). The
-     * dominant family is the one with the most *lethal* moments of the clean run ([Weight.LETHAL]; a moment counts for
-     * every family of its actions); a tie goes to the family that went off first. Null: no lethal moment at all.
+     * What a round feels like to play, from its clean run: the effect family of every real trap in the order they went
+     * off ([families]), the [dominant] families and the player's direction changes ([Bot.shape]). The dominant family is
+     * the one with the most *lethal* moments of the clean run ([Weight.LETHAL]; a moment counts for every family of its lethal
+     * actions; decoration, see [decorations], does not count). A tie makes every tied family dominant: a cheap early
+     * moment cannot take the lead away from the family the room is really about. Empty: no lethal moment at all.
      */
-    class Signature(val dominant: String?, val families: List<String>, val shape: List<String>) {
-        override fun toString() = "dominant $dominant, traps $families, moves $shape"
+    class Signature(val dominant: Set<String>, val families: List<String>, val shape: List<String>) {
+        constructor(dominant: String?, families: List<String>, shape: List<String>) : this(setOfNotNull(dominant), families, shape)
+        override fun toString() = "dominant ${dominant.ifEmpty { null }?.joinToString("+")}, traps $families, moves $shape"
     }
 
-    fun signature(level: Level, solution: Solution): Signature {
-        val bot = measured(level, 0, solution)
-        val round = level.rounds[0]
-        val real = bot.moments.filter { it.real }
-        val familiesOf = { m: Moment -> m.actions.mapNotNull { familyOf(it, round, split = true) }.distinct() }
-        val seq = real.mapNotNull { familiesOf(it).firstOrNull() }
-        return Signature(dominantFamily(real.filter { it.weight == Weight.LETHAL }.map(familiesOf)), seq, bot.shape())
+    /** The [Signature] of [round] (0-based) of [level], played with [solution]. */
+    fun signature(level: Level, solution: Solution, round: Int = 0): Signature {
+        val bot = measured(level, round, solution)
+        val stage = level.rounds[round]
+        val real = counted(bot, level, round, solution).filter { it.real }
+        val familiesOf = { acts: List<Action> -> acts.mapNotNull { familyOf(it, stage, split = true) }.distinct() }
+        val seq = real.mapNotNull { familiesOf(it.actions).firstOrNull() }
+        // a lethal moment counts for the families of its lethal actions only: a bridge that appears or a line of talk
+        // riding along does not make its family dominant
+        return Signature(dominantFamilies(real.filter { it.weight == Weight.LETHAL }.map { familiesOf(it.lethalActions) }), seq, bot.shape())
     }
 
-    /** The family in most of [lethal] (one list of families per lethal moment, in order); a tie: the earliest. Null if none. */
-    fun dominantFamily(lethal: List<List<String>>): String? {
-        val counts = lethal.flatten().groupingBy { it }.eachCount()
-        return counts.entries.maxByOrNull { (f, k) -> k * 1000 - lethal.indexOfFirst { f in it } }?.key
+    /** The families in most of [lethal] (one list of families per lethal moment, in order); a tie: all of them. Empty if none. */
+    fun dominantFamilies(lethal: List<List<String>>): Set<String> {
+        val counts = lethal.flatMap { it.distinct() }.groupingBy { it }.eachCount()
+        val top = counts.values.maxOrNull() ?: return emptySet()
+        return lethal.flatten().distinct().filter { counts[it] == top }.toCollection(LinkedHashSet())
     }
 
     /** Longest common subsequence of [a] and [b] over the longer one: 1 for the same sequence, 0 for nothing in common. */
@@ -797,35 +1032,168 @@ object DesignRules {
     }
 
     /** The pairs H20 looks at: n and n + 1 of the same act, the second no finale. */
-    private fun neighbours(signatures: Map<Int, Signature>) = signatures.keys.sorted().mapNotNull { n ->
+    private fun neighbours(signatures: Map<Int, List<Signature>>) = signatures.keys.sorted().mapNotNull { n ->
         val b = signatures[n + 1] ?: return@mapNotNull null
         if (isFinale(n + 1) || act(n) != act(n + 1)) null else Triple(n, signatures.getValue(n), b)
     }
 
     /**
      * H20, binary: two consecutive levels of an act (the second no finale) must differ in their dominant effect family
-     * ([Signature.dominant]). The percentage of [similarity] never decides, see [adjacentReport].
+     * ([Signature.dominant]), every round of the one against every round of the other (a rematch is played right before
+     * or after the neighbour too). A tie counts with all its families. [signatures]: level → one signature per round,
+     * round 1 first. The percentage of [similarity] never decides, see [adjacentReport].
      */
-    fun adjacentViolations(signatures: Map<Int, Signature>): List<String> = neighbours(signatures).mapNotNull { (n, a, b) ->
-        if (a.dominant != null && a.dominant == b.dominant) {
-            "levels $n and ${n + 1}: both are dominated by ${a.dominant} (traps ${a.families} vs ${b.families}; moves ${a.shape} vs ${b.shape})"
-        } else null
+    fun adjacentViolations(signatures: Map<Int, List<Signature>>): List<String> = neighbours(signatures).flatMap { (n, ra, rb) ->
+        ra.withIndex().flatMap { (i, a) ->
+            rb.withIndex().mapNotNull { (j, b) ->
+                val shared = a.dominant intersect b.dominant
+                if (shared.isEmpty()) null
+                else "levels $n and ${n + 1}${if (ra.size > 1 || rb.size > 1) " (round ${i + 1} vs round ${j + 1})" else ""}: both are dominated by ${shared.joinToString("+")} " +
+                    "(dominant ${a.dominant} vs ${b.dominant}; traps ${a.families} vs ${b.families}; moves ${a.shape} vs ${b.shape})"
+            }
+        }
     }
 
-    /** H20, report only (printed, never failing): how alike two neighbours play, in per cent ([similarity] of the moves). */
-    fun adjacentReport(signatures: Map<Int, Signature>): List<String> = neighbours(signatures).map { (n, a, b) ->
+    private fun perRound(signatures: Map<Int, Signature>): Map<Int, List<Signature>> = signatures.mapValues { listOf(it.value) }
+
+    /** [adjacentViolations] for levels of one round each. */
+    @JvmName("adjacentViolationsOfRoundOne")
+    fun adjacentViolations(signatures: Map<Int, Signature>): List<String> = adjacentViolations(perRound(signatures))
+
+    /** H20, report only (printed, never failing): how alike two neighbours play, in per cent ([similarity] of the moves of round 1). */
+    fun adjacentReport(signatures: Map<Int, List<Signature>>): List<String> = neighbours(signatures).map { (n, ra, rb) ->
+        val a = ra.first()
+        val b = rb.first()
         "levels $n and ${n + 1}: dominant ${a.dominant} vs ${b.dominant}, moves %.0f %% alike (${a.shape} vs ${b.shape})".format(100 * similarity(a.shape, b.shape))
     }
+
+    @JvmName("adjacentReportOfRoundOne")
+    fun adjacentReport(signatures: Map<Int, Signature>): List<String> = adjacentReport(perRound(signatures))
 
     /** H21: levels per act whose dominant family is wall-move at most. */
     const val WALL_MOVE_CAP = 3
 
-    /** H21: per act at most [WALL_MOVE_CAP] of the levels in [signatures] are dominated by a moving wall. */
-    fun wallMoveViolations(signatures: Map<Int, Signature>): List<String> =
+    /** H21: a level counts as dominated by a moving wall if any of its rounds is ([Signature.dominant], ties included). */
+    fun wallDominated(rounds: List<Signature>) = rounds.any { "wall-move" in it.dominant }
+
+    /** H21: per act at most [WALL_MOVE_CAP] of the levels in [signatures] (level → signature per round) are dominated by a moving wall. */
+    fun wallMoveViolations(signatures: Map<Int, List<Signature>>): List<String> =
         signatures.keys.groupBy(::act).toSortedMap().mapNotNull { (a, ns) ->
-            val walls = ns.filter { signatures.getValue(it).dominant == "wall-move" }.sorted()
+            val walls = ns.filter { wallDominated(signatures.getValue(it)) }.sorted()
             if (walls.size > WALL_MOVE_CAP) "act $a: ${walls.size} levels dominated by a moving wall $walls (max $WALL_MOVE_CAP)" else null
         }
+
+    @JvmName("wallMoveViolationsOfRoundOne")
+    fun wallMoveViolations(signatures: Map<Int, Signature>): List<String> = wallMoveViolations(perRound(signatures))
+
+    // ---------- rollout blocks (§11): parallel builders share an act ----------
+
+    /**
+     * A rollout block of docs/LEVEL_DESIGN_V2.md §11: the levels one builder rebuilds and the share of every per-act cap it
+     * may use, so that two blocks built in parallel cannot both eat the act's budget. [budget] keys are [BUDGET_ITEMS];
+     * a missing key is not checked (HeatSpike finales outside World 3). `pad` counts like H12: the act finale may bring
+     * one switch on top. `rematch` is exact (the 47 rematch levels stay). [card] is the budget of every card, [cards] the
+     * exceptions (cards that levels outside the block already play in the act). [forbidden]: an edge level of the block
+     * and the dominant families (H20) it must not have, because the neighbour outside the block has (or plans) them.
+     */
+    class Block(
+        val world: Int, val id: String, val levels: Set<Int>, val budget: Map<String, Int>,
+        val card: Int, val cards: Map<Card, Int> = emptyMap(), val forbidden: Map<Int, Set<String>> = emptyMap(),
+    ) {
+        fun cardBudget(c: Card) = cards[c] ?: card
+        override fun toString() = "W$world $id"
+    }
+
+    /** The items a [Block] budget names, in the column order of §11. */
+    val BUDGET_ITEMS = listOf("pad", "gate", "blink", "door", "gravity", "swap", "wall", "spikes", "heatspike", "rematch", "bluff", "annex")
+
+    /** World 2 pilot levels (11–24, act 1 and 2): rebuilt before the rollout. 18, 20 (their rematches), 23 and 24 belong to a block again. */
+    val PILOT = (11..24).toSet()
+
+    private fun b(world: Int, id: String, levels: Iterable<Int>, pad: Int, gate: Int, blink: Int, door: Int, gravity: Int, swap: Int, wall: Int,
+        spikes: Int, heatspike: Int?, rematch: Int, bluff: Int, annex: Int, card: Int, cards: Map<Card, Int> = emptyMap(), forbidden: Map<Int, Set<String>> = emptyMap()) =
+        Block(world, id, levels.toSet(), listOfNotNull("pad" to pad, "gate" to gate, "blink" to blink, "door" to door, "gravity" to gravity, "swap" to swap,
+            "wall" to wall, "spikes" to spikes, heatspike?.let { "heatspike" to it }, "rematch" to rematch, "bluff" to bluff, "annex" to annex).toMap(), card, cards, forbidden)
+
+    /** §11, the rollout blocks and their budgets (the table in the doc must say the same, `RolloutBudgetTest`). */
+    val ROLLOUT: List<Block> = listOf(
+        //     world id      levels                                pad gate blink door grav swap wall spikes heat rematch bluff annex card
+        b(1, "A", 7..16, 3, 3, 3, 1, 1, 2, 3, 4, null, 3, 0, 1, 3, forbidden = mapOf(7 to setOf("saw"))),
+        b(1, "B", 17..24, 2, 1, 1, 0, 0, 1, 1, 2, null, 4, 1, 0, 1),
+        b(1, "C", 25..32, 1, 2, 2, 1, 1, 1, 2, 2, null, 1, 0, 1, 2, forbidden = mapOf(25 to setOf("wall-move"))),
+        b(1, "D", 33..40, 0, 1, 1, 1, 1, 1, 0, 2, null, 2, 0, 1, 1, forbidden = mapOf(40 to setOf("ceiling-move"))),
+        b(1, "E", 41..48, 3, 2, 2, 0, 0, 1, 3, 2, null, 4, 1, 1, 2),
+        b(2, "A", 1..10, 0, 3, 2, 1, 0, 1, 2, 4, null, 3, 1, 0, 3,
+            cards = mapOf(Card.HEADBUTT to 1, Card.DEVIL_SAW to 2, Card.COLLAPSE to 2, Card.SINKING to 2, Card.UPSIDE_DOWN to 2, Card.STALKER to 2, Card.GHOST_BLOCK to 2),
+            forbidden = mapOf(10 to setOf("saw"))),
+        b(2, "B", listOf(18, 20, 23, 24) + (25..32), 3, 3, 3, 1, 1, 1, 2, 4, null, 5, 1, 1, 3,
+            cards = mapOf(Card.HEADBUTT to 2, Card.TWISTED to 2, Card.DECOY to 2, Card.DEVIL_SAW to 2),
+            forbidden = mapOf(18 to setOf("drop", "wall-move"), 20 to setOf("drop", "wall-move", "belt"), 23 to setOf("saw"))),
+        b(2, "C", 33..40, 1, 1, 1, 0, 1, 0, 1, 2, null, 2, 1, 0, 1, forbidden = mapOf(40 to setOf("drop"))),
+        b(2, "D", 41..48, 2, 2, 2, 1, 0, 2, 2, 2, null, 4, 0, 1, 2),
+        b(3, "A", 1..8, 2, 1, 1, 0, 0, 0, 1, 2, 2, 3, 0, 0, 1, forbidden = mapOf(8 to setOf("wall-move"))),
+        b(3, "B", 9..16, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2),
+        b(3, "C", 17..24, 1, 1, 1, 1, 0, 1, 2, 2, 2, 2, 0, 0, 1, forbidden = mapOf(24 to setOf("belt"))),
+        b(3, "D", 25..32, 2, 2, 2, 0, 1, 1, 1, 2, 2, 3, 0, 1, 2, forbidden = mapOf(25 to setOf("heat", "power"))),
+        b(3, "E", 33..40, 1, 1, 1, 0, 0, 1, 1, 2, 2, 3, 0, 0, 1),
+        b(3, "F", 41..48, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 2, forbidden = mapOf(41 to setOf("belt"))),
+    )
+
+    /** What [levels] (number → level) of a block use, per [BUDGET_ITEMS] item; `wall` needs [signatures] (level → per round). */
+    fun blockUsage(levels: Map<Int, Level>, signatures: Map<Int, List<Signature>>): Map<String, Int> {
+        fun count(p: (Int, Level) -> Boolean) = levels.count { (n, l) -> p(n, l) }
+        val pads = levels.filter { (_, l) -> CAPS[1].has(l) }.keys
+        return mapOf(
+            // like H12: the act finale may bring one switch on top
+            "pad" to (if (pads.count(::isFinale) <= 1) pads.filterNot(::isFinale) else pads).size,
+            "gate" to count { _, l -> hasLaserGate(l) },
+            "blink" to count { _, l -> CAPS[3].has(l) },
+            "door" to count { _, l -> CAPS[0].has(l) },
+            "gravity" to count { _, l -> CAPS[4].has(l) },
+            "swap" to count { _, l -> CAPS[5].has(l) },
+            "wall" to count { n, _ -> wallDominated(signatures[n].orEmpty()) },
+            "spikes" to count { _, l -> l.rounds.any { spikePopupCount(it) > 0 } },
+            "heatspike" to count { _, l -> l.rounds.any { heatSpikeFinaleCount(it) > 0 } },
+            "rematch" to count { _, l -> l.rematch.isNotEmpty() },
+            "bluff" to count { _, l -> levelActions(l).any { it is Action.Bluff } },
+            "annex" to count { _, l -> levelActions(l).any { it is Action.Extend } },
+        )
+    }
+
+    /** Cards played in [levels] (every round, bluffs aside), GRAND_FINALE in a finale left out, as in §7. */
+    fun blockCards(levels: Map<Int, Level>): Map<Card, Int> =
+        levels.flatMap { (n, l) -> cards(l).filterNot { it == Card.GRAND_FINALE && isFinale(n) } }.groupingBy { it }.eachCount()
+
+    /**
+     * §11: a block whose levels are all rebuilt stays within its budget ([Block.budget], `rematch` exactly), plays no card
+     * more often than [Block.cardBudget], and its edge levels are not dominated (any round, H20) by a [Block.forbidden] family.
+     */
+    fun budgetViolations(block: Block, levels: Map<Int, Level>, signatures: Map<Int, List<Signature>>): List<String> {
+        val out = ArrayList<String>()
+        val used = blockUsage(levels, signatures)
+        for ((item, max) in block.budget) {
+            val k = used.getValue(item)
+            if (item == "rematch") { if (k != max) out += "$block: $k rematch levels, the block keeps exactly $max" }
+            else if (k > max) out += "$block: $item in $k levels (budget $max)"
+        }
+        for ((c, k) in blockCards(levels)) if (k > block.cardBudget(c)) out += "$block: card $c played $k times (budget ${block.cardBudget(c)})"
+        for ((n, fs) in block.forbidden) {
+            val dominant = signatures[n].orEmpty().flatMap { it.dominant }.toSet()
+            val clash = dominant intersect fs
+            if (clash.isNotEmpty()) out += "$block: level $n is dominated by $clash, which its neighbour outside the block has"
+        }
+        return out
+    }
+
+    /**
+     * §11: rebuilt levels come in whole blocks. A block (its levels outside the [PILOT] in World 2) is either not rebuilt at
+     * all or all of it is: leaving one level out of `REBUILT` would quietly switch off its tests and the block's budget.
+     */
+    fun partialBlocks(world: Int, rebuilt: Set<Int>): List<String> = ROLLOUT.filter { it.world == world }.mapNotNull { block ->
+        val own = block.levels - (if (world == 2) PILOT else emptySet())
+        val done = own.filter { it in rebuilt }
+        if (done.isNotEmpty() && done.size < own.size) "$block: only ${done.sorted()} of ${own.sorted()} are in REBUILT; a block goes in whole" else null
+    }
 
     // ---------- the §8 table, recipe v2 ----------
 

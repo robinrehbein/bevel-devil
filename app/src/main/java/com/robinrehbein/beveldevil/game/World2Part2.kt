@@ -194,7 +194,8 @@ object World2Part2 {
         // of them are two portals: the near one comes out in a closet between the walls, the far one leads up to the shelf, but its link
         // is down (it is dead until somebody opens the port), so the way in is the closet: the control room of the walled garden. Step
         // in, the port opens, step out again (back through the near portal), and the far portal works. Up on the shelf you are throttled to
-        // 56k (a treadmill against you, with an LED at its far end: keep walking, and the ceiling is spiked: no jumping), the way on is down
+        // 56k (a treadmill against you, with an LED at its far end: keep walking, and the ceiling is spiked: no jumping; past the treadmill the
+        // rest of the shelf is throttled too, a slower belt that hands whoever stops back to the treadmill), the way on is down
         // through the hole, and on the lane the portal in front of the door is a captive portal: hop it
         Level(
             name = T("Flat Rate", "Flatrate"),
@@ -208,14 +209,14 @@ object World2Part2 {
             traps = listOf(
                 trap(Zone(14f, 13f, 17f, 15.5f), Power('b', true), say("Walled garden. Unlimited flat rate, limited to this cell. And port 80.", "Walled Garden. Flatrate unbegrenzt, begrenzt auf diese Zelle. Und Port 80.")),
                 trap(Zone(3.5f, 5.5f, 6f, 8f), Belt('c', -6.5f), say("Terms accepted. Throttled to 56k, as agreed.", "AGB akzeptiert. Gedrosselt auf 56k, wie vereinbart.")),
-                trap(Zone(10f, 5.5f, 12f, 8f), Reroute('b', 26 to 7), say("Portal b has moved on. You have, too.", "Portal b ist weitergezogen. Du ja auch.")),
+                trap(Zone(10.5f, 5.5f, 12f, 8f), Reroute('b', 26 to 7), Belt('d', -3f), say("Portal b has moved on. The rest of the shelf is throttled, too.", "Portal b ist weitergezogen. Der Rest vom Regal ist auch gedrosselt.")),
                 trap(Zone(24.4f, 13f, 25.8f, 15.5f), Play(Card.DECOY), Reroute('r', 4 to 7), say("301 Moved Permanently. The portal too.", "301 Moved Permanently. Das Portal auch.")),
             ),
             hint = T("The far portal has no link. Ask the near one why.", "Das ferne Portal hat keine Verbindung. Frag das nahe, warum."),
         ) {
             border(); floor()
             fill(12..13, 9..14); fill(17..18, 9..14)
-            fill(1..19, 8..8); fill(2..9, 8..8, 'c'); fill(22..30, 8..8)
+            fill(1..19, 8..8); fill(2..9, 8..8, 'c'); fill(10..19, 8..8, 'd'); fill(22..30, 8..8)
             put(2, 7, '^'); ceilingSpikes(1..21, 6)
             spawn(1); door(); bits(21)
         },
@@ -253,14 +254,14 @@ object World2Part2 {
             traps = listOf(
                 trap(PastX(6f), Belt('a', -5.5f), say("Rush hour. Everyone is going your way. The other way.", "Berufsverkehr. Alle wollen in deine Richtung. Die andere.")),
                 trap(PastX(17f), Play(Card.DECOY), Reroute('p', 2 to 8), say("Route recalculated. The on-ramp is further back now.", "Route neu berechnet. Die Auffahrt liegt jetzt weiter hinten.")),
-                trap(Zone(11f, 5.5f, 14f, 9.3f), Belt('c', -9f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
+                trap(Zone(12f, 5.5f, 14f, 9.3f), Belt('c', -9f), say("Wrong-way driver. Not my fault.", "Geisterfahrer. Nicht meine Schuld.")),
             ),
             hint = T("The lane runs against you. A hop skips the lane.", "Die Spur läuft gegen dich. Ein Hüpfer überspringt die Spur."),
         ) {
             border(); floor()
             fill(7..13, 15..15, 'a'); put(10, 14, '^'); fill(21..22, 15..17, '.')
             fill(1..30, 9..9)
-            fill(3..9, 9..9, 'b'); put(10, 8, '^'); fill(12..20, 9..9, 'c'); put(24, 8, '^')
+            fill(3..9, 9..9, 'b'); put(10, 8, '^'); fill(10..20, 9..9, 'c'); put(24, 8, '^')
             spawn(3); put(29, 8, 'D'); bits(23)
         },
 

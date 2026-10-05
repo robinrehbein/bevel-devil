@@ -111,9 +111,9 @@ abstract class DesignTestBase {
         "§7 card spread" to { DesignRules.cardSpreadViolations(acts.levels).map { Finding("§7", null, it) } },
     )
 
-    /** H20: round 1's signature of every level of [scope] that has a solution. */
+    /** H20/H21: the signature of every round with a solution, of every level of [scope] that has one. */
     private fun signatures(scope: Scope) = scope.numbers.filter { scope.solutions[it]?.isNotEmpty() == true }.sorted()
-        .associateWith { DesignRules.signature(level(it), scope.solutions.getValue(it)[0]) }
+        .associateWith { n -> scope.solutions.getValue(n).withIndex().filter { it.index < level(n).rounds.size }.map { (r, s) -> DesignRules.signature(level(n), s, r) } }
 
     private val rebuiltScope get() = Scope(rebuilt, solutions, ::level)
     private fun check(rule: String) {
@@ -146,4 +146,23 @@ abstract class DesignTestBase {
     @Test fun neighboursPlayDifferently() = check("H20 adjacent rooms")
     @Test fun atMostThreeMovingWallLevelsPerAct() = check("H21 moving walls")
     @Test fun cardsSpreadPerAct() = check("§7 card spread")
+
+    // ---------- the rollout (§11) and the lock ----------
+
+    /** §11: every block of this world whose levels are all rebuilt keeps its budget, so parallel blocks cannot both eat an act's caps. */
+    @Test
+    fun rolloutBlocksKeepTheirBudgets() {
+        val done = DesignRules.ROLLOUT.filter { it.world == world && it.levels.all { n -> n in rebuilt } }
+        assertNone("§11 rollout budgets of world $world", done.flatMap { block ->
+            DesignRules.budgetViolations(block, block.levels.sorted().associateWith(::level), signatures(Scope(block.levels, solutions, ::level)))
+        })
+    }
+
+    /** §11: a block goes into REBUILT whole; leaving a level out would switch off its tests and its block's budget. */
+    @Test
+    fun rebuiltComesInWholeBlocks() = assertNone("REBUILT of world $world", DesignRules.partialBlocks(world, rebuilt))
+
+    /** The kit is locked: see [KitLock]. */
+    @Test
+    fun theKitIsLocked() = assertNone("kit lock", KitLock.violations())
 }

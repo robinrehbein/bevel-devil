@@ -462,9 +462,10 @@ class World2Test {
     @Test fun l23RunningStraightIntoTheLedOnTheBeltIsFatal() = b(23).right(4f).expect(WorldState.DEAD)
     @Test fun l23StandingStillOnTheBeltIsPushedIntoTheLed() = b(23).hopR(8.3f).wait(3f).expect(WorldState.DEAD)
     @Test fun l23TheExpressBeltThrowsYouAtTheLed() = World2Rooms.l23Lane1(b(23)).right(3f).expect(WorldState.DEAD)
+    /** The wrong-way lane cannot be walked: it runs faster than you and hands you back to the LED behind you. */
     @Test fun l23TheWrongWayLaneCannotBeWalked() {
         val bot = World2Rooms.l23Lane1(b(23)).hopR(8.5f).right(5f)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 15f && bot.world.state == WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 15f && bot.world.state == WorldState.DEAD)
     }
 
     /** The hops are no gimme: a player who is a second early or late (1.5 tiles, 0.35 s) loses, in either direction. */

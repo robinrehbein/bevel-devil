@@ -282,7 +282,7 @@ object World2Part1 {
                     T("Failover test. The left aisle is a hot aisle now.", "Failover-Test. Der linke Gang ist jetzt ein Heißgang."),
                     hint = T("Don't drop where you dropped. Go back the way you came.", "Spring nicht dort runter, wo du es kennst. Geh zurück."),
                     traps = listOf(
-                        trap(Zone(8f, 8.5f, 12.6f, 11f), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
+                        trap(Landed(8f, 11.6f), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
                             say("Fan 1 again. Same laps. New schedule.", "Lüfter 1 wieder. Gleiche Runden. Neuer Plan.")),
                         trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
                             say("Rack unlocked. Fan 2 is on call. The hot aisle is not.", "Rack offen. Lüfter 2 hat Bereitschaft. Der Heißgang nicht.")),
@@ -322,7 +322,7 @@ object World2Part1 {
             hint = T("Whatever you touch gets freed. Keep moving. The pointer is on the right.", "Was du berührst, wird freigegeben. Bleib in Bewegung. Der Zeiger ist rechts."),
         ) {
             border()
-            fill(0..5, 15..17); fill(26..30, 15..17)
+            fill(0..6, 15..17); fill(26..30, 15..17)
             fill(7..9, 15..15, 'a'); fill(12..14, 15..15, 'b'); fill(17..19, 15..15, 'c'); fill(22..24, 15..15, 'd')
             fill(26..26, 9..9); fill(27..30, 9..9, 'g'); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..5, 9..9); fill(6..10, 9..9, 'l')
             spawn(); door(4, 8); bits(12, x0 = 12)
@@ -357,7 +357,7 @@ object World2Part1 {
         // way to the door is a spiral of one-way links: bottom left, top left, top right, bottom right. The obvious floor link
         // is the loopback (it sends you home); the way on is the one hanging in mid-air above it. Upstairs the next link flaps
         // (down for a moment just as you arrive), in the top right the ceiling comes down on whoever runs under it, and the
-        // last subnet is a pit with one stone: the stone is freed as soon as you step on it
+        // last subnet is a pit with one stone: step on it and the packet hanging under the floor above drops onto it
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
@@ -371,7 +371,7 @@ object World2Part1 {
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.2f),
                 trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
                 trap(Zone(23.4f, 1f, 26.5f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
-                trap(Touch('k'), Fall('k'), say("Hop 5: packet dropped. Stone included.", "Hop 5: Paket verworfen. Stein inklusive."), delay = 0.15f),
+                trap(Touch('k'), Fall('j'), say("Hop 5: packet dropped. From the floor above.", "Hop 5: Paket verworfen. Vom Stockwerk drüber."), delay = 0.25f),
             ),
             hint = T("The obvious link goes home. Try the one in the air.", "Der offensichtliche Link führt heim. Nimm den in der Luft."),
             // rematch: the two links at home swap (the one in the air is the loopback now), the DNS entry of the way upstairs is
@@ -399,7 +399,7 @@ object World2Part1 {
         ) {
             border(); floor()
             fill(1..30, 8..8); fill(15..16, 1..14)
-            fill(20..22, 1..2, 'h'); pit(20..25); fill(21..25, 15..15, 'k')
+            fill(20..22, 1..2, 'h'); pit(20..25); fill(21..25, 15..15, 'k'); fill(21..25, 9..9, 'j')
             leds(6..7, 7)
             spawn(); door(18); bits(14, x0 = 3)
         },
@@ -418,8 +418,8 @@ object World2Part1 {
                     bridgeTiles.map { Show(it) }).toTypedArray()),
                 trap(Pressed('1'), Move('i', 0f, 12f, 20f), say("The client socket closes behind you. Politely.", "Der Client-Socket schließt hinter dir. Höflich."), delay = 0.9f),
                 trap(Pressed('1'), *bridgeTiles.map { Move(it, 0f, 12f, 30f) }.toTypedArray(), say("SYN cookie expired.", "SYN-Cookie abgelaufen."), delay = 8f),
-                trap(PastX(14f), Move('h', 0f, 11f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt.")),
-                trap(PastX(14f), Move('h', 0f, -11f, 40f), delay = 0.55f),
+                trap(PastX(14f), Move('h', 0f, 11f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt."), delay = 0.15f),
+                trap(PastX(14f), Move('h', 0f, -11f, 40f), delay = 0.7f),
                 trap(Pressed('2'), Show('a'), say("SYN-ACK. The server is building you a staircase. ACK it.", "SYN-ACK. Der Server baut dir eine Treppe. Bestätige sie."), delay = 0.5f),
                 trap(Pressed('2'), Show('b'), delay = 1f),
                 trap(Zone(28.8f, 8f, 31f, 11f), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
