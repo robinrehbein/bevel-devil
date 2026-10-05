@@ -61,25 +61,30 @@ object World2Part1 {
             spawn(); door(); bits(1)
         },
 
-        // 2 — first portal: the wall is a firewall, port 80 is open. The hop over the first spike grows one more before the portal,
-        // and the landing behind the second spike grows a pair in front of the door
+        // 2 — first routing puzzle: the door hangs on a stair high up on the left and nothing on this side climbs up there. The portal at the
+        // far end of the floor takes you up to a long shelf. On the way, the floor portal is the loopback (it sends you home), the hop over
+        // it grows spikes where you land, and the shelf has a gap that only the portal for port 22 crosses (it wakes up when you come near)
         Level(
             name = T("Open Port", "Offener Port"),
             intro = T("The firewall is in a bad mood today. Like me.", "Die Firewall hat heute schlechte Laune. Wie ich."),
-            legend = mapOf('A' to hidden, 'B' to hidden, 'C' to hidden),
-            start = listOf(Portal('1', 10 to 14, 19 to 14)),
-            traps = listOf(
-                trap(Airborne(4.6f, 7.4f), Play(Card.SPIKE_SEED), Show('A'), say("Port 80 open. Port 9: a spike.", "Port 80 offen. Port 9: ein Spike.")),
-                trap(Landed(23.5f, 27.6f), Show('B'), say("Packet loss: two spikes in transit.", "Paketverlust: zwei Spikes unterwegs.")),
+            legend = mapOf('A' to hidden),
+            start = listOf(
+                Portal('a', 28 to 12, 28 to 10, twoWay = false),
+                Portal('h', 17 to 14, 3 to 14, twoWay = false),
+                Portal('g', 18 to 10, 10 to 10, twoWay = false), Power('g', false),
             ),
+            traps = listOf(
+                trap(Airborne(17.4f, 19.4f), Play(Card.SPIKE_SEED), Show('A'), say("Port 80 open. Port 9: a spike.", "Port 80 offen. Port 9: ein Spike.")),
+                trap(Zone(20f, 8f, 21.5f, 11f), Power('g', true), say("Port 22 opens. For a moment.", "Port 22 geht auf. Für einen Moment."), delay = 0.45f),
+            ),
+            hint = T("The door is upstairs. The way up is at the far end.", "Die Tür ist oben. Der Weg nach oben liegt ganz hinten."),
         ) {
             border(); floor()
-            fill(14..15, 1..14)
-            put(6, 14, '^'); put(23, 14, '^')
-            put(9, 14, 'A')
-            put(26, 14, 'C'); put(27, 14, 'C')
-            put(28, 14, 'B'); put(29, 14, 'B')
-            spawn(); door(30); bits(2)
+            fill(1..10, 11..11); fill(17..30, 11..11)
+            fill(7..8, 9..10); fill(5..6, 7..10); fill(3..4, 5..10); fill(1..2, 3..10)
+            fill(26..30, 13..14)
+            put(24, 14, 'A')
+            spawn(); door(2, 2); bits(2)
         },
 
         // 3 — EASTER EGG: HTTP 404, the door is gone (it runs back to the start). The hop over the second rack lands in spikes,

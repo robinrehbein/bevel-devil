@@ -86,6 +86,12 @@ class World2DesignTest : DesignTestBase() {
                 { hopR(10.2f).hopR(18.0f).right(1.5f) },
                 { rightTo(17.5f).hopR(18.6f).right(1.5f) },
             ),
+            2 to listOf(
+                { hopR(15.5f).hopR(21.9f).rightJump(0.4f).landRight()
+                    .rightUntil { it.player.box.cy < 11.5f }.leftUntil { it.player.box.cx < 20.4f }
+                    .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 10.2f }
+                    .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)

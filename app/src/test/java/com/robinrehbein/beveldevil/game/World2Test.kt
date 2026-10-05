@@ -163,8 +163,8 @@ class World2Test {
     fun theObviousRunDiesInTheChain() {
         // 1: the landing after the first pit is a pit too
         b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
-        // 2: the first spike grows a second one in front of the portal
-        b(2).hopR(2.6f).right(2f).expect(WorldState.DEAD)
+        // 2: the hop over the loopback grows a spike in the lane behind it
+        b(2).hopR(15.5f).right(3f).expect(WorldState.DEAD)
         // 3: after the second rack the spikes are there, even if the room is plain
         b(3).hopR(12.9f).hopR(17.8f).right(3f).expect(WorldState.DEAD)
         // 4: the gap you aim for is plugged while you fly at it
@@ -277,8 +277,9 @@ class World2Test {
     @Test fun level01() { World2DesignTest.play(1) }
     /** Hello, World!: hopping the first pit and running on lands in the pit that opens as you touch down. */
     @Test fun level01TheLandingIsAPitToo() = b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
-    @Test fun level02() = b(2).right(0.25f).rightJump(0.40f).right(0.03f).left(0.10f).rightJump(0.55f).leftJump(0.55f)
-        .right(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level02() { World2DesignTest.play(2) }
+    /** Open Port: the floor portal in the middle is the loopback; the hop over it grows a spike where you run on. */
+    @Test fun level02TheLoopbackSendsYouHome() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 8f) }.expect(WorldState.PLAYING)
     @Test fun level03() = b(3).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).left(0.60f).right(0.25f).left(0.03f) .left(0.25f).leftJump(0.55f).leftJump(0.55f).left(1.20f).leftJump(0.55f).expect(WorldState.WON)
     @Test fun level04() = b(4).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
         .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
