@@ -78,7 +78,7 @@ class World2DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (11..24).toSet()
+        val REBUILT: Set<Int> = (1..24).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(

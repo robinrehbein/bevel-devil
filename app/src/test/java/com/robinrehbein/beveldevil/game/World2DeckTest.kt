@@ -210,16 +210,6 @@ class World2DeckTest {
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
         val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            1 to { b -> b.hopR(10.2f).hopR(18.0f).right(1.5f) },
-            4 to { b -> b.rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()
-                .rightUntil { it.player.box.cx > 11.7f }.waitFor { it.group('A').oy > 6.5f }.waitFor { it.group('A').oy < 6.0f }
-                .rightUntil { it.player.box.cx > 17.7f }.waitFor { it.group('B').oy > 6.5f }.waitFor { it.group('B').oy < 6.0f }
-                .rightUntil { it.player.box.cx > 27.5f }.leftUntil { w -> w.group('G').let { g -> w.player.box.cx - (g.homeX + g.ox) in 0f..4f } }
-                .leftJump(0.35f).landLeft().left(3f) },
-            7 to { b -> b.right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f)
-                .rightJump(0.55f).right(0.25f).right(0.10f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
-                .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f)
-                .right(0.03f).right(0.03f).left(0.10f).rightJump(0.55f).right(0.60f) },
             25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
             26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },
             29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
