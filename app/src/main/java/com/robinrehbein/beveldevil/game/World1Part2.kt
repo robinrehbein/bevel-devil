@@ -58,5 +58,30 @@ object World1Part2 {
             put(10, 7, 'P'); put(29, 7, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(9)
+        // 26 — skyscraper: two flights of stairs and a roof run back along the top, and the crane follows you up, hanging over your
+        // head. It doesn't mind a runner, it minds a stand-still (it drops its load), and under it you cannot jump. Rivets pop up on
+        // the second floor and a guard slides at you on the roof: you have to outrun the crane before you can jump him
+        // MECHANIC: Chase (the crane overhead, the guards on the floors)
+        Level(
+            name = T("Skyscraper", "Hochhaus"),
+            intro = T("Top floor. The air is better up there.", "Oberste Etage. Da oben ist die Luft besser."),
+            hint = T("The crane hates standing still. Don't jump under it: outrun it first.", "Der Kran hasst Stillstand. Spring nicht unter ihm: lauf ihm erst davon."),
+            legend = mapOf('S' to ceilingSpike, 'A' to hiddenSpike),
+            traps = listOf(
+                trap(PastX(4f), Play(Card.STALKER), Chase('S', 5.5f, left = 9f, right = 26f), Say(T("The crane operator likes you. He follows you home.", "Der Kranführer mag dich. Er begleitet dich bis nach oben."))),
+                trap(Landed(16f, 19.5f), Show('A'), Say(T("Rivets grow on the second floor.", "Im zweiten Stock wachsen Nieten."))),
+                trap(Zone(21f, 3f, 26.5f, 5.6f), Chase('T', 3.2f, left = 0f, right = 12f), Say(T("Night watch on the roof. Very thorough.", "Nachtwache auf dem Dach. Sehr gründlich."))),
+                trap(Idle(0.6f), Move('S', 0f, 11f, 30f), Say(T("I said keep moving. It's a crane, not a bench.", "Ich sagte: in Bewegung bleiben. Das ist ein Kran, keine Bank."))),
+            ),
+        ) {
+            border(); floor()
+            fill(4..9, 13..14); fill(10..15, 11..14); fill(16..30, 9..14); fill(27..30, 7..8)
+            fill(2..26, 5..5)
+            fill(9..11, 1..2, 'S')
+            put(20, 8, 'A')
+            fill(14..15, 4..4, 'T')
+            put(2, 14, 'P'); put(2, 4, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(10)
 }
