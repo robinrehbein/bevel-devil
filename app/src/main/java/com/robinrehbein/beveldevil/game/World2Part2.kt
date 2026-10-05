@@ -188,27 +188,30 @@ object World2Part2 {
         },
 
         // 21 — EASTER EGG: the flat rate (R3 portal routing, U11 the route is manipulated). Two walls close off the lane, and in front
-        // of them are two portals: the near one comes out in a closet between the walls (a dead end), the other one leads up to the shelf.
-        // Up there you are throttled to 56k (a treadmill against you, with an LED at its far end: keep walking, and the ceiling is spiked:
-        // no jumping), the way on is down through the hole, and on the lane the portal in front of the door is a captive portal: hop it
+        // of them are two portals: the near one comes out in a closet between the walls, the far one leads up to the shelf, but its link
+        // is down (it is dead until somebody opens the port), so the way in is the closet: the control room of the walled garden. Step
+        // in, the port opens, step out again (back through the near portal), and the far portal works. Up on the shelf you are throttled to
+        // 56k (a treadmill against you, with an LED at its far end: keep walking, and the ceiling is spiked: no jumping), the way on is down
+        // through the hole, and on the lane the portal in front of the door is a captive portal: hop it
         Level(
             name = T("Flat Rate", "Flatrate"),
             intro = T("Unlimited flat rate. There is no small print.", "Unbegrenzte Flatrate. Ein Kleingedrucktes gibt es nicht."),
             start = listOf(
-                Portal('a', 7 to 14, 15 to 14),
-                Portal('b', 11 to 14, 4 to 7, twoWay = false),
+                Portal('a', 5 to 14, 15 to 14),
+                Portal('b', 9 to 14, 4 to 7, twoWay = false),
+                Power('b', false),
                 Portal('r', 26 to 14, 28 to 14, twoWay = false),
             ),
             traps = listOf(
-                trap(Zone(14.9f, 13f, 16f, 15.5f), say("Walled garden. Unlimited flat rate, limited to this cell.", "Walled Garden. Flatrate unbegrenzt, begrenzt auf diese Zelle.")),
+                trap(Zone(14f, 13f, 17f, 15.5f), Power('b', true), say("Walled garden. Unlimited flat rate, limited to this cell. And port 80.", "Walled Garden. Flatrate unbegrenzt, begrenzt auf diese Zelle. Und Port 80.")),
                 trap(Zone(3.5f, 5.5f, 6f, 8f), Belt('c', -6.5f), say("Terms accepted. Throttled to 56k, as agreed.", "AGB akzeptiert. Gedrosselt auf 56k, wie vereinbart.")),
                 trap(Zone(10f, 5.5f, 12f, 8f), Reroute('b', 26 to 7), say("Portal b has moved on. You have, too.", "Portal b ist weitergezogen. Du ja auch.")),
                 trap(Zone(24.4f, 13f, 25.8f, 15.5f), Play(Card.DECOY), Reroute('r', 4 to 7), say("301 Moved Permanently. The portal too.", "301 Moved Permanently. Das Portal auch.")),
             ),
-            hint = T("The small print says: no jumping. It says nothing about falling.", "Im Kleingedruckten steht: nicht springen. Von Fallen steht da nichts."),
+            hint = T("The far portal has no link. Ask the near one why.", "Das ferne Portal hat keine Verbindung. Frag das nahe, warum."),
         ) {
             border(); floor()
-            fill(13..14, 9..14); fill(16..17, 9..14)
+            fill(12..13, 9..14); fill(17..18, 9..14)
             fill(1..19, 8..8); fill(2..9, 8..8, 'c'); fill(22..30, 8..8)
             put(2, 7, '^'); ceilingSpikes(1..21, 6)
             spawn(1); door(); bits(21)

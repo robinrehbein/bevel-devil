@@ -424,13 +424,27 @@ class World2Test {
         assertTrue(b(20).rightTo(6.3f).wait(0.1f).world.circuits['w']?.powered == true)
     }
 
-    // 21: the near portal is a closet, the treadmill drags you toward the LED, the portal next to the door is a captive portal
-    @Test fun l21TheNearPortalIsACloset() {
-        val bot = b(21).rightUntil { it.links[0].hopTime > 0f }.wait(0.5f)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx in 14.9f..16f)
+    // 21: the far portal is dead until the closet (the near portal) opens the port, the treadmill drags you toward the LED, the portal next to the door is a captive portal
+    @Test fun l21TheNearPortalIsTheControlRoom() {
+        val bot = World2Rooms.l21ToCloset(b(21)).wait(0.5f)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx in 14f..17f)
+        assertTrue("the port opens in the closet", bot.world.links[1].on)
         bot.right(3f).expect(WorldState.PLAYING)
     }
-    @Test fun l21StandingOnTheTreadmillIsFatal() = b(21).hopR(5.1f).rightUntil { it.links[1].hopTime > 0f }.wait(4f).expect(WorldState.DEAD)
+    @Test fun l21TheFarPortalIsDeadAtFirst() {
+        val bot = b(21).hopR(3.6f).rightTo(10.5f).wait(0.5f)
+        assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.cy}", bot.world.player.box.cy > 13f && !bot.world.links[1].on)
+    }
+    @Test fun l21TheRouteNeedsBothPortals() {
+        val run = World2Rooms.l21(b(21))
+        run.expect(WorldState.WON)
+        assertTrue("the solution goes through the near portal", run.world.links[0].hopTime > 0f || run.world.sprung.any { it.trap.actions.any { a -> a is Action.Power } })
+    }
+    @Test fun l21TheCaptivePortalDoesNotFireAtTheStart() {
+        val bot = b(21).right(1.5f).wait(0.5f)
+        assertTrue(bot.world.sprung.none { s -> s.trap.actions.any { it is Action.Reroute && it.id == 'r' } })
+    }
+    @Test fun l21StandingOnTheTreadmillIsFatal() = World2Rooms.l21Up(b(21)).wait(4f).expect(WorldState.DEAD)
     @Test fun l21JumpingUnderTheSpikedCeilingIsFatal() = World2Rooms.l21ToShelf(b(21)).jump(0.3f).wait(0.5f).expect(WorldState.DEAD)
     @Test fun l21WalkingIntoTheCaptivePortalSendsYouBackUp() {
         val bot = World2Rooms.l21ToShelf(b(21)).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.rightTo(25.9f).wait(0.3f)

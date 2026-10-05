@@ -66,8 +66,14 @@ object World2Rooms {
     /** 20, round 2: the scanner is a bluff; jump the gap onto the far ledge and walk back to the door. */
     fun l20r2(b: Bot) = l20ToLedge(b).rightTo(24.4f).rightJump(0.5f).landRight().rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.leftTo(28.0f).left(1f)
 
-    /** 21, through the portal up to the shelf (the near portal is a closet): along the treadmill, to the hole. */
-    fun l21ToShelf(b: Bot) = b.hopR(5.1f).rightTo(12.5f)
+    /** 21, into the near portal: the closet between the walls (the port opens on the way in). */
+    fun l21ToCloset(b: Bot) = b.rightUntil { it.player.box.cx > 14.2f }
+
+    /** 21, out of the closet again (step off the portal tile and back onto it) and through the far portal: up on the shelf, where the treadmill starts. */
+    fun l21Up(b: Bot) = l21ToCloset(b).leftTo(14.6f).rightUntil { it.player.box.cx < 12f }.rightUntil { it.player.box.cy < 9f }
+
+    /** 21, up on the shelf and along the treadmill to the hole. */
+    fun l21ToShelf(b: Bot) = l21Up(b).rightTo(12.5f)
 
     /** 21: along the shelf and down through the hole, hop the portal in front of the door. */
     fun l21(b: Bot) = l21ToShelf(b).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.hopR(24.0f).right(2f)
