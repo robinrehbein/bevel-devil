@@ -82,24 +82,27 @@ object World2Part2 {
                 trap(Zone(7.3f, 9.9f, 11.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 1.1f), say("Rule 1 restarted. Climb faster.", "Regel 1 neu gestartet. Kletter schneller.")),
             ),
             hint = T("The pad is on the rack. And don't dawdle on the stairs.", "Der Schalter liegt auf dem Rack. Und trödel nicht auf der Treppe."),
-            // rematch: the door is down on the right behind a beam of its own, the pad is up where the door was; the beam over
-            // the stairs lights up on the way up, and a saw inspects the floor on the way down
+            // rematch: a three-way handshake. Same room, same door, same rack, same pad, but one press is only a SYN: the floor stays gone and
+            // the beam over the stairs stays on until the pad has been pressed a second time (step off, step on). Whoever does what round 1 taught,
+            // press once and run for the stairs, falls into the hole that never closed
             rematch = listOf(
                 Round(
-                    T("Rules reloaded. Your move.", "Firewall-Regel aktualisiert. Rate mal, welche."),
-                    hint = T("The pad is where the door was.", "Der Schalter liegt dort, wo die Tür war."),
+                    T("Three-way handshake now. I insist.", "Jetzt mit Handshake. Ich bestehe darauf."),
+                    hint = T("One press is only a SYN. The pad wants an ACK.", "Ein Druck ist nur ein SYN. Der Schalter will ein ACK."),
                     start = listOf(
-                        Laser('V', 28 to 1, 28 to 14),
-                        Pad('2', at = 2 to 6),
+                        Laser('W', 1 to 10, 10 to 10),
+                        Pad('1', at = 26 to 12),
                     ),
                     traps = listOf(
-                        trap(PastX(5.0f), Laser('G', 9 to 1, 9 to 14, on = 0.4f, off = 40f, delay = 0.2f), say("Rule 0: form a queue. Nobody counts.", "Regel 0: Schlange bilden. Keiner zählt.")),
-                        trap(Zone(7.3f, 9.9f, 11.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 0.8f), say("Rule 1 started. Climb faster.", "Regel 1 gestartet. Kletter schneller."), delay = 0.6f),
-                        trap(Pressed('2'), Power('V', false), Power('W', false), say("Port 29 open. Come on down.", "Port 29 offen. Komm runter.")),
-                        trap(Landed(15f, 24f), Play(Card.DEVIL_SAW), PathSaw(8f, 28f to 14.4f, 6f to 14.4f),
-                            say("Deep packet inspection on the way.", "Deep Packet Inspection unterwegs.")),
+                        trap(PastX(10.5f), Move('a', 0f, 12f, 30f), say("Packet loss, second edition.", "Paketverlust, zweite Auflage.")),
+                        trap(PastX(20.6f), Play(Card.SPIKE_SEED), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
+                            say("Rule 2: still no entry. Still counting to one.", "Regel 2: immer noch kein Zutritt. Ich zähle immer noch bis eins.")),
+                        trap(Pressed('1'), say("SYN received. Floor and beam are waiting for the ACK.", "SYN erhalten. Boden und Strahl warten auf das ACK.")),
+                        trap(Pressed('1', 2), Power('W', false), Move('a', 0f, -12f, 25f), Laser('K', 25 to 12, 29 to 12, on = 1.0f, off = 40f, delay = 0.8f),
+                            say("ACK. Rule 1 disabled. The port scan wants the rack.", "ACK. Regel 1 deaktiviert. Der Portscan will das Rack.")),
+                        trap(Zone(7.3f, 9.9f, 11.6f, 11f), Laser('W', 1 to 10, 10 to 10, delay = 1.1f), say("Rule 1 is back. It did not like being off.", "Regel 1 ist zurück. Ausgeschaltet sein hat ihr nicht gefallen.")),
                     ),
-                ) { put(2, 6, '.'); fill(25..27, 13..14, '.'); put(29, 14, 'D') },
+                ) { fill(25..29, 13..14) },
             ),
         ) {
             border(); floor()
@@ -178,7 +181,7 @@ object World2Part2 {
                         trap(Landed(15f, 16.9f), Circuit('y', on = false), say("Lane floor: expired as well. Nobody renewed it.", "Boden unten: auch abgelaufen. Niemand hat verlängert.")),
                         trap(Touch('f'), Circuit('f', on = false), say("The ledge expires with your ID.", "Der Sims läuft mit deinem Ausweis ab."), delay = 0.55f),
                     ),
-                ) { fill(21..24, 3..3, 'f'); fill(27..28, 3..3); fill(15..20, 15..17, 'y'); fill(23..26, 14..14, '^'); put(29, 14, '.'); put(27, 14, 'D') },
+                ) { fill(21..24, 3..3, 'f'); fill(27..28, 3..3); fill(15..20, 15..17, 'y'); fill(21..26, 14..14, '^'); put(29, 14, '.'); put(27, 14, 'D') },
             ),
         ) {
             border(); floor()

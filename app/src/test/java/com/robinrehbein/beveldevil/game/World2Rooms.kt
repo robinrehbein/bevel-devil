@@ -42,9 +42,12 @@ object World2Rooms {
     /** 18: press the pad, leave the rack before the port scan, run back and climb the stairs without stopping. */
     fun l18(b: Bot) = stairs18(l18ToPad(b)).landLeft().left(1f)
 
-    /** 18, round 2: climb first, press the pad where the door was (landing on it), run down for the door and hop the saw. */
-    fun l18r2(b: Bot) = b.rightTo(7.4f).wait(0.05f).waitFor(cond = clear('G')).hopR(10.3f, 0.24f).wait(0.15f).leftTo(13.6f).leftJump(0.24f).landLeft().leftTo(9.6f).leftJump(0.24f).landLeft().leftTo(5.6f).leftJump(0.24f).waitFor { it.player.grounded }
-        .rightUntil { sawAhead(it, 4.7f) }.rightJump(0.35f).landRight().rightTo(28.6f).right(1f)
+    /** 18, round 2, up to the second press: round 1's way to the rack (landing on the pad is the first press, only a SYN), then step off the pad and onto it again (the ACK). */
+    fun l18r2ToPad(b: Bot) = b.hopR(15.6f).rightTo(21.3f).wait(0.05f).waitFor(cond = clear('G')).rightTo(23.1f).rightJump(0.24f).landRight()
+        .rightUntil { it.pads[0].presses >= 1 && it.player.box.cx > 27.6f }.leftUntil { it.pads[0].presses >= 2 }
+
+    /** 18, round 2: the handshake on the rack, then leave it, run back and climb the stairs without stopping, as in round 1. */
+    fun l18r2(b: Bot) = stairs18(l18r2ToPad(b)).landLeft().left(1f)
 
     /** 19, up to the moment the order is restored: hop the pit, the wall and the stairs with swapped hands. */
     fun l19ToShelf(b: Bot) = b.hopR(6.8f).hopS(11.6f).hopS(13.9f).hopS(19.6f).hopS(23.4f)
