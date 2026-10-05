@@ -61,7 +61,7 @@ object World2Part3D {
                 Round(
                     T("Audit failed. Re-audit. Same stones.", "Audit durchgefallen. Nachprüfung. Gleiche Steine."),
                     traps = listOf(
-                        trap(Touch('a'), Move('a', 0f, 12f, 9f), say("Stone 1: revoked in advance.", "Stein 1: vorab widerrufen."), delay = 0.05f),
+                        trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, 12f, 9f), say("Stone 1: revoked in advance.", "Stein 1: vorab widerrufen."), delay = 0.05f),
                         trap(Touch('c'), Hide('c'), say("Stone 3: still not trusted.", "Stein 3: weiterhin nicht vertrauenswürdig."), delay = 0.3f),
                         trap(Landed(25f, 28f), Hide('s'), say("Step 4: audit trail missing.", "Stufe 4: Prüfpfad fehlt."), delay = 0.7f),
                         trap(Zone(20.5f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: re-scoped.", "Planke 5: neu zugeschnitten.")),
@@ -182,36 +182,42 @@ object World2Part3D {
             spawn(4, 14); door(4, 8); bits(45)
         },
 
-        // 46 — EASTER EGG: privilege escalation (user, admin, root: a staircase of belts, each one faster and against you)
+        // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,
+        // admin, root. Each belt is calm until you step on it, then it runs against you, a little faster every step, so there is no standing on any of
+        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted, the belts run harder
+        // against you, and the bridge at the top is a belt too, far too fast to walk: it has to be hopped
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
-            start = listOf(Belt('a', -3f), Belt('b', -5f), Belt('c', -7f)),
+            start = listOf(Belt('a', 0f), Belt('b', -3f), Belt('c', -3.5f), Belt('p', 0f)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.CRUMBLE), say("user: permission denied.", "user: Zugriff verweigert.")),
-                trap(Touch('b'), say("admin: sudo required.", "admin: sudo nötig.")),
-                trap(Touch('c'), say("root: you shall not pass. (Jump.)", "root: Du kommst hier nicht durch. (Spring.)")),
+                trap(Touch('a'), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
+                trap(Touch('b'), Belt('b', -6.5f), say("admin: sudo required.", "admin: sudo nötig."), delay = 0.1f),
+                trap(Touch('c'), Belt('c', -7f), say("root: you shall not pass. (Jump.)", "root: Du kommst hier nicht durch. (Spring.)"), delay = 0.1f),
+                trap(Touch('p'), Belt('p', -6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
+                trap(Landed(27f, 30f), Play(Card.CRUMBLE), Fall('p'), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
             ),
-            // rematch: demoted, the belts run with you now and throw you at the next step's spikes
             rematch = listOf(
                 Round(
-                    T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt mit."),
-                    start = listOf(Belt('a', 3f), Belt('b', 5f), Belt('c', 7f)),
+                    T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt gegen dich."),
+                    start = listOf(Belt('a', 0f), Belt('b', -3.5f), Belt('c', -4f), Belt('p', -3f)),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.TWISTED), Belt('a', 4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig.")),
-                        trap(Touch('b'), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte.")),
-                        trap(Touch('c'), say("root: express delivery.", "root: Same-Day-Delivery.")),
+                        trap(Touch('a'), Belt('a', -5.2f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
+                        trap(Touch('b'), Belt('b', -6.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
+                        trap(Touch('c'), Belt('c', -7f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
+                        trap(Touch('p'), Belt('p', -9.5f), say("Last step: the handrail is the floor.", "Letzte Stufe: Das Geländer ist der Boden."), delay = 0.1f),
+                        trap(Landed(27f, 30f), Play(Card.HEADBUTT), Fall('p'), say("Same-day delivery, by gravity.", "Zustellung am selben Tag, per Schwerkraft."), delay = 0.9f),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            fill(4..9, 14..14); fill(4..9, 13..13, 'a')
-            fill(11..16, 12..14); fill(11..16, 11..11, 'b')
-            fill(18..23, 10..14); fill(18..23, 9..9, 'c')
-            fill(25..30, 7..14)
-            put(10, 14, '^'); put(17, 14, '^'); put(24, 14, '^')
-            spawn(); put(28, 6, 'D')
+            fill(4..8, 14..14, 'a')
+            fill(11..15, 14..14); fill(11..15, 13..13, 'b')
+            fill(19..23, 13..14); fill(19..23, 12..12, 'c')
+            fill(27..30, 11..11, 'p')
+            leds(9..10); leds(16..18); leds(24..30)
+            spawn(); put(29, 10, 'D'); bits(46)
         },
 
         // 47 — EASTER EGG: integer overflow 127 + 1 (the LEDs wrap to 0000000) and kernel panic

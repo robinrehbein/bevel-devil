@@ -51,11 +51,20 @@ object World2RoomsD {
     fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
         .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1.5f)
 
+    /** 46: up onto the first belt, run against it to its end, hop the LEDs onto the second, the third, and the bridge, along it to the door before it drops. */
+    fun l46(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
+        .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().right(3f)
+
+    /** 46, round 2: the same climb on the harder belts, and a hop from the landing to the door, because the bridge is a belt too fast to walk. */
+    fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
+        .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().rightJump(0.35f).right(2f)
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
         43 to listOf({ l43(this) }),
         44 to listOf({ l44(this) }, { l44r2(this) }),
         45 to listOf({ l45(this) }),
+        46 to listOf({ l46(this) }, { l46r2(this) }),
     )
 }
