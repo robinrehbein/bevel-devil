@@ -31,7 +31,8 @@ class WorldSelectTest {
     private fun Game.win() {
         repeat(3000) {
             val w = world!!
-            if (w.state == WorldState.PLAYING) {
+            // a door that slips away into a second room (an Extend) is waited for, not chased through its traps
+            if (w.state == WorldState.PLAYING && !w.door.moving) {
                 val d = w.door.box
                 w.player.box.x = d.x + d.w / 2 - w.player.box.w / 2
                 w.player.box.y = d.y + d.h - w.player.box.h
