@@ -76,23 +76,29 @@ object World1Part2B {
             put(2, 7, 'P'); put(3, 14, 'D')
         },
 
-        // 19 — the door comes if you wait, but standing still collapses the start platform; hopping in place meets spikes; pacing to the edge drops it too
-        // MECHANIC: Idle (punishes standing still)
+        // 19 — a hold pad under a trapdoor: the hatch above the pad is open only while somebody stands on it, so you jump straight up
+        // through it (it waits while you are inside); pressing the pad also sends a slab down from the ceiling of the room above, where
+        // you land, and the lowering ceiling at the far end catches whoever stops
+        // MECHANIC: hold pad (R2)
         Level(
             name = T("Waiting Room", "Wartezimmer"),
             intro = T("Have a seat for a second. I'll fetch the door.", "Setz dich kurz. Ich hole die Tür."),
-            legend = mapOf('S' to hiddenCeilingSpike),
+            start = listOf(Circuit('w'), Pad('1', at = 26 to 12, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
-                trap(After(3.5f), Play(Card.SHY_DOOR), DoorTo(4, 14, speed = 12f), Say(T("Told you.", "Hab's dir gesagt."))),
-                trap(Idle(1f), Fall('a'), Say(T("Observed. Collapsed.", "Beobachtet. Kollabiert."))),
-                trap(Airborne(0f, 8f), Show('S')),
-                trap(PastX(5.6f), Fall('a')),
+                trap(PastX(6.5f), Fall('a'), Say(T("Please mind the gap. I dug it myself.", "Bitte Abstand halten. Ich habe ihn selbst gegraben."))),
+                trap(PastX(12.5f), Fall('b'), Say(T("Another gap. Waiting rooms have a lot of those.", "Noch eine Lücke. Wartezimmer haben viele davon."))),
+                trap(Pressed('1'), Play(Card.HEADBUTT), Move('x', 0f, 10f, 18f), Say(T("Next, please! ... Not you.", "Der Nächste, bitte! ... Nicht du.")), delay = 0.35f),
+                trap(Zone(21.6f, 1f, 23.4f, 11f), Move('y', 0f, 8f, 18f), Say(T("Please wait to be called.", "Bitte warten, bis Sie aufgerufen werden."))),
+                trap(Zone(13f, 1f, 16f, 11f), Move('l', 0f, 7.5f, 2.2f), Say(T("The ceiling is fully booked. Come back lower.", "Die Decke ist ausgebucht. Komm tiefer wieder."))),
             ),
         ) {
-            border(); floor(); pit(7..24)
-            fill(1..6, 15..17, 'a')
-            fill(1..6, 12..12, 'S')
-            put(2, 14, 'P'); put(28, 14, 'D')
+            border(); floor()
+            fill(1..30, 11..11); fill(23..26, 11..11, 'w')
+            fill(9..10, 15..17, 'a'); fill(15..16, 15..17, 'b')
+            fill(19..21, 14..14); fill(22..27, 13..14)
+            fill(25..26, 1..2, 'x'); fill(18..19, 1..2, 'y'); fill(3..9, 1..2, 'l')
+            put(27, 12, '#')
+            put(2, 14, 'P'); put(2, 10, 'D')
         },
 
         // 20 — four stones blink like a running light: jumping from the edge of a stone lands on spikes: on the first stone, on the third, and on the far bank

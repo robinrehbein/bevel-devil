@@ -24,5 +24,11 @@ object World1RoomsB {
                 .rightUntil { w -> w.saws.any { it.y > 12f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.rightJump(0.35f).landRight()
                 .rightKeyLeftTo(2.5f) },
         ),
+        19 to listOf<Solution>(
+            { hopR(7.9f).hopR(13.8f).rightTo(17.0f).rightJump(0.35f).landRight().rightTo(20.4f).rightJump(0.35f).landRight()
+                .rightUntil { it.pads[0].down }.jump(0.14f).rightJump(0.3f).landRight()
+                .waitFor { it.group('x').oy >= 9.9f }
+                .leftUntil { it.group('y').oy > 0.5f }.waitFor { it.group('y').oy >= 7.9f }.leftJump(0.35f).landLeft().leftTo(2.5f) },
+        ),
     )
 }
