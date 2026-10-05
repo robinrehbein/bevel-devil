@@ -439,38 +439,46 @@ object World1Part3 {
             put(20, 14, 'P'); put(2, 14, 'D')
         },
 
-        // 47 — the wall only opens for the one who finds the root block
-        // EASTER EGG: xkcd "sudo make me a sandwich"
+        // 47 — sudo make me a sandwich: the goal is on the right behind two walls that only open for the one who finds the root blocks,
+        // and those are on the left and on a ledge: a block under the bread floating over the left ledge and one under the pickle over
+        // the second ledge. Each block makes a wall rise slowly, and each time Mephi sends a wall to keep you honest: one from behind
+        // at the first, one from the front at the second, so whoever dawdles on the ledge or at the gate is squashed.
+        // Rematch: Mephi learned: whoever stands under the sandwich to fetch the block gets the bread on top of him; take it on the run
+        // EASTER EGG: xkcd "sudo make me a sandwich". R12: the root blocks; U3: the walls that slide (wall-move) are the lethal family
         Level(
             name = T("sudo make me a sandwich", "sudo mach mir ein Sandwich"),
             intro = T("I'm hungry. Make me a sandwich.", "Ich habe Hunger. Mach mir ein Sandwich."),
-            legend = mapOf('k' to ghost, 'A' to hiddenSpike, 'C' to hiddenSpike),
+            hint = T("Look up: the bread floats over a block you cannot see, and so does the pickle. Butt them from below, and then hurry.", "Schau nach oben: Das Brot schwebt über einem Block, den du nicht siehst, die Gurke auch. Spring von unten dagegen, und dann beeil dich."),
+            legend = mapOf('k' to ghost, 'm' to ghost, 'Z' to Glyph(spike = true, dir = Dir.RIGHT), 'q' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
-                trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Say(T("Okay.", "Okay."))),
-                trap(PastX(13.5f), Show('A')),
-                trap(Landed(19f, 22f), Fall('f')),
+                trap(Touch('k'), Play(Card.GHOST_BLOCK), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f), Say(T("Okay.", "Okay."))),
+                trap(Touch('m'), Move('h', 0f, -13f, 1.0f), Move('q', -8f, 0f, 2.0f), Say(T("Sandwich comes with a side of wall.", "Sandwich mit Beilage. Wand."))),
             ),
-            // rematch: Mephi learned: whoever stands under the sandwich to fetch it lands on spikes; take it on the run
             rematch = listOf(
                 Round(
                     T("Rematch. I'm hungry again.", "Revanche. Ich hab schon wieder Hunger."),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.GHOST_BLOCK), Hide('w'), Show('C'), Say(T("Sandwich comes with a side of spikes.", "Sandwich mit Beilage. Spitzer Beilage."))),
-                        trap(PastX(13.5f), Show('A')),
-                        trap(Landed(19f, 22f), Fall('f')),
+                        trap(Touch('k'), Play(Card.GHOST_BLOCK), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f),
+                            Say(T("Same bread. Same hurry.", "Gleiches Brot. Gleiche Eile."))),
+                        trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', -8f, 0f, 2.0f),
+                            Say(T("Sandwich comes with the pickle on top.", "Sandwich mit Gurke obendrauf."))),
+                        trap(Touch('m'), Move('y', 0f, 5f, 24f), delay = 0.1f),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            put(17, 14, 'A'); put(18, 14, 'A')
-            put(10, 14, 'C')
-            fill(23..23, 15..17, 'f')
-            fill(20..21, 3..14, 'w')
-            put(10, 12, 'k')
-            // the sandwich, hovering above the root block
-            art(8, 4, "#####", "#.#.#", ".###.", "#####")
-            put(2, 14, 'P'); put(29, 14, 'D')
+            fill(10..11, 13..14); fill(8..9, 11..14); fill(3..7, 9..14)
+            art(3, 2, "zzzzz", "z.z.z", "zzzzz", c = 'z')
+            put(5, 6, 'k'); put(6, 6, 'k')
+            fill(1..1, 1..14, 'Z')
+            fill(15..15, 2..14, 'g')
+            fill(18..19, 13..14); fill(20..22, 11..14)
+            put(22, 8, 'm'); put(23, 8, 'm')
+            art(20, 4, "yyyy", "yyyy", c = 'y')
+            fill(24..24, 2..14, 'h')
+            fill(30..30, 1..14, 'q')
+            put(14, 14, 'P'); put(26, 14, 'D')
         },
 
         // 48 — finale: a blinking bridge, then the door ends the game. The credits roll, become stairs, the door went home.
