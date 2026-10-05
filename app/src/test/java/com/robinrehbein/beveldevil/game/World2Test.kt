@@ -519,8 +519,15 @@ class World2Test {
     /** sudo !!: stopping where the block falls is right, but running on under it is the end. */
     @Test fun level33RunningOnUnderTheDeckBlockIsFatal() = b(33).hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
         .hopL(23.2f, 0.5f).left(3f).expect(WorldState.DEAD)
-    @Test fun level34() = b(34).right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
-        .right(0.60f).expect(WorldState.WON)
+    @Test fun level34() { World2DesignTest.play(34) }
+    /** Reverse Proxy: the wall of links at the right end of the ceiling is the loopback, it hands you back at the start of the ceiling. */
+    @Test fun level34TheObviousLinksLoopYouBack() {
+        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.rightUntil { it.player.box.cx > 24.5f }.wait(0.3f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 17f)
+    }
+    /** Reverse Proxy: the dark link in the top left is dead until you pass the middle of the ceiling. */
+    @Test fun level34TheDarkLinkIsDeadAtFirst() = assertFalse(b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.world.links.first { it.id == '3' }.on)
     @Test fun level35() = b(35).rightJump(0.55f).right(0.10f).left(0.10f).left(0.03f).left(0.10f).rightJump(0.55f)
         .right(0.10f).right(0.03f).left(0.03f).left(0.10f).left(0.03f).rightJump(0.25f).left(0.10f).right(0.03f)
         .right(0.03f).left(0.25f).rightJump(0.55f).rightJump(0.12f).right(0.10f).right(0.03f).right(0.03f)

@@ -2,6 +2,10 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Fall
+import com.robinrehbein.beveldevil.game.Action.Gravity
+import com.robinrehbein.beveldevil.game.Action.Portal
+import com.robinrehbein.beveldevil.game.Action.Power
+import com.robinrehbein.beveldevil.game.Action.Reroute
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
@@ -62,6 +66,47 @@ object World2Part3C {
             fill(20..21, 13..14); fill(22..27, 11..14)
             put(4, 8, 'A'); put(5, 8, 'A')
             spawn(2, 14); door(2, 8)
+        },
+
+        // 34 — reverse proxy (a puzzle room: R3 the portals, R5 the floors, U10 the world turns over). The lane runs right and the gravity turns over
+        // before the middle of it: you fall up onto the ceiling, the only way on, and the obvious way along it is a wall of links at the right end,
+        // which is the loopback and hands you back at the start of the ceiling. The way on is back to the left: a dark link in the top left comes
+        // up as you pass the middle of the ceiling again, and leads to a ledge, where the gravity is yours again, and from there it is the lane
+        // to the door
+        Level(
+            name = T("Reverse Proxy", "Reverse Proxy"),
+            intro = T("Everything goes through me here. Everything.", "Hier läuft alles über mich. Alles."),
+            start = listOf(
+                Portal('2', 24 to 1, 14 to 1, twoWay = false), Portal('4', 24 to 2, 14 to 1, twoWay = false),
+                Portal('5', 24 to 3, 14 to 1, twoWay = false), Portal('6', 24 to 4, 14 to 1, twoWay = false),
+                Portal('3', 6 to 1, 3 to 10, twoWay = false), Power('3', false),
+            ),
+            traps = listOf(
+                trap(Zone(12f, 10f, 13.5f, 15.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Proxying your gravity.", "Deine Schwerkraft wird weitergeleitet.")),
+                trap(Zone(10.4f, 0.5f, 11.8f, 4f), Power('3', true), say("Link 3 is up. It always was. Mostly.", "Link 3 ist oben. War er immer. Meistens.")),
+                trap(Zone(2.5f, 9f, 5f, 11f), Gravity(false), say("Reverse, reverse.", "Rückwärts, rückwärts.")),
+            ),
+            // rematch: the gravity turns over at the far end of the lane, behind the LEDs, and the ceiling run goes left; the wall of links is gone,
+            // and the only link is stale (the loopback again) until its DNS entry is renewed, a moment after you pass it: hold the loop, wait
+            rematch = listOf(
+                Round(
+                    T("Cache cleared. Please reload.", "Cache geleert. Bitte neu laden."),
+                    start = listOf(Portal('3', 17 to 1, 22 to 1, twoWay = false)),
+                    traps = listOf(
+                        trap(Zone(24f, 10f, 25.4f, 15.5f), Gravity(true), say("Flipped at the other end now. Old habits, cached.", "Jetzt am anderen Ende gekippt. Alte Gewohnheiten, im Cache.")),
+                        trap(Zone(19.5f, 0.5f, 20.9f, 4f), Play(Card.DECOY), Reroute('3', 10 to 10), say("Link 3 is renewed. Give it a second.", "Link 3 wird erneuert. Gib ihm eine Sekunde."), delay = 1f),
+                        trap(Zone(9f, 9f, 11.5f, 11f), Gravity(false), say("Lane again. Same door, same rules.", "Wieder die Bahn. Gleiche Tür, gleiche Regeln.")),
+                    ),
+                ) {
+                    put(17, 14, '.'); put(18, 14, '.'); put(20, 14, '^'); put(21, 14, '^')
+                    put(27, 14, '.'); put(28, 14, 'D'); fill(7..12, 11..11)
+                },
+            ),
+        ) {
+            border(); floor()
+            fill(1..6, 11..11)
+            leds(17..18)
+            spawn(2, 14); door(27, 14)
         },
     )
 }

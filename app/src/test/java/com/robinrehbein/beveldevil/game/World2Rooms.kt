@@ -183,6 +183,15 @@ object World2Rooms {
     fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.2f, 0.5f)
         .hopL(8.2f, 0.5f).left(1.5f)
 
+    /** 34: along the lane until the gravity turns over, up onto the ceiling and back left along it, into the link that comes up, off the ledge, hop the LEDs and run to the door. */
+    fun l34(b: Bot) = b.rightTo(14f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cy > 8f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(15.4f, 0.5f).right(3f)
+
+    /** 34, round 2: hop the LEDs, on along the lane to the far end where the gravity turns over, left along the ceiling, wait for the stale link to be renewed and step in; drop off the ledge, hop the LEDs again and run to the door. */
+    fun l34r2(b: Bot) = b.hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cx < 18.2f }
+        .waitFor { w -> w.links.first { it.id == '3' }.to == 10 to 10 }.leftUntil { it.player.box.cy > 8f }
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(17.8f, 0.5f).right(3.5f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )
