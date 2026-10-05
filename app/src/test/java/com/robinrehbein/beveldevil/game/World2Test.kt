@@ -357,8 +357,8 @@ class World2Test {
     @Test fun level25WalkingAcrossTheNodesIsFatal() = b(25).right(4f).expect(WorldState.DEAD)
     @Test fun level26() { World2DesignTest.play(26) }
     @Test fun level26TheQueueFollowsAndTheNodeIsAnObstacle() = b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.box.cx > 19.6f }.right(4f).expect(WorldState.DEAD)
-    @Test fun level27() = b(27).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f)
-        .rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level27() { World2DesignTest.play(27) }
+    @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
     @Test fun level28() = b(28).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).jump(0.16f)
         .rightJump(0.55f).expect(WorldState.WON)
     @Test fun level29() = b(29).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)

@@ -121,6 +121,12 @@ object World2Rooms {
     fun l26r2(b: Bot) = b.leftUntil { it.player.box.b > 8f }.rightUntil { wallOnTheRight(it, 'S', 2.55f) }.rightJump(0.5f).landRight()
         .rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { wallOnTheLeft(it, 'Q', 2.7f) }.leftJump(0.5f).landLeft().left(2.5f)
 
+    /** 27: stop as the first packet starts to fall (the belt carries you back), hop up onto it, back off the edge, onto the second, onto the third and along the walkway. */
+    fun l27(b: Bot) = b.rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').oy > 12.9f }.rightTo(4.8f).rightJump(0.3f).landRight()
+        .waitFor { it.group('d').oy > 11.9f }.rightTo(9.5f).rightJump(0.3f).landRight()
+        .leftTo(12.2f).waitFor { it.group('e').oy > 10.9f }.rightTo(12.6f).rightJump(0.3f).landRight()
+        .rightUntil { it.group('f').mode == GroupMode.FALL }.waitFor { it.group('f').oy > 9.9f }.hopR(21.1f).right(3f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

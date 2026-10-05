@@ -380,22 +380,25 @@ object World2Part2 {
             spawn(29, 4); door(4, 14); bits(26)
         },
 
-        // 27 — EASTER EGG: DDoS (Distributed Denial of Stairs, on a belt that runs against you); after the stairs the belt speeds up against you
+        // 27 — DDoS, a trap room (U2 the ceiling falls, on a belt that runs against you): the stairs to the exit are built from packets that
+        // drop from the ceiling: one, two and three tiles high. The first falls on the spot you reach if you keep running; the next one
+        // comes down when you step onto the one before. The belt carries you back while you wait, and the walkway on top is a belt, too.
         Level(
             name = T("DDoS", "DDoS"),
             intro = T("Light traffic today. Just you and the stairs.", "Heute wenig Verkehr. Nur du und die Treppe."),
-            start = listOf(Belt('b', -3f)),
+            start = listOf(Belt('b', -3f), Belt('l', -4f)),
             traps = listOf(
-                trap(PastX(4f), Play(Card.HEADBUTT), Fall('c'), say("10,000 blocks per second.", "10.000 Blöcke pro Sekunde.")),
-            ) + "defgh".mapIndexed { i, g -> trap(PastX(4f), Fall(g), delay = 0.35f * (i + 1)) } + listOf(
-                trap(Landed(14f, 22f), Belt('b', -7f), say("Rate limit: the belt says no.", "Ratenbegrenzung: Das Band sagt nein.")),
+                trap(PastX(5.9f), Play(Card.HEADBUTT), Fall('c'), say("10,000 packets per second.", "10.000 Pakete pro Sekunde."), delay = 0.1f),
+                trap(Touch('c'), Fall('d'), say("Request 10,001.", "Anfrage 10.001.")),
+                trap(Touch('d'), Fall('e'), say("Request 10,002. The stairs are a rumour.", "Anfrage 10.002. Die Treppe ist ein Gerücht.")),
+                trap(PastX(19.5f), Fall('f'), say("And one more for the road.", "Und noch eins für unterwegs."), delay = 0.4f),
             ),
         ) {
             border(); floor()
-            fill(5..26, 15..15, 'b')
-            fill(8..9, 3..4, 'c'); fill(12..13, 3..4, 'd'); fill(15..16, 3..4, 'e')
-            fill(19..20, 3..4, 'f'); fill(22..23, 3..4, 'g'); fill(26..27, 3..4, 'h')
-            spawn(); door(); bits(27, x0 = 24, y = 1)
+            fill(3..24, 15..15, 'b')
+            fill(8..10, 1..1, 'c'); fill(11..13, 1..2, 'd'); fill(14..16, 1..3, 'e'); put(23, 1, 'f')
+            fill(17..30, 12..12, 'l')
+            spawn(1, 14); door(29, 11); bits(27)
         },
 
         // 28 — a VPN tunnel goes under the firewall; walking into it re-points it to the edge of the IPS beam, which warms up on the far side; past the beam, two spikes
