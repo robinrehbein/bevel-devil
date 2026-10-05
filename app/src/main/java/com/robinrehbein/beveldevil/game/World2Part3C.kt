@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
+import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Portal
@@ -107,6 +108,31 @@ object World2Part3C {
             fill(1..6, 11..11)
             leds(17..18)
             spawn(2, 14); door(27, 14)
+        },
+
+        // 35 — pipeline (a trap room: U12 the belt turns around, U1 the floor). Along the lane (leftwards this time) the floor opens twice; up the
+        // steps and onto the deck, where the way to the door is a conveyor in a duct, running your way: as you step on it it turns around, and the
+        // floor behind you opens, so there is nothing to do but walk on, against it, with no room to hop. The second belt, in the open, turns
+        // around the same way and does not care how you cross it, as long as you are not standing on it
+        Level(
+            name = T("Pipeline", "Datenleitung"),
+            intro = T("Line is clear. I checked.", "Leitung frei. Ich habe nachgesehen."),
+            start = listOf(Belt('d', 3f), Belt('e', 3f)),
+            traps = listOf(
+                trap(BeforeX(27.5f), Play(Card.COLLAPSE), Fall('a'), say("Keep the packets moving.", "Halte die Pakete in Bewegung.")),
+                trap(BeforeX(20f), Fall('b'), say("Packet lost. Resending.", "Paket verloren. Wird neu gesendet.")),
+                trap(Zone(14.2f, 6f, 15f, 9f), Belt('d', -4.5f), Fall('f'), say("Backpressure: the line pushes back.", "Gegendruck: Die Leitung drückt zurück.")),
+                trap(Zone(24.2f, 5f, 25f, 9f), Belt('e', -7f), Fall('g'), say("Bandwidth throttled. Hop, if you can.", "Bandbreite gedrosselt. Hüpf, wenn du kannst.")),
+            ),
+        ) {
+            border(); floor()
+            fill(11..30, 9..9)
+            fill(14..21, 9..9, 'd'); fill(24..28, 9..9, 'e')
+            fill(11..13, 9..9, 'f'); fill(22..23, 9..9, 'g')
+            fill(13..22, 7..7)
+            fill(21..22, 15..17, 'a'); fill(15..16, 15..17, 'b')
+            fill(9..10, 13..14); fill(3..8, 11..14)
+            spawn(28, 14); door(29, 8)
         },
     )
 }

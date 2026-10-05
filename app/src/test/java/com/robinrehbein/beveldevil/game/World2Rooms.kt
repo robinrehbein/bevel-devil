@@ -192,6 +192,10 @@ object World2Rooms {
         .waitFor { w -> w.links.first { it.id == '3' }.to == 10 to 10 }.leftUntil { it.player.box.cy > 8f }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(17.8f, 0.5f).right(3.5f)
 
+    /** 35: left along the lane (hop the two holes), up the two steps, onto the deck and right through the duct against its belt, hop along the second belt to the door. */
+    fun l35(b: Bot) = b.hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+        .rightUntil { it.player.box.cx > 23f }.hopR(24.4f, 0.5f).hopR(26.0f, 0.5f).right(2f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

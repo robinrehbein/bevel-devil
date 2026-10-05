@@ -528,10 +528,15 @@ class World2Test {
     }
     /** Reverse Proxy: the dark link in the top left is dead until you pass the middle of the ceiling. */
     @Test fun level34TheDarkLinkIsDeadAtFirst() = assertFalse(b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.world.links.first { it.id == '3' }.on)
-    @Test fun level35() = b(35).rightJump(0.55f).right(0.10f).left(0.10f).left(0.03f).left(0.10f).rightJump(0.55f)
-        .right(0.10f).right(0.03f).left(0.03f).left(0.10f).left(0.03f).rightJump(0.25f).left(0.10f).right(0.03f)
-        .right(0.03f).left(0.25f).rightJump(0.55f).rightJump(0.12f).right(0.10f).right(0.03f).right(0.03f)
-        .right(0.10f).leftJump(0.12f).left(0.10f).left(0.10f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
+    @Test fun level35() { World2DesignTest.play(35) }
+    /** Pipeline: standing still on the belt in the duct is carried out of it, and the floor behind you has opened: you end up on the lane again. */
+    @Test fun level35StandingInTheDuctIsCarriedOutAndDropsToTheLane() {
+        val bot = b(35).hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+            .rightUntil { it.player.box.cx > 15f }.wait(3f)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 12f)
+    }
+    /** Pipeline: running straight on along the lane falls into the first hole. */
+    @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
     @Test fun level36() = b(36).rightTo(9f).waitFor { !it.beams[0].lit }.rightTo(19f).waitFor { !it.beams[1].lit }.right(6f).retry().waitUntil(2.7f).rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level37() = b(37).rightJump(0.40f).rightJump(0.40f).rightJump(0.40f).right(1.20f).right(0.25f).rightJump(0.25f) .right(0.60f).expect(WorldState.WON)
     @Test fun level38() = b(38).right(0.60f).wait(1.00f).right(0.10f).rightJump(0.55f).expect(WorldState.WON)
