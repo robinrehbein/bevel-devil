@@ -63,10 +63,8 @@ object World1RoomsE {
                 .rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().right(2f) },
         ),
         43 to listOf<Solution>(
-            { rightTo(5.4f).waitFor { it.ropeUp(8f, 0.9f) }.rightTo(11.5f).rightUntil { it.pads[0].down }.rightTo(14.0f).waitFor { it.ropeUp(19f, 0.2f, 0.3f) }
-                .rightTo(21.0f).rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(30.4f).leftJump(0.5f).landLeft()
-                .leftUntil { w -> w.saws.any { it.path == null && it.y in 7f..9.2f && it.x < w.player.box.cx && w.player.box.cx - it.x in 0f..4.2f } }
-                .leftJump(0.5f).landLeft().left(4f) },
+            { rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f).waitFor { it.ropeUp(18f, 0.2f, 0.3f) }
+                .rightTo(25.5f).rightUntil(4f) { it.player.box.b < 9.5f }.right(3f) },
         ),
         41 to listOf<Solution>(
             { leftTo(11.0f).waitFor { it.group('S').oy >= 12f }.leftTo(5.6f).jump(0.45f)

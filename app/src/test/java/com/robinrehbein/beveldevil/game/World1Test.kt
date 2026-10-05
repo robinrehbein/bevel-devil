@@ -6,6 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import com.robinrehbein.beveldevil.game.World1RoomsD.pieceLanded
 import com.robinrehbein.beveldevil.game.World1RoomsD.ropeUp
+import com.robinrehbein.beveldevil.game.World1RoomsE.ropeUp as ropeUpE
 
 /** One scripted solution per level of World 1 (48 levels, three acts of 16), played with the real physics. */
 class World1Test {
@@ -115,7 +116,7 @@ class World1Test {
             a is Action.FakeWin || a is Action.PauseTrap || a is Action.FrameCrack || a is Action.Flip || a is Action.Roll || a is Action.Ghost
         }
         assertTrue((World1Part1.levels + World1Part2.levels).none { l -> actions(l).any(meta) })
-        assertEquals(setOf("PauseTrap", "FrameCrack", "Flip", "Ghost"),
+        assertEquals(setOf("PauseTrap", "FrameCrack", "Flip"),
             World1Part3.levels.flatMap { l -> actions(l).filter(meta).map { it::class.simpleName!! } }.toSet())
     }
 
@@ -421,6 +422,12 @@ class World1Test {
     @Test fun level41() = World1DesignTest.play(41)
     @Test fun level42() = World1DesignTest.play(42)
     @Test fun level43() = World1DesignTest.play(43)
+
+    /** 43: the wall behind the pad, then the lift: waiting at its foot is being run over, staying on it is riding into the spikes. */
+    private fun toTheLift43() = b(43).rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f)
+        .waitFor { it.ropeUpE(18f, 0.2f, 0.3f) }
+    @Test fun level43WaitingAtTheFootOfTheLiftIsBeingRunOver() = toTheLift43().rightTo(23.5f).wait(3f).expect(WorldState.DEAD)
+    @Test fun level43StayingOnTheLiftRidesIntoTheSpikes() = toTheLift43().rightTo(25.5f).wait(4f).expect(WorldState.DEAD)
     @Test fun level44() = World1DesignTest.play(44)
     @Test fun level45() = World1DesignTest.play(45)
 

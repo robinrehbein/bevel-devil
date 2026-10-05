@@ -315,7 +315,7 @@ Korrekturen für Rezept v2:
 |40|Boot Sequence|–|U9|Falle|
 |41|TV Night|R12|U2|Rätsel|
 |42|Tailwind|–|U8|Falle|
-|43|git blame|R2|U16 (Ghost)|Rätsel|
+|43|git blame|R2|U7|Rätsel|
 |44|Wallflower|–|U16 (Shake)|Falle|
 |45|sudo rm -rf /|–|U1|Falle|
 |46|Home Stretch|R1|U15|Rätsel|

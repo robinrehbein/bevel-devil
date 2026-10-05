@@ -56,7 +56,7 @@ class World1DesignTest : DesignTestBase() {
             40 to d("–", "U9"),
             41 to d("R12", "U2"),
             42 to d("–", "U8"),
-            43 to d("R2", "U16:Ghost"),
+            43 to d("R2", "U7"),
             44 to d("–", "U16:Shake"),
             45 to d("–", "U1"),
             46 to d("R1", "U15"),

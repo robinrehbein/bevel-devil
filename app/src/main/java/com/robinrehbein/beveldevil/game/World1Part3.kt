@@ -8,7 +8,6 @@ import com.robinrehbein.beveldevil.game.Action.FakeWin
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Flip
 import com.robinrehbein.beveldevil.game.Action.FrameCrack
-import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Hide
 import com.robinrehbein.beveldevil.game.Action.Laser
@@ -329,29 +328,29 @@ object World1Part3 {
 
         // 43 — git blame: a rope saw on the way, then the wall: it is open only while somebody stands on the pad next to it, and the
         // pad is where blame comes from: a saw rolls in from behind the moment you step on it, and another swings behind the wall.
-        // Dash through the open wall between the two (it waits while you are inside), hop the saw that comes from the front on the
-        // way to the stairs, and back along the upper floor with the last one at your heels. Your last attempt comes back as a
-        // ghost on top of that (it needs a first attempt, so it is flavour for the first clean run).
-        // R2: hold pad, U16: ghost; the one lethal family is the saw
+        // Dash through the open wall (it waits while you are inside), and where the ground ends a lift takes you up to the ledge with the
+        // door: it starts as you step on it, and a saw from the front rolls in under it at the same moment, so whoever waits at the foot
+        // of the lift is run over; and the lift goes on too far, into the spikes in the ceiling, for whoever stays on it.
+        // R2: hold pad, U7: the saws; the lift is the second family (the ghost of the old level is gone: it has nothing to replay in a
+        // clean run, so it was decoration)
         Level(
             name = T("git blame", "git blame"),
-            intro = T("I keep a log. Of everything you do.", "Ich führe Buch. Über alles, was du tust."),
-            hint = T("The wall is open only while you stand on the pad, and the pad is what sets the saws rolling. Look through the wall, then dash.", "Die Wand ist nur offen, solange du auf dem Schalter stehst, und der Schalter setzt die Sägen in Gang. Schau durch die Wand, dann renn."),
-            start = listOf(Circuit('w'), Pad('1', at = 13 to 14, circuits = "w", mode = PadMode.HOLD)),
+            intro = T("I keep a log. Of everything you do.", "Ich f\u00fchre Buch. \u00dcber alles, was du tust."),
+            hint = T("The wall is open only while you stand on the pad, and the pad is what sets the saws rolling. Look through the wall, then dash. Take the lift before the saw takes you.", "Die Wand ist nur offen, solange du auf dem Schalter stehst, und der Schalter setzt die S\u00e4gen in Gang. Schau durch die Wand, dann renn. Nimm den Aufzug, bevor dich die S\u00e4ge nimmt."),
+            start = listOf(Circuit('w'), Pad('1', at = 10 to 14, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
-                trap(After(0f), Ghost(1f)),
-                trap(PastX(3.5f), Play(Card.DEVIL_SAW), PathSaw(7f, 8f to 14.4f, 8f to 10.6f, delay = 0.9f), Say(T("git blame: the rope was you.", "git blame: Das Seil warst du."))),
-                trap(Pressed('1'), Saw(-1.5f, 14.4f, 5.5f, 0f, 0.62f), PathSaw(7f, 19f to 14.4f, 19f to 10.6f, delay = 0.2f),
+                trap(PastX(3f), Play(Card.DEVIL_SAW), PathSaw(7f, 7f to 14.4f, 7f to 10.6f, delay = 0.6f), Say(T("git blame: the rope was you.", "git blame: Das Seil warst du."))),
+                trap(Pressed('1'), Saw(-1.5f, 14.4f, 5.5f, 0f, 0.62f), PathSaw(7f, 18f to 14.4f, 18f to 10.6f, delay = 0.2f),
                     Say(T("Commit accepted. So is the blame.", "Commit angenommen. Die Schuld auch."))),
-                trap(PastX(17f), Saw(33.5f, 14.4f, -7f, 0f, 0.62f), Say(T("Blame from the front, too. I'm thorough.", "Schuld kommt auch von vorn. Ich bin gründlich."))),
-                trap(Zone(24.5f, 7f, 27f, 9.5f), Saw(33.5f, 8.4f, -6f, 0f, 0.62f), Say(T("Upstairs, same history.", "Oben, gleiche Historie."))),
-                trap(Zone(17f, 7f, 20f, 9.5f), Saw(-1.5f, 8.4f, 7f, 0f, 0.62f), Say(T("Squeezed. Version control is hard.", "Eingeklemmt. Versionskontrolle ist schwer."))),
+                trap(Zone(19.5f, 12f, 21.5f, 15.5f), Saw(33.5f, 14.4f, -7f, 0f, 0.62f), Say(T("Blame from the front, too. I'm thorough.", "Schuld kommt auch von vorn. Ich bin gr\u00fcndlich."))),
+                trap(Zone(24f, 12f, 26.9f, 15.5f), Move('a', 0f, -8f, 3f), Say(T("Going up. The history goes with you.", "Es geht nach oben. Die Historie f\u00e4hrt mit."))),
             ),
         ) {
             border(); floor()
-            fill(14..15, 10..14, 'w')
-            fill(2..27, 9..9); fill(23..27, 13..14); fill(28..30, 11..14)
-            put(2, 14, 'P'); put(3, 8, 'D')
+            fill(11..12, 1..14, 'w')
+            fill(24..26, 15..17, 'a'); fill(27..30, 9..14)
+            for (x in 24..26) put(x, 6, 'v')
+            put(2, 14, 'P'); put(29, 8, 'D')
         },
 
         // 44 — wallflower: the pit is floored with four shy planks that only dance when you step on the one before: the next one is
