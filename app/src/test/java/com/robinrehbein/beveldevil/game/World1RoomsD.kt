@@ -9,6 +9,9 @@ object World1RoomsD {
     fun World.ropeUp(x: Float, delay: Float): Boolean = saws.firstOrNull { it.path?.points?.firstOrNull()?.first == x }
         ?.let { s -> ((time - s.t0 - delay) % 1.086f).let { it in 0.1f..0.3f } } ?: false
 
+    /** The [i]th piece of the frame that has cracked off has come down to rest [oy] tiles below where it hung. */
+    fun World.pieceLanded(i: Int, oy: Float): Boolean = cracks.getOrNull(i)?.group?.oy?.let { it >= oy - 0.05f } == true
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         33 to listOf<Solution>(
             { hopR(9.0f, 0.4f).rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
@@ -23,6 +26,14 @@ object World1RoomsD {
             { rightTo(7.0f).tapPause().pauseResume().hopR(8.6f, 0.4f).hopR(15.4f, 0.4f).rightTo(20.4f).rightJump(0.5f).landRight()
                 .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft()
                 .waitFor { it.group('s').oy >= 6.9f }.leftJump(0.4f).landLeft().left(3f) },
+        ),
+        // 36: let the first piece land, climb on it and hop off its far end over the spikes, up the stairs, back along the upper floor,
+        // let the second piece land and hop it
+        36 to listOf<Solution>(
+            { rightTo(6.5f).waitFor { it.pieceLanded(0, 5f) }.rightTo(7.2f).rightJump(0.3f).landRight().rightTo(10.6f).rightJump(0.5f).landRight()
+                .rightTo(19.3f).rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
+                .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
+                .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
         ),
         // 35: up the three platforms (the door jumps up as you start, and is gone again when you land), off the left end and back along the ground
         35 to listOf<Solution>(

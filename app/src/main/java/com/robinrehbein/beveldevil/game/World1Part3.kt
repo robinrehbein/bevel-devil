@@ -120,20 +120,26 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 36 — a piece of the golden frame breaks off the ceiling and lands on the path; hopping onto it sprouts spikes behind it
+        // 36 — gallery: a piece of the golden frame (a bit of the upper floor) breaks off over your head and lands on the path ahead; hopping
+        // over it sprouts spikes behind it, so you have to stand on it first. Upstairs, on the way back along the upper floor, the next
+        // piece of the frame comes down where you hurry, and the hole the first one left is waiting
         // TWIST: FrameCrack
         Level(
             name = T("Gallery", "Galerie"),
             intro = T("All real gold. Almost. Don't touch.", "Alles echtes Gold. Fast. Nicht anfassen."),
+            hint = T("The frame drops pieces where you run. Let them land, then climb on. Spikes grow behind the first piece.", "Der Rahmen lässt Stücke fallen, wo du rennst. Lass sie landen, dann steig drauf. Hinter dem ersten wachsen Stacheln."),
             legend = mapOf('A' to hiddenSpike),
             traps = listOf(
-                trap(PastX(4f), Play(Card.HEADBUTT), FrameCrack(16, 0, 19, 0, warn = 0.9f), Say(T("Crack.", "Knack."))),
-                trap(Airborne(14f, 20f), Show('A')),
+                trap(PastX(3.1f), FrameCrack(9, 9, 11, 9, warn = 0.5f), Say(T("Crack.", "Knack."))),
+                trap(Airborne(12.2f, 14.4f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Hand-painted. The spikes, too.", "Handgemalt. Die Stacheln auch."))),
+                trap(Zone(21f, 7f, 23f, 9.5f), FrameCrack(16, 0, 18, 0, warn = 0.4f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
             ),
         ) {
             border(); floor()
-            put(21, 14, 'A'); put(22, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            fill(21..23, 13..14); fill(24..30, 11..14)
+            fill(2..23, 9..9)
+            put(12, 14, 'A'); put(13, 14, 'A')
+            put(3, 14, 'P'); put(6, 8, 'D')
         },
 
         // 37 — reach the door and I overwrite history: it moves back to the start and spikes appear
