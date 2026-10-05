@@ -108,7 +108,8 @@ object World1Part2 {
 
         // 28 — gym class: the pommel horse (a saw runs laps around it, the top of the horse is the only safe spot and the dismount is the
         // trap), the jump rope (a saw swings up and down across the lane), the wall bars (a saw rolls in from behind as you land on the
-        // first step: don't linger), then the cool-down lap back along the balcony, where a saw patrols and turns round in front of you
+        // first step: don't linger), then the cool-down lap back along the balcony, where a saw patrols and turns round in front of you.
+        // Rematch: the horse is hot (the saw passes at head height: wait for it, then mount), the balcony has a gap and two saws
         // MECHANIC: PathSaw (lap, rope, patrol) + Saw (wall bars)
         Level(
             name = T("Gym Class", "Turnstunde"),
@@ -119,6 +120,19 @@ object World1Part2 {
                 trap(PastX(12f), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 0.9f), Say(T("Jump rope. You skip, the saw does not.", "Seilspringen. Du hüpfst, die Säge nicht."))),
                 trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f), Say(T("Wall bars. Somebody is right behind you.", "Sprossenwand. Hinter dir steht schon einer."))),
                 trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 6f to 8.4f), Say(T("Cool-down lap. The saw cools down too. Eventually.", "Auslaufen. Die Säge läuft sich auch aus. Irgendwann."))),
+            ),
+            rematch = listOf(
+                Round(
+                    T("Rematch. Evening class: the horse is hot now.", "Revanche. Abendkurs: Das Pferd ist jetzt heiß."),
+                    hint = T("Let the saw pass before you mount. Mind the gap in the balcony.", "Lass die Säge vorbei, bevor du aufsteigst. Achtung, Lücke im Balkon."),
+                    traps = listOf(
+                        trap(PastX(3.2f), Play(Card.GRAND_FINALE), PathSaw(5.5f, 5f to 11.9f, 11f to 11.9f, 11f to 14.4f, 5f to 14.4f, loop = true), Say(T("Evening class. Same horse, sharper lap.", "Abendkurs. Gleiches Pferd, schärfere Runde."))),
+                        trap(PastX(12f), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 0.9f)),
+                        trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f)),
+                        trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 22f to 8.4f), PathSaw(8f, 3f to 8.4f, 7f to 8.4f),
+                            Say(T("Two saws on the balcony. And a gap. Enjoy.", "Zwei Sägen auf dem Balkon. Und eine Lücke. Viel Spaß."))),
+                    ),
+                ) { fill(12..13, 9..9, '.') },
             ),
         ) {
             border(); floor()
