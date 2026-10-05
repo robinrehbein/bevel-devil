@@ -64,6 +64,23 @@ object World2RoomsD {
         .rightUntil { it.player.box.cx < 28.6f }.rightJump(0.55f).landRight()
         .rightUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.rightJump(0.5f).landRight().right(3f)
 
+    /**
+     * 48: left to the pad behind the start (the portal is re-pointed), into the portal onto the deck, wait for the firewall, hop the tripwire, to the door and through the
+     * breach; in the second room the controls swap on the deck: drop off its end, hop the LEDs and the cart with swapped hands, and fall down the shaft to the door.
+     */
+    fun l48(b: Bot): Bot {
+        var seenLit = false
+        val flashedOut = { w: World ->
+            if (w.beams.any { it.laser.id == 'K' && it.lit }) seenLit = true
+            seenLit && w.beams.none { it.laser.id == 'K' && (it.lit || it.warn > 0f) }
+        }
+        return b.leftUntil { it.player.box.cx < 4.6f }.leftJump(0.3f).landLeft().leftUntil { it.player.box.cx < 2.9f }.rightUntil { it.player.box.cy < 11f }.rightUntil { it.player.box.cx > 18.9f }.waitFor(cond = World2Rooms.clear('G'))
+            .rightUntil { it.player.box.cx > 23.6f }.rightJump(0.45f).landRight().leftUntil { it.cracks.isNotEmpty() }.leftUntil { it.cracks.any { c -> c.fell } }
+            .leftUntil { it.player.grounded && it.player.box.b > 14.5f }
+            .leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.55f).landLeft()
+            .waitFor(cond = flashedOut).left(4f)
+    }
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         41 to listOf({ l41(this) }, { l41r2(this) }),
         42 to listOf({ l42(this) }, { l42r2(this) }),
@@ -72,5 +89,6 @@ object World2RoomsD {
         45 to listOf({ l45(this) }),
         46 to listOf({ l46(this) }, { l46r2(this) }),
         47 to listOf({ l47(this) }),
+        48 to listOf({ l48(this) }),
     )
 }

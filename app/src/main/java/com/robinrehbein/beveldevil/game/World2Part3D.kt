@@ -24,6 +24,8 @@ import com.robinrehbein.beveldevil.game.Action.Shake
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.After
+import com.robinrehbein.beveldevil.game.Trigger.AtDoor
+import com.robinrehbein.beveldevil.game.Action.Extend
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
@@ -238,27 +240,43 @@ object World2Part3D {
             spawn(); door(3, 9); bits(47)
         },
 
-        // 48 — act and world finale: belt, tunnel, gate, swapped controls, and a door that moves down to layer 3
+        // 48 — shutdown, the act and world finale, two rooms (R4 the switch, R3 the portal routing; U11 the route is re-pointed, U9 the controls swap,
+        // U18 the room goes on). The only portal on the lane leads home until a pad on the step behind the start re-points it onto the deck over the wall, where a
+        // firewall flashes and a tripwire waits in front of the door. At the door the wall breaks open (and the controls swap) and the door slips into the second room: there
+        // a cart comes at you, and the door sinks through the floor to layer 3
         Level(
             name = T("shutdown -h now", "shutdown -h now"),
             intro = T("Broadcast from mephi@hell: maintenance. Do not disturb.", "Rundruf von mephi@hoelle: Wartungsarbeiten. Bitte nicht stören."),
+            rooms = 2,
             start = listOf(
-                Belt('a', -3f),
-                Portal('1', 11 to 14, 15 to 14, twoWay = false),
-                Laser('G', 18 to 1, 18 to 14, on = 1f, off = 1.8f, phase = 1f),
+                Portal('2', 9 to 14, 5 to 14, twoWay = false),
+                Pad('1', at = 2 to 13, circuits = "", mode = PadMode.TOGGLE),
             ),
             traps = listOf(
-                trap(PastX(3f), Play(Card.GRAND_FINALE), say("shutdown -h now. All services are stopping.", "shutdown -h now. Alle Dienste werden beendet.")),
-                trap(PastX(20.5f), Swap(true), say("chown -R mephi /controls", "chown -R mephi /steuerung")),
-                trap(PastX(25.5f), Swap(false), DoorTo(28, 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
+                trap(Pressed('1'), Reroute('2', 16 to 9), say("DNS updated. Propagation: instant. Reality: pending.", "DNS aktualisiert. Weitergabe: sofort. Realität: ausstehend.")),
+                trap(Zone(15f, 7f, 17.5f, 10.6f), Laser('G', 21 to 1, 21 to 9, on = 1.2f, off = 60f, delay = 0.5f), say("Firewall rule 1: nobody gets out.", "Firewall-Regel 1: Keiner kommt raus.")),
+                trap(Zone(22f, 7f, 23.5f, 10.6f), Laser('H', 25 to 9, 26 to 9, on = 2.5f, off = 60f, delay = 0.4f), say("Tripwire: it only checks your feet.", "Stolperdraht: Er prüft nur deine Füße.")),
+                trap(Landed(26.5f, 29.8f), Swap(true), say("chown -R mephi /controls", "chown -R mephi /steuerung")),
+                trap(AtDoor, Play(Card.GRAND_FINALE),
+                    Extend(into = 1, top = 7, bottom = 9, door = roomX(1, 28) to 14, line = T("shutdown -h now. Who said the room ends here?", "shutdown -h now. Wer sagt, dass der Raum hier endet?"))),
+                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Saw(roomX(1, 32f), 14.4f, -8f, 0f), say("Last cron job: unplug the customer.", "Letzter Cronjob: Den Kunden abstecken.")),
+                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Laser('K', roomX(1, 27) to 1, roomX(1, 27) to 14, on = 2.4f, off = 60f, delay = 0.1f), say("Firewall rule 2: and nobody gets in.", "Firewall-Regel 2: Und keiner kommt rein.")),
+                trap(PastX(roomX(1, 25.5f)), DoorTo(roomX(1, 29), 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
             ),
         ) {
             border(); floor()
-            fill(3..10, 15..15, 'a')
-            fill(12..13, 1..14)
-            fill(27..29, 15..16, '.')
-            put(7, 14, '^'); put(23, 14, '^'); put(24, 14, '^')
-            spawn(); door(30)
+            room(0) {
+                put(8, 14, 'P'); fill(1..3, 14..14)
+                fill(12..13, 1..14)
+                fill(15..30, 10..10)
+                leds(17..30)
+                put(29, 9, 'D'); bits(48)
+            }
+            room(1) {
+                fill(1..8, 10..10)
+                pit(28..30, 15)
+                fill(28..30, 17..17)
+            }
         },
     )
 
