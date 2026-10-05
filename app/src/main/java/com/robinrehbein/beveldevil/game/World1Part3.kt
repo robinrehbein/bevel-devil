@@ -326,21 +326,31 @@ object World1Part3 {
             put(4, 4, 'P'); put(29, 14, 'D')
         },
 
-        // 43 — your last attempt comes back as a deadly ghost one second behind you
-        // TWIST: Ghost
+        // 43 — git blame: a rope saw on the way, then the wall: it is open only while somebody stands on the pad next to it, and the
+        // pad is where blame comes from: a saw rolls in from behind the moment you step on it, and another swings behind the wall.
+        // Dash through the open wall between the two (it waits while you are inside), hop the saw that comes from the front on the
+        // way to the stairs, and back along the upper floor with the last one at your heels. Your last attempt comes back as a
+        // ghost on top of that (it needs a first attempt, so it is flavour for the first clean run).
+        // R2: hold pad, U16: ghost; the one lethal family is the saw
         Level(
             name = T("git blame", "git blame"),
             intro = T("I keep a log. Of everything you do.", "Ich führe Buch. Über alles, was du tust."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("The wall is open only while you stand on the pad, and the pad is what sets the saws rolling. Look through the wall, then dash.", "Die Wand ist nur offen, solange du auf dem Schalter stehst, und der Schalter setzt die Sägen in Gang. Schau durch die Wand, dann renn."),
+            start = listOf(Circuit('w'), Pad('1', at = 13 to 14, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
-                trap(After(0f), Play(Card.DEVIL_SAW), Ghost(1f)),
-                trap(Airborne(12.5f, 17.5f), Show('A')),
+                trap(After(0f), Ghost(1f)),
+                trap(PastX(3.5f), Play(Card.DEVIL_SAW), PathSaw(7f, 8f to 14.4f, 8f to 10.6f, delay = 0.9f), Say(T("git blame: the rope was you.", "git blame: Das Seil warst du."))),
+                trap(Pressed('1'), Saw(-1.5f, 14.4f, 5.5f, 0f, 0.62f), PathSaw(7f, 19f to 14.4f, 19f to 10.6f, delay = 0.2f),
+                    Say(T("Commit accepted. So is the blame.", "Commit angenommen. Die Schuld auch."))),
+                trap(PastX(17f), Saw(33.5f, 14.4f, -7f, 0f, 0.62f), Say(T("Blame from the front, too. I'm thorough.", "Schuld kommt auch von vorn. Ich bin gründlich."))),
+                trap(Zone(24.5f, 7f, 27f, 9.5f), Saw(33.5f, 8.4f, -6f, 0f, 0.62f), Say(T("Upstairs, same history.", "Oben, gleiche Historie."))),
+                trap(Zone(17f, 7f, 20f, 9.5f), Saw(-1.5f, 8.4f, 7f, 0f, 0.62f), Say(T("Squeezed. Version control is hard.", "Eingeklemmt. Versionskontrolle ist schwer."))),
             ),
         ) {
-            border(); floor(); pit(25..26)
-            fill(15..16, 14..14, '^')
-            put(20, 14, 'A'); put(21, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor()
+            fill(14..15, 10..14, 'w')
+            fill(2..27, 9..9); fill(23..27, 13..14); fill(28..30, 11..14)
+            put(2, 14, 'P'); put(3, 8, 'D')
         },
 
         // 44 — a wall to the ceiling that only comes down when you shake the phone

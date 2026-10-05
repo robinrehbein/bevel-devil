@@ -11,7 +11,17 @@ object World1RoomsE {
         if (g.visible) k.on - k.cycle(time - g.blinkT0) else 0f
     }
 
+    /** The jump-rope saw at column [x] (swinging 3.8 tiles at 7 tiles/s after [delay] s) is [ahead] s before the phase where it is on its way up. */
+    fun World.ropeUp(x: Float, delay: Float, ahead: Float = 0f): Boolean = saws.firstOrNull { it.path?.points?.firstOrNull()?.first == x }
+        ?.let { s -> ((time + ahead - s.t0 - delay) % 1.086f).let { it in 0.1f..0.3f } } ?: false
+
     val solutions: Map<Int, List<Solution>> = mapOf(
+        43 to listOf<Solution>(
+            { rightTo(5.4f).waitFor { it.ropeUp(8f, 0.9f) }.rightTo(11.5f).rightUntil { it.pads[0].down }.rightTo(14.0f).waitFor { it.ropeUp(19f, 0.2f, 0.3f) }
+                .rightTo(21.0f).rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(30.4f).leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.path == null && it.y in 7f..9.2f && it.x < w.player.box.cx && w.player.box.cx - it.x in 0f..4.2f } }
+                .leftJump(0.5f).landLeft().left(4f) },
+        ),
         41 to listOf<Solution>(
             { leftTo(11.0f).waitFor { it.group('S').oy >= 12f }.leftTo(5.6f).jump(0.45f)
                 .waitFor { it.group('T').oy >= 12f }.rightTo(20.0f).waitFor { it.group('U').oy >= 12f }
