@@ -29,16 +29,11 @@ class World1DeckTest {
         8 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(8)[0]) },
         12 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(12)[0]) },
         15 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(15)[0]) },
-        17 to { b -> b.rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .rightTo(24.8f).rightJump(0.35f).landRight().right(2f) },
-        18 to { b -> b.rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
-            .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
-            .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
-            .rightTo(23.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight().left(2f) },
-        21 to { b -> b.hopR(7.7f).hopR(15.7f).right(2f) },
-        24 to { b -> b.waitUntil(3.3f).rightJump(0.35f).landRight().rightTo(21.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f) },
-        28 to { b -> b.rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightTo(13.3f).rightJump(0.35f).landRight()
-            .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f) },
+        17 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(17)[0]) },
+        18 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(18)[0]) },
+        21 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(21)[0]) },
+        24 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(24)[0]) },
+        28 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(28)[0]) },
         33 to { b -> b.hopR(18.6f).right(2f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded || it.door.moving }
             .hopL(22.6f).hopL(17.4f).hopL(8.6f).left(4f) },
         37 to { b -> b.hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f) },
@@ -53,9 +48,6 @@ class World1DeckTest {
 
     /** Round 2 of the levels with a third round, as in the round tests below. */
     private val round2: Map<Int, (Bot) -> Bot> = mapOf(
-        17 to { b -> b.rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .rightTo(19.8f).rightJump(0.35f).landRight().right(3f) },
-        28 to { b -> b.hopR(13.3f).rightTo(26.8f).rightJump(0.35f).landRight().right(1f) },
         48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
             .rightTo(16.6f).rightJump(0.35f).landRight().right(3f) },
     )
@@ -196,42 +188,32 @@ class World1DeckTest {
 
     // ---------- Act 2 ----------
 
-    /** Level 17, [round], waiting before the blinking bridge for it to come back. */
-    private fun bridge17(round: Int) = b(17, round).rightTo(7.5f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
+    // levels 17, 18, 21 and 24: the rematch plays against the habit round 1 taught (docs/LEVEL_DESIGN_V2.md H9)
+    private fun solved(n: Int, round: Int, solution: Int) = b(n, round).also(World1DesignTest.SOLUTIONS.getValue(n)[solution])
 
-    @Test fun level17Rematch() = bridge17(1).rightTo(19.8f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level17ThirdShift() = bridge17(2).right(3f).expect(WorldState.WON)
-    @Test fun level17RoundsPunishTheRoundBefore() {
-        b(17, 1).rightTo(9.6f).wait(2.5f).expect(WorldState.PLAYING)   // the ledge bluffs
-        bridge17(1).right(3f).expect(WorldState.DEAD)
-        b(17, 2).rightTo(9.6f).wait(2.5f).expect(WorldState.DEAD)
-        bridge17(2).rightTo(19.8f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
-    }
+    @Test fun level17Rematch() = World1DesignTest.play(17, 2)
+    /** Night Shift, round 2: hopping in the first stretch drops the floor under the landing, so the old hop falls. */
+    @Test fun level17RematchTheOldHopsFall() = solved(17, 1, 0).expect(WorldState.DEAD)
+    @Test fun level17RematchHoppingInTheFirstStretchIsFatal() = b(17, 1).hopR(5.8f).wait(2f).expect(WorldState.DEAD)
 
-    /** Level 18, [round], past the three bobbing saws. */
-    private fun saws18(round: Int) = b(18, round).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
-        .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
-        .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
+    @Test fun level18Rematch() = World1DesignTest.play(18, 2)
+    /** On the Hour, round 2: the saws come from behind and the keys swap, so the old dodges never win. */
+    @Test fun level18RematchTheOldDodgesFail() = assertTrue(solved(18, 1, 0).world.state != WorldState.WON)
+    @Test fun level18RematchRunningStraightIsFatal() = b(18, 1).right(3f).expect(WorldState.DEAD)
 
-    /** No fourth saw: the floor before the door collapses, so jump it from its edge. */
-    @Test fun level18Rematch() = saws18(1).rightTo(23.2f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level18RematchRunningOnToMeetTheSawCollapses() = saws18(1).right(3f).expect(WorldState.DEAD)
+    @Test fun level21Rematch() = World1DesignTest.play(21, 2)
+    /** Foundation, round 2: the landing sinks for hoppers, the plank is a bluff, and the old hops fall. */
+    @Test fun level21RematchTheOldHopsFall() = assertTrue(solved(21, 1, 0).world.state != WorldState.WON)
+    @Test fun level21RematchTheBluffPlankStillHolds() = b(21, 1).rightTo(25.6f).rightJump(0.3f).landRight().wait(0.5f).expect(WorldState.PLAYING)
 
-    @Test fun level21Rematch() = b(21, 1).rightTo(4.6f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
-        .rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
-    @Test fun level21RematchTheOldHopsFall() = b(21, 1).hopR(7.7f).hopR(15.7f).right(2f).expect(WorldState.DEAD)
+    @Test fun level24Rematch() = World1DesignTest.play(24, 2)
+    /** Merge Conflict, round 2: no tower, a lift instead, and two branches in a row. */
+    @Test fun level24RematchTheOldTowerRouteFails() = assertTrue(solved(24, 1, 0).world.state != WorldState.WON)
+    @Test fun level24RematchTheLiftCarriesTheWaiter() = b(24, 1).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(25.0f).rightJump(0.3f).landRight().wait(8f).expect(WorldState.DEAD)
 
-    @Test fun level24Rematch() = b(24, 1).rightTo(20.3f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.35f).landRight().right(2f)
-        .expect(WorldState.WON)
-    @Test fun level24RematchWaitingForTheOldWallDies() = b(24, 1).waitUntil(3.3f).rightJump(0.35f).landRight().wait(2f).expect(WorldState.DEAD)
-
-    @Test fun level28Rematch() = b(28, 1).hopR(13.3f).rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level28ThirdRound() = b(28, 2).rightTo(18.2f).rightJump(0.35f).landRight().rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level28RoundsPunishTheRoundBefore() {
-        b(28, 1).rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
-        b(28, 2).hopR(13.3f).right(1f).expect(WorldState.DEAD)
-    }
+    @Test fun level28Rematch() = World1DesignTest.play(28, 2)
+    /** Gym Class, round 2: the same room with a new hand, so the clean run of round 1 never wins it. */
+    @Test fun level28RematchTheOldRunFails() = assertTrue(solved(28, 1, 0).world.state != WorldState.WON)
 
     // ---------- Act 3 ----------
 

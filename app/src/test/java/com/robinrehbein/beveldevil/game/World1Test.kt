@@ -89,8 +89,8 @@ class World1Test {
     @Test
     fun actTwoIntroducesNewMechanics() {
         // the levels built around a new mechanic; the other act-2 levels are reworked classics
-        val tagged = listOf(17, 18, 19, 20, 22, 23, 25, 26, 28, 31, 32)
-        assertTrue(tagged.size >= 10)
+        val tagged = listOf(20, 23, 25, 26, 28, 31, 32)
+        assertTrue(tagged.size >= 7)
         for (n in tagged) {
             val l = World1.levels[n - 1]
             val uses = actions(l).any { it is Action.Blink || it is Action.PathSaw } || l.traps.any { it.trigger is Trigger.Idle }
@@ -102,9 +102,9 @@ class World1Test {
             assertFalse("level $n is a classic", actions(l).any { it is Action.Blink || it is Action.PathSaw } || l.traps.any { it.trigger is Trigger.Idle })
         }
         // each mechanic is taught by itself before it is mixed in: blinking first, then saws, then idling
-        assertTrue(actions(World1.levels[16]).any { it is Action.Blink } && actions(World1.levels[16]).none { it is Action.PathSaw })
-        assertTrue(actions(World1.levels[17]).any { it is Action.PathSaw } && actions(World1.levels[17]).none { it is Action.Blink })
-        assertTrue(World1.levels[18].traps.any { it.trigger is Trigger.Idle })
+        assertTrue(actions(World1.levels[19]).any { it is Action.Blink } && actions(World1.levels[19]).none { it is Action.PathSaw })
+        assertTrue(actions(World1.levels[22]).any { it is Action.PathSaw } && actions(World1.levels[22]).none { it is Action.Blink })
+        assertTrue(World1.levels[25].traps.any { it.trigger is Trigger.Idle })
     }
 
     @Test
@@ -126,13 +126,6 @@ class World1Test {
     }
 
     // ---------- the levels that react to input in unusual ways ----------
-
-    @Test
-    fun heisenbugPunishesStandingStillAndPatienceRewardsIt() {
-        b(19).wait(2.5f).expect(WorldState.DEAD)
-        b(25).wait(1.9f).expect(WorldState.PLAYING)
-        b(25).rightTo(3.2f).wait(1.5f).right(0.05f).wait(1.5f).right(3f).expect(WorldState.DEAD)
-    }
 
     @Test
     fun panicButtonIsASpike() {
@@ -332,54 +325,27 @@ class World1Test {
         return this
     }
 
-    @Test fun level17() = b(17).rightTo(7.5f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .rightTo(24.8f).rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
-    @Test fun level18() = b(18).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }
-        .rightTo(11.4f).waitFor { it.saws[1].y < 10.5f }
-        .rightTo(19.8f).waitFor { it.saws[2].y < 10.5f }
-        .rightTo(23.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight()
-        .left(2f).expect(WorldState.WON)
-    @Test fun level19() = b(19).pace(6.5f).rightTo(4.6f).right(2f).expect(WorldState.WON)
-    @Test fun level20() = b(20).hopR(4.9f).hopR(9.1f).hopR(14.0f).hopR(18.8f).hopR(25.7f).right(1f).expect(WorldState.WON)
-    @Test fun level21() = b(21).hopR(7.7f).hopR(15.7f).right(2f).expect(WorldState.WON)
-    @Test fun level22() = b(22).rightTo(7.2f).waitFor { val g = it.gapLeft('a'); g > 0f && g <= 0.55f }
-        .rightTo(9.4f).rightJump(0.35f).landRight()
-        .rightTo(15.4f).rightJump(0.35f).landRight()
-        .rightTo(21.4f).rightJump(0.35f).landRight()
-        .rightJump(0.3f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level23() = b(23).rightTo(5.8f)
-        .waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-        .rightTo(12.9f).waitFor { it.saws[0].y < 9.5f }
-        .rightTo(13.3f).rightJump(0.35f).landRight()
-        .right(4f).expect(WorldState.WON)
-    @Test fun level24() = b(24).waitUntil(3.3f).rightJump(0.35f).landRight()
-        .rightTo(21.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level25() = b(25).wait(2.2f).right(0.06f).wait(1.25f).left(0.06f).wait(1.3f).right(2f).expect(WorldState.WON)
-    @Test fun level26() = b(26).rightTo(2.9f)
-        .waitFor(14f) { it.solidLeft('a') > 1.2f }.rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('b') > 1.2f }.rightTo(8.6f).rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('c') > 1.2f }.rightTo(13.6f).rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('d') > 1.2f }.rightTo(18.6f).rightJump(0.35f).landRight()
-        .rightTo(21.8f).rightJump(0.35f).landRight()
-        .rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level27() = b(27).rightTo(10.7f).rightJump(0.35f).landRight().rightTo(16.7f).rightJump(0.35f).landRight()
-        .rightJump(0.35f).landRight().right(2f).expect(WorldState.WON)
-    @Test fun level28() = b(28).rightUntilSaw(4.5f).rightJump(0.35f).landRight()
-        .rightTo(13.3f).rightJump(0.35f).landRight()
-        .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level29() = b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(21.3f).right(2f).expect(WorldState.WON)
-    /** Running past the stairs before they are built must not strand the player on the floor behind them. */
-    @Test fun level30RunningPastTheStairsDies() = b(30).right(3f).wait(5f).expect(WorldState.DEAD)
-    @Test fun level30() = b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.0f).hopR(16.9f).hopR(19.7f).rightTo(24.8f).rightJump(0.35f).landRight().left(2f).expect(WorldState.WON)
-    @Test fun level31() = b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }
-        .rightTo(9.7f).rightJump(0.35f).landRight()
-        .waitFor { it.saws[1].y < 6.3f }.rightTo(16.6f).rightJump(0.35f).landRight()
-        .rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level32() = b(32).rightTo(5.8f)
-        .fidgetUntil(10f) { it.solidLeft('a') > 1.6f }
-        .rightTo(13.4f).fidgetUntil(10f) { it.solidLeft('b') > 1.2f }
-        .rightTo(22.5f).rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level17() = World1DesignTest.play(17)
+    @Test fun level18() = World1DesignTest.play(18)
+    @Test fun level19() = World1DesignTest.play(19)
+    @Test fun level20() = World1DesignTest.play(20)
+    @Test fun level21() = World1DesignTest.play(21)
+    @Test fun level22() = World1DesignTest.play(22)
+    @Test fun level23() = World1DesignTest.play(23)
+    @Test fun level24() = World1DesignTest.play(24)
+    @Test fun level17Rematch() = World1DesignTest.play(17, 2)
+    @Test fun level18Rematch() = World1DesignTest.play(18, 2)
+    @Test fun level21Rematch() = World1DesignTest.play(21, 2)
+    @Test fun level24Rematch() = World1DesignTest.play(24, 2)
+    // levels 25-32 are rebuilt: their clean run is the registered solution (World1RoomsC), the rematch of 28 is in World1DeckTest
+    @Test fun level25() = World1DesignTest.play(25)
+    @Test fun level26() = World1DesignTest.play(26)
+    @Test fun level27() = World1DesignTest.play(27)
+    @Test fun level28() = World1DesignTest.play(28)
+    @Test fun level29() = World1DesignTest.play(29)
+    @Test fun level30() = World1DesignTest.play(30)
+    @Test fun level31() = World1DesignTest.play(31)
+    @Test fun level32() = World1DesignTest.play(32)
 
     // ---------- Act 3: Mephi schummelt ----------
     @Test fun level33() = b(33).hopR(18.6f).right(2f)
@@ -419,52 +385,33 @@ class World1Test {
 
     // ---------- Acts 2 and 3: chains around the mechanics ----------
 
-    /** Level 26 up to standing on the third step ('d'), ready for the last jump. */
-    private fun skyscraperToD() = b(26).rightTo(2.9f)
-        .waitFor(14f) { it.solidLeft('a') > 1.2f }.rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('b') > 1.2f }.rightTo(8.6f).rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('c') > 1.2f }.rightTo(13.6f).rightJump(0.35f).landRight()
-        .waitFor(14f) { it.solidLeft('d') > 1.2f }.rightTo(18.6f).rightJump(0.35f).landRight()
-
     @Test
     fun actTwoAndThreeChainsPunishTheCounterJustLearned() {
-        // 17: the ledge before the bridge crumbles under whoever waits, a jump off the bridge's end lands on spikes, the last floor is a hidden pit
-        b(17).rightTo(9.6f).wait(2.5f).expect(WorldState.DEAD)
-        b(17).rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .rightTo(19f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
-        b(17).rightTo(7.5f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
-            .rightTo(22f).right(3f).expect(WorldState.DEAD)
-        // 18: nobody waits for the second saw on the floor that drops
-        b(18).rightTo(7.3f).waitFor { it.saws[0].y < 10.5f }.rightTo(13.3f).wait(1.2f).expect(WorldState.DEAD)
-        // 19: hopping in place meets the spikes, pacing to the edge drops the platform too
-        b(19).jump(0.4f).wait(1f).expect(WorldState.DEAD)
-        b(19).rightTo(6f).wait(1f).expect(WorldState.DEAD)
-        // 20: edge hops land on spikes: on the first stone, on the third, and on the far bank
-        b(20).hopR(5.7f).wait(1f).expect(WorldState.DEAD)
-        b(20).hopR(4.9f).hopR(9.1f).hopR(15.7f).wait(1f).expect(WorldState.DEAD)
-        b(20).hopR(4.9f).hopR(9.1f).hopR(14.0f).hopR(18.8f).hopR(24.5f).wait(1f).expect(WorldState.DEAD)
-        // 22: waiting after the first door is waiting on a floor that drops
-        b(22).rightTo(7.2f).waitFor { it.gapLeft('a') > 1f }.rightTo(9.4f).rightJump(0.35f).landRight().wait(1.5f).expect(WorldState.DEAD)
-        // 23: the middle of the bridge is a hidden gap
-        b(23).rightTo(5.8f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }.right(2f).expect(WorldState.DEAD)
-        // 24: the jump over the wall lands before a pit
-        b(24).waitUntil(3.3f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
-        // 25: sitting too long and stepping too far to the left are both fatal
-        b(25).wait(6f).expect(WorldState.DEAD)
-        b(25).leftTo(1.5f).wait(0.5f).expect(WorldState.DEAD)
-        // 26: running to the end of the last step lands on the ledge's spikes
-        skyscraperToD().rightTo(21.8f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
-        skyscraperToD().rightTo(23.6f).wait(0.5f).expect(WorldState.DEAD)
-        // 27: the last stone crumbles under a runner
-        b(27).rightTo(10.7f).rightJump(0.35f).landRight().rightTo(16.7f).rightJump(0.35f).landRight().right(2f).expect(WorldState.DEAD)
-        // 28: a hidden pit right behind the first saw
-        b(28).rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
-        // 29: running across the fourth platform meets its spikes
-        b(29).hopR(5.7f).hopR(11.7f).hopR(17.7f).hopR(23.7f).right(2f).expect(WorldState.DEAD)
-        // 30: the top of the stairs
-        b(30).waitUntil(8.3f).hopR(12.2f).hopR(15.0f).hopR(16.9f).hopR(19.7f).right(3f).expect(WorldState.DEAD)
-        // 31: nobody waits on the island
-        b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }.rightTo(9.7f).rightJump(0.35f).landRight().wait(2.5f).expect(WorldState.DEAD)
+        // 17: standing on the floor that is cut away, and running on over the pit
+        b(17).hopR(5.8f).wait(3f).expect(WorldState.DEAD)
+        b(17).hopR(5.8f).rightTo(15.0f).right(3f).expect(WorldState.DEAD)
+        // 18: the first saw comes at the runner, and nobody waits in the lane
+        b(18).right(3f).expect(WorldState.DEAD)
+        b(18).rightUntilSaw(4.5f).rightJump(0.35f).landRight().wait(3f).expect(WorldState.DEAD)
+        // 19: running on over the second slab, and straight along the lower floor
+        b(19).hopR(7.9f).hopR(13.8f).rightTo(17.0f).rightJump(0.35f).landRight().rightTo(20.4f).rightJump(0.35f).landRight().right(3f).expect(WorldState.DEAD)
+        b(19).right(4f).expect(WorldState.DEAD)
+        // 20: the first stone blinks out under whoever stays, and the way back along the top does not wait either
+        b(20).hopR(5.8f, 0.3f).wait(8f).expect(WorldState.DEAD)
+        b(20).hopR(5.8f, 0.3f).hopR(10.8f, 0.3f).hopR(15.8f, 0.3f).hopR(20.8f, 0.3f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+            .leftTo(28.6f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(4f).expect(WorldState.DEAD)
+        // 21: the second hop lands on the strip that is not there, and whoever stays on the stairs goes down with them
+        b(21).hopR(7.4f).hopR(13.6f).right(3f).expect(WorldState.DEAD)
+        b(21).hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight().wait(4f).expect(WorldState.DEAD)
+        // 22: the first beam stops whoever walks in on it, and so does the second
+        b(22).rightTo(10.6f).right(3f).expect(WorldState.DEAD)
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(21.0f).left(3f).expect(WorldState.DEAD)
+        // 23: the first saw on the top plank, and the knot above the start
+        b(23).rightTo(5.0f).right(3f).expect(WorldState.DEAD)
+        b(23).rightTo(6.0f).jump(0.5f).wait(2f).expect(WorldState.DEAD)
+        // 24: HEAD catches whoever stands still, and the second branch whoever walks into it
+        b(24).hopR(6.8f, 0.3f).wait(4f).expect(WorldState.DEAD)
+        b(24).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().left(5f).expect(WorldState.DEAD)
         // 33: a hidden pit on the way to the door
         b(33).right(3f).expect(WorldState.DEAD)
         // 36: the block from the frame has spikes behind it
@@ -533,8 +480,6 @@ class World1Test {
     /** Whoever stays on a piece that drops falls out of the world: a death, never a ledge to wait on. */
     @Test
     fun droppedFloorsLeaveNothingToWaitOn() {
-        b(17).rightTo(9.6f).wait(4f).also { assertTrue(it.world.player.box.y > it.world.rows - 1f) }.expect(WorldState.DEAD)
-        b(31).rightTo(4.3f).rightTo(7.4f).waitFor { it.saws[0].y < 6.3f }.rightTo(9.7f).rightJump(0.35f).landRight().wait(3f)
-            .also { assertTrue(it.world.player.box.y > it.world.rows - 1f) }.expect(WorldState.DEAD)
+        b(17).hopR(5.8f).wait(4f).also { assertTrue(it.world.player.box.y > it.world.rows - 1f) }.expect(WorldState.DEAD)
     }
 }

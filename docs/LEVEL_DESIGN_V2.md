@@ -289,7 +289,7 @@ Korrekturen für Rezept v2:
 |19|Waiting Room|R2|U2|Rätsel|
 |20|Disco Night|–|U6|Falle|
 |21|Foundation|R9|U1|Rätsel|
-|22|Airlock|R1|U13 (Blinkwand als Tor)|Rätsel|
+|22|Airlock|R1|U13 (Laser-Tor, pulsierend; statt Blinkwand, weil Blink im Block schon in 20 steckt)|Rätsel|
 |23|Carpentry|–|U7|Falle|
 |24|Merge Conflict|R9|U3|Rätsel|
 |25|Rush Hour|R6|U15|Rätsel|
@@ -598,3 +598,7 @@ Im Rollout bauen bis zu 15 Agenten parallel, je einer pro Block. Die Deckel aus 
 - **W3-F, Schwerkraft 1:** §8 plant U10 in 44 und 48. Nur eines von beiden nutzt `Gravity(true)`.
 - **W3, Laser-Tor:** Ein Takt-Strom (`Clock` auf einer Leiterbahn mit Großbuchstaben) mit kurzem Fenster ist ein Tor (H12). §8 plant R8 in W3-3, 7, 10 und im Finale 16. Mit nur 3 Toren im Akt (W3-A 1, W3-B 2) setzt mindestens eine dieser Zeilen ihren Takt mit einer **Kupferschiene** (Kleinbuchstabe, `Clock` auf einer festen Gruppe: zählt nicht als Tor) oder einem Laser mit langem Fenster um.
 - **Karten:** Ein Block mit 1 pro Karte (der frühere Block eines Aktes) spielt jede Karte höchstens einmal. Pro Runde gibt es genau eine Karte (H8), also bei 8 Leveln mit Revanchen 8–12 Karten: dafür reichen die 22 Karten.
+
+### Hinweis W1-B (Level 17-24): Kartenarithmetik
+
+Die Behauptung in §11, 22 Karten reichten für W1 Akt 2, stimmt so nicht: Block B hat 12 Runden (17, 18, 21, 24 mit Revanche), spielbar sind aber nur 10 Karten plus Bluff (höchstens 1 im Block). Jede Karte höchstens einmal im Block heißt also: eine Runde bekommt GRAND_FINALE (hier 24 Runde 2), eine (21 Runde 2) den Bluff `Bluff(SPIKE_SEED)`. Sollte §11 angepasst werden: entweder Karten dürfen sich innerhalb eines Akts nach 8 Leveln wiederholen, oder Revanchen bekommen keine neue Karte.
