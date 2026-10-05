@@ -55,12 +55,7 @@ object World2Rooms {
         .hopL(11.4f).left(2.5f)
 
     /** 20, through the second check, the flashing gate and up the stairs to the ledge: landing on the ledge presses the scanner. */
-    fun l20ToLedge(b: Bot) = b.rightTo(3.6f).waitFor(cond = clear('M')).hopR(4.1f, 0.24f).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).hopR(13.0f, 0.24f).hopR(16.0f, 0.24f).hopR(19.0f, 0.24f)
-
-    /** 20, round 2: the third step blinks (wait until it has gone dark and is powered again). */
-    fun l20r2ToLedge(b: Bot) = b.rightTo(3.6f).waitFor(cond = clear('M')).hopR(4.1f, 0.24f).hopR(7.0f, 0.24f)
-        .waitFor { it.circuits['c']?.powered == false }.waitFor { it.circuits['c']?.powered == true }
-        .hopR(10.0f, 0.24f).hopR(13.0f, 0.24f).hopR(16.0f, 0.24f).hopR(19.0f, 0.24f)
+    fun l20ToLedge(b: Bot) = b.hopR(4.1f, 0.24f).wait(0.05f).waitFor(cond = clear('M')).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).wait(0.05f).waitFor(cond = clear('N')).hopR(13.0f, 0.24f).hopR(16.0f, 0.24f).hopR(19.0f, 0.24f)
 
     /** 20, up to the scanner on the ledge (it is where you land). */
     fun l20ToScanner(b: Bot) = l20ToLedge(b)
@@ -69,7 +64,7 @@ object World2Rooms {
     fun l20(b: Bot) = l20ToScanner(b).wait(0.05f).waitFor(cond = clear('K')).rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.rightTo(28.8f).right(1f)
 
     /** 20, round 2: the scanner is a bluff; jump the gap onto the far ledge and walk back to the door. */
-    fun l20r2(b: Bot) = l20r2ToLedge(b).rightTo(24.4f).rightJump(0.5f).landRight().rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.leftTo(28.0f).left(1f)
+    fun l20r2(b: Bot) = l20ToLedge(b).rightTo(24.4f).rightJump(0.5f).landRight().rightUntil { it.player.box.b > 4f }.leftUntil { it.player.grounded }.leftTo(28.0f).left(1f)
 
     /** 21, through the portal up to the shelf (the near portal is a closet): along the treadmill, to the hole. */
     fun l21ToShelf(b: Bot) = b.hopR(5.1f).rightTo(12.5f)

@@ -348,7 +348,7 @@ object World2Part1 {
             border(); floor()
             leds(10..22)
             fill(1..7, 10..10); door(1, 9)
-            put(19, 1, 'v'); put(9, 1, 'v'); put(29, 1, 'v')
+            put(20, 1, 'v'); put(9, 1, 'v'); put(29, 1, 'v')
             fill(12..14, 0..0, 'f')
             spawn(2)
         },

@@ -143,7 +143,7 @@ class World2DeckTest {
     @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)
     @Test fun l20r2DroppingWhereRoundOneDroppedIsFatal() = World2Rooms.l20(b(20, 2)).expect(WorldState.DEAD)
     @Test fun l20r2TheScannerIsABluff() {
-        val bot = World2Rooms.l20r2ToLedge(b(20, 2)).wait(0.1f)
+        val bot = World2Rooms.l20ToLedge(b(20, 2)).wait(0.1f)
         bot.expect(WorldState.PLAYING)
         assertTrue(bot.world.beams.isNotEmpty() && bot.world.beams.any { it.laser.id == 'K' && it.lit })
     }

@@ -117,7 +117,7 @@ class World2DesignTest : DesignTestBase() {
                     .right(0.3f).hopR(23.6f, 0.5f).right(1.5f) },
             ),
             13 to listOf(
-                { rightTo(8.3f).landRight().hopR(17.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(21.0f).leftTo(15.8f)
+                { rightTo(8.3f).landRight().hopR(18.6f).rightTo(23.5f).rightTo(28.3f).landLeft().hopL(22.0f).leftTo(15.8f)
                     .waitFor { !it.group('f').visible }.waitFor { it.group('f').visible }.hopL(10.8f).left(2f) },
             ),
         ) +
