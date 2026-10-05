@@ -212,7 +212,7 @@ object World1Part2 {
             ),
         ) {
             border(); floor(); pit(1..22)
-            fill(15..17, 15..15, 'i')
+            fill(16..18, 15..15, 'i')
             fill(27..28, 13..14); fill(25..26, 11..14); fill(23..24, 9..14); fill(21..22, 7..14)
             fill(17..20, 7..7); fill(13..15, 7..7, 'u'); fill(1..10, 7..7); fill(6..7, 15..17, 'k')
             put(30, 14, 'P'); put(2, 6, 'D')
@@ -232,7 +232,7 @@ object World1Part2 {
                 Blink('b', on = 2f, off = 1.6f, phase = 2.4f), Blink('d', on = 2f, off = 1.6f, phase = 1.2f), Blink('c', on = 2f, off = 1.6f, phase = 2.4f),
             ),
             traps = listOf(
-                trap(Touch('f'), Play(Card.COLLAPSE), Fall('f'), Say(T("You stood on it. That's a regression.", "Du standest drauf. Das ist ein Rückschritt.")), delay = 1.2f),
+                trap(Touch('f'), Fall('f'), Say(T("You stood on it. That's a regression.", "Du standest drauf. Das ist ein Rückschritt.")), delay = 1.2f),
                 trap(Pressed('1'), Saw(31.5f, 14.4f, -5.5f, 0f, 0.62f), Say(T("Switch accepted. Known issue: the saw.", "Schalter angenommen. Bekanntes Problem: die Säge."))),
                 trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14)),
                 trap(Touch('g'), Fall('g'), Say(T("Stable build. Not.", "Stabiler Build. Nicht.")), delay = 1.7f),

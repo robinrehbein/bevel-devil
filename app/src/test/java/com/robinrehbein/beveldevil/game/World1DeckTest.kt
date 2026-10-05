@@ -33,8 +33,7 @@ class World1DeckTest {
         18 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(18)[0]) },
         21 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(21)[0]) },
         24 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(24)[0]) },
-        28 to { b -> b.rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightTo(13.3f).rightJump(0.35f).landRight()
-            .rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(3f) },
+        28 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(28)[0]) },
         33 to { b -> b.hopR(18.6f).right(2f).waitWhile { it.fake != null }.waitWhile(2f) { !it.player.grounded || it.door.moving }
             .hopL(22.6f).hopL(17.4f).hopL(8.6f).left(4f) },
         37 to { b -> b.hopR(10.7f).hopR(16.5f).rightTo(23.5f).wait(2.5f).hopL(20.5f).hopL(13.3f).hopL(8.5f).left(3f) },
@@ -49,7 +48,6 @@ class World1DeckTest {
 
     /** Round 2 of the levels with a third round, as in the round tests below. */
     private val round2: Map<Int, (Bot) -> Bot> = mapOf(
-        28 to { b -> b.hopR(13.3f).rightTo(26.8f).rightJump(0.35f).landRight().right(1f) },
         48 to { b -> b.rightTo(9f).waitFor { !it.group('a').visible }.waitFor { it.group('a').visible }
             .rightTo(16.6f).rightJump(0.35f).landRight().right(3f) },
     )
@@ -213,12 +211,9 @@ class World1DeckTest {
     @Test fun level24RematchTheOldTowerRouteFails() = assertTrue(solved(24, 1, 0).world.state != WorldState.WON)
     @Test fun level24RematchTheLiftCarriesTheWaiter() = b(24, 1).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(25.0f).rightJump(0.3f).landRight().wait(8f).expect(WorldState.DEAD)
 
-    @Test fun level28Rematch() = b(28, 1).hopR(13.3f).rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level28ThirdRound() = b(28, 2).rightTo(18.2f).rightJump(0.35f).landRight().rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun level28RoundsPunishTheRoundBefore() {
-        b(28, 1).rightTo(26.8f).rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
-        b(28, 2).hopR(13.3f).right(1f).expect(WorldState.DEAD)
-    }
+    @Test fun level28Rematch() = World1DesignTest.play(28, 2)
+    /** Gym Class, round 2: the same room with a new hand, so the clean run of round 1 never wins it. */
+    @Test fun level28RematchTheOldRunFails() = assertTrue(solved(28, 1, 0).world.state != WorldState.WON)
 
     // ---------- Act 3 ----------
 
