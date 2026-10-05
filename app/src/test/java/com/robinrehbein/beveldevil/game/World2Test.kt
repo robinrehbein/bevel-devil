@@ -542,7 +542,19 @@ class World2Test {
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
     @Test fun level36() { World2DesignTest.play(36) }
-    @Test fun level37() = b(37).rightJump(0.40f).rightJump(0.40f).rightJump(0.40f).right(1.20f).right(0.25f).rightJump(0.25f) .right(0.60f).expect(WorldState.WON)
+    @Test fun level37() { World2DesignTest.play(37) }
+    /** Two-Factor Auth: without the first switch the wall holds, whatever you do on the lane. */
+    @Test fun level37TheFirstWallHoldsWithoutTheSwitch() {
+        val bot = b(37).right(3f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 14f)
+    }
+    /** Two-Factor Auth: waiting on the first switch for the result is the end, the ceiling over it comes down. */
+    @Test fun level37WaitingOnTheFirstSwitchIsFatal() = b(37).leftTo(2.5f).wait(2f).expect(WorldState.DEAD)
+    /** Two-Factor Auth: standing on the second switch for the result is the end, too. */
+    @Test fun level37WaitingOnTheSecondSwitchIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f).wait(2f).expect(WorldState.DEAD)
     @Test fun level38() = b(38).right(0.60f).wait(1.00f).right(0.10f).rightJump(0.55f).expect(WorldState.WON)
     @Test fun level39() = b(39).wait(0.4f).pauseResume().hopR(18.6f).right(3f).expect(WorldState.WON)
     @Test fun level40() = b(40).right(0.60f).rightJump(0.12f).leftJump(0.25f).right(0.60f).rightJump(0.25f)

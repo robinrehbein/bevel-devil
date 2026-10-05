@@ -204,6 +204,12 @@ object World2Rooms {
     /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */
     fun sawAheadRight(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
 
+    /** 37: left onto the first switch, back right through the dark wall, stop where the block drops and climb it, up onto the steps, over to the roof and onto the second switch, run on off the roof and through the wall to the door. */
+    fun l37(b: Bot) = b.leftTo(2.5f).rightTo(5.5f)
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
+        .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )

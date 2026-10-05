@@ -3,8 +3,10 @@ package com.robinrehbein.beveldevil.game
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
+import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
+import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
@@ -15,6 +17,7 @@ import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
+import com.robinrehbein.beveldevil.game.Trigger.Pressed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Zone
 
@@ -156,6 +159,32 @@ object World2Part3C {
             border(); floor()
             fill(1..27, 9..9)
             spawn(2, 8); door(2, 14)
+        },
+
+        // 37 — two-factor auth (a puzzle room: R1 the switches, U15 the help is the trap). The lane is locked by a copper wall, and the first
+        // switch lies behind the start, at the far left: factor 1 accepted, the wall goes dark, and the ceiling over the switch comes down a moment
+        // later. Past the wall a block drops out of the ceiling as you pass (once it has landed it is your first step), and up the steps on the roof
+        // lies the second switch, which opens the second wall (down on the lane); the ceiling over it comes down on whoever waits there for the
+        // result, so the way on is back along the roof and down to the wall
+        Level(
+            name = T("Two-Factor Auth", "Zwei-Faktor-Login"),
+            intro = T("Your code was sent by post. Arrival: soon.", "Dein Code wurde per Post verschickt. Ankunft: bald."),
+            start = listOf(
+                Circuit('a'), Circuit('b'),
+                Pad('1', at = 2 to 14, circuits = "a", mode = PadMode.OFF),
+                Pad('2', at = 29 to 8, circuits = "b", mode = PadMode.OFF),
+            ),
+            traps = listOf(
+                trap(Pressed('1'), Play(Card.HEADBUTT), Fall('e'), say("Factor 1 accepted. Do not get comfortable.", "Faktor 1 akzeptiert. Mach es dir nicht bequem."), delay = 0.5f),
+                trap(PastX(16f), Fall('c'), say("Your code has arrived. It weighs a lot.", "Dein Code ist angekommen. Er wiegt einiges.")),
+                trap(Pressed('2'), Fall('d'), say("Factor 2 accepted. Please wait here for the result.", "Faktor 2 akzeptiert. Bitte warte hier auf das Ergebnis."), delay = 0.4f),
+            ),
+        ) {
+            border(); floor()
+            fill(14..15, 1..14, 'a'); fill(27..28, 10..14, 'b')
+            fill(19..20, 1..2, 'c'); fill(28..29, 1..2, 'd'); fill(2..3, 1..2, 'e')
+            fill(21..23, 11..14); fill(26..30, 9..9)
+            spawn(13, 14); door(30, 14)
         },
     )
 }
