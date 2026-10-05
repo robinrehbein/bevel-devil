@@ -377,24 +377,30 @@ object World1Part3 {
             put(1, 14, 'P'); put(30, 8, 'D')
         },
 
-        // 45 — the floor is deleted when you are halfway; the shelf above it is not, but climbing onto it sprouts spikes
-        // EASTER EGG: sudo rm -rf /
+        // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes: three pieces of the ground are deleted one after another
+        // just ahead of your feet as you run (hop them), and on the way back along the shelf upstairs, which is protected
+        // ("/home"), two strips of it slide away from under the runner instead
+        // EASTER EGG: sudo rm -rf /. U1: the floor goes (drop), the sliding strips are the second family
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
-            legend = mapOf('A' to hiddenSpike, 'B' to hiddenSpike),
+            hint = T("The floor is deleted just ahead of you: hop where it is gone. Upstairs, the strips slide away: hop those too.", "Der Boden wird direkt vor dir gelöscht: Spring, wo er fehlt. Oben gleiten die Streifen weg: Auch darüber hüpfen."),
             traps = listOf(
-                trap(PastX(14f), Play(Card.COLLAPSE), Fall('f'), Shake(1.5f), PauseTrap(PauseTrick.SWAP), Say(T("rm: removing '/' ... done. You wanted root.", "rm: entferne '/' ... erledigt. Du wolltest doch root."))),
-                trap(Airborne(2.5f, 7f), Show('A')),
+                trap(PastX(5.5f), Play(Card.COLLAPSE), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(PastX(10f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
+                trap(PastX(15f), Hide('c'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
+                trap(Touch('s'), Hide('s'), Say(T("rm: removing '/stairs' ... in a moment.", "rm: entferne '/stairs' ... gleich.")), delay = 0.9f),
+                trap(Zone(28f, 9f, 31f, 11.5f), Hide('f'), Say(T("rm: removing '/' ... the rest of it. Done.", "rm: entferne '/' ... den Rest. Erledigt."))),
+                trap(Zone(19f, 7f, 21.5f, 9.5f), Move('e', 7f, 0f, 14f), Say(T("mv: moving '/home' ... away from you.", "mv: verschiebe '/home' ... weg von dir."))),
+                trap(Zone(12f, 7f, 14.5f, 9.5f), Move('g', 7f, 0f, 14f)),
             ),
         ) {
-            border()
-            fill(1..30, 15..17, 'f')
-            fill(4..30, 13..13)
-            put(9, 12, 'A'); put(10, 12, 'A')
-            put(12, 12, 'B'); put(13, 12, 'B')
-            put(20, 12, '^')
-            put(2, 14, 'P'); put(29, 12, 'D')
+            border(); floor()
+            fill(3..8, 15..17, 'f'); fill(11..13, 15..17, 'f'); fill(16..18, 15..17, 'f'); fill(21..22, 15..17, 'f')
+            fill(9..10, 15..17, 'a'); fill(14..15, 15..17, 'b'); fill(19..20, 15..17, 'c')
+            fill(2..27, 9..9); fill(15..17, 9..9, 'e'); fill(8..10, 9..9, 'g')
+            pit(23..30); fill(23..27, 13..14, 's'); fill(28..30, 11..14)
+            put(2, 14, 'P'); put(3, 8, 'D')
         },
 
         // 46 — the wall is unclimbable; the way out is behind you

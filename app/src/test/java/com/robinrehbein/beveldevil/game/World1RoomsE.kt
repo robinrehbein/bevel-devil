@@ -16,6 +16,10 @@ object World1RoomsE {
         ?.let { s -> ((time + ahead - s.t0 - delay) % 1.086f).let { it in 0.1f..0.3f } } ?: false
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        45 to listOf<Solution>(
+            { hopR(7.4f, 0.5f).hopR(12.4f, 0.5f).hopR(17.4f, 0.5f).rightJump(0.45f).landRight().rightTo(27.0f).rightJump(0.45f).landRight()
+                .right(0.5f).leftJump(0.5f).landLeft().leftTo(18.0f).leftJump(0.5f).landLeft().leftTo(11.0f).leftJump(0.5f).landLeft().left(5f) },
+        ),
         44 to listOf<Solution>(
             { rightTo(8.2f).waitFor { it.solidLeft('q') > 1.0f }
                 .rightTo(13.2f).waitFor { it.solidLeft('r') > 1.0f }.rightTo(18.2f).waitFor { it.solidLeft('s') > 1.0f }.rightTo(23.0f).shake()
