@@ -106,5 +106,27 @@ object World1Part2 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-    ) + World1Part2Old.levels.drop(11)
+        // 28 — gym class: the pommel horse (a saw runs laps around it, the top of the horse is the only safe spot and the dismount is the
+        // trap), the jump rope (a saw swings up and down across the lane), the wall bars (a saw rolls in from behind as you land on the
+        // first step: don't linger), then the cool-down lap back along the balcony, where a saw patrols and turns round in front of you
+        // MECHANIC: PathSaw (lap, rope, patrol) + Saw (wall bars)
+        Level(
+            name = T("Gym Class", "Turnstunde"),
+            intro = T("Mephi is training for a marathon. Don't disturb him.", "Mephi trainiert für den Marathon. Stör ihn nicht."),
+            hint = T("Stand on the horse. Wait for the rope to go up. Don't linger on the wall bars. The balcony saw turns round.", "Steig aufs Pferd. Warte, bis das Seil oben ist. Bleib nicht an der Sprossenwand stehen. Die Säge auf dem Balkon dreht um."),
+            traps = listOf(
+                trap(PastX(2f), Play(Card.DEVIL_SAW), PathSaw(5.5f, 11f to 14.4f, 5f to 14.4f, 5f to 10.8f, 11f to 10.8f, loop = true), Say(T("Pommel horse. The saw does the laps.", "Pauschenpferd. Die Säge dreht die Runden."))),
+                trap(PastX(12f), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 0.9f), Say(T("Jump rope. You skip, the saw does not.", "Seilspringen. Du hüpfst, die Säge nicht."))),
+                trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f), Say(T("Wall bars. Somebody is right behind you.", "Sprossenwand. Hinter dir steht schon einer."))),
+                trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 6f to 8.4f), Say(T("Cool-down lap. The saw cools down too. Eventually.", "Auslaufen. Die Säge läuft sich auch aus. Irgendwann."))),
+            ),
+        ) {
+            border(); floor()
+            fill(7..9, 13..14)
+            fill(22..25, 13..14); fill(26..30, 11..14)
+            fill(2..25, 9..9)
+            put(1, 14, 'P'); put(2, 8, 'D')
+        },
+
+    ) + World1Part2Old.levels.drop(12)
 }
