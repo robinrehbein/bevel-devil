@@ -41,6 +41,13 @@ object World1RoomsD {
                 .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
                 .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
         ),
+        // 40: the keys swap at the first steps: wait for the first beam to go dark, cross, up the stairs (the keys come back on the last
+        // step), back along the upper floor once the second beam is dark
+        40 to listOf<Solution>(
+            { rightUntil { it.swapped }.leftKeyRightTo(13.6f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
+                .leftJump(0.5f).landLeft().leftKeyRightTo(26.0f).leftJump(0.5f).landLeft().leftTo(29.9f).leftJump(0.5f).landLeft()
+                .leftTo(17.4f).waitFor { w -> !w.beams.any { it.laser.id == 'B' && it.lit } }.left(5f) },
+        ),
         // 39: let the ceiling tile land and hop it, board the shelf, tilt and ride it across, jump off its end onto the stairs, up, back along
         // the upper floor, let the second tile land and hop it
         39 to listOf<Solution>(

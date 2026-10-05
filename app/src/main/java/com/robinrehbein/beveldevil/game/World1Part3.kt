@@ -11,6 +11,7 @@ import com.robinrehbein.beveldevil.game.Action.FrameCrack
 import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Hide
+import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
@@ -163,7 +164,7 @@ object World1Part3 {
                     T("Rematch. I pushed first this time.", "Revanche. Ich war schneller beim Pushen."),
                     hint = T("The floor ahead is already deleted. The stones that are left give way under you: hop on, do not stay.", "Der Boden vor dir ist schon gelöscht. Die Steine, die bleiben, geben nach: Hüpf weiter, bleib nicht stehen."),
                     traps = listOf(
-                        trap(PastX(2.7f), Play(Card.CRUMBLE), Fall('b'), Fall('d'), Fall('f'), Say(T("Merge conflict. I resolved it for you.", "Merge-Konflikt. Ich habe ihn für dich gelöst."))),
+                        trap(PastX(2.7f), Play(Card.SINKING), Fall('b'), Fall('d'), Fall('f'), Say(T("Merge conflict. I resolved it for you.", "Merge-Konflikt. Ich habe ihn für dich gelöst."))),
                         trap(Touch('a'), Fall('a'), delay = 0.35f),
                         trap(Touch('c'), Fall('c'), delay = 0.35f),
                         trap(Touch('e'), Fall('e'), delay = 0.35f),
@@ -229,20 +230,25 @@ object World1Part3 {
             put(1, 14, 'P'); put(10, 8, 'D')
         },
 
-        // 40 — at the first step everything flips: gravity and controls. Walk the ceiling.
-        // EASTER EGG: Kernel panic
+        // 40 — boot sequence: at the first steps the keys swap (kernel panic: left is right), and the memory test sweeps a beam across the
+        // corridor; up the stairs the keys come back ("restored. Probably."), and upstairs the second test beam waits at the same spot
+        // as the keys do not matter any more
+        // TWIST: Swap (the one swapped-controls level of the act)
         Level(
             name = T("Boot Sequence", "Systemstart"),
             intro = T("Everything is fine. Really.", "Alles in Ordnung. Wirklich."),
+            hint = T("After the panic left is right. Wait for the beam to go dark, then cross. When the keys come back, they are back.", "Nach der Panik ist links rechts. Warte, bis der Strahl dunkel ist, dann geh durch. Wenn die Tasten zurückkommen, sind sie zurück."),
             traps = listOf(
-                trap(PastX(4.5f), Play(Card.UPSIDE_DOWN), Gravity(true), Swap(true), Shake(1.5f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
-                trap(Airborne(15f, 20.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
+                trap(PastX(4.5f), Play(Card.TWISTED), Swap(true), Shake(1.2f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
+                trap(PastX(9f), Laser('A', 16 to 10, 16 to 14, on = 0.9f, off = 1.6f, delay = 0.2f), Say(T("Memory test. Please do not cross the beam.", "Speichertest. Bitte den Strahl nicht kreuzen."))),
+                trap(Landed(28f, 31f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
+                trap(Zone(24.5f, 7f, 26f, 9.5f), Laser('B', 14 to 3, 14 to 8, on = 0.9f, off = 1.6f, delay = 0.8f), Say(T("Second test, upstairs. Same beam, less patience.", "Zweiter Test, oben. Gleicher Strahl, weniger Geduld."))),
             ),
         ) {
             border(); floor()
-            fill(6..27, 14..14, '^')
-            put(18, 0, '.'); put(19, 0, '.')
-            put(2, 14, 'P'); put(29, 1, 'D')
+            fill(24..27, 13..14); fill(28..30, 11..14)
+            fill(2..26, 9..9)
+            put(2, 14, 'P'); put(6, 8, 'D')
         },
 
         // 41 — stalactites fall in two waves while the picture rolls; you cannot see them land
