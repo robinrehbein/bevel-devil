@@ -193,28 +193,26 @@ object World1Part2B {
             put(2, 7, 'P'); put(3, 14, 'D')
         },
 
-        // 23 — a long blinking bridge with a saw bobbing through the middle; the ledge you wait on crumbles, the middle of the bridge is a hidden gap, jumping off its end lands on spikes
-        // MECHANIC: Blink + PathSaw
+        // 23 — a sawmill on three floors: a saw bobs through the top plank, the knot in the plank above the start is a hidden block
+        // that sets a second saw on whoever jumps into it; the drop to the middle floor meets a saw head-on, and the ground floor
+        // has a second bobbing saw and a roller from the far side
+        // MECHANIC: PathSaw + Saw
         Level(
             name = T("Carpentry", "Zimmerei"),
             intro = T("Everything here is still handmade.", "Hier ist noch alles Handarbeit."),
-            legend = mapOf('A' to hiddenSpike, 'C' to hiddenSpike),
+            legend = mapOf('b' to Glyph(spike = false, hidden = true, bonk = true)),
             traps = listOf(
-                trap(Touch('e'), Play(Card.COLLAPSE), Fall('e'), delay = 0.6f),
-                trap(Touch('m'), Fall('m'), delay = 0.25f),
-                trap(Airborne(19.5f, 22.5f), Show('A')),
-            ),
-            start = listOf(
-                Blink('a', on = 4.4f, off = 1f),
-                PathSaw(6f, 15.5f to 14.4f, 15.5f to 7.5f, delay = 1.6f),
+                trap(PastX(3.5f), PathSaw(6f, 8f to 4.4f, 8f to 0.7f, delay = 0.5f), Say(T("Measure twice. Cut once. Mind the first cut.", "Zweimal messen. Einmal sägen. Vorsicht beim ersten Schnitt."))),
+                trap(Touch('b'), Play(Card.GHOST_BLOCK), Saw(-1.5f, 4.4f, 9f, 0f, 0.62f), Say(T("A knot! Nobody told you? Mind your head.", "Ein Ast! Hat dir keiner gesagt? Kopf einziehen."))),
+                trap(Landed(14f, 31f), Saw(5.5f, 9.4f, 6f, 0f, 0.62f), Say(T("Sawdust everywhere. Mostly on you.", "Sägemehl überall. Vor allem auf dir."))),
+                trap(Zone(5.2f, 12f, 7f, 15.5f), PathSaw(6f, 9f to 14.4f, 9f to 7.4f, delay = 0.3f), Say(T("The foreman cuts in at the end of the shift.", "Der Vorarbeiter sägt mit, kurz vor Feierabend."))),
+                trap(Zone(12.5f, 12f, 14.5f, 15.5f), PathSaw(6f, 17f to 14.4f, 17f to 7.4f, delay = 0.45f), Say(T("And a piece for the road.", "Und ein Stück für den Heimweg."))),
             ),
         ) {
-            border(); floor(); pit(9..22)
-            fill(9..13, 15..15, 'a'); fill(14..16, 15..15, 'm'); fill(17..22, 15..15, 'a')
-            fill(7..8, 15..17, 'e')
-            put(17, 14, 'C'); put(18, 14, 'C')
-            put(24, 14, 'A'); put(25, 14, 'A')
-            put(2, 14, 'P'); put(29, 14, 'D')
+            border(); floor()
+            fill(1..13, 5..5); fill(6..26, 10..10)
+            put(6, 2, 'b')
+            put(2, 4, 'P'); put(24, 14, 'D')
         },
 
         // 24 — two walls of spikes converge and you jump the one that comes at you; the landing is followed by a pit, and the jump over the pit by spikes

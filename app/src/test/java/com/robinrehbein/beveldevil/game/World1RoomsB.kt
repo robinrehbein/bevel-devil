@@ -66,5 +66,11 @@ object World1RoomsB {
             { rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight()
                 .leftTo(21.0f).waitFor { it.gateOpen('B') }.leftTo(2.5f) },
         ),
+        23 to listOf<Solution>(
+            { rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(15.0f).landRight().landRight()
+                .leftUntil { w -> w.saws.any { it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.35f).landLeft().leftTo(5.0f).landLeft()
+                .rightTo(6.0f).waitFor { w -> w.saws.any { it.path != null && it.x in 8.5f..9.5f && it.y < 11.0f } }.rightTo(13.5f)
+                .waitFor { w -> w.saws.any { it.path != null && it.x > 15f && it.y < 11.0f } }.rightTo(26.0f) },
+        ),
     )
 }
