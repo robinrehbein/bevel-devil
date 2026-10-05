@@ -101,29 +101,34 @@ object World1Part2B {
             put(2, 14, 'P'); put(2, 10, 'D')
         },
 
-        // 20 — four stones blink like a running light: jumping from the edge of a stone lands on spikes: on the first stone, on the third, and on the far bank
-        // MECHANIC: Blink (rhythm)
+        // 20 — disco: stones over the pit light up in turns, the way up is a stair, and the way back along the top is three more
+        // stones under a ceiling of spikes that comes down on whoever dances too long
+        // MECHANIC: Blink (running light)
         Level(
             name = T("Disco Night", "Discoabend"),
             intro = T("Disco tonight. You're not invited.", "Heute Abend ist Disco. Du hast keine Einladung."),
-            legend = mapOf('A' to hiddenSpike, 'E' to hiddenSpike, 'B' to hiddenSpike),
+            legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(Airborne(2.5f, 8.5f), Play(Card.SPIKE_SEED), Show('E')),
-                trap(Airborne(14f, 19.5f), Show('A')),
-                trap(Landed(23f, 26.2f), Show('B')),
-            ),
-            start = listOf(
-                Blink('a', on = 1.6f, off = 1.4f, phase = -0.3f),
-                Blink('b', on = 1.6f, off = 1.4f, phase = -0.9f),
-                Blink('c', on = 1.6f, off = 1.4f, phase = -1.5f),
-                Blink('d', on = 1.6f, off = 1.4f, phase = -2.1f),
+                trap(PastX(3.5f), Blink('p', on = 0.05f, off = 60f), Blink('q', on = 0.05f, off = 60f), Blink('r', on = 0.05f, off = 60f), Blink('s', on = 0.05f, off = 60f),
+                    Say(T("House lights off. Floor too.", "Saallicht aus. Der Boden auch."))),
+                trap(Landed(9f, 12f), Blink('a', on = 1.8f, off = 0.9f), Say(T("Lights! ... Sometimes.", "Licht! ... Manchmal."))),
+                trap(Landed(14f, 17f), Blink('b', on = 1.8f, off = 0.9f), Say(T("Next song. Same floor. Worse.", "Nächstes Lied. Gleicher Boden. Schlechter."))),
+                trap(Landed(19f, 22f), Blink('c', on = 1.8f, off = 0.9f)),
+                trap(Landed(28f, 31f), Play(Card.COLLAPSE), Move('C', 0f, 6.4f, 1.1f), Say(T("Last dance. The ceiling joins in.", "Letzter Tanz. Die Decke tanzt mit."))),
+                trap(Zone(22.5f, 5f, 26f, 9.5f), Blink('f', on = 1.8f, off = 0.9f)),
+                trap(Zone(17.5f, 5f, 21f, 9.5f), Blink('g', on = 1.8f, off = 0.9f)),
+                trap(Zone(12.5f, 5f, 16f, 9.5f), Blink('h', on = 1.8f, off = 0.9f)),
+                trap(Zone(9f, 5f, 11f, 9.5f), Blink('z', on = 1.8f, off = 0.9f), Say(T("The exit has stage fright.", "Der Ausgang hat Lampenfieber."))),
             ),
         ) {
-            border(); floor(); pit(6..27)
-            fill(8..10, 14..14, 'a'); fill(13..15, 14..14, 'b'); fill(18..20, 14..14, 'c'); fill(23..25, 14..14, 'd')
-            put(10, 13, 'E'); put(20, 13, 'A')
-            put(28, 14, 'B'); put(29, 14, 'B')
-            put(2, 14, 'P'); put(30, 14, 'D')
+            border(); floor(); pit(8..23)
+            fill(8..8, 15..17, 'p'); fill(12..13, 15..17, 'q'); fill(17..18, 15..17, 'r'); fill(22..23, 15..17, 's')
+            fill(9..11, 15..17, 'a'); fill(14..16, 15..17, 'b'); fill(19..21, 15..17, 'c')
+            fill(26..27, 13..14); fill(28..30, 11..14)
+            fill(23..25, 9..9, 'f'); fill(18..20, 9..9, 'g'); fill(13..15, 9..9, 'h')
+            fill(4..8, 9..9); fill(9..10, 9..9, 'z')
+            fill(4..27, 1..1, 'C')
+            put(2, 14, 'P'); put(5, 8, 'D')
         },
 
         // 21 — each floor segment you touch deletes the one two segments ahead

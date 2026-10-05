@@ -5,6 +5,12 @@ package com.robinrehbein.beveldevil.game
  * what an informed player does with the real physics, and they are shared by [World1DesignTest] (the guard rails),
  * [World1Test] (the levels) and [World1DeckTest] (round 1 scripts against the rematches).
  */
+/** Seconds the blinking group [id] stays solid from now, 0 while it is gone. */
+fun World.solidLeft(id: Char): Float = group(id).let { g ->
+    val k = g.blink
+    if (!g.visible) 0f else if (k == null) 9f else k.on - k.cycle(time - g.blinkT0)
+}
+
 object World1RoomsB {
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
@@ -29,6 +35,12 @@ object World1RoomsB {
                 .rightUntil { it.pads[0].down }.jump(0.14f).rightJump(0.3f).landRight()
                 .waitFor { it.group('x').oy >= 9.9f }
                 .leftUntil { it.group('y').oy > 0.5f }.waitFor { it.group('y').oy >= 7.9f }.leftJump(0.35f).landLeft().leftTo(2.5f) },
+        ),
+        20 to listOf<Solution>(
+            { hopR(5.8f, 0.3f).hopR(10.8f, 0.3f).hopR(15.8f, 0.3f).hopR(20.8f, 0.3f)
+                .rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+                .leftTo(28.6f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft()
+                .leftTo(14.8f).leftJump(0.35f).landLeft().leftTo(5.5f) },
         ),
     )
 }
