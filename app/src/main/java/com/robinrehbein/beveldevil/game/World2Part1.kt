@@ -87,25 +87,25 @@ object World2Part1 {
             spawn(); door(2, 2); bits(2)
         },
 
-        // 3 — EASTER EGG: HTTP 404, the door is gone (it runs back to the start). The hop over the second rack lands in spikes,
-        // and the way back has a spike behind the start that only shows when you come running
+        // 3 — EASTER EGG: HTTP 404, the door is gone. A two-storey room: you start on the upper floor and the door stands at its far end, in plain
+        // sight. The moment you come near it is "transferred": over the ceiling to the lower floor, below your start. The way down is the hole in
+        // the upper floor you were about to hop, and the lower floor is the way back: a new lane, with a saw that rolls at you (hold music)
         Level(
             name = T("Reception", "Empfang"),
             intro = T("One moment please. Connecting you.", "Einen Moment bitte. Wir verbinden."),
-            legend = mapOf('A' to hidden, 'B' to hidden),
-            traps = listOf(
-                trap(Airborne(19f, 21.5f), Show('B'), say("Hold music: a spike.", "Warteschleifenmusik: ein Spike.")),
-                trap(BeforeX(6.5f), Show('A'), say("Have you tried turning it off and on again?", "Schon mal aus- und wieder eingeschaltet?")),
-            ) + doorTrail(
-                PastX(22f), 29, 14,
-                listOf(DoorTo(29, 1, 24f, hanging = true), DoorTo(1, 1, 24f, hanging = true), DoorTo(1, 14, 24f)),
-                first = listOf(Play(Card.SHY_DOOR), say("404: Door not found. Try /dev/left.", "404: Tür nicht gefunden. Versuch /dev/left.")),
+            traps = doorTrail(
+                PastX(22f), 30, 10,
+                listOf(DoorTo(30, 1, 24f, hanging = true), DoorTo(3, 1, 24f, hanging = true), DoorTo(3, 14, 24f)),
+                first = listOf(Play(Card.SHY_DOOR), say("404: Door not found. Try /dev/down.", "404: Tür nicht gefunden. Versuch /dev/unten.")),
+            ) + listOf(
+                trap(Zone(25f, 12f, 29.5f, 15.5f), Saw(3f, 14.4f, 7f, 0f), say("Your call is important to us. So is this saw.", "Ihr Anruf ist uns wichtig. Diese Säge auch."), delay = 0.5f),
             ),
+            hint = T("The door moved. Downstairs, left. The hole you jumped is the stairs.", "Die Tür ist umgezogen. Unten links. Das Loch ist die Treppe."),
         ) {
             border(); floor()
-            rack(15, 2, 2); rack(20, 2, 2)
-            put(3, 14, 'A'); put(27, 14, 'B'); put(28, 14, 'B')
-            spawn(10); door(); bits(3)
+            fill(1..25, 11..11); fill(29..30, 11..11)
+            fill(9..10, 10..10); fill(15..16, 10..10); leds(20..21, 10)
+            spawn(2, 10); door(30, 10); bits(3)
         },
 
         // 4 — EASTER EGG: off-by-one (the safe gap in the LED row is index 14, and it moves; the hop over the rack lands in spikes; the door steps aside)

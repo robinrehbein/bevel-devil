@@ -92,6 +92,10 @@ class World2DesignTest : DesignTestBase() {
                     .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 10.2f }
                     .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f) },
             ),
+            3 to listOf(
+                { hopR(7.2f).hopR(12.8f).hopR(17.2f).rightUntil { it.player.box.cy > 12.5f }.leftUntil { World2Rooms.sawAheadLeft(it, 4.4f) }
+                    .leftJump(0.35f).landLeft().left(3f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)

@@ -165,8 +165,8 @@ class World2Test {
         b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
         // 2: the hop over the loopback grows a spike in the lane behind it
         b(2).hopR(15.5f).right(3f).expect(WorldState.DEAD)
-        // 3: after the second rack the spikes are there, even if the room is plain
-        b(3).hopR(12.9f).hopR(17.8f).right(3f).expect(WorldState.DEAD)
+        // 3: running on, down the hole and into the lower floor, the saw that rolls at you finds you
+        b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).right(6f).expect(WorldState.DEAD)
         // 4: the gap you aim for is plugged while you fly at it
         b(4).hopR(9.4f).right(1f).expect(WorldState.DEAD)
         // 17: running along the roof of the duct runs under the loose piece of the shelf
@@ -197,8 +197,8 @@ class World2Test {
     /** A chain may end you, but never leaves you alive where the door cannot be reached. */
     @Test
     fun noChainStrandsYouAliveAwayFromTheDoor() {
-        // 3: between the second rack and its spikes there is room to hop out, forwards
-        b(3).hopR(12.9f).hopR(17.8f).hopR(25.2f).expect(WorldState.PLAYING)
+        // 3: the hop over the LEDs is long enough to land clear of them
+        b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
         // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes), never into a closed room
         World2.levels.forEachIndexed { i, l ->
             val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
@@ -280,7 +280,9 @@ class World2Test {
     @Test fun level02() { World2DesignTest.play(2) }
     /** Open Port: the floor portal in the middle is the loopback; the hop over it grows a spike where you run on. */
     @Test fun level02TheLoopbackSendsYouHome() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 8f) }.expect(WorldState.PLAYING)
-    @Test fun level03() = b(3).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).left(0.60f).right(0.25f).left(0.03f) .left(0.25f).leftJump(0.55f).leftJump(0.55f).left(1.20f).leftJump(0.55f).expect(WorldState.WON)
+    @Test fun level03() { World2DesignTest.play(3) }
+    /** Reception: hopping the hole in the upper floor, like the door's old neighbour, leaves you holding right at the wall of an upper floor with no door. */
+    @Test fun level03HoppingTheHoleIsTheWrongWay() = b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).hopR(24.6f).right(3f).expect(WorldState.PLAYING)
     @Test fun level04() = b(4).right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
         .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.WON)
     @Test fun level05() = b(5).right(0.60f).right(0.60f).rightJump(0.25f).left(0.10f).right(0.03f).right(0.03f)
