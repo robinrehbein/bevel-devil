@@ -31,6 +31,7 @@ import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
 import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Trigger.Landed
@@ -403,33 +404,39 @@ object World1Part3 {
             put(2, 14, 'P'); put(3, 8, 'D')
         },
 
-        // 46 — the wall is unclimbable; the way out is behind you
+        // 46 — home stretch: the goal is on the left, behind a wall nobody climbs, so the way out is the switch behind you, at the far
+        // end of the room on the right. It cuts the wall's power, and it is the one that sets everything off: a laser fence on the way
+        // back from the switch and a saw that rolls in from the left. Behind it a jump-rope saw and one more fence wait.
+        // Rematch: the old switch is a bluff (Mephi's card flies in and turns over); the real one has moved up onto a ledge above it
+        // R1: switch opens the door, U15: the help is the trap; the lasers are the lethal family
         Level(
             name = T("Home Stretch", "Zielgerade"),
             intro = T("That's the goal ahead. You can do it.", "Da vorne ist das Ziel. Du schaffst das."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("The goal is a trick: the way out is the switch behind you. And whatever the switch does, it does to you.", "Das Ziel ist ein Trick: Der Ausweg ist der Schalter hinter dir. Und was der Schalter tut, tut er dir."),
+            start = listOf(Circuit('w'), Pad('1', at = 30 to 14, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(Touch('k'), Play(Card.DECOY), Hide('w'), Say(T("Oh, you found the button. Boo.", "Oh, du hast den Knopf gefunden. Buh."))),
-                trap(PastX(20.5f), Show('A')),
+                trap(Pressed('1'), Play(Card.SPIKE_SEED), Laser('A', 25 to 1, 25 to 14, on = 0.6f, off = 1.8f, delay = 0.3f), Saw(-1.5f, 14.4f, 8f, 0f, 0.62f),
+                    Say(T("Oh, you found the button. Boo.", "Oh, du hast den Knopf gefunden. Buh."))),
+                trap(BeforeX(18.8f), PathSaw(7f, 11f to 14.4f, 11f to 10.6f, delay = 0.9f), Say(T("Customer service. Please hold the line.", "Kundendienst. Bitte bleiben Sie in der Leitung."))),
+                trap(BeforeX(9f), Laser('B', 4 to 1, 4 to 14, on = 1f, off = 1.6f, delay = 0.3f)),
             ),
-            // rematch: the old button is a bluff; the real one hides in the air above the start
             rematch = listOf(
                 Round(
                     T("Rematch. I moved the button.", "Revanche. Ich hab den Knopf versetzt."),
-                    legend = mapOf('g' to ghost),
+                    start = listOf(Circuit('w'), Pad('1', at = 29 to 10, circuits = "w", mode = PadMode.OFF)),
                     traps = listOf(
-                        trap(Touch('k'), Bluff(Card.DECOY), Say(T("That button retired. Think higher.", "Der Knopf ist in Rente. Denk höher."))),
-                        trap(Touch('g'), Hide('w'), Say(T("Fine. Up there.", "Na gut. Da oben."))),
-                        trap(PastX(20.5f), Show('A')),
+                        trap(Zone(21.5f, 12f, 22.9f, 15.5f), Bluff(Card.SPIKE_SEED), Say(T("That button retired. Think higher.", "Der Knopf ist in Rente. Denk höher."))),
+                        trap(Pressed('1'), Laser('A', 21 to 1, 21 to 14, on = 0.6f, off = 1.8f, delay = 0.3f), Say(T("Fine. Up there.", "Na gut. Da oben."))),
+                        trap(Pressed('1'), Fall('l'), Say(T("The ledge was only a loan.", "Das Regal war nur geliehen.")), delay = 1.9f),
+                        trap(BeforeX(18.8f), Laser('C', 11 to 1, 11 to 14, on = 1.4f, off = 1.8f, delay = 0.1f)),
+                        trap(BeforeX(9f), Laser('B', 4 to 1, 4 to 14, on = 1f, off = 1.6f, delay = 0.3f)),
                     ),
-                ) { put(10, 12, 'g') },
+                ) { pit(23..30); fill(25..30, 11..11, 'l'); fill(23..24, 13..14) },
             ),
         ) {
             border(); floor()
-            fill(15..16, 3..14, 'w')
-            put(2, 14, 'k')
-            put(25, 14, 'A'); put(26, 14, 'A')
-            put(10, 14, 'P'); put(29, 14, 'D')
+            fill(10..11, 1..14, 'w')
+            put(20, 14, 'P'); put(2, 14, 'D')
         },
 
         // 47 — the wall only opens for the one who finds the root block

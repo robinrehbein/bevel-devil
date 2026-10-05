@@ -12,10 +12,26 @@ object World1RoomsE {
     }
 
     /** The jump-rope saw at column [x] (swinging 3.8 tiles at 7 tiles/s after [delay] s) is [ahead] s before the phase where it is on its way up. */
-    fun World.ropeUp(x: Float, delay: Float, ahead: Float = 0f): Boolean = saws.firstOrNull { it.path?.points?.firstOrNull()?.first == x }
-        ?.let { s -> ((time + ahead - s.t0 - delay) % 1.086f).let { it in 0.1f..0.3f } } ?: false
+    fun World.ropeUp(x: Float, delay: Float, ahead: Float = 0f, from: Float = 0.1f, to: Float = 0.3f): Boolean = saws.firstOrNull { it.path?.points?.firstOrNull()?.first == x }
+        ?.let { s -> ((time + ahead - s.t0 - delay) % 1.086f).let { it in from..to } } ?: false
+
+    /** Seconds until laser [id] fires next, 0 while it is lit (or does not exist yet): wait for a long dark stretch before crossing a fence. */
+    fun World.darkFor(id: Char): Float {
+        val b = beams.firstOrNull { it.laser.id == id } ?: return 0f
+        if (b.lit) return 0f
+        var dt = 0f
+        while (dt < 4f) { if (b.laser.litAt(time + dt - b.t0)) return dt; dt += 0.02f }
+        return 4f
+    }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        46 to listOf<Solution>(
+            { rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.darkFor('A') > 1.1f }
+                .leftUntil { w -> w.saws.any { it.path == null && it.x < w.player.box.cx && w.player.box.cx - it.x in 0f..5.7f } }
+                .leftJump(0.5f).landLeft().leftTo(14.5f).waitFor { it.ropeUp(11f, 0.9f, from = 0.0f, to = 0.2f) }.leftTo(7.0f).waitFor { it.darkFor('B') > 1.1f }.left(5f) },
+            { rightTo(22.2f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightUntil { it.pads[0].down }.right(0.5f)
+                .waitFor { it.darkFor('A') > 1.1f }.leftTo(14.5f).waitFor { it.darkFor('C') > 1.1f }.leftTo(7.0f).waitFor { it.darkFor('B') > 1.1f }.left(5f) },
+        ),
         45 to listOf<Solution>(
             { hopR(7.4f, 0.5f).hopR(12.4f, 0.5f).hopR(17.4f, 0.5f).rightJump(0.45f).landRight().rightTo(27.0f).rightJump(0.45f).landRight()
                 .right(0.5f).leftJump(0.5f).landLeft().leftTo(18.0f).leftJump(0.5f).landLeft().leftTo(11.0f).leftJump(0.5f).landLeft().left(5f) },
