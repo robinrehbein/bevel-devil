@@ -18,6 +18,7 @@ import com.robinrehbein.beveldevil.game.Action.Reroute
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
+import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
@@ -245,22 +246,23 @@ object World2Part1 {
             spawn(); door(30); bits(8)
         },
 
-        // 9 — EASTER EGG: hot swap (unplug the controls, plug them back in wrong; the hop off the last stone lands in spikes)
+        // 9 — EASTER EGG: hot swap. A shelf above the floor: the cables are crossed from the first second, so left is right up here. A saw
+        // comes along the shelf, so wait for it and hop it. The shelf ends in the air; below, the kernel reloads the driver (left is left
+        // again) and a second saw comes from the wall at the door end
         Level(
             name = T("Cable Mess", "Kabelsalat"),
             intro = T("Everything is plugged in tight. I checked.", "Alles steckt fest. Ich habe nachgesehen."),
-            legend = mapOf('A' to hidden),
             traps = listOf(
-                trap(PastX(6.5f), Play(Card.TWISTED), Swap(true), say("Hot swap: left and right exchanged.", "Hot Swap: links und rechts getauscht.")),
-                trap(PastX(23f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
-                trap(Airborne(21.8f, 24.4f), Show('A'), say("Driver signed by nobody.", "Treiber von niemandem signiert.")),
+                trap(After(0.2f), Play(Card.TWISTED), Swap(true), say("Hot swap: left and right exchanged.", "Hot Swap: links und rechts getauscht.")),
+                trap(PastX(3f), Saw(28f, 8.4f, -7f, 0f), say("Driver signed by nobody. Delivered anyway.", "Treiber von niemandem signiert. Trotzdem geliefert."), delay = 0.6f),
+                trap(Landed(22f, 31f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
+                trap(Zone(14f, 12f, 18f, 15.5f), Saw(-1f, 14.4f, 7f, 0f), say("Second delivery. Same signature.", "Zweite Lieferung. Dieselbe Signatur.")),
             ),
+            hint = T("Up here left is right. Hop the saw, then go down. Below, the cable is plugged in properly again.", "Hier oben ist links rechts. Spring über die Säge und geh runter. Unten steckt das Kabel wieder richtig."),
         ) {
             border(); floor()
-            leds(8..23)
-            fill(10..11, 14..14); fill(15..16, 14..14); fill(20..21, 14..14)
-            put(26, 14, 'A'); put(27, 14, 'A')
-            spawn(); door(); bits(9)
+            fill(0..21, 9..10)
+            spawn(2, 8); door(2); bits(9)
         },
 
         // 10 — a portal hangs in mid-air above an LED field; hidden spikes wait where you land, and a saw waits at the door

@@ -135,6 +135,10 @@ class World2DesignTest : DesignTestBase() {
             8 to listOf(
                 { rightUntil { it.player.box.cx > 15.3f }.waitFor { it.group('a').oy > 3f }.waitFor { it.group('a').oy < 0.3f }.rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
             ),
+            9 to listOf(
+                { waitFor { it.swapped }.leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.35f).landLeft()
+                    .leftUntil { !it.swapped && it.player.grounded }.leftUntil { it.player.box.cx < 12.5f }.waitFor { World2Rooms.sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+            ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)
