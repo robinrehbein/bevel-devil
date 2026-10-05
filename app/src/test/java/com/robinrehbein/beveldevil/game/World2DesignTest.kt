@@ -203,6 +203,7 @@ class World2DesignTest : DesignTestBase() {
             32 to listOf({ World2Rooms.l32(this) }),
         ) +
             World2Rooms.solutions.mapValues { (_, s) -> listOf<Solution>({ s(this) }) } +
+            World2RoomsD.solutions +
             mapOf(
                 18 to listOf<Solution>({ World2Rooms.l18(this) }, { World2Rooms.l18r2(this) }),
                 20 to listOf<Solution>({ World2Rooms.l20(this) }, { World2Rooms.l20r2(this) }),
