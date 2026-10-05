@@ -234,12 +234,15 @@ class World2Test {
     }
 
     @Test
-    fun theFloorBeneathBobbyTablesIsAWormhole() {
-        // falling into the hole is the way on; jumping over it leaves you in front of the LED field
-        b(38).hopR(5.9f).right(1f).expect(WorldState.DEAD)
-        val fell = b(38).right(0.6f).wait(1.4f)
-        assertTrue("x=${fell.world.player.box.cx}", fell.world.player.box.cx in 23f..26f)
-        fell.expect(WorldState.PLAYING)
+    fun theHolesBeneathBobbyTablesAreWormholes() {
+        // the first hole leads home, alive
+        val home = b(38).rightTo(14.4f).wait(1.2f)
+        home.expect(WorldState.PLAYING)
+        assertTrue("x=${home.world.player.box.cx}", home.world.player.box.cx < 6f)
+        // the second one leads up to the roof, at the far right end
+        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.wait(0.1f)
+        roof.expect(WorldState.PLAYING)
+        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx > 26f && roof.world.player.box.b < 8.5f)
     }
 
     @Test
@@ -555,7 +558,9 @@ class World2Test {
     @Test fun level37WaitingOnTheSecondSwitchIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
         .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f).wait(2f).expect(WorldState.DEAD)
-    @Test fun level38() = b(38).right(0.60f).wait(1.00f).right(0.10f).rightJump(0.55f).expect(WorldState.WON)
+    @Test fun level38() { World2DesignTest.play(38) }
+    /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
+    @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
     @Test fun level39() = b(39).wait(0.4f).pauseResume().hopR(18.6f).right(3f).expect(WorldState.WON)
     @Test fun level40() = b(40).right(0.60f).rightJump(0.12f).leftJump(0.25f).right(0.60f).rightJump(0.25f)
         .jump(0.16f).right(0.60f).right(0.10f).left(0.03f).leftJump(0.25f).right(0.60f).right(0.25f).rightJump(0.55f).expect(WorldState.WON)

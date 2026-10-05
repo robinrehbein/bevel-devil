@@ -18,6 +18,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
+import com.robinrehbein.beveldevil.game.Trigger.Touch
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Zone
 
@@ -185,6 +186,32 @@ object World2Part3C {
             fill(19..20, 1..2, 'c'); fill(28..29, 1..2, 'd'); fill(2..3, 1..2, 'e')
             fill(21..23, 11..14); fill(26..30, 9..9)
             spawn(13, 14); door(30, 14)
+        },
+
+        // 38 — Bobby Tables (a puzzle room: R3 the portals, U1 the floor). DROP TABLE floor: the lane has two holes with a wormhole at the bottom of
+        // each. The first leads back to the start, the second up to the roof, at the far right end, which is the way on: the door sits at the other
+        // end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof: keep moving
+        Level(
+            name = T("Bobby Tables", "Klein Bobby Tables"),
+            intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
+            start = listOf(
+                Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 3 to 14, twoWay = false),
+                Portal('3', 21 to 17, 28 to 7, twoWay = false), Portal('4', 22 to 17, 28 to 7, twoWay = false),
+            ),
+            traps = listOf(
+                trap(Touch('i'), Play(Card.SINKING), Fall('i'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?"), delay = 0.5f),
+                trap(Touch('j'), Fall('j'), say("DROP TABLE roof;", "DROP TABLE dach;"), delay = 0.45f),
+                trap(Touch('k'), Fall('k'), say("DROP TABLE students;", "DROP TABLE schueler;"), delay = 0.45f),
+            ),
+        ) {
+            border(); floor()
+            pit(14..15); pit(21..22)
+            fill(16..20, 15..17, 'i')
+            fill(24..25, 9..14)
+            fill(2..30, 8..8)
+            fill(17..19, 8..8, 'j'); fill(9..11, 8..8, 'k')
+            fill(3..5, 6..7); fill(1..2, 4..5)
+            spawn(2, 14); door(1, 3)
         },
     )
 }

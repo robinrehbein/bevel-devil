@@ -210,6 +210,9 @@ object World2Rooms {
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
         .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f)
 
+    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole, along the roof from the far end to the door, never standing on the planks. */
+    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.leftTo(7.0f).leftJump(0.5f).landLeft().hopL(4.4f, 0.5f).left(1f)
+
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
     )
