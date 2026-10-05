@@ -100,23 +100,24 @@ object World1Part3 {
             put(3, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 35 — the door approaches in stages, stalls at 99% and then jumps back. Just wait.
-        // NOD: video buffering
+        // 35 — breather: the door is far away and buffering. It jumps up onto the high ledge as you start to climb (23%), and when you land
+        // up there it is gone again: back down on the ground, in the middle of the room, behind you. The way down is straight down
+        // TWIST: DoorTo (the one fleeing door of the act)
         Level(
             name = T("Home Network", "Heimnetz"),
             intro = T("My internet is slow today. Don't mind me.", "Mein Internet ist heute lahm. Lass dich nicht stören."),
+            hint = T("The door buffers: it goes where you are not. Climb up, and come straight back down.", "Die Tür lädt: Sie geht dorthin, wo du nicht bist. Klettere hoch und komm direkt wieder runter."),
             traps = listOf(
-                trap(After(2.6f), Play(Card.SHY_DOOR), DoorTo(23, 10, speed = 5f), Say(T("Buffering... 23%", "Lädt... 23 %"))),
-                trap(After(4.4f), DoorTo(16, 11, speed = 5f), Say(T("Buffering... 67%", "Lädt... 67 %"))),
-                trap(After(6.2f), DoorTo(9, 12, speed = 5f), Say(T("Buffering... 99%", "Lädt... 99 %"))),
-                trap(After(8.3f), DoorTo(28, 2, speed = 30f), Say(T("Connection lost. Retrying...", "Verbindung verloren. Neuer Versuch..."))),
-                trap(After(9.6f), DoorTo(4, 14, speed = 20f), Say(T("100%. Was that so hard?", "100 %. War das so schwer?"))),
+                trap(PastX(8f), Play(Card.SHY_DOOR), DoorTo(30, 8, speed = 14f), Say(T("Buffering... 23%", "Lädt... 23 %"))),
+                trap(Landed(24f, 30.5f), DoorTo(30, 2, speed = 25f), Say(T("Connection lost. Retrying...", "Verbindung verloren. Neuer Versuch..."))),
+                trap(Landed(24f, 30.5f), DoorTo(14, 2, speed = 25f), delay = 0.3f),
+                trap(Landed(24f, 30.5f), DoorTo(14, 14, speed = 25f), delay = 1.0f),
+                trap(Landed(24f, 30.5f), Say(T("100%. Was that so hard?", "100 %. War das so schwer?")), delay = 1.4f),
             ),
         ) {
             border(); floor()
-            fill(7..26, 14..14, '^')
-            fill(26..30, 7..7)
-            put(2, 14, 'P'); put(29, 6, 'D')
+            fill(17..20, 13..13); fill(21..23, 11..11); fill(25..30, 9..9)
+            put(2, 14, 'P'); put(29, 14, 'D')
         },
 
         // 36 — a piece of the golden frame breaks off the ceiling and lands on the path; hopping onto it sprouts spikes behind it

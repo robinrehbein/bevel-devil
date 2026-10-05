@@ -24,5 +24,10 @@ object World1RoomsD {
                 .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft()
                 .waitFor { it.group('s').oy >= 6.9f }.leftJump(0.4f).landLeft().left(3f) },
         ),
+        // 35: up the three platforms (the door jumps up as you start, and is gone again when you land), off the left end and back along the ground
+        35 to listOf<Solution>(
+            { rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
+                .left(3f) },
+        ),
     )
 }
