@@ -94,18 +94,18 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30, 31, 32, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
+        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 30, 31, 32, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // in these the naive runner is only stopped: the chip under load, a slab, a wall, a ledge he cannot reach
-        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 18, 24, 29, 33, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
+        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, the fallen slabs of the waiting room
+        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 23, 24, 29, 33, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
     @Test
     fun theObviousRunDiesAtTheSecondTrap() {
         b(20).hopR(13f).wait(1.5f).expect(WorldState.DEAD)
-        b(24).hopR(3.6f).wait(1.6f).expect(WorldState.DEAD)
+        b(24).leftTo(27f).landLeft().leftTo(12f).wait(0.5f).expect(WorldState.DEAD)
         b(27).rightTo(5f).rightTo(15.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.DEAD)
         b(31).rightTo(15.5f).waitCooled('h').rightTo(19f).rightJump(0.55f).landRight().wait(1.5f).expect(WorldState.DEAD)
         b(34).hopR(8f).right(3f).expect(WorldState.DEAD)
@@ -150,19 +150,21 @@ class World3Test {
         val bot = b(8).hopR(14f).right(3f)
         bot.expect(WorldState.DEAD)
         assertEquals(Card.BIT_FLIP, bot.world.lastCard)
-        val hot = b(20).hopR(13f).wait(1.5f)
-        hot.expect(WorldState.DEAD)
-        assertEquals(Card.OVERCLOCKED, hot.world.lastCard)
+        // 21 (rebuilt): the wall that follows you is the card trap of the room
+        val wall = b(21).right(14f)
+        wall.expect(WorldState.DEAD)
+        assertEquals(Card.STALKER, wall.world.lastCard)
     }
 
     // ---------- reverse trolls: the scary thing is harmless, the calm thing bites ----------
 
     @Test
     fun aGlowingPlateThatIsCoolWhileThePlainFloorBurns() {
-        val bot = b(20).rightTo(11f)
+        // 20 (rebuilt): the glowing plate is declared and cool, the plain floor is not declared at all until it flares
+        val bot = b(20).rightTo(5.2f)
         assertTrue(bot.world.heaters['h']!!.declared && bot.world.heaters['h']!!.heat < 0.15f)
         bot.expect(WorldState.PLAYING)
-        assertFalse(b(20).hopR(13f).world.heaters['f']!!.declared)
+        assertTrue(World3.levels[19].start.none { it is Action.Heat && it.group == 'f' })
     }
 
     @Test
@@ -391,9 +393,9 @@ class World3Test {
 
     @Test
     fun overclockedFloorOnlyBurnsWhoStops() {
-        b(20).hopR(13f).wait(1.5f).expect(WorldState.DEAD)
-        val hop = b(20).hopR(13f).right(1.5f)
-        assertTrue(hop.world.heaters['f']!!.heat < 1f)
+        // 20 (rebuilt): standing on the plain floor burns, standing on the glowing plate does not
+        b(20).rightTo(8.0f).wait(1.5f).expect(WorldState.DEAD)
+        b(20).rightTo(5.2f).wait(1.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -445,14 +447,15 @@ class World3Test {
     @Test fun level16() { World3DesignTest.play(16) }
 
     // ---------- Act 2: Überhitzung ----------
-    @Test fun level17() = b(17).rightTo(15.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level18() = b(18).hopR(3f).waitCooled('c').rightTo(19f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level19() = b(19).hopR(6.8f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level20() = b(20).hopR(13f).rightTo(21.6f).rightJump(0.55f).landRight().wait(0.1f).waitWhile(3f) { it.door.moving }.waitCooled('f').waitCooled('g').left(4f).expect(WorldState.WON)
-    @Test fun level21() = b(21).rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level22() = b(22).rightUntilSaw(4.3f).rightJump(0.55f).landRight().rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level23() = b(23).rightTo(7f).waitPowered('a').rightTo(24.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level24() = b(24).hopR(3.6f).hopR(8.9f).hopR(14.9f).hopR(20.9f).hopR(26.9f).right(2f).expect(WorldState.WON)
+    // 17-24 are the rebuilt block C: the registered bot solutions of World3RoomsC
+    @Test fun level17() { World3DesignTest.play(17) }
+    @Test fun level18() { World3DesignTest.play(18) }
+    @Test fun level19() { World3DesignTest.play(19) }
+    @Test fun level20() { World3DesignTest.play(20) }
+    @Test fun level21() { World3DesignTest.play(21) }
+    @Test fun level22() { World3DesignTest.play(22) }
+    @Test fun level23() { World3DesignTest.play(23) }
+    @Test fun level24() { World3DesignTest.play(24) }
     @Test fun level25() = b(25).rightTo(11.4f).rightJump(0.55f).landRight().waitCooled('h').rightTo(15.5f).rightJump(0.55f).landRight().rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level26() = b(26).rightTo(13.5f).waitCooled('h').waitPowered('Z', false).rightTo(23.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level27() = b(27).rightTo(5f).rightTo(15.4f).rightJump(0.55f).landRight().rightTo(23.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)

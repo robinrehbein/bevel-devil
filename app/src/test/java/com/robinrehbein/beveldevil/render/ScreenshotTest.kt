@@ -803,7 +803,7 @@ class ScreenshotTest {
             film(13).apply { play(1.0f); save("144-w3-l13-fuse-box$tag") }
             film(16).apply { runTo(6f); play(0.3f); save("145-w3-l16-motherboard$tag") }
             // act 2: Überhitzung
-            film(17).apply { game.input.right = true; play(4f) { w().heaters['h']!!.heat > 0.7f }; save("146-w3-l17-hot-plate$tag") }
+            film(17).apply { game.input.right = true; play(4f) { w().heaters['g']!!.heat > 0.7f }; save("146-w3-l17-hot-plate$tag") }
             film(18).apply { play(1.5f); save("147-w3-l18-full-load$tag") }
             film(19).apply { play(1.0f); save("148-w3-l19-melt-fuse$tag") }
             film(22).apply { play(1.8f); save("149-w3-l22-heat-soak$tag") }
