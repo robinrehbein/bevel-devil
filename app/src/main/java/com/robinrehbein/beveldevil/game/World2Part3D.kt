@@ -45,8 +45,8 @@ object World2Part3D {
 
         // 41 — security audit (a trap room: U1 the floor, zero trust: every stone is a different lie). Three stones lie over the pit: the first
         // falls a moment after you step on it, the second drops at once (hop it), the third vanishes under whoever crosses it. On the far side the
-        // steps lie as well, and the way to the door is back along a deck over the pit: a plank falls out of it ahead of you as you come, and as you
-        // land behind the hole the next one is revoked. Rematch: every lie is shuffled (the first stone drops at once, the second sinks slowly
+        // steps lie as well, and the way to the door is back along a deck over the pit, to the middle of it: a plank falls out of it ahead of you
+        // as you come, and as you land behind the hole the next one is revoked. Rematch: every lie is shuffled (the first stone drops at once, the second sinks slowly
         // under whoever stands on it, step 4 vanishes at once)
         Level(
             name = T("Security Audit", "Sicherheitsaudit"),
@@ -56,7 +56,7 @@ object World2Part3D {
                 trap(Touch('b'), Move('b', 0f, 12f, 9f), say("Stone 2: token expired.", "Stein 2: Token abgelaufen."), delay = 0.08f),
                 trap(Touch('c'), Hide('c'), say("Stone 3: certificate mismatch.", "Stein 3: Zertifikat passt nicht."), delay = 0.3f),
                 trap(Landed(25f, 28f), Hide('s'), say("Step 4: not on the list.", "Stufe 4: nicht auf der Liste."), delay = 0.7f),
-                trap(Zone(20.5f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: out of scope.", "Planke 5: außerhalb des Prüfbereichs.")),
+                trap(Zone(22.8f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: out of scope.", "Planke 5: außerhalb des Prüfbereichs.")),
                 trap(Touch('t'), Hide('q'), say("Plank 6: who audits the auditors?", "Planke 6: Wer prüft die Prüfer?"), delay = 0.2f),
             ),
             // rematch: re-audit. The same stones, but the lies are shuffled: the first one drops at once now, so round 1's run over it ends in the
@@ -69,7 +69,7 @@ object World2Part3D {
                         trap(Touch('b'), Move('b', 0f, 12f, 2.5f), say("Stone 2: trusted. Slowly less so.", "Stein 2: vertrauenswürdig. Langsam immer weniger."), delay = 0.4f),
                         trap(Touch('c'), Hide('c'), say("Stone 3: still not trusted. Just later.", "Stein 3: weiterhin nicht vertrauenswürdig. Nur später."), delay = 0.37f),
                         trap(Landed(25f, 28f), Hide('s'), say("Step 4: audit trail missing. So is the step.", "Stufe 4: Prüfpfad fehlt. Die Stufe auch."), delay = 0.3f),
-                        trap(Zone(20.5f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: re-scoped.", "Planke 5: neu zugeschnitten.")),
+                        trap(Zone(22.8f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: re-scoped.", "Planke 5: neu zugeschnitten.")),
                         trap(Touch('t'), Hide('q'), say("Plank 6: the audit was the exploit.", "Planke 6: Das Audit war der Exploit."), delay = 0.2f),
                     ),
                 ),
@@ -78,9 +78,9 @@ object World2Part3D {
             border()
             fill(0..5, 15..17); fill(17..30, 15..17)
             fill(6..8, 15..15, 'a'); fill(9..11, 15..15, 'b'); fill(12..14, 15..15, 'c')
-            fill(1..27, 10..10); fill(15..17, 10..10, 'p'); fill(10..12, 10..10, 'q'); fill(13..14, 10..10, 't')
+            fill(1..27, 10..10); fill(19..21, 10..10, 'p'); fill(14..16, 10..10, 'q'); fill(17..18, 10..10, 't')
             fill(25..27, 14..14, 's'); fill(28..30, 12..14)
-            spawn(2, 14); door(2, 9); bits(41)
+            spawn(2, 14); door(11, 9); bits(41)
         },
 
         // 42 — gold mine (a puzzle room: R5 two floors, R7 the bait; U15 the easy way is the trap). You start on the deck over the lane, the door is
