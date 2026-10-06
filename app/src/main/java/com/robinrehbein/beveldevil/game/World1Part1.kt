@@ -8,6 +8,7 @@ import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Saw
 import com.robinrehbein.beveldevil.game.Action.Say
@@ -197,15 +198,15 @@ object World1Part1 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 7 — a building site: a prefab piece of the upper floor drops onto whoever slows down under it (its hole waits on the way
-        // back), the first prefab panel sinks as you land, so does the bank behind it, and the upper floor you climb to is prefab
-        // too: its panel over the pit goes the moment you stand on it
+        // 7 — a building site: a prefab piece of the upper floor drops in front of whoever runs at it (its hole waits on the way
+        // back, right in front of the door), the first prefab panel sinks as you land, so does the bank behind it, and the upper
+        // floor you climb to is prefab too: its panel over the pit goes the moment you stand on it
         Level(
             name = T("Prefab", "Plattenbau"),
             intro = T("They still build things properly down here.", "Hier unten baut man noch mit Qualität."),
             hint = T("Prefab panels sink the moment you land. Keep hopping. Upstairs, the piece that fell left a hole.", "Fertigteile sinken, sobald du landest. Hüpf weiter. Oben hat das Stück, das gefallen ist, ein Loch hinterlassen."),
             traps = listOf(
-                trap(PastX(8.6f), Fall('c'), Say(T("Delivery! Ground floor, express.", "Lieferung! Erdgeschoss, per Express."))),
+                trap(PastX(9.4f), Fall('c'), Say(T("Delivery! Ground floor, express.", "Lieferung! Erdgeschoss, per Express."))),
                 trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, 12f, 8f), Say(T("Rated for one person. Briefly.", "Zugelassen für eine Person. Kurz.")), delay = 0.45f),
                 trap(Touch('k'), Move('k', 0f, 12f, 8f), Say(T("The ground floor is optional too.", "Das Erdgeschoss ist auch optional.")), delay = 0.5f),
                 // hopping back off the first panel strands nobody: the start floor gives way a moment after it sank
@@ -217,11 +218,11 @@ object World1Part1 {
             fill(1..16, 15..17, 's')
             fill(18..21, 15..15, 'a'); fill(23..30, 15..15, 'k')
             fill(27..28, 13..14); fill(29..30, 11..14)
-            fill(1..28, 9..9); fill(18..20, 9..9, 'd'); fill(8..9, 9..9, 'c')
-            put(2, 14, 'P'); put(2, 8, 'D')
+            fill(1..28, 9..9); fill(18..20, 9..9, 'd'); fill(12..13, 9..9, 'c')
+            put(1, 14, 'P'); put(11, 8, 'D')
         },
 
-        // 8 — the door hangs from the ceiling above the start. Hop the spike and the room turns over in mid-hop: whoever keeps flying
+        // 8 — the door hangs from the ceiling a few steps right of the start. Hop the spike and the room turns over in mid-hop: whoever keeps flying
         // right lands in the spikes of the ceiling, so you steer back in the air; the way home is the ceiling, stalactites pop up on it,
         // and at the door Mephi turns the room around once more. Rematch: the room is upside down from the first steps and the door
         // hangs at the far end; halfway there it turns back under you
@@ -233,8 +234,8 @@ object World1Part1 {
             traps = listOf(
                 trap(Airborne(19.5f, 23f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Up is the new down.", "Oben ist das neue Unten."))),
                 trap(Zone(16.5f, 0.5f, 19.5f, 2.6f), Show('S'), Say(T("Mind the stalactites. They're new.", "Vorsicht, Stalaktiten. Ganz neu."))),
-                trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Ah, the door. Let me get that for you.", "Ah, die Tür. Lass mich dir helfen."))),
-                trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Kidding.", "War nur ein Scherz."))),
+                trap(Zone(10f, 0.5f, 12f, 2.6f), Gravity(false), Say(T("Ah, the door. Let me get that for you.", "Ah, die Tür. Lass mich dir helfen."))),
+                trap(Zone(0f, 4f, 10f, 11f), Gravity(true), Say(T("Kidding.", "War nur ein Scherz."))),
             ),
             // rematch: upside down from the first steps, the door at the far end of the ceiling; the ceiling's spikes are hopped head
             // down, and halfway the room turns back under you, over the floor spike: the way on is the floor, and at the end the room
@@ -249,14 +250,14 @@ object World1Part1 {
                         trap(Zone(17.5f, 0.5f, 19.5f, 2.6f), Gravity(false), Say(T("Floor's back. Mind the furniture.", "Der Boden ist zurück. Vorsicht, Möbel."))),
                         trap(Zone(26f, 9f, 29f, 15.5f), Gravity(true), Say(T("Door's upstairs. Elevator's me.", "Die Tür ist oben. Der Aufzug bin ich."))),
                     ),
-                ) { put(2, 1, '.'); put(30, 1, 'D'); put(9, 1, 'v'); put(14, 1, '.'); put(16, 1, 'S') },
+                ) { put(6, 1, '.'); put(30, 1, 'D'); put(9, 1, 'v'); put(14, 1, '.'); put(16, 1, 'S') },
             ),
         ) {
             border(); floor()
             put(21, 14, '^')
             put(14, 1, 'S')
             fill(24..30, 1..1, 'v')
-            put(2, 14, 'P'); put(2, 1, 'D')
+            put(2, 14, 'P'); put(6, 1, 'D')
         },
 
         // 9 — spawn on the upper deck, the door on the far right of the ground floor behind a copper wall to the ceiling, the switch
@@ -285,7 +286,8 @@ object World1Part1 {
         },
 
         // 10 — the way home runs left along the ground floor with a concrete wall on your heels, up a stair, and back along the
-        // upper floor; the wall picks up speed at the stair, and a spike bed grows where the hop over the step lands
+        // upper floor to the door in its middle; the wall picks up speed at the stair, and a spike bed grows where the hop over the
+        // step lands
         Level(
             name = T("Homeward", "Heimweg"),
             intro = T("I aired the place out just for you.", "Ich habe extra für dich gelüftet."),
@@ -301,19 +303,20 @@ object World1Part1 {
             fill(29..30, 12..14, 'a')
             fill(3..4, 13..14); fill(1..2, 11..14)
             fill(3..30, 9..9); put(9, 8, '#'); fill(14..15, 8..8, 'A')
-            put(26, 14, 'P'); put(29, 8, 'D')
+            put(26, 14, 'P'); put(16, 8, 'D')
         },
 
-        // 11 — a deck over the creek: a pothole opens in it ahead of you, you drop off its end onto the left bank where the
-        // ceiling drops a delivery, and the way to the door is the creek itself: stones that crumble, one of them in no time, up to the
-        // little bank in the middle of the water (the deck you came along has no bank under its far end)
+        // 11 — a deck over the creek: a pothole opens in it ahead of you, you drop off its end onto the left bank, and a fish leaps
+        // out of the water right where you would hop: wait for it to dive. The way to the door is the creek itself: stones that
+        // crumble, one of them in no time, up to the little bank in the middle of the water (the deck you came along has no bank under
+        // its far end)
         Level(
             name = T("The Creek", "Bachlauf"),
             intro = T("Fresh water, fresh stones. Don't get attached.", "Frisches Wasser, frische Steine. Bind dich nicht."),
-            hint = T("The stones don't like being stood on. Hop on, hop off.", "Die Steine mögen es nicht, wenn man auf ihnen steht. Drauf, runter."),
+            hint = T("The fish bites whoever hops at once: let it dive. The stones don't like being stood on. Hop on, hop off.", "Der Fisch beißt alle, die sofort springen: Lass ihn abtauchen. Die Steine mögen es nicht, wenn man auf ihnen steht. Drauf, runter."),
             traps = listOf(
                 trap(BeforeX(16f), Fall('d'), Say(T("Bridge works ahead. Surprise.", "Brückenarbeiten voraus. Überraschung."))),
-                trap(Landed(0f, 4.5f), Fall('h'), Say(T("Special delivery from upstairs.", "Spezialzustellung von oben.")), delay = 0.4f),
+                trap(Zone(2.2f, 13f, 4.5f, 15.5f), PathSaw(9f, 4.5f to 17.0f, 4.5f to 12.2f, 4.5f to 19.4f, loop = true), Say(T("Fresh fish. Very fresh. It bites.", "Frischer Fisch. Sehr frisch. Er beißt."))),
                 trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), Fall('s'), Say(T("This stone is shy.", "Dieser Stein ist schüchtern.")), delay = 0.3f),
                 trap(Touch('c'), Fall('c'), Say(T("Faster stones. Slower you.", "Schnellere Steine. Langsamerer du.")), delay = 0.2f),
             ),
@@ -321,20 +324,22 @@ object World1Part1 {
             border(); floor(); pit(4..18); pit(25..30)
             fill(1..3, 15..17, 's')
             fill(5..9, 15..15, 'a'); fill(12..14, 15..15); fill(17..18, 15..15, 'c')
-            fill(4..30, 9..9); fill(10..11, 9..9, 'd'); fill(1..3, 1..3, 'h')
-            put(29, 8, 'P'); put(20, 14, 'D')
+            fill(4..30, 9..9); fill(10..11, 9..9, 'd')
+            put(29, 8, 'P'); put(19, 14, 'D')
         },
 
         // 12 — spawn on the right, door on the left. Hop the spike and the keys swap as you land, and the spike you hopped comes
-        // sliding after you: whoever stops to think is caught; the next hop and the next spike are done with swapped hands
+        // sliding after you: whoever stops to think is caught; the edge of the pit sinks as you come (COLLAPSE), and the last spike
+        // shuffles at you as you land behind the pit: the next hops are done with swapped hands
         Level(
             name = T("Return Trip", "Rückreise"),
             intro = T("The door is on the left. I know. Unusual.", "Die Tür ist links. Ich weiß. Ungewohnt."),
             hint = T("After the first hop your keys change sides. Think fast, not long: the spike behind you is not done with you.", "Nach dem ersten Sprung wechseln die Tasten die Seite. Denk schnell, nicht lang: Der Stachel hinter dir ist noch nicht fertig mit dir."),
-            legend = mapOf('M' to Glyph(spike = true)),
+            legend = mapOf('M' to Glyph(spike = true), 'N' to Glyph(spike = true)),
             traps = listOf(
-                trap(Landed(15f, 23.8f), Play(Card.COLLAPSE), Swap(true), Move('M', -10f, 0f, 4.5f), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
-                trap(BeforeX(13.5f), Say(T("That pit is real. Unlike my promises.", "Das Loch ist echt. Anders als meine Versprechen."))),
+                trap(Landed(15f, 23.8f), Swap(true), Move('M', -10f, 0f, 4.5f), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
+                trap(BeforeX(15.2f), Play(Card.COLLAPSE), Move('e', 0f, 4f, 10f), Say(T("That pit is real. And it grows.", "Das Loch ist echt. Und es wächst."))),
+                trap(Landed(8f, 10.9f), Move('N', 2f, 0f, 2.5f), Say(T("The last spike wants a word.", "Der letzte Stachel will dich sprechen."))),
                 trap(Landed(2.5f, 7.5f), Swap(false), Say(T("Keys back. Old habits die hard.", "Tasten zur\u00fcck. Alte Gewohnheiten sterben langsam."))),
             ),
             // rematch: the keys are swapped from the first step, and a spike slides at you head-on: hop it with the swapped hands; behind
@@ -344,14 +349,16 @@ object World1Part1 {
                     T("Rematch. Same trip, other luggage.", "Revanche. Gleiche Reise, anderes Gepäck."),
                     hint = T("Swapped from the start, and back to normal behind the pit. The sliding spike wants a hop.", "Vertauscht ab dem Start, und hinter dem Loch wieder normal. Der rutschende Stachel will übersprungen werden."),
                     traps = listOf(
-                        trap(BeforeX(28.2f), Play(Card.COLLAPSE), Swap(true), Move('M', 12f, 0f, 6.5f), Say(T("Keys packed already. Left is right. Again.", "Tasten schon gepackt. Links ist rechts. Wieder."))),
+                        trap(BeforeX(28.2f), Swap(true), Move('M', 12f, 0f, 6.5f), Say(T("Keys packed already. Left is right. Again.", "Tasten schon gepackt. Links ist rechts. Wieder."))),
+                        trap(BeforeX(15.2f), Play(Card.COLLAPSE), Move('e', 0f, 4f, 10f), Say(T("The pit had a growth spurt.", "Das Loch hatte einen Wachstumsschub."))),
                         trap(Landed(7f, 10.9f), Swap(false), Say(T("Unpacked early. Left is left. Surprise.", "Früh ausgepackt. Links ist links. Überraschung."))),
+                        trap(Landed(7.5f, 10.9f), Move('N', 2f, 0f, 2.5f)),
                     ),
                 ) { put(24, 14, '.'); put(18, 14, 'M'); put(29, 14, '.'); put(30, 14, 'P') },
             ),
         ) {
-            border(); floor(); pit(11..12)
-            put(24, 14, 'M'); put(6, 14, '^')
+            border(); floor(); pit(11..13); put(13, 15, 'e')
+            put(24, 14, 'M'); put(6, 14, 'N')
             put(29, 14, 'P'); put(2, 14, 'D')
         },
 
@@ -381,7 +388,7 @@ object World1Part1 {
 
         // 14 — the door is in the middle of the ground floor, right behind a wall, so take the lifts: the first one rises to the upper
         // floor and carries on into the ceiling spikes, a saw rolls at you along the floor, and the second lift goes down, and goes on
-        // down into the ground; the door is back under the upper floor
+        // down into the ground; the door is back under the upper floor, and the ground floor right in front of it gives way
         Level(
             name = T("Performance Review", "Mitarbeitergespräch"),
             intro = T("Please hold. Your call is important to us.", "Bitte warten. Ihr Anliegen ist uns wichtig."),
@@ -392,10 +399,11 @@ object World1Part1 {
                 trap(Zone(4f, 12f, 6f, 15f), Move('f', 0f, 12f, 8f), delay = 0.5f),
                 trap(PastX(10f), Play(Card.DEVIL_SAW), Saw(26.5f, 8.4f, -5.5f, 0f, 0.62f), Say(T("Feedback is a gift. This one rolls.", "Feedback ist ein Geschenk. Dieses rollt."))),
                 trap(Zone(25f, 7f, 27f, 9.5f), Move('b', 0f, 6.5f, 4f), Say(T("Going down. Further than you asked.", "Abwärts. Weiter, als du wolltest."))),
+                trap(Zone(17.6f, 12f, 18.4f, 15.5f), Move('g', 0f, 12f, 14f), Say(T("Ground floor. Budget cuts.", "Erdgeschoss. Sparmaßnahmen."))),
             ),
         ) {
             border(); floor()
-            fill(1..3, 15..17, 'f'); fill(4..5, 15..17, 'a')
+            fill(1..3, 15..17, 'f'); fill(4..5, 15..17, 'a'); fill(16..17, 15..17, 'g')
             fill(6..7, 10..14)
             fill(6..24, 9..9); fill(25..26, 9..9, 'b'); fill(27..30, 1..14)
             put(4, 3, 'v'); put(5, 3, 'v')
