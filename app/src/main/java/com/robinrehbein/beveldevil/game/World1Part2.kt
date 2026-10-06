@@ -124,10 +124,10 @@ object World1Part2 {
             rematch = listOf(
                 Round(
                     T("Rematch. Evening class: the horse is hot now.", "Revanche. Abendkurs: Das Pferd ist jetzt heiß."),
-                    hint = T("Let the saw pass before you mount. Mind the gap in the balcony.", "Lass die Säge vorbei, bevor du aufsteigst. Achtung, Lücke im Balkon."),
+                    hint = T("Let the saw pass before you mount. The jump rope is a motion sensor now: wait until the beam is dark. Mind the gap in the balcony.", "Lass die Säge vorbei, bevor du aufsteigst. Das Seil ist jetzt ein Bewegungsmelder: Warte, bis der Strahl dunkel ist. Achtung, Lücke im Balkon."),
                     traps = listOf(
                         trap(PastX(3.2f), Play(Card.GRAND_FINALE), PathSaw(5.5f, 5f to 11.9f, 11f to 11.9f, 11f to 14.4f, 5f to 14.4f, loop = true), Say(T("Evening class. Same horse, sharper lap.", "Abendkurs. Gleiches Pferd, schärfere Runde."))),
-                        trap(PastX(12f), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 0.9f)),
+                        trap(PastX(12f), Laser('A', 17 to 10, 17 to 14, on = 0.9f, off = 1.6f, delay = 0.2f), Say(T("Motion sensor installed. Please do not exercise.", "Bewegungsmelder installiert. Bitte nicht bewegen."))),
                         trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f)),
                         trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 22f to 8.4f), PathSaw(8f, 3f to 8.4f, 7f to 8.4f),
                             Say(T("Two saws on the balcony. And a gap. Enjoy.", "Zwei Sägen auf dem Balkon. Und eine Lücke. Viel Spaß."))),
