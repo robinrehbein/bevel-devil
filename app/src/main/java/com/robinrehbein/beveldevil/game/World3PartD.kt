@@ -67,12 +67,12 @@ object World3PartD {
             fill(7..24, 6..7); fill(7..24, 6..6, 'a')
             fill(1..10, 12..12, 'c'); fill(11..30, 12..12, 'b')
             fill(1..1, 11..11, '^'); fill(16..24, 8..9, 'v')
-            spawn(29, 1); door(29, 11)
+            spawn(24, 1); door(29, 11)
         },
 
         // 26 — two lanes of live copper and one cable that has opinions (U13, a trap room). Lower lane: as you pass the first post a tripwire
-        // arms itself ahead of you at ankle height (hop it), and the landing behind it gets a flash a moment after you touch down (keep
-        // going). Up onto the block at the far end, where a beam sweeps the top a moment after you land (do not admire the view), the hot
+        // arms itself ahead of you at ankle height (hop it), and as you touch down behind it the lane ahead flashes for a moment (let it).
+        // Up onto the block at the far end, where a beam sweeps the top a moment after you land (do not admire the view), the hot
         // step (it is hotter than it looks) and back along the upper lane to the door in its middle: a cable hangs over the way, cold until
         // you come up, then it warms up for a moment right in front of the door (wait before it, not under it).
         Level(
@@ -80,11 +80,11 @@ object World3PartD {
             intro = T("Mind the cable. It minds you.", "Achte auf das Kabel. Es achtet auf dich."),
             start = listOf(Heat('j', rise = 1.1f), Laser('c', 13 to 1, 13 to 8), Power('c', false)),
             traps = listOf(
-                trap(PastX(6.5f), Play(Card.SPIKE_SEED), Laser('a', 12 to 14, 13 to 14, on = 99f, delay = 0.55f), say("Tripwire. Self-assembling.", "Stolperdraht. Selbstmontierend.")),
-                trap(Landed(14.2f, 17.5f), Laser('b', 14 to 14, 19 to 14, on = 0.7f, off = 60f, delay = 0.65f), say("Landing light. It is on request. Yours.", "Landebeleuchtung. Auf Anfrage. Deine.")),
+                trap(PastX(6.5f), Laser('a', 12 to 14, 13 to 14, on = 99f, delay = 0.55f), say("Tripwire. Self-assembling.", "Stolperdraht. Selbstmontierend.")),
+                trap(Landed(14.2f, 17.5f), Laser('b', 17 to 14, 21 to 14, on = 0.6f, off = 60f, delay = 0.25f), say("Landing light. It lights the way. Briefly. Wait for it.", "Landebeleuchtung. Sie leuchtet den Weg. Kurz. Warte drauf.")),
                 trap(Landed(24.5f, 31f), Laser('d', 25 to 12, 30 to 12, on = 0.6f, off = 60f, delay = 0.95f), say("Rooftop scan. Please do not pose.", "Dach-Scan. Bitte nicht posieren.")),
-                trap(Landed(20f, 23.5f), HeatSpike('j', 0.75f), say("The step is a hot seat.", "Die Stufe ist ein heißer Stuhl.")),
-                trap(Zone(17.5f, 7f, 20f, 9.2f), Power('c', true), say("The cable is warming up. Take a seat. Not under it.", "Das Kabel läuft warm. Setz dich. Nicht darunter.")),
+                trap(Airborne(18.5f, 21.5f), HeatSpike('j', 0.75f), say("The step heats up while you are in the air. A hot seat.", "Die Stufe heizt, während du in der Luft bist. Ein heißer Stuhl.")),
+                trap(Zone(17.5f, 7f, 20f, 9.2f), Play(Card.BIOS), Power('c', true), say("The cable is warming up. Take a seat. Not under it.", "Das Kabel läuft warm. Setz dich. Nicht darunter.")),
                 trap(Zone(17.5f, 7f, 20f, 9.2f), Power('c', false), delay = 1.6f),
             ),
             hint = T("The wire only wakes up once you pass it. The cable on the upper lane takes a moment: let it.", "Der Draht wacht erst auf, wenn du vorbei bist. Das Kabel oben braucht einen Moment: gönn es ihm."),
@@ -93,7 +93,7 @@ object World3PartD {
             fill(1..19, 9..10)
             fill(25..30, 13..14); fill(20..23, 11..11)
             fill(20..23, 11..11, 'j')
-            spawn(); door(11, 8)
+            spawn(); door(12, 8)
         },
 
         // 27 ★ — a breather with one gag: the floor is a power strip, and the strip has to boot. As you come up to it, Mephi pulls the plug: the first
@@ -105,7 +105,7 @@ object World3PartD {
             intro = T("Surge protector: installed.", "Überspannungsschutz: eingebaut."),
             start = listOf(Heat('f', rise = 0.8f, cool = 6f)),
             traps = listOf(
-                trap(PastX(19.5f), Play(Card.THROTTLE), Heat('f', rise = 0.8f, cool = 6f), HeatSpike('f', 0.85f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
+                trap(PastX(21.6f), Play(Card.THROTTLE), Heat('f', rise = 0.8f, cool = 6f), HeatSpike('f', 0.85f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
                 trap(
                     PastX(3.2f),
                     Clock('a', on = 99f, off = 99f, phase = 197.4f), Clock('b', on = 99f, off = 99f, phase = 197.07f),
@@ -191,7 +191,7 @@ object World3PartD {
                 trap(Zone(19.3f, 13.5f, 23f, 15.2f), HeatSpike('c', 0.5f), say("Floor heating: on. Lingering: off.", "Fußbodenheizung: an. Herumstehen: aus.")),
                 trap(Zone(13f, 11f, 15.7f, 13f), HeatSpike('r', 0.5f), say("The roof is a radiator. Of course it is.", "Das Dach ist ein Heizkörper. Natürlich.")),
                 trap(Pressed('2'), HeatSpike('p', 0.8f), say("Thermostat: set to 'leave'. Step off.", "Thermostat: auf 'Geh weiter' gestellt. Runter da.")),
-                trap(Pressed('1'), Play(Card.COLLAPSE), Fall('s'), say("Thermostat: set to 'crush'. Stand still to enjoy.", "Thermostat: auf 'zerquetschen' gestellt. Stehenbleiben zum Genießen."), delay = 0.7f),
+                trap(Pressed('1'), Play(Card.CRUMBLE), Blink('k', on = 0.45f, off = 0.6f), say("Thermostat: set to 'flicker'. The floor under the pad agrees.", "Thermostat: auf 'Flackern' gestellt. Der Boden unter dem Knopf auch."), delay = 0.1f),
             ),
             hint = T("The pad opens the hatch above it for as long as you stand on it. Jump straight up, and do not stand on anything warm.", "Der Knopf öffnet die Luke über ihm, solange du draufstehst. Spring senkrecht hoch, und bleib auf nichts Warmem stehen."),
         ) {
@@ -200,7 +200,7 @@ object World3PartD {
             fill(19..22, 15..15, 'c'); fill(1..4, 15..15, 'h')
             fill(13..15, 13..13, 'r'); fill(5..6, 13..13, 'p')
             fill(3..4, 1..12, 'n')
-            fill(26..28, 1..1, 's')
+            pit(25..27); fill(25..27, 15..15, 'k')
             spawn(14, 14); door(2, 12)
         },
 
@@ -210,7 +210,7 @@ object World3PartD {
         // pattern and sink after you land, and whoever hops them by reflex lands on the plate behind them, which flares for whoever is in the
         // air.
         // Rematch: the test pattern is real this time. Round 1's wait for the spikes to sink is the end of you: hop them (the plate stays cold).
-        // The first step sinks instead of the second, and the floor in front of the spikes is a burn-in plate: no waiting there either.
+        // The first step sinks instead of the second, and the pin behind you does not wait.
         Level(
             name = T("Burn-in Test", "Einbrenntest"),
             intro = T("Stress test: walk to the door. Easy.", "Stresstest: lauf zur Tür. Ganz leicht."),
@@ -220,24 +220,23 @@ object World3PartD {
                 trap(Landed(4.6f, 7f), Play(Card.SINKING), Move('f', 0f, 2f, 0.9f), say("Step two failed the stress test. Keep climbing.", "Stufe zwei ist durch den Stresstest gefallen. Weiterklettern.")),
                 trap(Zone(15.5f, 7f, 17.5f, 9.2f), Move('Q', -15f, 0f, 5f), say("A test pin. It runs the shelf in the other direction.", "Ein Prüfstift. Er läuft das Regal in der Gegenrichtung ab.")),
                 trap(Landed(25f, 30f), Move('R', -16f, 0f, 5f), say("Test pattern: spikes. Just kidding. Mostly. Also, a pin.", "Testbild: Stacheln. War ein Scherz. Fast. Und ein Stift."), delay = 0.6f),
-                trap(Landed(25f, 30f), Hide('S'), delay = 0.4f),
+                trap(Landed(25f, 30f), Hide('S'), delay = 1.3f),
                 trap(Zone(19.6f, 11.6f, 22.6f, 13.7f), HeatSpike('t', 1f), say("Surprise! The test pattern has a second layer. A warm one.", "Überraschung! Das Testbild hat eine zweite Ebene. Eine warme.")),
             ),
             hint = T("The spikes in the lane are only a test pattern: let them sink, do not hop them. The pin behind you is slow.", "Die Stacheln in der Gasse sind nur ein Testbild: lass sie versinken, spring nicht drüber. Der Stift hinter dir ist langsam."),
             rematch = listOf(
                 Round(
                     T("The test pattern is real this time. Probably.", "Diesmal ist das Testbild echt. Wahrscheinlich."),
-                    hint = T("The spikes stay: hop them, the plate behind them is cold now. The first step is the soft one.", "Die Stacheln bleiben: spring drüber, die Platte dahinter ist jetzt kalt. Die erste Stufe ist die weiche."),
-                    start = listOf(Heat('w', rise = 0.8f, cool = 6f)),
+                    hint = T("The spikes stay, and the floor before them flares: hop both from well back. The first step is the soft one.", "Die Stacheln bleiben, und der Boden davor glüht auf: spring über beides, mit Anlauf. Die erste Stufe ist die weiche."),
+                    start = listOf(Heat('u', rise = 0.8f, cool = 6f)),
                     traps = listOf(
-                        trap(Landed(2.6f, 5f), Move('g', 0f, 2f, 0.9f), say("Round two: the first step failed too.", "Runde zwei: Die erste Stufe ist auch durchgefallen.")),
+                        trap(Landed(2.6f, 5f), Play(Card.SINKING), Move('g', 0f, 2f, 0.9f), say("Round two: the first step failed too.", "Runde zwei: Die erste Stufe ist auch durchgefallen.")),
                         trap(Zone(15.5f, 7f, 17.5f, 9.2f), Move('Q', -15f, 0f, 5f), say("Same test pin. Same direction. Different test.", "Gleicher Prüfstift. Gleiche Richtung. Anderer Test.")),
-                        trap(Landed(25f, 30f), Play(Card.HEADBUTT), Move('R', -16f, 0f, 5f), say("The pin behind you does not wait for spikes to sink.", "Der Stift hinter dir wartet nicht, bis Stacheln versinken."), delay = 0.6f),
-                        trap(Zone(21.4f, 13f, 24.5f, 15.2f), HeatSpike('w', 1f), say("Burn-in plate in front of the spikes. Nobody waits here for them to sink.", "Einbrennplatte vor den Stacheln. Hier wartet keiner, bis sie versinken."), delay = 0.5f),
+                        trap(Landed(25f, 30f), Move('R', -16f, 0f, 5f), say("The pin behind you does not wait for spikes to sink.", "Der Stift hinter dir wartet nicht, bis Stacheln versinken."), delay = 0.6f),
+                        trap(Zone(19.6f, 13.6f, 22.7f, 15.2f), HeatSpike('u', 1f), say("New test layer: the floor in front. Burn-in means burn-in.", "Neue Testebene: der Boden davor. Einbrennen heißt einbrennen.")),
                     ),
                 ) {
-                    fill(3..4, 13..14, 'g'); fill(5..6, 11..11, '#')
-                    fill(22..24, 15..15, 'w')
+                    fill(3..4, 13..14, 'g'); fill(5..6, 11..11, '#'); fill(20..22, 15..15, 'u')
                 },
             ),
         ) {
@@ -246,7 +245,7 @@ object World3PartD {
             fill(7..24, 9..10); fill(7..7, 11..14)
             put(23, 8, 'Q'); put(30, 14, 'R')
             fill(19..19, 14..14, 'S'); fill(16..17, 15..15, 't')
-            spawn(2, 14); door(11, 14)
+            spawn(2, 14); door(12, 14)
         },
 
         // 31 — a puzzle room (R11 cool the chips, R5 two floors, U3 the crane walks with you). The floor beyond a two-tile heatsink is a chip under load that
@@ -295,14 +294,13 @@ object World3PartD {
                 Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f), Heat('h', rise = 1.3f, cool = 6f),
             ),
             traps = listOf(
-                trap(Pressed('1'), Heat('c', rise = 2f, load = true), say("Wall cut. Core on. Everything is fine. Run.", "Wand aus. Kern an. Alles in Ordnung. Lauf.")),
-                trap(Zone(17.2f, 13f, 18.2f, 15.2f), Fall('r'), say("Insulation: on the house. Mind your head.", "Dämmung: aufs Haus. Kopf einziehen."), delay = 0.1f),
+                trap(Pressed('1'), Heat('c', rise = 2.6f, load = true), say("Wall cut. Core on. Everything is fine. Run.", "Wand aus. Kern an. Alles in Ordnung. Lauf.")),
+                trap(Pressed('1'), Fall('r'), say("Insulation: on the house. On a timer. Mind your head.", "Dämmung: aufs Haus. Mit Zeitschaltuhr. Kopf einziehen."), delay = 0.5f),
                 trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 29) to 14)),
-                trap(Zone(roomX(1, 4.4f), 13f, roomX(1, 5.6f), 15.2f), Fall('q'), say("The plates are warm. The ceiling noticed.", "Die Platten sind warm. Die Decke hat es gemerkt."), delay = 0.75f),
-                trap(Zone(roomX(1, 20.3f), 13f, roomX(1, 22.5f), 15.2f), HeatSpike('h', 0.5f), say("Behind the slab the floor is warm too. Keep moving.", "Hinter der Platte ist der Boden auch warm. In Bewegung bleiben.")),
+                trap(Zone(roomX(1, 4.4f), 13f, roomX(1, 5.6f), 15.2f), Fall('q'), say("The plates are warm. The ceiling noticed.", "Die Platten sind warm. Die Decke hat es gemerkt."), delay = 1.05f),
                 trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Did you think the reactor was one room?", "Dachtest du, der Reaktor ist ein Raum?"))),
-                trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
-                trap(PastX(roomX(2, 21.5f)), Fall('z'), say("The control rods drop. Behind you, if you are quick.", "Die Steuerstäbe fallen. Hinter dir, wenn du schnell bist."), delay = 0.15f),
+                trap(Airborne(roomX(2, 7.5f), roomX(2, 10.5f)), HeatSpike('f', 0.85f), say("Core temperature: yes. Measured in mid-air.", "Kerntemperatur: ja. Gemessen in der Luft.")),
+                trap(PastX(roomX(2, 18.5f)), Fall('z'), say("The control rods drop. In front of you, so you see them.", "Die Steuerstäbe fallen. Vor dir, damit du sie siehst."), delay = 0.15f),
                 trap(PastX(roomX(2, 25f)), say("The exit. Finally. It is warm, too.", "Der Ausgang. Endlich. Auch der ist warm.")),
             ),
             hint = T("The pad on the plateau cuts the wall and starts the chip: run across right after it. Beyond each door there is more room.", "Der Knopf auf dem Plateau schaltet die Wand ab und startet den Chip: lauf gleich danach drüber. Hinter jeder Tür ist noch Platz."),
@@ -316,19 +314,18 @@ object World3PartD {
                         Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f), Heat('e', rise = 0.8f, cool = 6f),
                     ),
                     traps = listOf(
-                        trap(Zone(6.6f, 13f, 7.6f, 15.2f), HeatSpike('c', 1f), say("The chip is at 100 per cent. Cooling is at your discretion.", "Der Chip ist bei 100 Prozent. Kühlen liegt in deinem Ermessen.")),
-                        trap(Zone(17.2f, 13f, 18.2f, 15.2f), Fall('r'), say("Same insulation. Different mood.", "Gleiche Dämmung. Andere Laune."), delay = 0.1f),
+                        trap(Pressed('1'), HeatSpike('c', 1f), say("The chip is at 100 per cent. Cooling is at your discretion.", "Der Chip ist bei 100 Prozent. Kühlen liegt in deinem Ermessen.")),
+                        trap(Touch('k'), Fall('r'), say("Same insulation. It lands while you cool off.", "Gleiche Dämmung. Sie landet, während du abkühlst."), delay = 0.5f),
                         trap(AtDoor, Play(Card.GRAND_FINALE), Extend(into = 1, warn = 1.0f, door = roomX(1, 29) to 14, line = T("Everything at once. The room included.", "Alles auf einmal. Der Raum inklusive."))),
-                        trap(PastX(roomX(1, 3.2f)), HeatSpike('g', 0.85f), say("The plates remember being stood on. They are hot about it.", "Die Platten erinnern sich ans Draufstehen. Sie sind sauer.")),
-                        trap(Zone(roomX(1, 11.2f), 13f, roomX(1, 12.2f), 15.2f), Fall('q'), say("Do not stop here. The ceiling remembers.", "Bleib hier nicht stehen. Die Decke merkt sich das."), delay = 0.75f),
+                        trap(Zone(roomX(1, 9.0f), 13f, roomX(1, 9.8f), 15.2f), Fall('q'), say("Do not run under it. The ceiling remembers.", "Lauf nicht drunter. Die Decke merkt sich das."), delay = 0.1f),
                         trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Shutdown cancelled. The reactor wants an encore.", "Abschaltung abgebrochen. Der Reaktor will eine Zugabe."))),
-                        trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Residual heat: a figure of speech.", "Restwärme: eine Redewendung.")),
-                        trap(PastX(roomX(2, 15.5f)), HeatSpike('e', 0.85f), say("And residual heat, part two.", "Und Restwärme, Teil zwei.")),
+                        trap(Airborne(roomX(2, 7.5f), roomX(2, 10.5f)), HeatSpike('f', 0.85f), say("Residual heat: a figure of speech. In mid-air.", "Restwärme: eine Redewendung. In der Luft.")),
+                        trap(Airborne(roomX(2, 15.2f), roomX(2, 18.2f)), HeatSpike('e', 0.85f), say("And residual heat, part two.", "Und Restwärme, Teil zwei.")),
                         trap(PastX(roomX(2, 25f)), say("Door ahead. Please do not touch anything hot. Anything.", "Tür voraus. Bitte nichts Heißes anfassen. Gar nichts.")),
                     ),
                 ) {
                     room(0) { fill(21..22, 15..15, '#'); fill(4..5, 14..14, '.'); fill(6..7, 13..14, '.'); fill(8..13, 13..14, '.'); fill(8..13, 12..12, 'p'); fill(8..9, 15..15, 'k') }
-                    room(1) { fill(5..5, 15..15, '#'); fill(9..9, 15..15, '#'); fill(14..17, 1..1, '.'); fill(10..13, 1..1, 'q') }
+                    room(1) { fill(5..5, 15..15, '#'); fill(9..9, 15..15, '#'); fill(16..19, 1..1, '.'); fill(10..13, 1..1, 'q') }
                     room(2) { fill(18..20, 15..15, 'e') }
                 },
             ),
@@ -342,7 +339,7 @@ object World3PartD {
                 spawn(1, 14); door(29, 14)
             }
             room(1) {
-                fill(5..9, 15..15, 'g'); fill(14..17, 1..1, 'q'); fill(20..23, 15..15, 'h')
+                fill(5..9, 15..15, 'g'); fill(16..19, 1..1, 'q'); fill(21..24, 15..15, 'h')
             }
             room(2) {
                 fill(10..12, 15..15, 'f'); fill(22..24, 1..1, 'z')

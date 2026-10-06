@@ -27,15 +27,16 @@ class World3Act2TrapsTest {
     @Test
     fun fullLoadTheWayBackOverTheBurningChipNeedsTheSink() {
         // the first blade is hopped, the switch is pressed, and running straight back over the chip burns
-        b(18).rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
+        b(18).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+            .rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
             .rightTo(27.6f).leftTo(3.0f).left(1.5f).expect(WorldState.DEAD)
     }
 
     @Test
     fun coldStartDoorRunsHomeAndTheWayBackIsHoppedTheOtherWayRound() {
-        // hopping the plain floor to the far end sends the door home; walking back straight over the plates burns
+        // hopping the plain floor to the far end sends the door back to the middle; walking back straight over the plates burns
         val bot = b(20).rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
-            .rightTo(28.0f).wait(0.8f)
+            .rightTo(28.8f).wait(0.8f)
         assertTrue("door ${bot.world.door.box.cx} ${bot.world.state} x=${bot.world.player.box.cx}", bot.world.door.box.cx < 29f)
         bot.left(5f).expect(WorldState.DEAD)
     }
@@ -68,11 +69,12 @@ class World3Act2TrapsTest {
     }
 
     @Test
-    fun thermostatTheHatchIsOpenOnlyOnThePadAndTheSlabComesDownThroughIt() {
-        // the pad holds the hatch open for as long as you stand on it, and the slab above it comes down through the gap
-        val bot = b(29).rightTo(27.5f).wait(3f)
+    fun thermostatTheHatchIsOpenOnlyOnThePadAndTheFloorUnderItFlickers() {
+        // the pad holds the hatch open for as long as you stand on it, and the floor under the pad starts to flicker: whoever stays falls
+        val bot = b(29).rightTo(27.5f).wait(0.3f)
         assertFalse(bot.world.group('w').visible)
-        assertTrue(bot.world.group('s').oy > 5f)
+        bot.expect(WorldState.PLAYING)
+        bot.wait(3f).expect(WorldState.DEAD)
     }
 
     @Test
