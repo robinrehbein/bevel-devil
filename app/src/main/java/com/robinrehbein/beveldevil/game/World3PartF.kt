@@ -54,5 +54,41 @@ object World3PartF {
             fill(21..30, 1..2, 'v')
             spawn(1, 14); door(30, 4)
         },
+
+        // 42 — Exhaust
+        Level(
+            name = T("Exhaust", "Abluft"),
+            intro = T("It's a bit warm in here.", "Ist ein bisschen warm hier."),
+            start = listOf(
+                Fan('f', at = 14 to 15, dir = Dir.UP, reach = 9, speed = 6.5f, width = 3),
+                Fan('D', at = 27 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
+            ),
+            traps = listOf(
+                trap(PastX(11f), Play(Card.STALKER), Chase('W', 4.4f, left = 0f, right = 30f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
+                trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Exhaust hood, closing time.", "Abzugshaube, Feierabend."), delay = 0.2f),
+            ),
+            hint = T("Stand in the vent and let it carry you. Up top, do not linger under the hood.", "Stell dich in den Schacht und lass dich tragen. Oben nicht unter der Haube trödeln."),
+            // rematch: the vent is pressure-sensitive now: whoever stands still in it (as in round one) gets the ceiling slab down the shaft. Keep hopping
+            rematch = listOf(
+                Round(
+                    T("Same vent. It listens now.", "Gleicher Schacht. Er hört jetzt zu."),
+                    traps = listOf(
+                        trap(PastX(11f), Chase('W', 4.4f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
+                        trap(Idle(0.5f), Play(Card.HEADBUTT), Move('c', 0f, 12f, 16f), say("Standing still in my vent? That is loitering.", "In meinem Schacht rumstehen? Das ist Herumlungern.")),
+                        trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.2f),
+                    ),
+                ) {
+                    fill(14..16, 1..2, 'c')
+                },
+            ),
+        ) {
+            border(); floor()
+            fill(1..2, 11..14, 'W')
+            fill(17..26, 7..7)
+            fill(19..20, 1..4); fill(19..20, 8..14)
+            fill(21..25, 1..2, 'h')
+            fill(30..30, 7..14)
+            spawn(3, 14); door(29, 14)
+        },
     )
 }

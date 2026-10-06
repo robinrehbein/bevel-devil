@@ -15,5 +15,12 @@ object World3RoomsF {
                 .rightTo(23.0f).waitFor { it.player.box.cy < 6.4f }.leftUntil { it.player.box.cy < 4.4f }
                 .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.rightTo(30f).right(1f) },
         ),
+        42 to listOf<Solution>(
+            { rightTo(15.0f).waitFor { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
+                .right(6f) },
+            // rematch: keep hopping in the vent, standing still is loitering
+            { rightTo(15.0f).fidgetUntil { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
+                .right(6f) },
+        ),
     )
 }
