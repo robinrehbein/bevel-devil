@@ -488,7 +488,8 @@ class World1Test {
         b(21).hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight().wait(4f).expect(WorldState.DEAD)
         // 22: the first beam stops whoever walks in on it, and so does the second
         b(22).rightTo(10.6f).right(3f).expect(WorldState.DEAD)
-        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(21.0f).left(3f).expect(WorldState.DEAD)
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(23.5f)
+            .waitFor { w -> w.beams.any { it.laser.id == 'B' && it.lit } }.left(1f).expect(WorldState.DEAD)
         // 23: the first saw on the top plank, and the knot above the start
         b(23).rightTo(5.0f).right(3f).expect(WorldState.DEAD)
         b(23).rightTo(6.0f).jump(0.5f).wait(2f).expect(WorldState.DEAD)

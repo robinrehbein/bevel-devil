@@ -40,7 +40,7 @@ object World1RoomsB {
                 .rightUntil { w -> w.saws.any { it.y < 9f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 3.4f } }.rightJump(0.35f).landRight()
                 .rightUntil { w -> w.swapped && w.saws.any { it.y > 12f && it.vx < -10f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.4f } }.rightJump(0.35f).landRight()
                 .rightUntil { w -> w.saws.any { it.y > 12f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.rightJump(0.35f).landRight()
-                .rightKeyLeftTo(2.5f) },
+                .rightUntil { !it.swapped }.leftTo(2.5f) },
         ),
         19 to listOf<Solution>(
             { hopR(7.9f).hopR(13.8f).rightTo(17.0f).rightJump(0.35f).landRight().rightTo(20.4f).rightJump(0.35f).landRight()
@@ -56,15 +56,14 @@ object World1RoomsB {
         ),
         21 to listOf<Solution>(
             { hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight()
-                .leftJump(0.35f).landLeft().leftTo(26.0f).leftJump(0.35f).landLeft()
-                .leftTo(20.0f).leftJump(0.35f).landLeft().leftTo(16.0f).leftJump(0.35f).landLeft().leftTo(3.5f) },
+                .waitFor { it.group('s').oy >= 11.5f }.leftTo(28.4f).leftJump(0.35f).landLeft().leftTo(22.0f).leftJump(0.35f).landLeft().leftTo(18.0f).leftJump(0.35f).landLeft().leftTo(11.6f) },
             { rightTo(25.6f).rightJump(0.3f).landRight()
-                .waitFor { it.group('s').oy >= 11.5f }.leftJump(0.35f).landLeft().leftTo(26.0f).leftJump(0.35f).landLeft()
-                .leftTo(20.0f).leftJump(0.35f).landLeft().leftTo(16.0f).leftJump(0.35f).landLeft().leftTo(3.5f) },
+                .waitFor { it.group('s').oy >= 11.5f }.leftJump(0.3f).landLeft().leftTo(22.0f).leftJump(0.35f).landLeft()
+                .leftTo(18.0f).leftJump(0.35f).landLeft().leftTo(11.6f) },
         ),
         22 to listOf<Solution>(
             { rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight()
-                .leftTo(21.0f).waitFor { it.gateOpen('B') }.leftTo(2.5f) },
+                .leftTo(23.5f).waitFor { it.gateOpen('B') }.leftTo(12.6f) },
         ),
         23 to listOf<Solution>(
             { rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(15.0f).landRight().landRight()
@@ -73,12 +72,12 @@ object World1RoomsB {
                 .waitFor { w -> w.saws.any { it.path != null && it.x > 15f && it.y < 11.0f } }.rightTo(26.0f) },
         ),
         24 to listOf<Solution>(
-            { hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+            { hopR(6.8f, 0.3f).rightTo(17.3f).wait(0.4f).hopR(17.6f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
                 .leftTo(28.6f).leftJump(0.35f).landLeft()
-                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(4.5f) },
-            { hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(25.0f).rightJump(0.3f).landRight().waitFor { it.group('l').oy <= -4f }.leftJump(0.35f).landLeft()
+                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(14.6f) },
+            { hopR(6.8f, 0.3f).rightTo(17.3f).wait(0.4f).hopR(17.6f, 0.3f).rightTo(25.0f).rightJump(0.3f).landRight().waitFor { it.group('l').oy <= -4f }.leftJump(0.35f).landLeft()
                 .leftUntil { w -> w.group('G').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft()
-                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(4.5f) },
+                .leftUntil { w -> w.group('F').let { g -> g.homeX + g.ox < w.player.box.cx && w.player.box.cx - (g.homeX + g.ox) <= 3.4f } }.leftJump(0.35f).landLeft().leftTo(14.6f) },
         ),
     )
 }
