@@ -13,12 +13,13 @@ object World1RoomsA {
                 .rightTo(26.2f).rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightTo(30.5f)
                 .leftJump(0.35f).landLeft().leftTo(1.5f) },
         ),
-        // 8: hop the spike, let the room turn over, along the ceiling past the stalactites to the door above the start; rematch: jump near the wall
+        // 8: hop the spike, let the room turn over, along the ceiling past the stalactites to the door above the start; rematch: the room is mirrored,
+        // hop the spike running left, jump near the left wall, along the ceiling to the right
         8 to listOf<Solution>(
             { hopR(19.5f, 0.5f).rightTo(25.5f).landRight().leftTo(17.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
                 .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
-            { hopR(19.5f, 0.5f).rightTo(27.3f).rightJump(0.5f).landRight().leftTo(13.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
-                .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
+            { hopL(23.5f, 0.5f).leftTo(4.7f).leftJump(0.5f).landLeft().rightTo(18.9f).rightJump(0.5f).landRight().rightTo(30.5f)
+                .leftUntil { it.player.grounded && it.gravity < 0f }.leftTo(29.2f) },
         ),
         // 9: across the deck past the pothole with swapped keys, onto the switch, home along the floor
         9 to listOf<Solution>(

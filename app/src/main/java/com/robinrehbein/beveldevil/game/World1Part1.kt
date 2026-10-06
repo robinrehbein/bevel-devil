@@ -220,17 +220,19 @@ object World1Part1 {
                 trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Ah, the door. Let me get that for you.", "Ah, die Tür. Lass mich dir helfen."))),
                 trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Kidding.", "War nur ein Scherz."))),
             ),
-            // rematch: walking in turns nothing over any more, only a jump does; the stalactites moved
+            // rematch: Mephi mirrored the room: you start on the right and the door hangs over the start; walking in turns nothing over
+            // any more, only a jump near the left end does, and the way back along the ceiling leads to the right
             rematch = listOf(
                 Round(
-                    T("Rematch. Gravity is opt-in now.", "Revanche. Schwerkraft nur noch auf Antrag."),
+                    T("Rematch. I mirrored the room. Gravity is opt-in now.", "Revanche. Ich habe den Raum gespiegelt. Schwerkraft nur noch auf Antrag."),
+                    hint = T("The room is mirrored: you start on the right, and the door hangs over the start. Gravity only turns when you jump at the left end.", "Der Raum ist gespiegelt: Du startest rechts, und die T\u00fcr h\u00e4ngt \u00fcber dem Start. Die Schwerkraft dreht sich nur, wenn du am linken Ende springst."),
                     traps = listOf(
-                        trap(Airborne(27f, 31f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur für Springer."))),
-                        trap(Zone(13.5f, 0.5f, 16.5f, 2.6f), Show('S')),
-                        trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Here you go. The door. Again.", "Bitte sehr. Die Tür. Schon wieder."))),
-                        trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Still kidding.", "Immer noch ein Scherz."))),
+                        trap(Airborne(1f, 5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur f\u00fcr Springer."))),
+                        trap(Zone(15.5f, 0.5f, 18.5f, 2.6f), Show('S')),
+                        trap(Zone(23f, 0.5f, 25f, 2.6f), Gravity(false), Say(T("Here you go. The door. Again.", "Bitte sehr. Die T\u00fcr. Schon wieder."))),
+                        trap(Zone(25f, 4f, 31f, 11f), Gravity(true), Say(T("Still kidding.", "Immer noch ein Scherz."))),
                     ),
-                ) { put(14, 1, '.'); put(10, 1, 'S') },
+                ) { put(2, 14, '.'); put(2, 1, '.'); put(29, 14, 'P'); put(29, 1, 'D'); put(14, 1, '.'); put(21, 1, 'S') },
             ),
         ) {
             border(); floor()
