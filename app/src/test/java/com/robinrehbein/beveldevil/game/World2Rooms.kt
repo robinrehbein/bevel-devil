@@ -90,9 +90,8 @@ object World2Rooms {
     fun l22ToLane(b: Bot) = b.leftUntil { sawAheadLeft(it, 5.5f) }.leftJump(0.5f).landLeft().leftTo(5.6f).leftJump(0.4f).landLeft()
         .leftJump(0.4f).landLeft().rightJump(0.5f).landRight()
 
-    /** 22: then hop the second bouncer, on to the door until it moves, back left and hop the bouncer again on his way back from the step. */
-    fun l22(b: Bot) = l22ToLane(b).rightUntil { sawAhead(it, 6.0f) }.rightJump(0.5f).landRight()
-        .rightUntil { it.door.tx < 20f }.leftUntil { sawAheadLeft(it, 6.0f) }.leftJump(0.5f).landLeft().left(0.5f)
+    /** 22: then hop the second bouncer; the replay puts you back where you jumped: run for the door before he is back from the step. */
+    fun l22(b: Bot) = l22ToLane(b).rightUntil { sawAhead(it, 6.0f) }.rightJump(0.5f).landRight().wait(0.3f).right(2.5f)
 
     /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
     fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(19f).left(1f)

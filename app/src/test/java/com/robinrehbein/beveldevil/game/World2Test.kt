@@ -504,17 +504,14 @@ class World2Test {
         val bot = World2Rooms.l21ToShelf(b(21)).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.rightTo(25.9f).wait(0.3f)
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
     }
-    // 22: the first bouncer rolls at you along the lane, the second along the club floor, and the door flees back to the left behind the second one
+    // 22: the first bouncer rolls at you along the lane, the second patrols the club floor, and the replay puts you back where you jumped him
     private fun l22Hopped(b: Bot) = World2Rooms.l22ToLane(b).rightUntil { World2Rooms.sawAhead(it, 6.0f) }.rightJump(0.5f).landRight()
     @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).left(4f).expect(WorldState.DEAD)
     @Test fun l22StandingStillWhenTheFirstBouncerComesIsFatal() = b(22).leftTo(17f).wait(4f).expect(WorldState.DEAD)
     @Test fun l22StandingStillOnTheClubFloorIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
     @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).right(4f).expect(WorldState.DEAD)
-    @Test fun l22TheDoorFleesAsYouLandBehindTheSecondBouncer() {
-        val bot = l22Hopped(b(22)).rightUntil { it.door.tx < 20f }
-        assertTrue("door at ${bot.world.door.tx}", bot.world.state == WorldState.PLAYING && bot.world.door.tx < 20f)
-    }
-    @Test fun l22RunningAfterTheDoorIntoTheBouncersBackIsFatal() = l22Hopped(b(22)).rightUntil { it.door.tx < 20f }.left(3f).expect(WorldState.DEAD)
+    /** The replay puts you back where you jumped, and the bouncer comes back from the step for whoever stays there. */
+    @Test fun l22StayingWhereTheReplayPutsYouIsFatal() = l22Hopped(b(22)).rightUntil { it.player.box.cx < 15f }.wait(3f).expect(WorldState.DEAD)
 
     // 23: the on-ramp lift carries you up into the spiked ceiling unless you walk off at the deck, a piece of the deck drops, the exit lift drops away
     @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(10.4f).wait(5f).expect(WorldState.DEAD)
