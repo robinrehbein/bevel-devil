@@ -99,8 +99,8 @@ object World3PartE {
                         Pad('1', at = 7 to 14),
                     ),
                     traps = listOf(
-                        trap(PastX(8f), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back, as before.", "Ein Blatt für den Rücken, wie gehabt.")),
-                        trap(Pressed('1'), Play(Card.DEVIL_SAW), Power('g', true), FanSet('w', 9.5f), Saw(33f, 14.4f, -9f, 0f), say("You pressed it! Wall up, wind up, blade out.", "Du hast gedrückt! Wand hoch, Wind hoch, Blatt raus.")),
+                        trap(PastX(8f), Play(Card.DEVIL_SAW), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back, as before.", "Ein Blatt für den Rücken, wie gehabt.")),
+                        trap(Pressed('1'), Power('g', true), FanSet('w', 9.5f), Saw(33f, 14.4f, -9f, 0f), say("You pressed it! Wall up, wind up, blade out.", "Du hast gedrückt! Wand hoch, Wind hoch, Blatt raus.")),
                         trap(PastX(10.5f), FanSet('w', 7f), say("Breezy again.", "Wieder luftig.")),
                         trap(PastX(13f), Saw(33f, 14.4f, -10f, 0f), say("And the one from the shelf. Regulars get two.", "Und das aus dem Regal. Stammgäste bekommen zwei.")),
                         trap(PastX(15.5f), FanSet('w', 6.2f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
