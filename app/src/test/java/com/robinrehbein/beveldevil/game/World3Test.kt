@@ -403,7 +403,11 @@ class World3Test {
         Bot(World3.levels[7]).right(8f).expect(WorldState.DEAD)
         val won = DesignRules.play(World3.levels[7], 0, World3DesignTest.SOLUTIONS.getValue(8)[0])
         won.expect(WorldState.WON)
-        assertTrue(won.world.circuits['b']!!.powered && !won.world.circuits['a']!!.powered)
+        // the second ray flips the halves back once you stand on the far one: the near half is lit again, the far one dark
+        assertTrue(!won.world.circuits['b']!!.powered && won.world.circuits['a']!!.powered)
+        // and whoever keeps the reflex of the first ray (jump at once) meets the pins in the low ceiling
+        Bot(World3.levels[7]).rightTo(14.4f).rightJump(0.55f).landRight().rightJump(0.3f).landRight().rightJump(0.55f).landRight()
+            .expect(WorldState.DEAD)
     }
 
     @Test

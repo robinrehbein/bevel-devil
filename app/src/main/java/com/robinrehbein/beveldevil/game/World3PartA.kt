@@ -245,7 +245,7 @@ object World3PartA {
             intro = T("It's not a bug, it's a flicker.", "Das ist kein Fehler, das ist ein Flimmern."),
             start = listOf(Clock('Z', on = 1.2f, off = 1.2f, phase = 0.5f), Clock('Y', on = 1.2f, off = 1.2f, phase = 0.9f)),
             traps = listOf(
-                trap(PastX(3.0f), Fall('a'), say("Loose ceiling. Mind the first one.", "Lose Decke. Pass auf die erste auf."), delay = 0.5f),
+                trap(PastX(4.0f), Fall('a'), say("Loose ceiling. Mind the first one: it does not wait.", "Lose Decke. Pass auf die erste auf: Sie wartet nicht.")),
                 trap(PastX(5.6f), Play(Card.COLLAPSE), Fall('c'), say("Observed. Collapsed.", "Beobachtet. Kollabiert."), delay = 0.35f),
                 trap(PastX(12.8f), Fall('b'), say("Another one, just behind your heels.", "Noch eine, dicht hinter deinen Fersen."), delay = 0.5f),
                 trap(PastX(20.4f), Fall('d'), say("The wall flickers, the ceiling does not.", "Die Wand flackert, die Decke nicht."), delay = 0.9f),
@@ -270,7 +270,7 @@ object World3PartA {
             ),
         ) {
             border(); floor()
-            fill(3..5, 1..9); fill(3..5, 10..11, 'a')
+            fill(3..4, 1..9); fill(3..4, 10..11, 'a')
             fill(9..12, 1..9); fill(9..12, 10..11, 'c')
             fill(14..15, 1..9); fill(14..15, 10..11, 'b')
             fill(21..22, 1..9); fill(21..22, 10..11, 'd')
@@ -280,21 +280,24 @@ object World3PartA {
         },
 
         // 8 ★ — the bridge is half there: the first half is live, the second dark, and too wide to jump. A cosmic ray swaps the two
-        // the moment something lands on the first half, so you have to be gone (in the air again) when it hits.
+        // the moment something lands on the first half, so you have to be gone (in the air again) when it hits. Then the punchline:
+        // rays come in pairs. The second one flips them back once you stand on the far half, and the reflex you just learned (jump
+        // at once) meets the pins in the low ceiling over the far end: walk off it, quickly.
         Level(
             name = T("Memory", "Arbeitsspeicher"),
             intro = T("ECC memory. Error-free, allegedly.", "ECC-Speicher. Angeblich fehlerfrei."),
             start = listOf(Circuit('a'), Circuit('b', on = false)),
             traps = listOf(
-                trap(Landed(18f, 22f), Play(Card.BIT_FLIP), BitFlip('a', 'b'), say("Bit flip! Purely cosmic. Nothing to do with me.", "Bitkipper! Rein kosmisch. Hat nichts mit mir zu tun."), delay = 0.12f),
+                trap(Landed(16f, 20f), Play(Card.BIT_FLIP), BitFlip('a', 'b'), say("Bit flip! Purely cosmic. Nothing to do with me.", "Bitkipper! Rein kosmisch. Hat nichts mit mir zu tun."), delay = 0.12f),
+                trap(Zone(20f, 14f, 26f, 15f), BitFlip('a', 'b'), say("Cosmic rays come in pairs. Ask any astronomer.", "Kosmische Strahlen kommen paarweise. Frag einen Astronomen."), delay = 0.45f),
             ),
-            hint = T("The far half only lights up when you land on the near one. Hop on, hop off. And walk the last stretch.", "Die ferne Hälfte leuchtet erst, wenn du auf der nahen landest. Drauf, runter, und das letzte Stück gehen."),
+            hint = T("Hop on, hop off. And the far half flips back: walk, do not jump, the ceiling is low.", "Drauf, wieder runter. Und die ferne Hälfte kippt zurück: geh, spring nicht, die Decke ist niedrig."),
         ) {
             border(); floor()
-            pit(18..26)
-            fill(18..21, 15..15, 'a'); fill(22..26, 15..15, 'b')
-            ceilingSpikes(27..29, 13)
-            spawn(2, 14); door(30, 14)
+            pit(16..25)
+            fill(16..19, 15..15, 'a'); fill(20..25, 15..15, 'b')
+            ceilingSpikes(25..28, 13)
+            spawn(3, 14); door(30, 14)
         },
     )
 }

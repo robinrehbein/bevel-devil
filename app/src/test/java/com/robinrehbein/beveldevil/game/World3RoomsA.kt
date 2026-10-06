@@ -74,7 +74,8 @@ object World3RoomsA {
                 .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
         ),
         8 to listOf<Solution>(
-            { rightTo(16.4f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
+            // hop on the near half and off again at once, then walk (do not jump) off the far half before the second ray
+            { rightTo(14.4f).rightJump(0.55f).landRight().rightJump(0.3f).landRight().rightTo(29.5f).right(1f) },
         ),
     )
 }
