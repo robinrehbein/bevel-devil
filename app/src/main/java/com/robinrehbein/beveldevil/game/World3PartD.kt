@@ -68,21 +68,30 @@ object World3PartD {
             spawn(29, 1); door(29, 11)
         },
 
-        // 26 — a flickering live gate over a hot plate: wait on the sink for the gate; the gate changes rhythm when you touch the sink
+        // 26 — two lanes of live copper and one cable that has opinions (U13, a trap room). Lower lane: as you pass the first post a tripwire
+        // arms itself ahead of you at ankle height (hop it), and the landing behind it gets a flash a moment after you touch down (keep
+        // going). Up the hot steps at the end (the second one is hotter than it looks) and back along the upper lane towards the door above
+        // the start: a cable hangs over the way, cold until you come up the stairs, then it warms up for a moment (wait before it, not under
+        // it), and a last tripwire is strung in front of the door.
         Level(
             name = T("Hot Wire", "Heißer Draht"),
-            intro = T("Hot plate, live wire. Pick your favorite.", "Heiße Platte, Draht unter Strom. Such dir was aus."),
-            start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h"), Clock('Z', on = 1.2f, off = 2f)),
+            intro = T("Mind the cable. It minds you.", "Achte auf das Kabel. Es achtet auf dich."),
+            start = listOf(Heat('j', rise = 1.1f), Laser('c', 10 to 1, 10 to 8), Power('c', false)),
             traps = listOf(
-                trap(Touch('k'), Play(Card.SHORT_CIRCUIT), Clock('Z', on = 0.8f, off = 1.8f), say("Gate firmware: also updated.", "Tor-Firmware: auch aktualisiert.")),
-                trap(Airborne(23.5f, 27f), HeatSpike('f', 0.7f), say("Gate passed. Landing pad: warm.", "Tor passiert. Landeplatz: warm.")),
+                trap(PastX(6.5f), Play(Card.SPIKE_SEED), Laser('a', 12 to 14, 13 to 14, on = 99f, delay = 0.55f), say("Tripwire. Self-assembling.", "Stolperdraht. Selbstmontierend.")),
+                trap(Landed(14.2f, 17.5f), Laser('b', 14 to 14, 19 to 14, on = 0.7f, off = 60f, delay = 0.65f), say("Landing light. It is on request. Yours.", "Landebeleuchtung. Auf Anfrage. Deine.")),
+                trap(Landed(20f, 23.5f), HeatSpike('j', 0.75f), say("The second step is a hot seat.", "Die zweite Stufe ist ein heißer Stuhl.")),
+                trap(Zone(14.5f, 7f, 17f, 9.2f), Power('c', true), say("The cable is warming up. Take a seat. Not under it.", "Das Kabel läuft warm. Setz dich. Nicht darunter.")),
+                trap(Zone(14.5f, 7f, 17f, 9.2f), Power('c', false), delay = 1.8f),
+                trap(Zone(10.6f, 7f, 12.1f, 9.2f), Laser('e', 6 to 8, 7 to 8, on = 99f, delay = 0.3f), say("Tripwire, mirrored. I have a drawer full.", "Stolperdraht, gespiegelt. Ich hab eine Schublade voll.")),
             ),
+            hint = T("The wire only wakes up once you pass it. The cable on the upper lane takes a moment: let it.", "Der Draht wacht erst auf, wenn du vorbei bist. Das Kabel oben braucht einen Moment: gönn es ihm."),
         ) {
             border(); floor()
-            fill(6..12, 15..15, 'h'); put(13, 15, 'k'); fill(14..22, 15..15, 'h')
-            wire(17, 'Z')
-            fill(26..27, 15..15, 'f')
-            spawn(); door()
+            fill(1..19, 9..10)
+            fill(25..30, 13..14); fill(20..23, 11..11)
+            fill(20..23, 11..11, 'j')
+            spawn(); door(3, 8)
         },
 
         // 27 — a pad powers the bridge; the floor behind it is overclocked, and a dead cable wakes up as you land
