@@ -259,21 +259,24 @@ object World2Part3C {
         },
 
         // 40 — ping pong (a breather: U16 the lag roll, with a stalker). Short and mean: the door is at the far left, and as you pass the middle of the lane
-        // a paddle with spikes wakes up at the net and starts for you, at the same moment the picture loses its vertical hold and rolls. Hop it as it
-        // comes (ping); a net of spikes shoots up in front of the door as you come and only drops a while later, and the paddle turns around and
-        // comes back for you in the meantime: hop it again (pong), and once more on the way back to the open door
+        // a paddle with spikes wakes up at the net and comes for you, at the same moment the picture loses its vertical hold and rolls. Hop it as it
+        // comes (ping). The nets hang over the lane like portcullises: the first slams down in front of the door as you come and stays down a while,
+        // and the paddle has turned around behind you: hop it again (pong). Then the second net slams down mid-court, so the rally goes on: turn,
+        // hop the paddle a third time, and the first net is up again by then
         Level(
             name = T("Ping Pong", "Ping-Pong"),
             intro = T("Your ping is excellent. Truly.", "Dein Ping ist hervorragend. Wirklich."),
-            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT), 'N' to Glyph(spike = true, dir = Dir.UP)),
+            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT), 'N' to Glyph(spike = true, dir = Dir.DOWN), 'M' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(BeforeX(24f), Play(Card.STALKER), Chase('S', 2.8f, left = 0f, right = 19f), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
-                trap(BeforeX(7.7f), Move('N', 0f, -3f, 20f), say("Net's up. Rally first.", "Netz ist oben. Erst den Ballwechsel.")),
-                trap(BeforeX(7.7f), Move('N', 0f, 3f, 6f), delay = 0.4f),
+                trap(BeforeX(24f), Play(Card.STALKER), Chase('S', 4f, left = 0f, right = 24f), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
+                trap(BeforeX(9.5f), Move('N', 0f, 2f, 20f), say("Net's down. Rally first.", "Netz ist unten. Erst den Ballwechsel.")),
+                trap(BeforeX(9.5f), Move('N', 0f, -2f, 12f), delay = 1.5f),
+                trap(BeforeX(9.5f), Move('M', 0f, 2f, 20f), say("Deuce. A second net, mid-court. The rally is not over.", "Einstand. Ein zweites Netz, mitten im Feld. Der Ballwechsel ist nicht vorbei."), delay = 0.9f),
             ),
+            hint = T("Hop the paddle every time it comes. The first net goes up again, the paddle does not go away.", "Spring über den Schläger, jedes Mal. Das erste Netz geht wieder hoch, der Schläger geht nicht weg."),
         ) {
             border(); floor()
-            fill(5..5, 14..14, 'S'); fill(4..4, 16..17, 'N')
+            fill(5..5, 14..14, 'S'); fill(4..4, 1..12, 'N'); fill(16..16, 1..12, 'M')
             spawn(29, 14); door(2, 14)
         },
     )

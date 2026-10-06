@@ -8,12 +8,14 @@ object World3RoomsE {
     val solutions: Map<Int, List<Solution>> = mapOf(
         33 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight()
-                .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
+                .rightTo(24.6f).rightUntil { it.fans[1].wind < 1f }.leftUntil { it.player.grounded }
+                .waitFor { it.fans[1].wind > 8.5f }.rightUntil { it.player.box.cx > 29.3f } },
             // rematch: ride, steer back to the edge when the draft takes its break, ride again once it is back, then hop the stud on the
             // far plank low instead of the long leap
             { rightTo(6.6f).rightUntil { it.fans[0].wind < 1f }.leftUntil { it.player.grounded }
                 .waitFor { it.fans[0].wind > 8.5f }.rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
-                .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
+                .rightTo(24.6f).rightUntil { it.fans[1].wind < 1f }.leftUntil { it.player.grounded }
+                .waitFor { it.fans[1].wind > 8.5f }.rightUntil { it.player.box.cx > 29.3f } },
         ),
         34 to listOf<Solution>(
             { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },

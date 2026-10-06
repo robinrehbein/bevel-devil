@@ -197,21 +197,22 @@ object World3PartF {
             spawn(2, 14); door(21, 4)
         },
 
-        // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift). The door on the shelf is no end
-        // either: it runs back to where you started, and the lift now blows down. Halfway down the boot loop turns the lift around once more: step out of
+        // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift, and step off at the shelf: the lift
+        // runs all the way up into the spiked ceiling). The door on the shelf is no end either: it runs back to where you started, and the lift now blows
+        // down. Halfway down the boot loop turns the lift around once more, overclocked, and slams whoever is still in it into the ceiling: step out of
         // the draft. (One room: the annex is the finale's gag, 48.)
         Level(
             name = T("Boot Order", "Boot-Reihenfolge"),
             intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
             start = listOf(
-                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 10, speed = 6.5f, width = 3),
+                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 13, speed = 6.5f, width = 3),
             ),
             traps = listOf(
                 trap(Zone(15.5f, 12.5f, 18f, 15.5f), Play(Card.SHY_DOOR), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
                 trap(Zone(25.5f, 3.5f, 28f, 6.5f), FanSet('f', -7f), DoorTo(26, 14), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Right under your nose.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Direkt unter deiner Nase.")),
                 trap(Zone(25.5f, 3.4f, 28f, 6.6f), FanSet('f', 16f), say("Boot loop. Overclocked, this time. Mind the ceiling.", "Bootschleife. Diesmal übertaktet. Vorsicht, Decke."), delay = 1.3f),
             ),
-            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs back, let the lift take you down. If it turns around again, step out of it: this time it goes all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür zurückläuft, lass dich vom Lift hinunterbringen. Dreht er wieder um, tritt aus ihm heraus: Diesmal geht es bis an die Decke."),
+            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs back, let the lift take you down. Get off it at the shelf, and if it turns around again, step out of it: it goes all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür zurückläuft, lass dich vom Lift hinunterbringen. Steig am Regal aus, und dreht er wieder um, tritt aus ihm heraus: Er fährt bis an die Decke."),
         ) {
             border(); floor()
             fill(24..28, 6..6); fill(29..30, 6..14)

@@ -13,7 +13,8 @@ object World3PartE {
 
         // 33 — Updraft (R10, U1, a puzzle room): you ride a draft up a cliff (stand in it against the wall, rise, step out onto the bridge), and up
         // there the floor goes: the plank ahead drops out the moment you land (jump the gap), the plank you land on drops out from under you
-        // (keep moving), and over the second draft Mephi pauses the fan halfway up.
+        // (keep moving), and over the second draft Mephi pauses the fan halfway up: its grille has teeth at the far end now, so drift back to the
+        // bridge end as you drop, and ride again once it spins up.
         Level(
             name = T("Updraft", "Aufwind"),
             intro = T("Boarding now. Mind the gap.", "Einsteigen bitte. Achtung, Lücke."),
@@ -27,7 +28,7 @@ object World3PartE {
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Brief pause. Please hold your altitude.", "Kurze Pause. Bitte Höhe halten.")),
                 trap(Zone(26f, 2.9f, 28.8f, 6.1f), FanSet('g', 9f), say("And up again. Mind the wall, not the view.", "Und wieder hoch. Achte auf die Wand, nicht auf die Aussicht."), delay = 1.7f),
             ),
-            hint = T("Stand in the draft and hold on to the wall. Planks only give way once you are on them.", "Stell dich in den Aufwind und halt dich an der Wand. Planken geben erst nach, wenn du drauf stehst."),
+            hint = T("Stand in the draft and hold on to the wall. Planks only give way once you are on them. When the second draft stops, drift back to the bridge.", "Stell dich in den Aufwind und halt dich an der Wand. Planken geben erst nach, wenn du drauf stehst. Bleibt der zweite Aufwind stehen, lass dich zur Brücke zurücktreiben."),
             // rematch: the planks hold now, and nothing waits for the second landing: but the first draft takes its lunch break while you
             // ride it (spikes on the floor of the pit: steer back to the edge as you fall, and ride again once it is back), and a stud has
             // grown on the far plank, exactly where the long leap from round one comes down. Hop it low instead
@@ -51,7 +52,7 @@ object World3PartE {
             fill(12..15, 8..8); fill(16..19, 8..8, 'b'); fill(20..22, 8..8, 'c'); fill(23..24, 8..8)
             fill(22..24, 5..5, 'v')
             pit(13..28, 9)
-            fill(25..28, 9..9)
+            fill(25..28, 9..9); fill(27..28, 9..9, '^')
             fill(29..30, 3..17)
             spawn(1, 14); door(29, 2)
         },

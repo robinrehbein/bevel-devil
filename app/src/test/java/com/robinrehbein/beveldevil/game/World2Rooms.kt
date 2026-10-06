@@ -219,10 +219,10 @@ object World2Rooms {
 
     fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(7.5f).left(1f)
 
-    /** 40: left along the lane until the paddle is four tiles away, hop it (ping), wait at the net until it comes back and hop it (pong), keep away from it until the net is down, hop it once more and run to the door. */
-    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 3.2f) }.leftJump(0.5f).landLeft().leftTo(7.0f)
-        .waitFor { wallOnTheRight(it, 'S', 2.8f) }.rightJump(0.5f).landRight().right(0.45f)
-        .waitFor { it.group('N').oy > -0.5f }.leftUntil { wallOnTheLeft(it, 'S', 2.8f) }.leftJump(0.5f).landLeft().left(3f)
+    /** 40: left along the lane until the paddle is close, hop it (ping), stop at the net and hop the paddle as it comes back (pong), stop short of the second net, hop the paddle once more and run to the door. */
+    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 2.2f) }.leftJump(0.5f).landLeft().leftTo(7.6f)
+        .waitFor { wallOnTheRight(it, 'S', 1.4f) }.rightJump(0.5f).landRight()
+        .waitFor { wallOnTheLeft(it, 'S', 1.4f) }.leftJump(0.5f).landLeft().left(3f)
 
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,
