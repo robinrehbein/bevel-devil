@@ -158,26 +158,31 @@ object World3PartF {
             spawn(15, 7); door(26, 1)
         },
 
-        // 45 — Cold Air
+        // 45 — Cold Air (U3, a trap room): the cold aisle of a server room, top right to bottom left. You start up on the rack at the right
+        // and step off into the cold-air shaft, which lowers you gently, then pushes hard; a spiked rack slides into the shaft from the right
+        // (hug the left wall), and the raised floor at the bottom of the shaft sinks the moment anyone lands on it: steer left into the gap
+        // under the racks before you touch down. In the aisle a spiked pin slides in from the far end at you: hop it, the door is behind it.
         Level(
             name = T("Cold Air", "Kaltluft"),
             intro = T("Plenty of hot air here. Mostly mine.", "Hier gibt es viel heiße Luft. Meist meine."),
+            legend = mapOf('Q' to Glyph(spike = true, dir = Dir.LEFT), 'L' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(
-                Fan('f', at = 13 to 15, dir = Dir.UP, reach = 11, speed = 3.6f, width = 3),
+                Fan('d', at = 19 to 0, dir = Dir.DOWN, reach = 14, speed = 4.5f, width = 5),
             ),
             traps = listOf(
-                trap(PastX(8f), Play(Card.COLLAPSE), Move('W', -8f, 0f, 7f), say("Cold aisle, closing. Warm aisle, also closing.", "Kaltgang schließt. Warmgang schließt auch.")),
-                trap(Zone(13f, 7.5f, 16f, 10.5f), Move('q', -2.5f, 0f, 5f), say("The vent has a side entrance.", "Der Schacht hat einen Seiteneingang."), delay = 0.3f),
-                trap(Zone(21f, 3.5f, 25f, 5.5f), Move('p', 0f, -3.5f, 2.2f), say("Racks are hot-swappable. This shelf swaps up.", "Racks sind hot-swap-fähig. Dieses Regal fährt nach oben."), delay = 0.05f),
+                trap(Zone(19f, 4f, 24f, 5.5f), Move('Q', -3f, 0f, 6f), say("Cold aisle, closing. Mind the rack you just stepped off.", "Kaltgang schließt. Vorsicht, das Rack, von dem du kommst.")),
+                trap(Zone(19f, 8.5f, 24f, 10.5f), Play(Card.BACKDRAFT), FanSet('d', 8f), say("Cold air, extra strength. Mind where you touch down.", "Kaltluft, extra stark. Pass auf, wo du aufsetzt.")),
+                trap(Landed(19f, 24f), Move('k', 0f, 6f, 6f), say("Raised floor. Lowered floor. Same floor.", "Doppelboden. Einfachboden. Gleicher Boden.")),
+                trap(BeforeX(15f), Move('L', 10f, 0f, 6f), say("Hot-swap in progress. You are the old part.", "Hot-Swap läuft. Du bist das alte Teil.")),
             ),
-            hint = T("Ride the vent with your back to the left wall. The shelf at the top swaps up: do not stay on it.", "Fahr im Schacht mit dem Rücken zur linken Wand. Das Regal oben fährt hoch: Bleib nicht drauf."),
+            hint = T("Hug the left wall of the shaft on the way down, and do not land in it: slip into the gap under the wall. Hop the pin in the aisle.", "Halt dich im Schacht auf dem Weg nach unten links an der Wand, und lande nicht darin: Schlüpf in die Lücke unter der Wand. Spring im Gang über den Stift."),
         ) {
             border(); floor()
-            fill(29..29, 6..14, 'W')
-            fill(11..12, 2..9)
-            fill(17..18, 8..9, 'q')
-            fill(16..20, 5..5); fill(21..24, 5..5, 'p')
-            spawn(2, 14); door(30, 14)
+            fill(26..30, 4..14); fill(24..25, 4..7); fill(24..25, 10..14); fill(24..25, 8..9, 'Q')
+            fill(16..18, 1..12)
+            pit(19..23); fill(19..23, 15..15, 'k')
+            put(3, 14, 'L')
+            spawn(28, 3); door(2, 14)
         },
 
         // 46 — POST (R5, U16): a serpentine up through three floors. The first lift stops for a beep while you are in it and comes back

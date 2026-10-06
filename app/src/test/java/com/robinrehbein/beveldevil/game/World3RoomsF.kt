@@ -42,8 +42,11 @@ object World3RoomsF {
 .rightTo(26f).right(1f) },
         ),
         45 to listOf<Solution>(
-            { rightTo(14.5f).waitFor { it.player.box.cy < 9.5f }.leftUntil { it.player.box.cy < 4.6f }
-                .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.right(4f) },
+            // off the rack into the shaft, hug its left wall on the way down (the spiked rack slides in from the right), slip into the gap
+            // under the wall before touching down (the floor of the shaft sinks), hop the pin that slides at you, and the door is behind it
+            { leftTo(23.0f).leftUntil { it.player.grounded }
+                .leftUntil { w -> w.group('L').let { it.homeX + it.ox } > w.player.box.cx - 3.6f }.leftJump(0.5f).landLeft()
+                .leftUntil { it.player.box.cx < 2.8f } },
         ),
         46 to listOf<Solution>(
             { rightTo(13.5f).waitFor { w -> w.fans[0].on && w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Power && a.on } } }
