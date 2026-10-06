@@ -250,28 +250,44 @@ object World3PartB {
             spawn(2, 7); door(1, 14)
         },
 
-        // 16 — act finale: a timed pad bridge, a flickering gate that changes rhythm, and a bit flip, in one go; the flip
-        // comes back a moment after you land on the rail it saved you with, so do not stop on it
+        // 16 — act finale, and the room that does not end where it looks like it does. Room one: a pad at the start gives the bridge over the
+        // pit a short window of power, a live gate in front of the island flickers (wait for the dark), two steps up the wall over the pit
+        // each give way under you, and at the top the door sits right there. As you land on the ledge the wall cracks: the end was never
+        // here, and the door slips through the breach (high up in the wall) before you can touch it. Room two: a ledge, a hot landing,
+        // a bridge that leaves when you come near, and the door at the far end, on a ledge. The extension happens on the way, not at the door.
         Level(
             name = T("Motherboard", "Hauptplatine"),
             intro = T("Act one finale. All the parts, all the ways to die.", "Finale, Akt eins. Alle Teile, alle Wege zu sterben."),
-            start = listOf(
-                Circuit('a', on = false), Pad('1', at = 4 to 14, circuits = "a", mode = PadMode.ON),
-                Clock('Z', on = 1.2f, off = 1.8f),
-                Circuit('b'), Circuit('c', on = false),
-            ),
+            rooms = 2,
+            start = listOf(Circuit('a', on = false), Circuit('Z', on = false), Pad('1', at = 3 to 14)),
             traps = listOf(
-                trap(Pressed('1'), Power('a', false), say("The bridge is on a timer. Again.", "Die Brücke hat einen Timer. Schon wieder."), delay = 2.8f),
-                trap(PastX(14.2f), Clock('Z', on = 0.9f, off = 1.6f), say("Gate firmware updated.", "Tor-Firmware aktualisiert.")),
-                trap(PastX(21.5f), Play(Card.GRAND_FINALE), BitFlip('b', 'c'), say("Motherboard: 3 of 3 components hostile.", "Hauptplatine: 3 von 3 Bauteilen feindlich.")),
-                trap(Landed(23.6f, 28f), BitFlip('b', 'c'), say("Component 4 of 3. I never could count.", "Bauteil 4 von 3. Zählen war nie meins."), delay = 0.5f),
+                trap(Pressed('1'), Clock('a', on = 3.2f, off = 60f), say("The bridge is on a timer. Again.", "Die Brücke hat einen Timer. Schon wieder.")),
+                trap(Zone(15f, 13f, 19.5f, 15.2f), Clock('Z', on = 1.8f, off = 2.4f), say("Gate firmware updated. While you were standing in it.", "Tor-Firmware aktualisiert. Während du davorstandest.")),
+                trap(Zone(19.4f, 13f, 21.8f, 15.2f), HeatSpike('i', 0.5f), say("The floor under the gate: a little warm. For you.", "Der Boden unter dem Tor: ein bisschen warm. Für dich.")),
+                trap(Landed(22f, 25.2f), Fall('p'), say("Step one: on loan. Step two: also.", "Stufe eins: geliehen. Stufe zwei: auch."), delay = 0.45f),
+                trap(Landed(26f, 29f), Fall('q'), delay = 0.4f),
+                trap(Zone(29f, 6.5f, 31f, 9.2f), Play(Card.ANNEX), Extend(into = 1, top = 7, bottom = 8, warn = 1.2f, door = roomX(1, 29) to 10, line = T("The motherboard has a second floor. Of course it does.", "Die Platine hat ein zweites Stockwerk. Natürlich.")), say("Almost there. Almost. Still almost.", "Gleich geschafft. Gleich. Immer noch gleich.")),
+                trap(Zone(roomX(1, 4f), 7f, roomX(1, 8f), 9.3f), HeatSpike('l', 0.5f), say("The ledge is a heatsink. Reversed.", "Das Regal ist ein Kühlkörper. Verkehrt herum.")),
+                trap(Zone(roomX(1, 12f), 13f, roomX(1, 17f), 15.2f), HeatSpike('h', 0.5f), say("Room two: preheated.", "Raum zwei: vorgeheizt.")),
+                trap(Zone(roomX(1, 17.2f), 13f, roomX(1, 20f), 15.2f), Clock('b', on = 1.6f, off = 60f), say("The last bridge is shy. It leaves when you come near.", "Die letzte Brücke ist scheu. Sie geht, wenn du näher kommst.")),
             ),
+            hint = T("The pad powers the bridge for a moment. The door is not where it looks.", "Der Knopf gibt der Brücke kurz Strom. Die Tür ist nicht, wo sie scheint."),
         ) {
             border(); floor()
-            bridge(8..13, 'a')
-            wire(17, 'Z')
-            bridge(20..23, 'b'); bridge(24..27, 'c')
-            spawn(); door()
+            room(0) {
+                bridge(7..14, 'a')
+                fill(20..20, 1..14, 'Z')
+                pit(22..28)
+                fill(18..21, 15..15, 'i'); fill(22..24, 13..13, 'p'); fill(26..28, 11..11, 'q'); fill(29..30, 9..10)
+                spawn(1, 14); door(30, 8)
+            }
+            room(1) {
+                fill(1..10, 9..10); fill(4..8, 9..10, 'l')
+                fill(13..16, 15..15, 'h')
+                bridge(20..25, 'b')
+                fill(26..27, 13..14); fill(28..30, 11..14)
+                door(29, 10)
+            }
         },
     )
 }

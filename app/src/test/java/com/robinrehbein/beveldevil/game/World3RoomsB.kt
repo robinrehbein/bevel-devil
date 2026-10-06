@@ -72,5 +72,12 @@ object World3RoomsB {
                 .rightUntil { !it.swapped }.leftTo(11.6f).leftJump(0.55f).landLeft()
                 .leftUntil { it.swapped }.rightKeyLeftTo(2.0f).right(1f) },
         ),
+        16 to listOf<Solution>(
+            { rightTo(16.5f).rightTo(18.0f)
+                .waitFor { w -> w.circuits['Z']?.let { it.clock != null && !it.powered } == true }
+                .rightTo(20.6f).rightJump(0.35f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+                .rightUntil(4f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 10.0f)).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .rightTo(roomX(1, 25.0f)).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(roomX(1, 29.0f)).right(1f) },
+        ),
     )
 }
