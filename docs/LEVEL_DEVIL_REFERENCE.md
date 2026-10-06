@@ -117,7 +117,7 @@ Reviewer sollen diese Unterschiede **nicht** als Mangel werten:
 - **Welten mit Themen** (Höllenkeller, Rechenzentrum, Platine) statt wechselnder Hintergrundfarbe. Ihre Mechaniken (Portale, Bänder, Laser, Lüfter, Hitze) sind zusätzliche Bausteine.
 - **Mehr Rätselbausteine** (R1 bis R12: Schalter, Halteschalter, Portal-Routing, Rückwege), also **mehr Weg-Puzzle** als Level Devil. Das war die Vorgabe des Gründers.
 - **Mindestzeit eines sauberen Laufs** (H3). Level Devil kommt mit 3 bis 6 s aus. Wir wollen mehr, damit ein Level mehr als einen Reflex enthält.
-- **Schnellerer Neustart** (0,7 s automatisch) statt „PRESS ANY KEY“, **variable Sprunghöhe** und **Coyote-Zeit**, und ein Tipp nach 9 s Festhängen.
+- **Schnellerer Neustart** (0,7 s automatisch) statt „PRESS ANY KEY“, **variable Sprunghöhe** und **Coyote-Zeit**, und ein Tipp nach zwei Toden in einer Runde (beim Respawn).
 - **Seltene Ausnahme: mehr als ein Raum.** Wir erlauben in wenigen Leveln eine Kamera von Raum zu Raum. Level Devil nutzt Mehrbildschirm-Karten nur für Sonderlevel.
 - **Bluff mit Tell.** Level Devil bluffte nie. Unser Bluff (selten, nur in Revanchen, mit Hinweis) ist ein eigener Stilzug.
 - **Werbung.** Sie ist bei uns weniger aufdringlich geplant. Nicht Teil der Level-Bewertung.

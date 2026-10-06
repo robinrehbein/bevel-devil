@@ -16,50 +16,37 @@ class World3Act2TrapsTest {
     fun actTwoAveragesAlmostThreeTrapsPerLevel() {
         val traps = World3Part2.levels.sumOf { it.traps.size }
         assertTrue("only $traps traps in act two", traps >= 46)
-        assertTrue(World3Part2.levels.all { it.traps.size in 2..4 })
+        // a level may have more trap entries than moments: a door that flees in several hops is one moment of three entries (level 20)
+        assertTrue(World3Part2.levels.all { it.traps.size in 2..7 })
+    }
+
+    // 18, 20, 21 and 22 are the rebuilt block C: what each one does to the player who plays it the obvious way
+
+    @Test
+    fun fullLoadTheWayBackOverTheBurningChipNeedsTheSink() {
+        // the first blade is hopped, the switch is pressed, and running straight back over the chip burns
+        b(18).rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
+            .rightTo(27.6f).leftTo(3.0f).left(1.5f).expect(WorldState.DEAD)
     }
 
     @Test
-    fun fullLoadChipRunsHotterOnceYouAreDownSoTheLastTilesAreForJumping() {
-        // walking off the heatsink and across the chip burns on its last tiles
-        val walk = b(18).hopR(3f).waitCooled('c').rightTo(24f)
-        walk.expect(WorldState.DEAD)
-        assertTrue(walk.world.player.box.cx < 23.5f)
-        // the same run with a leap off the chip's end gets over it, and the overclocked landing needs a second hop
-        b(18).hopR(3f).waitCooled('c').rightTo(19f).rightJump(0.55f).landRight().right(1.2f).expect(WorldState.DEAD)
+    fun coldStartDoorRunsHomeAndTheWayBackIsHoppedTheOtherWayRound() {
+        // hopping the plain floor to the far end sends the door home; walking back straight over the plates burns
+        val bot = b(20).rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
+            .rightTo(28.0f).wait(0.8f)
+        assertTrue("door ${bot.world.door.box.cx} ${bot.world.state} x=${bot.world.player.box.cx}", bot.world.door.box.cx < 29f)
+        bot.left(5f).expect(WorldState.DEAD)
     }
 
     @Test
-    fun coldStartDoorRunsHomeToTheCoolPlateOverAnOverclockedFloor() {
-        val bot = b(20).hopR(13f).rightTo(21.6f).rightJump(0.55f).landRight().wait(0.5f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.door.box.cx < 20f)
-        assertTrue(bot.world.heaters['f']!!.heat > 0.6f)
-        // running straight back burns on the overclocked floor
-        bot.left(4f).expect(WorldState.DEAD)
-        // waiting for it to cool, the door stands on the glowing plate, which stays cool
-        val patient = b(20).hopR(13f).rightTo(21.6f).rightJump(0.55f).landRight().wait(0.1f).waitWhile(3f) { it.door.moving }.waitCooled('f').waitCooled('g')
-        assertEquals(7f, patient.world.door.box.x + 0.1f, 0.01f)
-        patient.left(4f).expect(WorldState.WON)
+    fun relayRaceStayingOnTheSinkLetsTheWallCatchUp() {
+        b(21).rightTo(10.7f).wait(3f).expect(WorldState.DEAD)
     }
 
     @Test
-    fun relayRaceLastLegTurnsUpSoLeapFromTheSecondSink() {
-        // cooling on both sinks and walking the last plate is no longer enough
-        b(21).rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightTo(24.6f).expect(WorldState.DEAD)
-        val leap = b(21).rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightJump(0.55f).landRight()
-        leap.expect(WorldState.PLAYING)
-        assertTrue(leap.world.heaters['h']!!.spec.rise < 0.6f)
-    }
-
-    @Test
-    fun warmUpSendsAFanBladeAcrossTheChip() {
-        // the sprint that beat the chip runs into a blade
-        val bot = b(22).rightTo(23.4f)
-        bot.expect(WorldState.DEAD)
-        assertTrue(bot.world.saws.isNotEmpty())
-        // stopping for it is no answer either: the chip goes to full load
-        b(22).rightUntilSaw(6f).waitFor(3f) { false }.expect(WorldState.DEAD)
+    fun warmUpTheStripThatWaitedAtTheFarEndSlidesAtWhoLands() {
+        // landing on the middle slab and standing there is the end of it
+        b(22).rightTo(10.4f).rightJump(0.55f).landRight().rightTo(21.5f).landRight().wait(3f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -105,13 +92,10 @@ class World3Act2TrapsTest {
         // 29: falling into the opened floor is death, not a floor below
         val fell = b(29).rightTo(10.5f).waitFor { !it.group('w').visible }.rightTo(17.3f).rightJump(0.55f).landRight().right(3f)
         assertEquals(WorldState.DEAD, fell.world.state)
-        // 20: the door on the cool plate stands on the walking row
-        val home = b(20).hopR(13f).rightTo(21.6f).rightJump(0.55f).landRight().wait(0.1f).waitWhile(3f) { it.door.moving }
-        assertEquals(World(World3.levels[19]).door.box.y, home.world.door.box.y, 0.01f)
-        // 20: a short leap that lands on the last plate leaves the door hovering where a jump reaches it
-        val short = b(20).hopR(13f).rightTo(20.4f).rightJump(0.55f).landRight()
-        assertTrue(short.world.door.box.y < World(World3.levels[19]).door.box.y - 1.5f && short.world.door.box.x > 28f)
-        short.rightTo(28.3f).rightJump(0.3f).expect(WorldState.WON)
+        // 20: the door that ran home ends on the walking row
+        val won = DesignRules.play(World3.levels[19], 0, World3DesignTest.SOLUTIONS.getValue(20)[0])
+        won.expect(WorldState.WON)
+        assertEquals(World(World3.levels[19]).door.box.y, won.world.door.box.y, 0.01f)
         // 30: waiting a step back from the gate, off the burnt-in floor, still gets through
         val gate = b(30).rightTo(6.5f).waitPowered('Z', false).rightTo(12f)
         gate.expect(WorldState.PLAYING)

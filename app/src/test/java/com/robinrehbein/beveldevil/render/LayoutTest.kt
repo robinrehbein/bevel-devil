@@ -2,6 +2,8 @@ package com.robinrehbein.beveldevil.render
 
 import com.robinrehbein.beveldevil.game.Action
 import com.robinrehbein.beveldevil.game.Levels
+import com.robinrehbein.beveldevil.game.ROOM_COLS
+import com.robinrehbein.beveldevil.game.RoomDemos
 import com.robinrehbein.beveldevil.game.Ui
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -46,15 +48,18 @@ class LayoutTest {
             val l = Layout()
             l.controls.mirror = mirror
             l.update(w, h, 2.75f)
-            Levels.all.forEachIndexed { i, base -> for (level in base.rounds) {
+            (Levels.all + RoomDemos.all).forEachIndexed { i, base -> for (level in base.rounds) {
                 val spots = ArrayList<Triple<String, Int, Int>>()
                 for (y in 0 until level.rows) for (x in 0 until level.cols) when (level.map.grid[y][x]) {
                     'P' -> spots += Triple("spawn", x, y)
                     'D' -> spots += Triple("door", x, y)
                 }
-                level.traps.flatMap { it.actions }.filterIsInstance<Action.DoorTo>().filter { it.row <= 14 }.forEach { spots += Triple("door target", it.col, it.row) }
+                val actions = level.traps.flatMap { it.actions }
+                actions.filterIsInstance<Action.DoorTo>().filter { it.row <= 14 }.forEach { spots += Triple("door target", it.col, it.row) }
+                actions.filterIsInstance<Action.Extend>().mapNotNull { it.door }.filter { it.second <= 14 }.forEach { spots += Triple("door target", it.first, it.second) }
+                // a level of several rooms is seen one room at a time: what counts is the column within its room
                 for ((what, cx, cy) in spots) {
-                    if (covered(l, cx, cy, if (what == "spawn") 1f else 1.6f)) offenders += "level ${i + 1} $what ($cx,$cy) at ${w}x$h mirror=$mirror"
+                    if (covered(l, Math.floorMod(cx, ROOM_COLS), cy, if (what == "spawn") 1f else 1.6f)) offenders += "level ${i + 1} $what ($cx,$cy) at ${w}x$h mirror=$mirror"
                 }
             } }
         }

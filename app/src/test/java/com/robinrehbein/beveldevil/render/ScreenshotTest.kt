@@ -23,6 +23,7 @@ import com.robinrehbein.beveldevil.game.trap
 import com.robinrehbein.beveldevil.game.Progress
 import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.Round
+import com.robinrehbein.beveldevil.game.RoomDemos
 import com.robinrehbein.beveldevil.game.Screen
 import com.robinrehbein.beveldevil.game.Sound
 import com.robinrehbein.beveldevil.game.Ui
@@ -441,6 +442,48 @@ class ScreenshotTest {
         }
     }
 
+    /** U18 "Who says the room ends here?": the door that isn't the end, the breach, the pan to room 2 and back. */
+    @Test
+    fun roomExtension() {
+        Lang.german = true
+        for (s in listOf(sizes[0], sizes[2])) {
+            val tag = if (s === sizes[0]) "" else "-${s.tag}"
+            Film(Game(MemoryProgress(), silent).apply { startCustom(RoomDemos.annex) }, s).apply {
+                fun w() = game.world!!
+                play(0.5f)
+                game.input.right = true
+                play(3f) { w().player.box.cx > 12.4f }
+                game.input.jump = true; game.input.jumpPressed = true
+                play(0.45f)
+                game.input.jump = false
+                play(4f) { w().cracks.isNotEmpty() }
+                play(0.35f); save("120-rooms-door-cracks$tag")
+                game.input.right = false
+                play(2f) { !w().cracks[0].group.visible }
+                play(0.12f); save("121-rooms-breach-crumbles$tag")
+                play(2f) { !w().door.moving }
+                play(0.3f); save("122-rooms-breach-open$tag")
+                game.input.right = true
+                play(2f) { w().panning }
+                play(0.25f); save("123-rooms-mid-pan$tag")
+                play(0.3f) { !w().panning }
+                play(0.12f); save("124-rooms-room2$tag")
+                game.input.right = false
+                play(0.6f); save("125-rooms-room2-still$tag")
+                game.input.left = true
+                play(3f) { w().panning }
+                play(0.2f); save("126-rooms-pan-back$tag")
+                game.input.left = false
+            }
+        }
+        val g = Game(MemoryProgress().apply { findCard(Card.ANNEX) }, silent)
+        run(g, 0.5f)
+        g.tap(Ui.titleAlbum.x + 2f, Ui.titleAlbum.y + 2f); run(g, 0.6f)
+        g.tap(Ui.pageNext.x + 2f, Ui.pageNext.y + 2f); run(g, 0.4f)
+        Ui.albumCard(Card.entries.indexOf(Card.ANNEX)).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("127-card-annex", g, sizes.take(1))
+    }
+
     /** World 2's network mechanics on their test-only demo levels. */
     @Test
     fun net() {
@@ -548,7 +591,7 @@ class ScreenshotTest {
         }
     }
 
-    /** World 2, levels 17-24 (the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
+    /** World 2, levels 11-24 (the act 1 rebuilt rooms and the act 2 puzzle rooms): each room as first seen, and at the moment its main twist has hit. */
     @Test
     fun worldTwoPuzzleRooms() {
         val layout = Layout().apply { update(2400, 1080, 2.75f) }
@@ -556,16 +599,24 @@ class ScreenshotTest {
         fun at(n: Int, round: Int = 0, script: Bot.() -> Bot = { wait(0.5f) }) = Bot(w2[n - 1], round).script().world
         val rooms = com.robinrehbein.beveldevil.game.World2Rooms
         val scenes = listOf(
-            "11" to at(11), "12" to at(12), "13" to at(13), "14" to at(14), "14-r2" to at(14, 1), "15" to at(15), "16" to at(16),
-            "17" to at(17), "17-ceiling" to at(17) { rightTo(1.9f).rightJump(0.15f).landRight().wait(0.1f).rightJump(0.4f).landRight().rightTo(10.2f).wait(0.6f) },
-            "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.0f) }, "18-r2" to at(18, 1),
+            "11" to at(11), "11-saw" to at(11) { rightTo(8f).wait(0.9f) }, "11-r2" to at(11, 1),
+            "12" to at(12), "12-pages" to at(12) { rightTo(8f).wait(0.4f) },
+            "13" to at(13), "13-flipped" to at(13) { rightTo(8.3f).landRight().wait(0.6f) },
+            "14" to at(14), "14-r2" to at(14, 1),
+            "15" to at(15), "15-bridge" to at(15) { leftTo(10.2f).leftTo(4.2f).wait(0.5f) },
+            "16" to at(16), "16-cell" to at(16) { hopR(5.6f).right(0.85f).waitFor { it.swapped }.wait(0.3f) },
+            "17" to at(17), "17-packet" to at(17) { rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightUntil { it.group('c').mode == com.robinrehbein.beveldevil.game.GroupMode.FALL }.wait(0.15f) },
+            "17-ride" to at(17) { rooms.l17(this); this },
+            "18" to at(18), "18-scan" to at(18) { rooms.l18ToPad(this).wait(1.2f) }, "18-r2" to at(18, 1),
+            "18-r2-lift" to at(18, 1) { rooms.l18r2ToPad(this).wait(0.5f) }, "18-r2-top" to at(18, 1) { rooms.l18r2ToPad(this).rightUntil { it.group('k').oy < -7.9f }.wait(0.1f) },
             "19" to at(19), "19-swapped" to at(19) { rooms.l19ToShelf(this).wait(0.2f) },
-            "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) },
-            "21" to at(21), "21-cage" to at(21) { rooms.l21ToCage(this).wait(1.1f) },
-            "21-moved" to at(21) { rooms.l21ToCage(this).waitFor { !it.group('w').visible }.rightTo(23.8f).wait(0.3f) },
-            "22" to at(22), "22-shelf" to at(22) { rooms.l22ToShelf(this).wait(0.2f) },
-            "23" to at(23), "23-jam" to at(23) { hopR(10.2f).rightUntil { it.links[0].hopTime > 0f }.hopR(4.3f).rightTo(11f).wait(0.2f) },
-            "24" to at(24), "24-downlink" to at(24) { rooms.l24Up(this).wait(0.6f) },
+            "20" to at(20), "20-scanner" to at(20) { rooms.l20ToScanner(this).wait(0.5f) }, "20-r2" to at(20, 1),
+            "20-r2-ledge" to at(20, 1) { rooms.l20r2Stairs(this).wait(0.3f) },
+            "21" to at(21), "21-closet" to at(21) { rooms.l21ToCloset(this).wait(0.5f) }, "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
+            "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
+            "23" to at(23), "23-lift" to at(23) { rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27f).wait(0.7f) },
+            "24" to at(24), "24-stalactites" to at(24) { rightTo(10.6f).wait(0.2f) },
+            "24-deck" to at(24) { rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(0.8f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }
         for ((name, w) in scenes) {
@@ -575,6 +626,38 @@ class ScreenshotTest {
             val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
             val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
             File(dir, "140-w2-room-$name.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
+    /** Every level of World 1, round 1 start state, for the rollout contact sheets. */
+    @Test
+    fun worldOneAllLevels() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((i, level) in com.robinrehbein.beveldevil.game.World1.levels.withIndex()) {
+            val w = Bot(level, 0).wait(0.5f).world
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, Themes.HELL)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "150-w1-level-${i + 1}.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
+    /** Every level of World 2 as the player first sees it (round 1, start state), for the rollout contact sheets. */
+    @Test
+    fun worldTwoAllLevels() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((i, level) in com.robinrehbein.beveldevil.game.World2.levels.withIndex()) {
+            val w = Bot(level, 0).wait(0.5f).world
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, Themes.DATA_CENTER)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "150-w2-level-${i + 1}.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 
@@ -720,7 +803,7 @@ class ScreenshotTest {
             film(13).apply { play(1.0f); save("144-w3-l13-fuse-box$tag") }
             film(16).apply { runTo(6f); play(0.3f); save("145-w3-l16-motherboard$tag") }
             // act 2: Überhitzung
-            film(17).apply { game.input.right = true; play(4f) { w().heaters['h']!!.heat > 0.7f }; save("146-w3-l17-hot-plate$tag") }
+            film(17).apply { game.input.right = true; play(4f) { w().heaters['g']!!.heat > 0.7f }; save("146-w3-l17-hot-plate$tag") }
             film(18).apply { play(1.5f); save("147-w3-l18-full-load$tag") }
             film(19).apply { play(1.0f); save("148-w3-l19-melt-fuse$tag") }
             film(22).apply { play(1.8f); save("149-w3-l22-heat-soak$tag") }

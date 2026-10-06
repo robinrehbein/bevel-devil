@@ -4,22 +4,198 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Plays [level], or [round] of it (see [Level.rounds]). */
-class Bot(level: Level, round: Int = 0) {
+/**
+ * Deliberate sloppiness for a [Bot], see [DesignRules.solutionToleratesSlop]: [time] seconds are added to every timed
+ * hold ([Bot.right], [Bot.rightJump], [Bot.wait], …) and to [Bot.waitUntil]; every [Bot.rightTo]/[Bot.leftTo] target
+ * (and so every [Bot.hopR]/[Bot.hopL] take-off) moves [tiles] tiles further along the direction of travel. Waits on a
+ * condition ([Bot.waitFor], [Bot.rightUntil], [Bot.waitWhile], [Bot.fidgetUntil], [Bot.untilSaw], …) react [time]
+ * seconds late (the same keys stay down that much longer) or, with negative [time], stop that much before the
+ * condition first held: a condition on `player.box.cx` or `world.time` is a target like any other. Negative values
+ * make the bot early. Only landing ([Bot.landRight]) is physics, not a decision, and stays exact.
+ */
+data class Slop(val time: Float = 0f, val tiles: Float = 0f) {
+    companion object {
+        val NONE = Slop()
+    }
+}
+
+/**
+ * Plays [level], or [round] of it (see [Level.rounds]), as precisely as scripted, or with [slop]. With [skipIdle] every
+ * command that stands still (wait, waitUntil, waitFor, waitWhile, untilSaw, fidgetUntil, a jump on the spot) is
+ * skipped: [DesignRules.cleanRunViolations] uses it to see whether a solution is padded with idle time. With [probe] it
+ * leaves the script once, for the teeth test. Along the way it records [moments] (the traps that sprang) and how long the
+ * player stood still ([idleTime], [longestIdle]).
+ */
+class Bot(level: Level, round: Int = 0, val slop: Slop = Slop.NONE, val skipIdle: Boolean = false, val probe: Probe? = null) {
     private val stage = level.rounds[round]
+    private var past: Trail? = null
     var world = World(stage)
         private set
     private val input = Controls()
     private val trace = StringBuilder()
 
-    private fun hold(seconds: Float, left: Boolean = false, right: Boolean = false, jump: Boolean = false): Bot {
+    /**
+     * A probe of the teeth test ([DesignRules.teethViolations]): when [at] first holds after a step, the bot leaves the
+     * script for a moment. [Probe.Kind.WAIT] stands still [seconds], then the script goes on. [Probe.Kind.RUN] holds the
+     * key it was holding (right if none) for [seconds] without jumping and then stops the script ([ProbeDone]):
+     * [ranThrough] says whether it is still alive.
+     */
+    data class Probe(val kind: Kind, val seconds: Float, val at: (Bot) -> Boolean) {
+        enum class Kind { WAIT, RUN }
+    }
+
+    /** Thrown by a [Probe.Kind.RUN] probe to end the script once the run is over. */
+    class ProbeDone : RuntimeException()
+
+    private var probed = false
+    /** A [Probe.Kind.RUN] probe ran its seconds and the player was still alive (or through the door). */
+    var ranThrough = false
+        private set
+
+    // ---------- what the clean run looked like (exact only without slop: an early slop rewinds) ----------
+
+    /** Seconds the player stood still: no left or right key, in play, not inside a fake win. Jumping on the spot counts. */
+    var idleTime = 0f
+        private set
+    /** The longest stretch of [idleTime] in one go. */
+    var longestIdle = 0f
+        private set
+    private var idleRun = 0f
+    /** The traps that went off, grouped and weighed ([DesignRules.Moment]); filled as they spring. */
+    val moments = ArrayList<DesignRules.Moment>()
+    private var seen = 0
+
+    /** Everything that happened to [world] since it was made, so an early [Slop] can play it again up to a cut. */
+    private sealed interface Entry {
+        data class Step(val left: Boolean, val right: Boolean, val jump: Boolean, val jumpPressed: Boolean, val tilt: Float, val shake: Boolean) : Entry
+        data object Pause : Entry
+        data object Resume : Entry
+    }
+    private val log = ArrayList<Entry>()
+
+    /**
+     * The run boiled down to its direction changes, for [DesignRules.adjacentViolations]: one token per stretch in one
+     * direction (`R`, `L`, or `W` for standing still), with `^` if the player jumped in it. Stretches under 0.25 s do
+     * not count (a nudge), and equal neighbours merge: `hopR`, `hopR`, wait, `leftTo` is `R^ W L`.
+     */
+    fun shape(): List<String> {
+        val runs = ArrayList<Triple<Char, Int, Boolean>>()
+        for (e in log.filterIsInstance<Entry.Step>()) {
+            val dir = if (e.left && !e.right) 'L' else if (e.right && !e.left) 'R' else 'W'
+            val last = runs.lastOrNull()
+            if (last != null && last.first == dir) runs[runs.size - 1] = Triple(dir, last.second + 1, last.third || e.jumpPressed)
+            else runs += Triple(dir, 1, e.jumpPressed)
+        }
+        val out = ArrayList<Triple<Char, Int, Boolean>>()
+        for (r in runs.filter { it.second * DT >= 0.25f }) {
+            val last = out.lastOrNull()
+            if (last != null && last.first == r.first) out[out.size - 1] = Triple(r.first, last.second + r.second, last.third || r.third)
+            else out += r
+        }
+        return out.map { "${it.first}${if (it.third) "^" else ""}" }
+    }
+
+    private fun step() {
+        val idle = !input.left && !input.right && world.state == WorldState.PLAYING && world.fake == null
+        log += Entry.Step(input.left, input.right, input.jump, input.jumpPressed, input.tilt, input.shake)
+        world.step(DT, input)
+        if (idle) { idleTime += DT; idleRun += DT; longestIdle = maxOf(longestIdle, idleRun) } else idleRun = 0f
+        observe()
+        val p = probe ?: return
+        if (probed || world.state != WorldState.PLAYING || !p.at(this)) return
+        probed = true
+        when (p.kind) {
+            Probe.Kind.WAIT -> {
+                val keys = Triple(input.left, input.right, input.jump)
+                input.left = false; input.right = false; input.jump = false; input.jumpPressed = false
+                var t = 0f
+                while (t < p.seconds && world.state == WorldState.PLAYING) { stepPlain(); t += DT }
+                input.left = keys.first; input.right = keys.second; input.jump = keys.third
+                trace.append("--- probe: stood still %.1f s\n".format(p.seconds))
+            }
+            Probe.Kind.RUN -> {
+                val left = input.left && !input.right
+                input.left = left; input.right = !left; input.jump = false; input.jumpPressed = false
+                var t = 0f
+                while (t < p.seconds && world.state == WorldState.PLAYING) { stepPlain(); t += DT }
+                ranThrough = world.state != WorldState.DEAD
+                throw ProbeDone()
+            }
+        }
+    }
+
+    /** One step without the probe (it is running), still logged and observed. */
+    private fun stepPlain() {
+        log += Entry.Step(input.left, input.right, input.jump, input.jumpPressed, input.tilt, input.shake)
+        world.step(DT, input)
+        observe()
+    }
+
+    /** Picks up the traps that sprang in the last step. */
+    private fun observe() {
+        val s = world.sprung
+        while (seen < s.size) DesignRules.addMoment(moments, s[seen++], stage, world)
+    }
+
+    /** Rebuilds [world] from the first [cut] entries of [log]. */
+    private fun replay(cut: Int) {
+        val keep = log.subList(0, cut).toList()
+        log.clear()
+        world = World(stage, past)
+        seen = 0
+        moments.clear()
+        val c = Controls()
+        for (e in keep) {
+            when (e) {
+                is Entry.Step -> {
+                    c.left = e.left; c.right = e.right; c.jump = e.jump; c.jumpPressed = e.jumpPressed; c.tilt = e.tilt; c.shake = e.shake
+                    world.step(DT, c)
+                }
+                Entry.Pause -> world.pausePressed()
+                Entry.Resume -> world.resumed()
+            }
+            log += e
+            observe()
+        }
+        trace.append("--- early by %.2f s\n".format(-slop.time))
+    }
+
+    /**
+     * Steps with [keys] until [cond] holds (at most [max] seconds of world time), then applies [slop]: late keeps the
+     * keys down for [Slop.time] more, early rewinds to [Slop.time] before the condition first held.
+     */
+    private fun react(left: Boolean, right: Boolean, max: Float, cond: (World) -> Boolean): Bot {
+        if (skipIdle && !left && !right) return this
+        val from = log.size
+        val end = world.time + max
+        input.left = left; input.right = right; input.jump = false
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) step()
+        slopAfter(from, cond(world)) { input.left = left; input.right = right; input.jump = false; step() }
+        return hold(0f, left = left, right = right)
+    }
+
+    /** Late: [more] for [Slop.time] seconds after the condition held. Early: rewind to [Slop.time] before it held. */
+    private fun slopAfter(from: Int, met: Boolean, more: () -> Unit) {
+        if (!met || from >= log.size || slop.time == 0f) return
+        val n = kotlin.math.round(kotlin.math.abs(slop.time) / DT).toInt()
+        if (slop.time > 0f) {
+            val stop = log.size + n
+            while (log.size < stop && world.state == WorldState.PLAYING) more()
+        } else replay(maxOf(from, log.size - n))
+    }
+
+    private fun hold(seconds: Float, left: Boolean = false, right: Boolean = false, jump: Boolean = false, exact: Boolean = false): Bot {
+        if (skipIdle && seconds > 0f && !left && !right) return this
+        // a sloppy jump is still a jump: it never shrinks below one step
+        val seconds = if (exact || seconds <= 0f || slop.time == 0f) seconds
+        else maxOf(seconds + slop.time, if (jump) minOf(seconds, DT) else 0f)
         input.left = left
         input.right = right
         input.jump = jump
         input.jumpPressed = jump
         var t = 0f
         while (t < seconds && world.state == WorldState.PLAYING) {
-            world.step(DT, input)
+            step()
             t += DT
         }
         val b = world.player.box
@@ -35,11 +211,12 @@ class Bot(level: Level, round: Int = 0) {
     fun jump(s: Float) = hold(s, jump = true)
 
     /** Hold a key until the player center passes [x] in the given direction (keys may be swapped). */
-    private fun until(x: Float, left: Boolean, goingRight: Boolean): Bot {
+    private fun until(x0: Float, left: Boolean, goingRight: Boolean): Bot {
+        val x = if (goingRight) x0 + slop.tiles else x0 - slop.tiles
         input.left = left; input.right = !left; input.jump = false
         while ((if (goingRight) world.player.box.cx < x else world.player.box.cx > x) &&
             world.state == WorldState.PLAYING && world.time < 60f
-        ) world.step(DT, input)
+        ) step()
         return hold(0f, left = left, right = !left)
     }
 
@@ -47,7 +224,7 @@ class Bot(level: Level, round: Int = 0) {
     private fun untilGrounded(left: Boolean, max: Float): Bot {
         input.left = left; input.right = !left; input.jump = false
         var t = 0f
-        while (!world.player.grounded && world.state == WorldState.PLAYING && t < max) { world.step(DT, input); t += DT }
+        while (!world.player.grounded && world.state == WorldState.PLAYING && t < max) { step(); t += DT }
         return hold(0f, left = left, right = !left)
     }
 
@@ -64,28 +241,22 @@ class Bot(level: Level, round: Int = 0) {
     fun hopSL(x: Float, hold: Float = 0.35f) = rightKeyLeftTo(x).rightJump(hold).landRight()
 
     /** Stand still until the world clock reaches [t] seconds. */
-    fun waitUntil(t: Float): Bot {
+    fun waitUntil(t0: Float): Bot {
+        if (skipIdle) return this
+        val t = t0 + slop.time
         input.left = false; input.right = false; input.jump = false
-        while (world.time < t && world.state == WorldState.PLAYING) world.step(DT, input)
+        while (world.time < t && world.state == WorldState.PLAYING) step()
         return hold(0f)
     }
 
     /** Stand still until a saw is within [d] tiles horizontally of the player (either side). */
-    fun untilSaw(d: Float): Bot {
-        input.left = false; input.right = false; input.jump = false
-        while (world.state == WorldState.PLAYING && world.time < 60f &&
-            world.saws.none { kotlin.math.abs(it.x - world.player.box.cx) <= d }
-        ) world.step(DT, input)
-        return hold(0f)
+    fun untilSaw(d: Float): Bot = react(left = false, right = false, max = 60f) { w ->
+        w.saws.any { kotlin.math.abs(it.x - w.player.box.cx) <= d }
     }
 
     /** Keep running right until a saw ahead of the player is within [d] tiles. */
-    fun rightUntilSaw(d: Float): Bot {
-        input.left = false; input.right = true; input.jump = false
-        while (world.state == WorldState.PLAYING && world.time < 60f &&
-            world.saws.none { it.x > world.player.box.cx && it.x - world.player.box.cx <= d }
-        ) world.step(DT, input)
-        return hold(0f, right = true)
+    fun rightUntilSaw(d: Float): Bot = react(left = false, right = true, max = 60f) { w ->
+        w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= d }
     }
 
     /** Holds the phone at [v] from now on: -1 left edge down .. 1 right edge down. */
@@ -98,20 +269,10 @@ class Bot(level: Level, round: Int = 0) {
     }
 
     /** Stands still until [cond] holds (at most [max] seconds). */
-    fun waitFor(max: Float = 10f, cond: (World) -> Boolean): Bot {
-        input.left = false; input.right = false; input.jump = false
-        val end = world.time + max
-        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) world.step(DT, input)
-        return hold(0f)
-    }
+    fun waitFor(max: Float = 10f, cond: (World) -> Boolean): Bot = react(left = false, right = false, max = max, cond = cond)
 
     /** Holds right (or left with [left]) until [cond] holds, at most [max] seconds: ride a fan or a belt until far enough. */
-    fun rightUntil(max: Float = 10f, left: Boolean = false, cond: (World) -> Boolean): Bot {
-        input.left = left; input.right = !left; input.jump = false
-        val end = world.time + max
-        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) world.step(DT, input)
-        return hold(0f, left = left, right = !left)
-    }
+    fun rightUntil(max: Float = 10f, left: Boolean = false, cond: (World) -> Boolean): Bot = react(left = left, right = !left, max = max, cond = cond)
 
     fun leftUntil(max: Float = 10f, cond: (World) -> Boolean) = rightUntil(max, left = true, cond)
 
@@ -123,8 +284,11 @@ class Bot(level: Level, round: Int = 0) {
 
     /** Like [waitFor], but hops on the spot so that idle triggers never fire. */
     fun fidgetUntil(max: Float = 10f, cond: (World) -> Boolean): Bot {
+        if (skipIdle) return this
+        val from = log.size
         val end = world.time + max
-        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) hold(0.1f, jump = true)
+        while (!cond(world) && world.state == WorldState.PLAYING && world.time < end) hold(0.1f, jump = true, exact = true)
+        slopAfter(from, cond(world)) { hold(DT / 2, jump = true, exact = true) }
         return hold(0f)
     }
 
@@ -136,34 +300,34 @@ class Bot(level: Level, round: Int = 0) {
     fun rightKeyLeftTo(x: Float) = until(x, left = false, goingRight = false)
 
     /** Stand still while [cond] holds (at most [max] seconds), e.g. through a fake win. */
-    fun waitWhile(max: Float = 20f, cond: (World) -> Boolean): Bot {
-        input.left = false; input.right = false; input.jump = false
-        var t = 0f
-        while (cond(world) && world.state == WorldState.PLAYING && t < max) { world.step(DT, input); t += DT }
-        return hold(0f)
-    }
+    fun waitWhile(max: Float = 20f, cond: (World) -> Boolean): Bot = react(left = false, right = false, max = max) { !cond(it) }
 
     /** Taps the HUD pause button; if it really paused, resumes right away. */
     fun tapPause(): Bot {
-        if (world.pausePressed()) world.resumed()
+        log += Entry.Pause
+        if (world.pausePressed()) { log += Entry.Resume; world.resumed() }
         return hold(0f)
     }
 
     /** Pauses (via back, which always works) and resumes. */
     fun pauseResume(): Bot {
+        log += Entry.Resume
         world.resumed()
         return hold(0f)
     }
 
     /** Next attempt after a death, carrying this attempt's trail for a ghost, as the game does. */
     fun retry(): Bot {
-        world = World(stage, world.trail)
+        past = world.trail
+        world = World(stage, past)
+        log.clear()
+        seen = 0
         trace.append("--- retry\n")
         return this
     }
 
     fun expect(state: WorldState) {
-        assertEquals("${stage.name.en}\n$trace", state, world.state)
+        assertEquals("${stage.name.en}${if (slop == Slop.NONE) "" else " with $slop"}\n$trace", state, world.state)
     }
 
     companion object {
@@ -191,12 +355,19 @@ class LevelsTest {
         // a bluff deals the Bluff card
         val played = Levels.all.flatMap { it.rounds }.flatMap { l -> l.traps.flatMap { it.actions } }
             .mapNotNull { a -> if (a is Action.Play) a.card else if (a is Action.Bluff) Card.BLUFF else null }
-        assertEquals(Card.entries.toSet(), played.toSet())
+        // ANNEX belongs to the U18 levels ("who says the room ends here?", docs/LEVEL_DESIGN_V2.md), which are not
+        // built yet: until then only the test demos deal it. The exemption ends by itself with the first level that plays it.
+        val pending = DesignRules.pendingCards(played)
+        assertEquals(Card.entries.toSet() - pending, played.toSet() - pending)
+        val demos = RoomDemos.all.flatMap { l -> l.traps.flatMap { it.actions } }.filterIsInstance<Action.Play>().map { it.card }
+        assertTrue(pending.all { it in played || it in demos })
     }
 
     @Test
     fun naiveRunIsPunished() {
-        for (i in listOf(1, 2, 4, 6, 16)) bot(i).right(8f).expect(WorldState.DEAD)
+        for (i in listOf(1, 2, 4, 6)) bot(i).right(8f).expect(WorldState.DEAD)
+        // 16 is rebuilt: the naive run meets the locked wall and goes nowhere (docs/LEVEL_DESIGN_V2.md H2: it never wins)
+        bot(16).right(8f).expect(WorldState.PLAYING)
     }
 
     @Test

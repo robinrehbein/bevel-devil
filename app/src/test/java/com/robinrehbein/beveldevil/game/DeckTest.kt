@@ -126,16 +126,34 @@ class DeckTest {
         assertFalse(g.rematchAge < 1f)
     }
 
+    /** Spikes three tiles right of the spawn (holding right dies), the door four tiles to the left. With a hint and a rematch. */
+    private val spiky = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke."),
+        rematch = listOf(Round(T("Again.", "Nochmal.")))) {
+        border(); floor(); put(9, 14, '^'); put(6, 14, 'P'); put(2, 14, 'D')
+    }
+
+    /** Dies by holding right into the spikes, then waits out the respawn. */
+    private fun Game.dieOnce() {
+        hold(3f, right = true)
+        run(Game.RESPAWN + 0.1f)
+    }
+
     @Test
-    fun aStuckPlayerGetsTheHintOnce() {
-        val l = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke.")) {
-            border(); floor(); fill(10..10, 5..14); put(2, 14, 'P'); put(28, 14, 'D')
-        }
-        val g = sandbox(l)
-        g.run(Game.HINT_AFTER - 0.5f)
-        assertNotEquals(l.hint.toString(), g.bubble)
-        g.run(1f)
-        assertEquals(l.hint.toString(), g.bubble)
+    fun theHintComesOnTheRespawnAfterTheSecondDeathAndOnlyOnce() {
+        val g = sandbox(spiky)
+        // alive and stuck for a long time: no hint any more (it used to come after 9 s)
+        g.run(12f)
+        assertNotEquals(spiky.hint.toString(), g.bubble)
+        g.dieOnce()
+        assertEquals(1, g.roundDeaths)
+        assertNotEquals(spiky.hint.toString(), g.bubble)
+        g.dieOnce()
+        assertEquals(2, g.roundDeaths)
+        assertEquals(spiky.hint.toString(), g.bubble)
+        // once per round: the third respawn brings a taunt or nothing, not the hint again
+        g.run(6f)
+        g.dieOnce()
+        assertNotEquals(spiky.hint.toString(), g.bubble)
     }
 
     @Test
@@ -211,19 +229,42 @@ class DeckTest {
         assertEquals("Other", l.rounds[2].hint?.en)
     }
 
+    /** Like [spiky], but the rematch has a hint of its own ([Round.hint]): the DSL parameter is named `hint`. */
+    private val spikyOwnHint = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke."),
+        rematch = listOf(Round(T("Again.", "Nochmal."), hint = T("The ceiling is closed now.", "Die Decke ist jetzt zu.")))) {
+        border(); floor(); put(9, 14, '^'); put(6, 14, 'P'); put(2, 14, 'D')
+    }
+
     @Test
-    fun theHintComesAgainInTheNextRound() {
-        val l = Level(T("x", "x"), T("Hi.", "Hi."), hint = T("Try the ceiling.", "Probier die Decke."),
-            rematch = listOf(Round(T("Again.", "Nochmal.")))) {
-            border(); floor(); put(2, 14, 'P'); put(5, 14, 'D')
-        }
-        val g = sandbox(l)
-        g.run(Game.HINT_AFTER + 0.5f)
-        assertEquals(l.hint.toString(), g.bubble)
-        g.hold(2f, right = true)
+    fun aRematchRoundShowsItsOwnHintNotRoundOnes() {
+        assertEquals("Try the ceiling.", spikyOwnHint.rounds[0].hint?.en)
+        assertEquals("The ceiling is closed now.", spikyOwnHint.rounds[1].hint?.en)
+        val g = sandbox(spikyOwnHint)
+        g.dieOnce(); g.dieOnce()
+        assertEquals(spikyOwnHint.rounds[0].hint.toString(), g.bubble)
+        g.hold(2f); g.input.left = true; g.run(1.5f); g.input.left = false
         g.run(1.2f)
         assertEquals(1, g.round)
-        g.run(Game.REMATCH_FREEZE + Game.HINT_AFTER + 0.5f)
-        assertEquals(l.hint.toString(), g.bubble)
+        g.run(Game.REMATCH_FREEZE + 0.1f)
+        g.dieOnce(); g.dieOnce()
+        assertEquals(spikyOwnHint.rounds[1].hint.toString(), g.bubble)
+        assertNotEquals(spikyOwnHint.rounds[0].hint.toString(), g.bubble)
+    }
+
+    @Test
+    fun theHintComesAgainInTheNextRoundAfterTwoDeathsThere() {
+        val g = sandbox(spiky)
+        g.dieOnce(); g.dieOnce()
+        assertEquals(spiky.hint.toString(), g.bubble)
+        // through the door on the left: round 2 starts with its own count
+        g.hold(2f); g.input.left = true; g.run(1.5f); g.input.left = false
+        g.run(1.2f)
+        assertEquals(1, g.round)
+        assertEquals(0, g.roundDeaths)
+        g.run(Game.REMATCH_FREEZE + 0.1f)
+        g.dieOnce()
+        assertNotEquals(spiky.hint.toString(), g.bubble)
+        g.dieOnce()
+        assertEquals(spiky.hint.toString(), g.bubble)
     }
 }

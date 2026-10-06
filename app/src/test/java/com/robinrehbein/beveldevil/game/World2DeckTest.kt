@@ -94,7 +94,8 @@ class World2DeckTest {
      */
     @Test
     fun theRoundOneSolutionLosesRoundTwo() {
-        val rematches = World2.levels.withIndex().filter { it.value.rematch.isNotEmpty() }.map { it.index + 1 }
+        // the rebuilt rooms (World2DesignTest.REBUILT) are checked by the kit (H9 rematch rule) with their registered solutions
+        val rematches = World2.levels.withIndex().filter { it.value.rematch.isNotEmpty() }.map { it.index + 1 }.filter { it !in World2DesignTest.REBUILT }
         assertEquals("every rematch level has its round-1 script here", rematches.toSet(), roundOne.keys)
         for ((n, script) in roundOne) {
             assertEquals("level $n: the round-1 script must win round 1", WorldState.WON, script(b(n)).world.state)
@@ -118,123 +119,76 @@ class World2DeckTest {
 
     // ---------- Act 1: Handshake ----------
 
-    @Test fun l01r2() = b(1, 2).rightTo(17.5f).hopR(18.9f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.7f).right(0.5f).expect(WorldState.DEAD)
-    @Test fun l04r2() = b(4, 2).rightTo(12.2f).wait(0.4f).rightJump(0.22f).wait(0.5f).rightJump(0.35f).landRight()
-        .rightTo(19.4f).rightJump(0.35f).landRight().rightTo(22.4f).rightJump(0.35f).landRight().right(1f).expect(WorldState.WON)
-    /** Sky Blue, round 2: the first ceiling stalks you and drops where round 1 dropped it; run under it, stop before the second. */
-    @Test fun l07r2() = b(7, 2).rightTo(14.6f).wait(0.8f).hopR(15.3f).rightTo(21.7f).leftTo(20.8f).wait(1f).hopR(21.3f).right(1f).expect(WorldState.WON)
-    @Test fun l07r2TheCeilingFollowsYouAndStandingUnderItIsSafe() {
-        val bot = b(7, 2).rightTo(6f).wait(1.5f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("the ceiling hovers over Bevel", bot.world.group('c').ox < -2.5f)
-    }
-    @Test fun l07r2WaitingForTheFirstCeilingIsFatal() = b(7, 2).rightTo(7.6f).wait(1f).expect(WorldState.DEAD)
-    /**
-     * Server Room, round 2: two-factor auth. A second rail sits behind the first and its switch is next to the spawn; the
-     * switch upstairs only opens the outer one. Behind the rack the raised floor drops: jump it.
-     */
-    @Test fun l11r2() = b(11, 2).leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f).leftJump(0.45f).landLeft()
-        .leftTo(2.5f).rightTo(14.5f).landRight().rightTo(24.6f).rightJump(0.5f).landRight().right(0.5f).expect(WorldState.WON)
-    @Test fun l11r2RunningOverTheRaisedFloorFallsIn() = b(11, 2).leftTo(1.6f).rightTo(14.2f).rightJump(0.3f).landRight().wait(0.2f)
-        .leftJump(0.45f).landLeft().leftTo(2.5f).rightTo(14.5f).landRight().right(3f).expect(WorldState.DEAD)
-    @Test fun l11r2TheOldSwitchAloneLeavesTheInnerRailShut() {
-        val bot = World2Test.upstairsAndBack(b(11, 2)).rightTo(22f).right(1f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue(bot.world.player.box.cx < 23f)
-    }
-    /**
-     * 127.0.0.1, round 2: the links at home swapped (the floor one leads on now, the one in the air is the loopback), and a
-     * firewall follows the packet into the last subnet: no time to wait for the bridge there, so wait in the top right.
-     */
-    @Test fun l14r2() = b(14, 2).right(1.6f).leftTo(9f).leftJump(0.3f).landLeft().leftUntil { it.player.box.cx > 20f }
-        .leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft().waitFor { it.group('k').visible }.waitFor { !it.group('k').visible }
-        .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).leftJump(0.3f).landLeft().leftTo(22.6f).leftJump(0.35f).landLeft().left(0.5f)
-        .expect(WorldState.WON)
-    @Test fun l14r2TheLinkInTheAirIsTheLoopbackNow() {
-        val bot = b(14, 2).rightTo(10.3f).rightJump(0.3f).landRight().wait(0.3f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 6f && bot.world.player.box.b > 14f)
-    }
-    @Test fun l14r2WaitingForTheBridgeDownstairsMeetsTheFirewall() = b(14, 2).right(1.6f).leftTo(9f).leftJump(0.3f).landLeft()
-        .leftUntil { it.player.box.cx > 20f }.leftTo(24.1f).wait(0.6f).leftJump(0.35f).landLeft()
-        .leftUntil { it.player.box.cx > 25f }.leftTo(26.6f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
+    @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
+    @Test fun l04r2() { World2DesignTest.play(4, round = 2) }
+    @Test fun l07r2() { World2DesignTest.play(7, round = 2) }
+    /** Sky Blue, round 2: the ceiling stalks you over the plateau; waiting under it, where round 1 waited, is the end. */
+    @Test fun l07r2TheStalkerCeilingDropsOnThePlateau() = b(7, 2).leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
-    /** Firewall, round 2: the door moved down behind a beam, its pad is up where the door was; a saw inspects the floor after it. */
-    @Test fun l18r2() = World2Rooms.l18r2(b(18, 2)).expect(WorldState.WON)
-    @Test fun l18r2TheRoundOneRouteEndsAtAPadNotADoor() = World2Rooms.l18(b(18, 2)).also { assertTrue(it.world.door.box.x > 20f) }.expect(WorldState.PLAYING)
-    @Test fun l18r2RunningForTheDoorAfterThePadMeetsTheSaw() = b(18, 2).hopR(10f).wait(0.15f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
-        .leftJump(0.4f).landLeft().leftTo(2.4f).rightUntil { it.player.box.cx > 11.3f && it.player.grounded && it.player.box.b < 13.5f }
-        .rightTo(14.5f).waitFor(cond = World2Rooms.clear('L')).right(3f).expect(WorldState.DEAD)
-    /** Stateful Inspection, round 2: the second check is a bluff, but jumping it crosses a fresh beam. */
-    @Test fun l20r2() = World2Rooms.l20r2(b(20, 2)).expect(WorldState.WON)
-    @Test fun l20r2JumpingTheSecondCheckIsFatal() = World2Rooms.l20(b(20, 2)).expect(WorldState.DEAD)
-    @Test fun l25r2() = b(25, 2).hopR(4.2f).hopR(8f).hopR(14f).hopR(20f).right(1f).expect(WorldState.WON)
-    @Test fun l25r2TheRoundOneTimingDies() = b(25, 2).right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).expect(WorldState.DEAD)
-    /** Ticket Number, round 2: the queue (a spike) creeps after you up to the gate; hop over it and back until the gate opens. */
-    private fun queue(w: World) = w.group('S').homeX + w.group('S').ox
-    @Test fun l26r2() = b(26, 2).rightTo(13.6f).waitFor { queue(it) > it.player.box.cx - 1.6f }.leftJump(0.35f).landLeft()
-        .waitFor { !it.beams[0].lit || queue(it) < it.player.box.cx + 1.6f }.rightJump(0.35f).landRight()
-        .waitFor { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f).expect(WorldState.WON)
-    @Test fun l26r2KeepAliveHopsLandOnTheQueue() = b(26, 2).rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.expect(WorldState.DEAD)
-    @Test fun l26r2StandingStillAnywhereIsFineUntilTheQueueComes() = b(26, 2).rightTo(8f).wait(3f).expect(WorldState.PLAYING)
-    /** Race Condition, round 2: the landing behind the first pendulum turns the belt forward; ride it, slip under the second one, jump. */
-    @Test fun l29r2() = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight()
-        .waitFor { w -> w.saws.filter { kotlin.math.abs(it.x - 21f) < 0.5f }.all { it.y < 12.2f } }.rightTo(22.6f).rightJump(0.55f).landRight()
-        .right(1f).expect(WorldState.WON)
-    @Test fun l29r2TheBeltTurnsForwardOnTheLanding() {
-        val bot = b(29, 2).right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f).rightJump(0.55f).landRight().wait(0.05f)
-        assertEquals(3f, bot.world.group('b').belt)
+    /** Firewall, round 2: the beam over the stairs stays on, the pad is the rack's call button, the way is over the top. */
+    @Test fun l18r2() { World2DesignTest.play(18, round = 2) }
+    /** Round 1's way (press the pad, run back, climb the stairs) ends in the beam that never goes out. */
+    @Test fun l18r2TheRoundOneRouteEndsInTheBeamOverTheStairs() {
+        val bot = World2Rooms.l18(b(18, 2))
+        bot.expect(WorldState.DEAD)
+        assertTrue("the beam over the stairs still burns", bot.world.beams.any { it.laser.id == 'W' && it.lit })
     }
+    /** Hopping where round 1 hopped lands in the hole that moved two tiles on. */
+    @Test fun l18r2HoppingWhereRoundOneHoppedLandsInTheHole() = b(18, 2).hopR(15.6f).right(1f).expect(WorldState.DEAD)
+    @Test fun l18r2ThePadCallsTheRack() {
+        val bot = World2Rooms.l18r2ToPad(b(18, 2)).wait(0.3f)
+        assertTrue("the rack rises", bot.world.group('k').oy < -1f)
+        assertTrue("the beam over the stairs stays on", bot.world.beams.any { it.laser.id == 'W' && it.lit })
+    }
+    @Test fun l18r2LingeringOnTheLiftIsFatal() = World2Rooms.l18r2ToPad(b(18, 2)).wait(3f).expect(WorldState.DEAD)
+    @Test fun l18r2HasItsOwnHint() = assertTrue(World2.levels[17].rounds[1].hint != null && World2.levels[17].rounds[1].hint!!.en != World2.levels[17].hint!!.en)
+    /** Stateful Inspection, round 2: no gates, nothing to wait for: the floor, the stairs and the lane expire on your heels, a tripwire flashes over the ledge. */
+    @Test fun l20r2() { World2DesignTest.play(20, round = 2) }
+    /** Round 1's way (a hop onto the first step, then on without waiting for the next one to light up) drops through the dark step. */
+    @Test fun l20r2RoundOnesHopsDropThroughTheDarkStep() = b(20, 2).hopR(4.1f, 0.24f).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2TheStairsExpireOneAfterTheOtherWhenYouStop() = World2Rooms.l20r2Stairs(b(20, 2)).wait(0.1f).also { it.world.circuits['u']?.let { c -> assertTrue(c.powered) } }
+        .wait(3f).expect(WorldState.PLAYING)
+    @Test fun l20r2TheTripwireFlashesOverTheLedge() = World2Rooms.l20r2Stairs(b(20, 2)).right(2f).expect(WorldState.DEAD)
+    @Test fun l20r2WhoStandsStillOnTheLaneFindsItDark() = World2Rooms.l20r2Stairs(b(20, 2)).rightTo(23.8f).rightJump(0.35f).landRight()
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(3f).leftTo(15.5f).left(2f).expect(WorldState.DEAD)
+    @Test fun l20r2HoldingRightIsNotKilledByTheFirstStep() = b(20, 2).right(1.0f).expect(WorldState.PLAYING)
+    /** Load Balancer, round 2: the nodes sit two tiles further on, crumble faster, and the stone up top is a belt. */
+    @Test fun l25r2() { World2DesignTest.play(25, round = 2) }
+    @Test fun l25r2TheRoundOneHopsLandInThePit() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
+    /** Ticket Number, round 2: both queues come toward you now; hop each of them. */
+    @Test fun l26r2() { World2DesignTest.play(26, round = 2) }
+    @Test fun l26r2TheRoundOneRunMeetsTheQueueHeadOn() = World2Rooms.l26(b(26, 2)).expect(WorldState.DEAD)
+    @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
+    /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
+    @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
+    @Test fun l29r2TheRoundOneRunMeetsTheLappingSaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
+    @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(3f).expect(WorldState.DEAD)
+
     // ---------- Act 3: Root ----------
 
-    /** sudo !!, round 2: the LED pair slides onto where a full jump lands; a short hop comes down in front of it. */
-    @Test fun l33r2() = b(33, 2).rightTo(17.6f).rightJump(0.1f).landRight().rightJump(0.55f).landRight().right(1f).expect(WorldState.WON)
-    @Test fun l33r2TheLedsSlideOntoTheLanding() = b(33, 2).hopR(18.5f).right(0.3f).expect(WorldState.DEAD)
-    /** Reverse Proxy, round 2: a firewall gate wakes up between the second portal's exit and the door; stop after the exit and wait. */
-    @Test fun l34r2() = b(34, 2).right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f)
-        .waitFor { it.beams.isNotEmpty() && !it.beams[0].lit }.right(1f).expect(WorldState.WON)
-    /** Security Audit, round 2: the ground behind the stones sinks; take the last stone (honest now) and jump to the door from it. */
-    @Test fun l41r2() = b(41, 2).rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).landRight()
-        .rightJump(0.15f).landRight().rightJump(0.55f).right(1f).expect(WorldState.WON)
-    @Test fun l41r2RoundOnesLeapOntoTheGroundSinks() = roundOne.getValue(41)(b(41, 2)).wait(1.5f).expect(WorldState.DEAD)
-    @Test fun l42r2() = b(42, 2).hopR(5f).right(3f).expect(WorldState.WON)
-    @Test fun l42r2TheHighRoadIsTheTrap() = b(42, 2).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f).expect(WorldState.DEAD)
-    @Test fun l46r2() = b(46, 2).hopR(2.6f).hopR(7.5f).hopR(15.2f).hopR(22.2f).right(1f).expect(WorldState.WON)
-    @Test fun l46r2TheOldClimbOvershoots() = b(46, 2).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.03f).expect(WorldState.DEAD)
-    /** Rebase, round 2: Ctrl+Z on the wall throws Bevel back past the spikes; the second climb is the real one. */
-    @Test fun l44r2() = b(44, 2).right(0.60f).rightJump(0.55f).left(0.03f).left(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f)
-        .right(0.03f).right(0.03f).leftJump(0.12f).rightJump(0.55f).wait(0.3f).rightJump(0.4f).landRight().wait(0.1f).right(0.1f).wait(0.6f)
-        .also { assertTrue("undone to x=${it.world.player.box.cx}", it.world.player.box.cx < 21f) }
-        .rightTo(23f).rightJump(0.4f).landRight().right(2f).expect(WorldState.WON)
+    /** sudo !!, round 2: the first hole is a bluff, the hop you learned lands in the LED that grows; the late block drops behind whoever runs on. */
+    @Test fun l33r2() { World2DesignTest.play(33, round = 2) }
+    @Test fun l33r2TheRoundOneHopLandsInTheLed() = b(33, 2).hopR(6.9f, 0.5f).right(0.5f).expect(WorldState.DEAD)
+    @Test fun l33r2TheLateBlockCrushesWhoStopsToLook() = b(33, 2).hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .hopL(26.2f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
+    /** Reverse Proxy, round 2: the gravity turns over behind the LEDs at the far end, the ceiling run goes left, and the one link is stale until it is renewed. */
+    @Test fun l34r2() { World2DesignTest.play(34, round = 2) }
+    @Test fun l34r2TheRoundOneRunHitsTheLeds() = World2Rooms.l34(b(34, 2)).expect(WorldState.DEAD)
+    @Test fun l34r2TheStaleLinkIsTheLoopback() {
+        val bot = b(34, 2).hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { w -> w.links.first { it.id == '3' }.hopTime > 0f }.wait(0.05f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx > 20f)
+    }
+    @Test fun l41r2() { World2DesignTest.play(41, round = 2) }
+    @Test fun l42r2() { World2DesignTest.play(42, round = 2) }
+    /** Rebase, round 2: Ctrl+Z comes right before the door; the second climb is the real one. */
+    @Test fun l44r2() { World2DesignTest.play(44, round = 2) }
+    @Test fun l46r2() { World2DesignTest.play(46, round = 2) }
 
     companion object {
         /** The round-1 solutions of the rematch levels, copied from [World2Test], keyed by level number. */
-        val roundOne: Map<Int, (Bot) -> Bot> = mapOf(
-            1 to { b -> b.right(1.20f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(1.20f) },
-            4 to { b -> b.right(0.60f).right(0.60f).rightJump(0.25f).rightJump(0.12f).left(0.10f).right(0.03f)
-                .left(0.03f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            7 to { b -> b.right(0.60f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f)
-                .rightJump(0.55f).right(0.25f).right(0.10f).left(0.03f).left(0.03f).right(0.03f).left(0.03f).left(0.03f).right(0.03f)
-                .left(0.03f).left(0.03f).rightJump(0.55f).right(0.25f).right(0.03f).right(0.03f).left(0.03f).left(0.03f).left(0.03f)
-                .right(0.03f).right(0.03f).left(0.10f).rightJump(0.55f).right(0.60f) },
-            11 to World2Test.rooms.getValue(11),
-            14 to World2Test.rooms.getValue(14),
-            18 to World2Rooms::l18,
-            20 to World2Rooms::l20,
-            25 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            26 to { b -> b.rightTo(13.6f).fidgetUntil { !it.beams[0].lit }.hopR(16.5f).hopR(22f).right(1f) },
-            29 to { b -> b.right(0.60f).rightJump(0.55f).rightJump(0.12f).right(0.10f).left(0.10f)
-                .rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f) },
-            33 to { b -> b.right(0.60f).right(0.25f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f).right(0.03f) },
-            34 to { b -> b.right(0.25f).rightJump(0.55f).right(0.25f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            41 to { b -> b.rightJump(0.55f).rightJump(0.55f).right(0.10f).rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(0.60f) },
-            42 to { b -> b.rightJump(0.55f).rightJump(0.55f).rightJump(0.55f).right(1.20f).right(1.20f) },
-            44 to { b -> b.right(0.60f).rightJump(0.55f).left(0.03f).left(0.03f).right(0.03f).rightJump(0.55f).rightJump(0.55f)
-                .right(0.03f).right(0.03f).leftJump(0.12f).rightJump(0.55f).right(1.20f) },
-            46 to { b -> b.rightJump(0.40f).rightJump(0.55f).rightJump(0.55f).right(0.60f).rightJump(0.55f).rightJump(0.55f)
-                .rightJump(0.55f).right(0.03f) },
-        )
+        val roundOne: Map<Int, (Bot) -> Bot> = emptyMap()
     }
 }

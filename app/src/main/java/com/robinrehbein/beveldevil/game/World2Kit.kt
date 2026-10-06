@@ -14,7 +14,7 @@ internal fun MapBuilder.leds(xs: IntRange, y: Int = 14, c: Char = '^') = fill(xs
 
 /** The level number as 7 LEDs in binary on the ceiling (1 = block). Only fills empty cells. */
 internal fun MapBuilder.bits(n: Int, x0: Int = 24, y: Int = 1) {
-    for (i in 0 until 7) if ((n shr (6 - i)) and 1 == 1 && grid[y][x0 + i] == '.') put(x0 + i, y, '#')
+    for (i in 0 until 7) if ((n shr (6 - i)) and 1 == 1 && at(x0 + i, y) == '.') put(x0 + i, y, '#')
 }
 
 /**
