@@ -14,11 +14,11 @@ object World3RoomsC {
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
             { rightTo(6.3f).waitCooled('g').rightTo(24.8f).landRight()
-                .leftTo(13.9f).leftTo(11.8f).leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+                .leftTo(19.9f).leftTo(17.8f).leftJump(0.55f).landLeft().leftTo(12.4f).left(0.5f) },
             // rematch: hop the hot sink and the quick plate, wait out the two lids and hop them
             { rightTo(4.4f).rightJump(0.5f).landRight().rightTo(9.4f).rightJump(0.5f).landRight().rightTo(16.7f)
                 .waitFor { landed(it, 'd', 1f) }.rightJump(0.55f).landRight().rightTo(24.8f).landRight()
-                .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+                .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(12.4f).left(0.5f) },
         ),
         18 to listOf<Solution>(
             { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()

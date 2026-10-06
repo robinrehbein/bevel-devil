@@ -40,7 +40,7 @@ object World3PartC {
         // 17 — a stove on the top shelf and the way home underneath it. Start on the shelf: as you set off the far plate flares white (it
         // glows for a long time), so you stop on the heatsink for a breath; but the lid hanging over the sink comes down if you stay (do
         // not sit under it). Over the end of the shelf and down to the floor: a second lid hangs over where you land and lets go while you
-        // run back under the shelf, and the floor in front of the door gives way as you pass.
+        // run back under the shelf, and the floor in front of the door, halfway back, gives way as you come.
         // Rematch: the sink is the one that flares, so stopping on it as before is the end. The plate is quick, too: hop across it. A lid
         // over the shelf and a lid under it, each to be waited out and hopped.
         Level(
@@ -51,7 +51,7 @@ object World3PartC {
                 trap(Zone(2.9f, 3f, 4f, 9f), Play(Card.THROTTLE), Heat('g', rise = 0.8f, cool = 5f), HeatSpike('g', 1f), say("Energy saving mode: off.", "Energiesparmodus: aus.")),
                 trap(Touch('k'), Fall('a'), say("Lid's on. Dinner is ready.", "Deckel drauf. Das Essen ist fertig."), delay = 0.8f),
                 trap(Landed(24.5f, 31f), Fall('b'), say("A second lid. Pots come in pairs.", "Ein zweiter Deckel. Töpfe gibt es nur im Doppelpack."), delay = 0.25f),
-                trap(Zone(12f, 12f, 14f, 15.2f), Fall('p'), say("The last tiles are a rental.", "Die letzten Kacheln sind gemietet."), delay = 0.2f),
+                trap(Zone(18f, 12f, 20f, 15.2f), Fall('p'), say("The last tiles are a rental.", "Die letzten Kacheln sind gemietet."), delay = 0.2f),
             ),
             hint = T("The far plate is still glowing. Cool it on the sink, but do not sit under the lid.", "Die hintere Platte glüht noch. Kühl sie am Kühlkörper, aber setz dich nicht unter den Deckel."),
             rematch = listOf(
@@ -69,7 +69,7 @@ object World3PartC {
                     fill(4..7, 1..2, '.')
                     fill(19..22, 1..2, 'd')
                     fill(17..20, 10..11, 'c')
-                    fill(8..10, 15..17, '#')
+                    fill(14..16, 15..17, '#')
                 },
             ),
         ) {
@@ -78,8 +78,8 @@ object World3PartC {
             fill(6..7, 8..8, 'k'); fill(10..15, 8..8, 'g')
             fill(5..7, 1..2, 'a')
             fill(25..29, 1..2, 'b')
-            pit(8..10); fill(8..10, 15..15, 'p')
-            spawn(2, 7); door(3, 14)
+            pit(14..16); fill(14..16, 15..15, 'p')
+            spawn(2, 7); door(12, 14)
         },
 
         // 18 — the door is right there, behind a copper wall, and the switch that opens it is on the far side of a chip under load. The chip
