@@ -10,7 +10,7 @@ object World2RoomsD {
     fun l41(b: Bot) = b.hopR(8.6f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
         .leftJump(0.55f).landLeft().hopL(18.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
 
-    /** 41, round 2: hop the first stone (it drops at once), run over the honest second one, hop off the third, then as before. */
+    /** 41, round 2: hop the first stone (it drops at once), run over the slowly sinking second one, hop off the third, then as before. */
     fun l41r2(b: Bot) = b.hopR(5.2f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
         .leftJump(0.55f).landLeft().hopL(18.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
 
@@ -20,12 +20,12 @@ object World2RoomsD {
     /** 42: hop the hole in the deck, stop for the ore bucket on its rope and slip under it, off the end of the deck, left over the pile (stand on it while cart 2 passes), run to the door. */
     fun l42(b: Bot) = b.hopR(6.0f, 0.5f).rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-        .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().waitFor { cartPast(it, 1.2f) }.leftTo(9.6f).left(3f)
+        .leftUntil { it.player.box.cx < 26.0f }.leftJump(0.4f).landLeft().waitFor { cartPast(it, 1.2f) }.left(2.5f)
 
     /** 42, round 2: as before, but the pile gives way under you: over it without a stop and hop cart 2 on the lane instead of standing on the gold. */
     fun l42r2(b: Bot) = b.rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-        .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().leftJump(0.5f).landLeft()
+        .leftUntil { it.player.box.cx < 26.0f }.leftJump(0.4f).landLeft().leftJump(0.5f).landLeft()
         .leftUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.leftJump(0.5f).landLeft().left(3f)
 
     /** 43: along the lane until the beam has flashed, up to the port, shake the cable, through the port onto the deck, wait out the two flashes, drop off the end to the door. */
@@ -76,15 +76,16 @@ object World2RoomsD {
 
     /** 45: crawl right to the pad at the far end, jump up through the hatch, along the roof, up the steps to the door. */
     fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
-        .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1.5f)
+        .leftJump(0.4f).landLeft().left(1.5f)
 
-    /** 46: up onto the first belt, run against it to its end, hop the LEDs onto the second, the third, and the bridge, along it to the door before it drops. */
+    /** 46: up onto the first belt, run against it to its end, hop the LEDs onto the second, run against it onto the pillar, wait there for root's maintenance window, cross root under the lifted gate and hop onto the bridge, along it to the door before it sinks. */
     fun l46(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
-        .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().right(3f)
+        .rightUntil { it.player.box.cx > 16.6f }.waitFor { it.group('c').belt == 0f }.rightJump(0.45f).landRight()
+        .rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().right(3f)
 
-    /** 46, round 2: the same climb on the harder belts, then back left from the top belt onto the carpet that runs the other way (hold left against it), and on over the ledge to the door. */
+    /** 46, round 2: ride the belts that carry you right and hop at their ends, then back left from the top belt onto the carpet that runs the other way, and hold left against it to the door in its middle. */
     fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().waitFor { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
-        .waitFor { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().leftUntil { it.player.box.cx < 17.9f }.leftJump(0.5f).landLeft().leftUntil { World2Rooms.sawAheadRight(it, 3.4f) }.leftJump(0.5f).landLeft().left(4f)
+        .waitFor { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().leftUntil { it.player.box.cx < 17.9f }.leftJump(0.5f).landLeft().left(1.5f)
 
     /** 47: hop the cart on the lane (the controls swap as you leave the ground, so go on with the other key), stop for the pendulum, slip under it, up the narrow steps with swapped hands; on the first step the controls are back to normal: to the deck and the door. */
     fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).leftJump(0.45f).landLeft()
