@@ -203,5 +203,44 @@ object World3PartF {
                 fill(22..22, 8..14, 'Z')
             }
         },
+
+        // 48 — BIOS Setup (the finale of the game)
+        Level(
+            name = T("BIOS Setup", "BIOS-Setup"),
+            intro = T("Press DEL to enter setup. Everything else is my job.", "ENTF für das Setup. Alles andere ist mein Job."),
+            rooms = 2,
+            start = listOf(
+                Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 7f, width = 3), Power('f', false),
+                Fan('g', at = 19 to 7, dir = Dir.UP, reach = 5, speed = -6f, width = 3),
+                Pad('A', at = 6 to 14), Pad('B', at = 14 to 6),
+                Heat('n', rise = 0.9f), Heat('m', rise = 1.8f),
+                Fan('D', at = roomX(1, 4) to 0, dir = Dir.DOWN, reach = 14, speed = 7f, width = 4),
+                Heat('c', rise = 2.0f), Heatsink('k', cools = "c"), Heat('e', rise = 1.2f),
+            ),
+            traps = listOf(
+                trap(Pressed('A'), Power('f', true), say("Setup, page one: the lift. Enabled.", "Setup, Seite eins: der Aufzug. Aktiviert.")),
+                trap(Landed(12f, 14f), HeatSpike('n', 0.7f), say("CPU: overclocked on arrival.", "CPU: bei Ankunft übertaktet.")),
+                trap(Pressed('B'), FanSet('g', 7f), say("Page two: fan mode. Reverse to forward.", "Seite zwei: Lüftermodus. Von rückwärts auf vorwärts.")),
+                trap(AtDoor, Play(Card.GRAND_FINALE), Extend(into = 1, top = 1, bottom = 2, warn = 0.7f, door = roomX(1, 26) to 14,
+                    line = T("Save and exit? The exit is on the next screen.", "Speichern und beenden? Der Ausgang ist auf dem nächsten Bildschirm."))),
+                trap(Zone(roomX(1, 4f), 8f, roomX(1, 8f), 10f), FanSet('D', -7f), Flip(1.2f), say("Fan mode: REVERSE. Load defaults? No.", "Lüftermodus: UMGEKEHRT. Standardwerte laden? Nein.")),
+                trap(Zone(roomX(1, 4f), 8f, roomX(1, 8f), 10f), FanSet('D', 7f), delay = 0.7f),
+                trap(Landed(roomX(1, 4f), roomX(1, 12f)), HeatSpike('c', 0.8f), say("Core temperature: spiking. Cool it, or lose it.", "Kerntemperatur: steigt. Kühl ihn, oder verlier ihn.")),
+                trap(Zone(roomX(1, 21f), 13f, roomX(1, 25f), 15.5f), HeatSpike('e', 0.45f), say("Thermal threshold: a matter of opinion.", "Temperaturgrenze: Ansichtssache.")),
+            ),
+        ) {
+            border(); floor()
+            room(0) {
+                fill(12..13, 7..7, 'n'); fill(14..22, 7..7, 'm')
+                fill(22..30, 3..3)
+                spawn(3, 14); door(29, 2)
+            }
+            room(1) {
+                fill(1..3, 3..3)
+                fill(8..9, 4..11)
+                fill(8..11, 15..15, 'k'); fill(12..18, 15..15, 'c')
+                fill(21..24, 15..15, 'e')
+            }
+        },
     )
 }

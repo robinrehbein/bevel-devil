@@ -49,5 +49,18 @@ object World3RoomsF {
                 .waitFor { w -> w.cracks.any { it.fell } }.rightTo(roomX(1, 20.5f))
                 .waitFor { w -> w.circuits['Z']?.powered == false }.rightTo(roomX(1, 29f)).right(2f) },
         ),
+        48 to listOf<Solution>(
+            {
+                var turned = false
+                rightTo(6.6f).rightTo(10.5f).waitFor { it.player.box.cy < 6.4f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
+                    .rightTo(20.0f).waitFor { it.player.box.cy < 2.6f }.rightUntil { it.player.grounded && it.player.box.b < 3.5f }
+                    .rightTo(29.4f).waitFor { w -> w.cracks.any { it.fell } }
+                    .rightTo(roomX(1, 5.5f)).rightUntil { w -> w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Flip } } }
+                    // while the picture is turned, left is right: keep pressing against the wall by pressing the other way
+                    .leftUntil { w -> if (w.viewTurn() > 0.5f) turned = true; turned && w.viewTurn() < 0.05f }
+                    .rightUntil { it.player.box.b > 11.0f }
+                    .rightTo(roomX(1, 9.8f)).waitCooled('c', 0.2f).rightTo(roomX(1, 26f)).right(2f)
+            },
+        ),
     )
 }
