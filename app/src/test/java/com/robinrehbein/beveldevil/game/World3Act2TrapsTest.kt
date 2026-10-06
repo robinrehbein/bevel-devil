@@ -16,8 +16,10 @@ class World3Act2TrapsTest {
     fun actTwoAveragesAlmostThreeTrapsPerLevel() {
         val traps = World3Part2.levels.sumOf { it.traps.size }
         assertTrue("only $traps traps in act two", traps >= 46)
-        // a level may have more trap entries than moments: a door that flees in several hops is one moment of three entries (level 20)
-        assertTrue(World3Part2.levels.all { it.traps.size in 2..7 })
+        // a level may have more trap entries than moments: a door that flees in several hops is one moment of three entries (level 20);
+        // the act finale (32) runs three rooms and may have a couple more
+        assertTrue(World3Part2.levels.dropLast(1).all { it.traps.size in 2..7 })
+        assertTrue(World3Part2.levels.last().traps.size in 2..9)
     }
 
     // 18, 20, 21 and 22 are the rebuilt block C: what each one does to the player who plays it the obvious way
@@ -75,11 +77,15 @@ class World3Act2TrapsTest {
 
     @Test
     fun burnInTheTestPatternSpikesAreOnlyRoundOnesLie() {
-        // round one: hopping the spikes that are about to sink lands among the hidden ones
-        val bot = Bot(World3.levels[29], 0).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-            .rightTo(9.4f).rightTo(10.4f).rightJump(0.55f).landRight().rightTo(16.6f).rightTo(17.4f).rightJump(0.55f).landRight()
-            .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f)
-        bot.expect(WorldState.DEAD)
+        // round one: hopping the spikes that are about to sink lands on the plate behind them, which flares for whoever is in the air
+        val hop: Solution = {
+            rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+                .rightUntil { w -> w.group('Q').let { it.homeX + it.ox - w.player.box.cx < 3.2f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22.4f).leftJump(0.55f).landLeft().left(2f)
+        }
+        DesignRules.play(World3.levels[29], 0, hop).expect(WorldState.DEAD)
+        // round two: the spikes are real, so walking through them as in round one is the end of it
+        DesignRules.play(World3.levels[29], 1, World3DesignTest.SOLUTIONS.getValue(30)[0]).expect(WorldState.DEAD)
     }
 
     /** None of the rebuilt levels of block D strands the player: every registered solution of every round wins, and none needs a second try. */

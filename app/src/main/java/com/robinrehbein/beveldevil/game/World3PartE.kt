@@ -25,24 +25,24 @@ object World3PartE {
                 trap(Landed(12.2f, 15.9f), Play(Card.CRUMBLE), Fall('b'), say("Gate change: your plank just left.", "Gate geändert: Deine Planke ist schon weg."), delay = 0.1f),
                 trap(Landed(20f, 22.9f), Fall('c'), say("Seats are not reserved.", "Sitzplätze sind nicht reserviert."), delay = 0.4f),
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Brief pause. Please hold your altitude.", "Kurze Pause. Bitte Höhe halten.")),
-                trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.7f),
+                trap(Zone(26f, 2.9f, 28.8f, 6.1f), FanSet('g', 9f), say("And up again. Mind the wall, not the view.", "Und wieder hoch. Achte auf die Wand, nicht auf die Aussicht."), delay = 1.7f),
             ),
             hint = T("Stand in the draft and hold on to the wall. Planks only give way once you are on them.", "Stell dich in den Aufwind und halt dich an der Wand. Planken geben erst nach, wenn du drauf stehst."),
-            // rematch: the planks hold now, and nothing waits for the second landing: but the first draft takes a lunch break while you
-            // walk up (spikes on the floor of the pit: wait at the edge, do not run in), and a stud has grown on the far plank, exactly where
-            // the long leap from round one comes down. Hop it low instead
+            // rematch: the planks hold now, and nothing waits for the second landing: but the first draft takes its lunch break while you
+            // ride it (spikes on the floor of the pit: steer back to the edge as you fall, and ride again once it is back), and a stud has
+            // grown on the far plank, exactly where the long leap from round one comes down. Hop it low instead
             rematch = listOf(
                 Round(
                     T("Same ride. A different bridge.", "Gleiche Fahrt. Eine andere Brücke."),
                     traps = listOf(
-                        trap(PastX(5f), FanSet('f', 0f), say("Lunch break. The draft is out. Take a seat.", "Mittagspause. Der Aufwind ist aus. Setz dich.")),
-                        trap(PastX(5f), FanSet('f', 9f), delay = 0.75f),
+                        trap(Zone(7f, 9.5f, 12f, 12.5f), FanSet('f', 0f), say("Lunch break. The draft is out. Mid-ride, yes.", "Mittagspause. Der Aufwind ist aus. Mitten in der Fahrt, ja.")),
+                        trap(Landed(3.5f, 9.7f), FanSet('f', 9f), say("Back from lunch. Boarding again.", "Zurück aus der Pause. Wieder einsteigen."), delay = 0.4f),
                         trap(Landed(12.2f, 15.9f), Play(Card.SPIKE_SEED), Show('p'), say("Fresh from the factory: one plank, slightly pointy.", "Frisch ab Werk: eine Planke, leicht spitz.")),
                         trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Another pause. Our regular passengers know it.", "Wieder eine Pause. Stammgäste kennen das.")),
-                        trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.75f),
+                        trap(Zone(26f, 2.9f, 28.8f, 6.1f), FanSet('g', 9f), delay = 1.75f),
                     ),
                     legend = mapOf('p' to Glyph(spike = true, hidden = true)),
-                ) { put(20, 7, 'p'); put(22, 5, '.'); fill(8..11, 16..16, '^') },
+                ) { put(20, 7, 'p'); put(22, 5, '.'); fill(10..11, 16..16, '^') },
             ),
         ) {
             border(); floor(); pit(7..11)
@@ -111,8 +111,10 @@ object World3PartE {
                         trap(PastX(13f), Saw(33f, 14.4f, -10f, 0f), say("And the one from the shelf. Regulars get two.", "Und das aus dem Regal. Stammgäste bekommen zwei.")),
                         trap(PastX(16f), FanSet('w', 5.6f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
                         trap(PastX(19.5f), Saw(33f, 14.4f, -11f, 0f), say("Blade number three. Do not count.", "Blatt Nummer drei. Nicht mitzählen.")),
-                        trap(PastX(22f), FanSet('w', 6.8f), say("And it picks up again.", "Und er zieht wieder an.")),
-                        trap(PastX(26.5f), Saw(33f, 14.4f, -12f, 0f), say("The last one. I promise. Roughly.", "Das letzte. Versprochen. Ungefähr.")),
+                        trap(PastX(22f), FanSet('w', 6.2f), say("And it picks up again.", "Und er zieht wieder an.")),
+                        trap(PastX(24.4f), Saw(33f, 14.4f, -12f, 0f), say("The last one. I promise. Roughly.", "Das letzte. Versprochen. Ungefähr.")),
+                        trap(PastX(26.5f), FanSet('w', 3f), say("Wind dropping. Suspicious, is it not?", "Der Wind lässt nach. Verdächtig, oder?")),
+                        trap(PastX(27.5f), Saw(33f, 14.4f, -12f, 0f), say("I lied about the last one.", "Beim letzten hab ich gelogen.")),
                     ),
                 ),
             ),
@@ -130,15 +132,16 @@ object World3PartE {
             traps = listOf(
                 trap(Zone(8f, 3f, 14f, 5.5f), Play(Card.COLLAPSE), Move('A', 3.5f, 0f, 5f), say("The walls have teeth. They are shy.", "Die Wände haben Zähne. Sie sind schüchtern.")),
                 trap(Zone(8f, 7f, 14f, 8.5f), Move('B', -4f, 0f, 5f), say("Other side now. Mind the draft.", "Jetzt die andere Seite. Vorsicht, Zugluft.")),
-                trap(Landed(8f, 13.9f), Move('C', -9f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
+                trap(Zone(8f, 11.9f, 14f, 12.6f), Move('E', 2.5f, 0f, 5f), say("And back to the first side. Teeth come in rows.", "Und zurück zur ersten Seite. Zähne kommen in Reihen.")),
+                trap(Landed(8f, 16f), Move('C', -9f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
             ),
-            hint = T("The first bar hits whoever floats in the middle, the second whoever hugs the wall. Keep moving down the shaft, and hop the last one along the floor.", "Der erste Balken trifft, wer in der Mitte schwebt, der zweite, wer an der Wand klebt. Bleib im Schacht in Bewegung und hüpf unten über den letzten."),
+            hint = T("The bars come from alternating sides. Keep moving across the shaft as you sink, and hop the last one along the floor.", "Die Balken kommen abwechselnd von beiden Seiten. Wechsle im Schacht die Seite, während du sinkst, und hüpf unten über den letzten."),
         ) {
             border(); floor()
             fill(0..7, 4..14)
             fill(14..17, 1..12)
             fill(5..7, 7..7, 'A')
-            fill(14..17, 10..10, 'B')
+            fill(14..17, 10..10, 'B'); fill(5..7, 13..13, 'E')
             put(30, 14, 'C')
             spawn(1, 3); door(29, 14)
         },
@@ -175,20 +178,22 @@ object World3PartE {
             intro = T("It's so quiet in here.", "Schön leise hier."),
             start = listOf(
                 Fan('f', at = 20 to 17, dir = Dir.UP, reach = 12, speed = 4.5f, width = 4), Power('f', false),
-                Clock('Z', on = 1.1f, off = 1.9f), Circuit('Y', on = false), Circuit('k'),
+                Clock('Z', on = 1.1f, off = 1.9f), Circuit('Y', on = false), Circuit('k'), Circuit('X', on = false),
             ),
             traps = listOf(
                 trap(Touch('k'), Play(Card.SHORT_CIRCUIT), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
-                trap(PastX(15f), FanSet('f', 7.5f), say("Passenger detected. Full power.", "Fahrgast erkannt. Volle Leistung.")),
+                trap(PastX(12.5f), Power('X', true), say("Floor cable live. Silence has a price.", "Bodenkabel unter Strom. Stille hat ihren Preis.")),
+                trap(Zone(20f, 9.6f, 24f, 14.5f), FanSet('f', 7.5f), say("Passenger detected. Full power. All the way up.", "Fahrgast erkannt. Volle Leistung. Ganz nach oben.")),
                 trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cable.", "Willkommen oben. Vorsicht, Kabel.")),
             ),
-            hint = T("Touch the copper on the left first: it brings the fan back. Up top, time the blinking floor.", "Berühr zuerst das Kupfer links: Es holt den Lüfter zurück. Oben musst du den blinkenden Boden abpassen."),
+            hint = T("Touch the copper on the left first: it brings the fan back. Time the blinking floor, and step off the draft at the top before it pins you to the ceiling.", "Berühr zuerst das Kupfer links: Es holt den Lüfter zurück. Pass den blinkenden Boden ab, und tritt oben aus dem Luftstrom, bevor er dich an die Decke drückt."),
         ) {
             border(); floor()
             fill(1..3, 15..15, 'k')
             fill(19..23, 9..9, 'Z')
             fill(24..30, 6..17)
             fill(27..28, 5..5, 'Y')
+            fill(20..23, 3..3, 'v'); fill(14..14, 14..14, 'X')
             spawn(10, 14); door(30, 5)
         },
 
@@ -202,16 +207,15 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Ceiling inspection: it passes. You might not.", "Deckenprüfung: Sie besteht. Du vielleicht nicht."), delay = 0.3f),
-                trap(Landed(11f, 12.9f), Fall('h'), say("And the next one, for good measure.", "Und die nächste, zur Sicherheit."), delay = 0.3f),
+                trap(Zone(9.8f, 5.45f, 10.8f, 5.7f), Fall('h'), say("Walking on the roof? The ceiling takes that personally.", "Auf dem Dach spazieren? Das nimmt die Decke persönlich.")),
                 trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
                 trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),
             ),
-            hint = T("Every ceiling falls on whoever stands under it. Land, then keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter steht. Landen, weitergehen, und rechne in der Mitte mit einem Turbo."),
+            hint = T("Every ceiling falls on whoever walks under it. Hop across the roof, keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter läuft. Hüpf übers Dach, bleib in Bewegung, und rechne in der Mitte mit einem Turbo."),
         ) {
             border(); floor()
             fill(7..12, 6..14)
             fill(17..18, 1..9)
-            put(10, 5, '^')
             fill(7..7, 1..2, 'c'); fill(11..12, 1..2, 'h')
             fill(20..23, 1..2, 'e')
             fill(25..28, 12..12, 'v')
@@ -229,12 +233,13 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(PastX(10f), Play(Card.THROTTLE), FanSet('f', -4f), say("Reverse thrust! The keep is your friend.", "Schubumkehr! Der Bergfried ist dein Freund.")),
-                trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.6f),
+                trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.8f),
                 trap(PastX(17f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
                 trap(Landed(23f, 27f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
             ),
             hint = T("The reverse thrust throws you back, but the keep in the middle is a fine place to stand. The welcome mat is not.", "Die Schubumkehr wirft dich zurück, aber der Bergfried in der Mitte ist ein guter Standplatz. Die Fußmatte nicht."),
-            // rematch: the controls are twisted as you float, and the mat has no opinions this time: left is right all the way across
+            // rematch: the controls are twisted as you float, untwisted in mid-flight under the headwind, and twisted once more as you
+            // land on the far side (the mat has no opinions this time: the keys do)
             rematch = listOf(
                 Round(
                     T("Same castle. Fresh perspective.", "Gleiches Schloss. Frische Perspektive."),
@@ -243,7 +248,8 @@ object World3PartE {
                         trap(PastX(10f), FanSet('f', -4f), say("Reverse thrust, as advertised.", "Schubumkehr, wie angekündigt.")),
                         trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Or backward. Who can tell.", "Schub voraus. Oder zurück. Wer weiß das schon."), delay = 0.6f),
                         trap(PastX(17f), Power('g', true), say("Headwind again. Press the other way.", "Wieder Gegenwind. Drück in die andere Richtung.")),
-                        trap(PastX(22.5f), Swap(false), say("Untwisted. Surprise: left is left again.", "Entdreht. Überraschung: Links ist wieder links.")),
+                        trap(PastX(19.5f), Swap(false), say("Untwisted, mid-flight. Surprise: left is left again.", "Entdreht, mitten im Flug. Überraschung: Links ist wieder links.")),
+                        trap(Landed(23f, 27f), Swap(true), say("And twisted again. I could not decide.", "Und wieder verdreht. Ich konnte mich nicht entscheiden.")),
                     ),
                 ) { put(29, 12, '.') },
             ),

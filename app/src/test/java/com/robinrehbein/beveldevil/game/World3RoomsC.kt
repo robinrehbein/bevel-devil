@@ -14,18 +14,21 @@ object World3RoomsC {
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
             { rightTo(6.3f).waitCooled('g').rightTo(24.8f).landRight()
-                .leftTo(13.9f).leftTo(11.8f).leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+                .leftTo(19.9f).leftTo(17.8f).leftJump(0.55f).landLeft().leftTo(12.4f).left(0.5f) },
             // rematch: hop the hot sink and the quick plate, wait out the two lids and hop them
             { rightTo(4.4f).rightJump(0.5f).landRight().rightTo(9.4f).rightJump(0.5f).landRight().rightTo(16.7f)
                 .waitFor { landed(it, 'd', 1f) }.rightJump(0.55f).landRight().rightTo(24.8f).landRight()
-                .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+                .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(12.4f).left(0.5f) },
         ),
         18 to listOf<Solution>(
             { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
-                .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c').leftTo(3.0f).left(1.5f) },
+                .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c')
+                .leftUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.8f } }.leftJump(0.55f).landLeft()
+                .leftTo(3.0f).left(1.5f) },
         ),
         19 to listOf<Solution>(
-            { rightTo(6.3f).rightJump(0.45f).landRight().rightTo(11.0f).rightJump(0.45f).landRight().rightTo(16.0f).rightJump(0.45f).landRight().rightTo(21.0f).rightJump(0.45f).landRight().right(1.5f) },
+            // run onto the fuse, hop where it blows, run off before it melts
+            { rightTo(11.9f).rightJump(0.45f).landRight().rightTo(29.5f).right(0.5f) },
         ),
         20 to listOf<Solution>(
             { rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()

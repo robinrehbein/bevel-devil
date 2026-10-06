@@ -94,12 +94,14 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 41, 42, 45)) {
+        for (n in listOf(2, 3, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, a lift that never ran,
-        // a wall that stays shut (43), a lift he runs through (44, 46, 47), the way up that he never takes (48)
-        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 24, 25, 29, 30, 32, 38, 43, 44, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
+        // (38: the floor cable goes live as soon as he heads for the lift; 44: the floor past the lift is studded)
+        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, a lift that never ran, the right wall
+        // he starts against (12: the door is to the left),
+        // a wall that stays shut (43), a lift he runs through (46, 47), the way up that he never takes (48)
+        for (n in listOf(1, 4, 9, 10, 11, 12, 13, 24, 29, 30, 32, 43, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
@@ -110,7 +112,7 @@ class World3Test {
         b(27).rightTo(4.5f).rightTo(21.9f).rightJump(0.5f).landRight().right(3f).expect(WorldState.DEAD)
         b(31).rightTo(9.8f).right(4f).expect(WorldState.DEAD)
         // 33: the leap that is obvious on the bridge (a long one) comes down on the plank that gives way; 36: hugging the right wall of the chute is where the second bar comes from;
-        // 39: running on after the lift runs into the stud on the bridge
+        // 39: running on after the lift brings the ceiling down on the roof
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight().wait(2f).expect(WorldState.DEAD)
         b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
         b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
@@ -129,14 +131,15 @@ class World3Test {
         assertTrue(here.containsAll(hardware))
         val elsewhere = (World1.levels + World2.levels).flatMap { l -> (l.start + l.traps.flatMap { it.actions }).filterIsInstance<Action.Play>().map { it.card } }.toSet()
         assertTrue(elsewhere.none { it in hardware })
-        // first use of each: the level where its mechanic first appears
+        // first use of each: the level where its mechanic first appears (World 3 opens on power: the short circuit is the very
+        // first card, the BIOS boots the board in level 2, the overclocked floor waits for the first hot chip)
         fun first(c: Card) = World3.levels.indexOfFirst { l -> actions(l).any { it is Action.Play && it.card == c } } + 1
-        assertEquals(2, first(Card.SHORT_CIRCUIT))
-        assertEquals(1, first(Card.OVERCLOCKED))
+        assertEquals(1, first(Card.SHORT_CIRCUIT))
+        assertEquals(2, first(Card.BIOS))
+        assertEquals(11, first(Card.OVERCLOCKED))
         assertEquals(8, first(Card.BIT_FLIP))
         assertEquals(17, first(Card.THROTTLE))
         assertEquals(35, first(Card.BACKDRAFT))
-        assertEquals(46, first(Card.BIOS))
     }
 
     @Test
@@ -343,9 +346,9 @@ class World3Test {
 
     @Test
     fun metaTwistsAreFewAndHaveHardwareFlavour() {
-        // the monitor that turns (48) and the memory that rewinds (46); the fake endings were left out (a fake win takes 3.4 s of nothing, docs/LEVEL_DESIGN_V2.md H3)
+        // the monitor that turns (48), the memory that rewinds and the frame that fails its self-test (46); the fake endings were left out (a fake win takes 3.4 s of nothing, docs/LEVEL_DESIGN_V2.md H3)
         val kinds = World3.levels.flatMap { l -> actions(l).filter { meta(it) || it is Action.Undo }.map { it::class.simpleName!! } }.toSet()
-        assertEquals(setOf("Flip", "Undo"), kinds)
+        assertEquals(setOf("Flip", "Undo", "FrameCrack"), kinds)
         val levels = World3.levels.withIndex().filter { (_, l) -> actions(l).any { meta(it) || it is Action.Undo } }.map { it.index + 1 }
         assertEquals(listOf(46, 48), levels)
     }
@@ -386,10 +389,15 @@ class World3Test {
 
     @Test
     fun theSecondButtonPutsTheWallBack() {
-        // 6: the first button cuts the wall of live copper, the second (on the way back) restores it
+        // 6: the first button cuts the wall of copper, the second (on the way back) restores it: whoever walks over it after
+        // the island finds the wall back in place, the solution hops it
         val bot = DesignRules.play(World3.levels[5], 0, World3DesignTest.SOLUTIONS.getValue(6)[0])
         bot.expect(WorldState.WON)
-        assertTrue(bot.world.pads.all { it.presses >= 1 })
+        assertTrue(bot.world.pads[0].presses >= 1 && bot.world.pads[1].presses == 0)
+        val wall = Bot(World3.levels[5]).leftTo(7.2f).leftJump(0.55f).landLeft().wait(0.3f).rightTo(3.2f).rightJump(0.55f).landRight()
+            .rightTo(9.4f).rightJump(0.55f).landRight().rightTo(23.8f)
+        assertTrue(wall.world.pads.all { it.presses >= 1 })
+        assertTrue(wall.world.circuits.getValue('w').powered)
     }
 
     @Test
@@ -397,7 +405,11 @@ class World3Test {
         Bot(World3.levels[7]).right(8f).expect(WorldState.DEAD)
         val won = DesignRules.play(World3.levels[7], 0, World3DesignTest.SOLUTIONS.getValue(8)[0])
         won.expect(WorldState.WON)
-        assertTrue(won.world.circuits['b']!!.powered && !won.world.circuits['a']!!.powered)
+        // the second ray flips the halves back once you stand on the far one: the near half is lit again, the far one dark
+        assertTrue(!won.world.circuits['b']!!.powered && won.world.circuits['a']!!.powered)
+        // and whoever keeps the reflex of the first ray (jump at once) meets the pins in the low ceiling
+        Bot(World3.levels[7]).rightTo(14.4f).rightJump(0.55f).landRight().rightJump(0.3f).landRight().rightJump(0.55f).landRight()
+            .expect(WorldState.DEAD)
     }
 
     @Test
