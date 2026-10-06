@@ -59,5 +59,18 @@ object World3RoomsB {
                 .rightTo(18.4f).waitFor { w -> w.time > 3f && w.group('B').let { it.mode == GroupMode.IDLE && it.oy < 1.5f } }
                 .rightTo(24.4f).rightJump(0.55f).landRight().rightTo(29.0f).right(1f) },
         ),
+        15 to listOf<Solution>(
+            { rightUntil { it.swapped }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .rightKeyLeftTo(24.8f).rightJump(0.55f).landRight()
+                .rightUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 7.0f } }.rightJump(0.55f).landRight()
+                .rightKeyLeftTo(10.9f).rightJump(0.55f).landRight()
+                .rightUntil { !it.swapped }.leftTo(2.0f).left(1f) },
+            // rematch: the plug on the floor restores the polarity before the spike, the one at the door reverses it again
+            { rightUntil { it.swapped }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .rightKeyLeftTo(24.8f).rightJump(0.55f).landRight()
+                .rightUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 7.0f } }.rightJump(0.55f).landRight()
+                .rightUntil { !it.swapped }.leftTo(11.6f).leftJump(0.55f).landLeft()
+                .leftUntil { it.swapped }.rightKeyLeftTo(2.0f).right(1f) },
+        ),
     )
 }

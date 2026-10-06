@@ -214,32 +214,40 @@ object World3PartB {
             spawn(1, 14); door(29, 8)
         },
 
-        // 15 — a pad swaps the controls until the second pad swaps them back
+        // 15 — a plug on the shelf swaps the controls: start high, a fan blade sets off behind you and chases you along the shelf, halfway
+        // the plug reverses left and right, so the rest of the shelf, the fall to the floor and the whole floor back to the door (a pit,
+        // a roller that comes at you head on, a spike) are done on the other keys. The plug at the door claims to restore the polarity:
+        // it does, and whoever keeps pressing the key that worked runs straight back into the spike behind it.
+        // Rematch: the plug on the floor restores the polarity early, before the spike, and the one at the door reverses it again.
         Level(
             name = T("Connector", "Stecker"),
             intro = T("USB-C fits either way up. Everything does.", "USB-C passt andersrum. Alles passt andersrum."),
-            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 16 to 14), Pad('3', at = 26 to 14)),
+            start = emptyList(),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.TWISTED), Swap(true), say("Polarity reversed. Left is right. Again.", "Polung vertauscht. Links ist rechts. Schon wieder.")),
-                trap(Pressed('2'), Swap(false), say("Polarity restored. Probably.", "Polung wiederhergestellt. Vermutlich.")),
-                trap(Pressed('3'), Swap(true), say("Polarity reversed again. Third time lucky.", "Polung schon wieder vertauscht. Dreimal ist Steckerrecht.")),
+                trap(PastX(7f), Saw(-1f, 7.4f, 7f, 0f), say("A blade is following you. Politely. It has no key either.", "Ein Messer folgt dir. Höflich. Es hat auch keinen Schlüssel.")),
+                trap(Zone(17f, 5f, 21f, 8.5f), Play(Card.TWISTED), Swap(true), say("Polarity reversed. Left is right. Again.", "Polung vertauscht. Links ist rechts. Schon wieder.")),
+                trap(Zone(25f, 13f, 30f, 15.2f), Saw(-1f, 14.4f, 9f, 0f), say("The ground floor sends a roller. Express.", "Das Erdgeschoss schickt einen Roller. Express.")),
+                trap(Zone(3.5f, 13f, 6f, 15.2f), Swap(false), say("Polarity restored. Probably.", "Polung wiederhergestellt. Vermutlich.")),
             ),
-            // rematch: plug 2 only claims to fix the polarity, so the controls stay swapped all the way
+            hint = T("After the first plug the other key is the right one. After the second, think again.", "Nach dem ersten Stecker stimmt die andere Taste. Nach dem zweiten denk nochmal nach."),
             rematch = listOf(
                 Round(
                     T("Unplugged and plugged back in. Classic.", "Aus- und wieder eingesteckt. Hilft immer. Mir."),
-                    start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 16 to 14), Pad('3', at = 26 to 14)),
+                    hint = T("The plug on the floor sits before the spike now. The one at the door turns everything around again.", "Der Stecker unten sitzt jetzt vor dem Stachel. Der an der Tür dreht alles nochmal um."),
                     traps = listOf(
-                        trap(Pressed('1'), Play(Card.TWISTED), Swap(true), say("Polarity reversed. Old habit.", "Polung vertauscht. Alte Gewohnheit.")),
-                        trap(Pressed('2'), say("Polarity restored. Probably not.", "Polung wiederhergestellt. Eher nicht.")),
-                        trap(Pressed('3'), Swap(true), say("Plug 3: still reversed. Consistency.", "Stecker 3: immer noch verdreht. Konsequenz.")),
+                        trap(PastX(7f), Saw(-1f, 7.4f, 7f, 0f), say("A blade is following you. Politely. It has no key either.", "Ein Messer folgt dir. Höflich. Es hat auch keinen Schlüssel.")),
+                        trap(Zone(17f, 5f, 21f, 8.5f), Play(Card.BIT_FLIP), Swap(true), say("Polarity reversed. Old habit.", "Polung vertauscht. Alte Gewohnheit.")),
+                        trap(Zone(25f, 13f, 30f, 15.2f), Saw(-1f, 14.4f, 9f, 0f), say("The ground floor sends a roller. Express.", "Das Erdgeschoss schickt einen Roller. Express.")),
+                        trap(Zone(12f, 13f, 15f, 15.2f), Swap(false), say("Polarity restored. Early, this time.", "Polung wiederhergestellt. Diesmal früh.")),
+                        trap(Zone(3.5f, 13f, 6f, 15.2f), Swap(true), say("And reversed again. For the door.", "Und wieder vertauscht. Für die Tür.")),
                     ),
                 ),
             ),
         ) {
-            border(); floor(); pit(8..11)
-            put(22, 14, '^'); put(23, 14, '^')
-            spawn(); door()
+            border(); floor()
+            fill(1..23, 8..9)
+            pit(22..23); put(8, 14, '^')
+            spawn(2, 7); door(1, 14)
         },
 
         // 16 — act finale: a timed pad bridge, a flickering gate that changes rhythm, and a bit flip, in one go; the flip
