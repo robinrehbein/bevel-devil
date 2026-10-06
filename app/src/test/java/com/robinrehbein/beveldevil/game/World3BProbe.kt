@@ -29,6 +29,7 @@ class World3BProbe {
                 }
                 try {
                     val bot = DesignRules.play(l, r, s)
+                    out.append("  sprung: ${bot.world.sprung.joinToString { "%.2f:%s".format(it.time, it.trap.trigger.toString().substringAfterLast('.').take(40)) }}\n")
                     if (bot.world.state != WorldState.WON) {
                         try { bot.expect(WorldState.WON) } catch (e: AssertionError) { out.append("  NOT WON r${r + 1}:\n${e.message}\n") }
                         continue

@@ -67,23 +67,29 @@ object World3PartB {
             spawn(2, 14); door(25, 14)
         },
 
-        // 10 — stepping stones on clocks: hop over on the beat; the first stone goes on a short shift once you land on it, so
-        // waiting there for the next beat is out (watch it from the floor); the last stone speeds up once you stand on the middle one
+        // 10 — a chip to hop, then stepping stones in a pit, everything on a beat: the first island is solid (wait there until the
+        // clocked stone lights up), the last stone wakes up when you land on the one before and is on a short shift once you touch it
+        // (do not wait there either). On the far side the door runs up the wall to a ledge, and the stairs to it keep time as well: hurry.
         Level(
             name = T("Metronome", "Metronom"),
             intro = T("Step to the beat. Mine.", "Tritt im Takt. In meinem."),
-            start = listOf(Clock('a', on = 2.4f, off = 1f), Clock('b', on = 2.4f, off = 1f, phase = 1.8f), Clock('c', on = 2.4f, off = 1f)),
+            start = listOf(Clock('b', on = 2.2f, off = 1.2f, phase = 1.1f)),
             traps = listOf(
-                trap(Landed(7.6f, 13f), Clock('a', on = 1.2f, off = 1.0f), say("Stone one: clocked in, short shift.", "Stein eins: eingestempelt, Kurzschicht.")),
-                trap(Landed(14f, 20.5f), Clock('c', on = 1.4f, off = 1.2f), say("Stone three went up-tempo.", "Stein drei ist auf Allegro umgestiegen.")),
-                trap(Touch('e'), Play(Card.SINKING), Fall('e'), say("The last tile was on a timer too.", "Die letzte Kachel hatte auch einen Timer."), delay = 0.3f),
+                trap(Landed(12.5f, 16f), Clock('c', on = 1.4f, off = 60f, phase = 60.4f), say("Stone three clocks in. Late, as ever.", "Stein drei stempelt ein. Wie immer zu spät.")),
+                trap(Touch('c'), Clock('c', on = 1.0f, off = 60f), say("The island has a shift too. A short one.", "Die Insel hat auch Schicht. Eine kurze.")),
+                trap(Landed(17.5f, 21f), Play(Card.SHY_DOOR), DoorTo(30, 8), say("The door took the stairs. It does that.", "Die Tür hat die Treppe genommen. Macht sie öfter.")),
+                trap(Landed(23.5f, 27.5f), Clock('p', on = 2.0f, off = 60f), say("The stairs keep time too. Badly.", "Auch die Treppe hält den Takt. Schlecht.")),
             ),
+            hint = T("Wait on the island that does not blink. Never on the last one.", "Warte auf der Insel, die nicht blinkt. Nie auf der letzten."),
         ) {
             border(); floor()
-            put(27, 15, 'e'); fill(27..27, 16..17, 'e')
-            pit(7..26)
-            fill(8..12, 15..15, 'a'); fill(15..19, 15..15, 'b'); fill(22..26, 15..15, 'c')
-            spawn(); door()
+            fill(5..6, 13..14)
+            pit(7..22)
+            fill(8..10, 15..15)
+            fill(13..15, 15..15, 'b')
+            fill(18..20, 15..15, 'c')
+            fill(24..26, 13..14); fill(28..29, 11..14, 'p'); fill(30..30, 9..14)
+            spawn(2, 14); door(23, 14)
         },
 
         // 11 — a dark cable in the path goes live when you come near; and the one behind the landing does too
