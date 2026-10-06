@@ -9,7 +9,7 @@ object World3RoomsC {
     private fun landed(w: World, id: Char, low: Float = 1.5f): Boolean = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > low }
 
     /** Plate group [id] is cool enough to be crossed in a few steps. */
-    private fun cool(w: World, id: Char): Boolean = (w.heaters[id]?.heat ?: 0f) < 0.35f
+    private fun cool(w: World, id: Char): Boolean = (w.heaters[id]?.heat ?: 0f) < 0.25f
 
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
@@ -55,8 +55,8 @@ object World3RoomsC {
                 .rightTo(24.0f).waitFor { landed(it, 'e', 1f) }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1.5f) },
         ),
         24 to listOf<Solution>(
-            { leftTo(27.0f).landLeft().waitFor { cool(it, 'a') }.leftTo(15.4f).waitFor { cool(it, 'b') }
-                .leftTo(9.4f).waitFor { cool(it, 'c') }.leftTo(6.0f).leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(0.5f) },
+            { leftTo(27.0f).landLeft().waitFor { it.player.grounded && cool(it, 'a') }.leftTo(15.4f).waitFor { cool(it, 'b') }
+                .leftTo(9.4f).waitPowered('Z', true).waitPowered('Z', false).leftTo(5.6f).leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(0.5f) },
         ),
     )
 }

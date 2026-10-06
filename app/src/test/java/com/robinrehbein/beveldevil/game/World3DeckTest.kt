@@ -18,10 +18,8 @@ class World3DeckTest {
 
     // ---------- the solutions ----------
 
-    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (acts 2-3); the rebuilt act 1 is in [rebuilt]. */
+    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (acts 2-3); the rebuilt levels 1-24 are in [rebuilt]. */
     private val first: Map<Int, (Bot) -> Bot> = mapOf(
-        17 to { b -> b.rightTo(15.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f) },
-        21 to { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
         28 to { b -> b.rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f) },
         30 to { b -> b.rightTo(6.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
             .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
@@ -41,8 +39,6 @@ class World3DeckTest {
 
     /** Rematch rounds: level to the solution of each extra round. */
     private val rematch: Map<Int, List<(Bot) -> Bot>> = mapOf(
-        17 to listOf { b -> b.rightTo(5f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f) },
-        21 to listOf { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
         28 to listOf { b -> b.rightTo(16.5f).waitCooled('h').right(3f) },
         30 to listOf { b -> b.rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
             .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
@@ -65,8 +61,8 @@ class World3DeckTest {
         assertEquals(rematch.keys + rebuilt.keys, levels.toSet())
         rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
         rebuilt.forEach { (n, sols) -> assertEquals("level $n", sols.size - 1, level(n).rematch.size) }
-        // blocks A and B keep exactly five rematch levels (3 + 2: levels 12 and 15)
-        assertEquals(5, rebuilt.size)
+        // blocks A, B and C keep exactly seven rematch levels (3 + 2 + 2: levels 17 and 21 in block C)
+        assertEquals(7, rebuilt.size)
     }
 
     /**
