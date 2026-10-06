@@ -249,7 +249,8 @@ object World2Part1 {
 
         // 8 — EASTER EGG: RAM memory test (POST counts up, 640K). A breather with one punchline: the floor is memory, and the block you step
         // on fails the test: it goes dark under your feet and is plugged in again a moment later as if nothing had happened (hop the moment
-        // you set foot on it). The last address leaks, too
+        // you set foot on it). A few steps on, a parity error replays your last half second: whoever ran straight on is put back in the air over
+        // the dead block (wait on the far side until it is plugged in again). The last address leaks, too
         Level(
             name = T("Memory Test", "Speichertest"),
             intro = T("POST: 640K ought to be enough for anybody.", "POST: 640K sollten für jeden reichen."),
@@ -257,8 +258,8 @@ object World2Part1 {
             traps = listOf(
                 trap(PastX(16.4f), Power('a', false), say("RAM check: 3 of 4 blocks OK. Yours is number 4.", "RAM-Check: 3 von 4 Blöcken OK. Deiner ist Nummer 4."), delay = 0.12f),
                 trap(PastX(16.4f), Power('a', true), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
-                trap(PastX(23f), Power('b', false), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
-                trap(PastX(21.5f), Play(Card.UNDO), Undo(0.2f), say("Parity error. Replaying the last fifth of a second.", "Paritätsfehler. Die letzte Fünftelsekunde nochmal.")),
+                trap(PastX(24f), Power('b', false), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
+                trap(PastX(23.3f), Play(Card.UNDO), Undo(0.6f), say("Parity error. Replaying the last half second. Where were you, again?", "Paritätsfehler. Die letzte halbe Sekunde nochmal. Wo warst du gleich?")),
             ),
         ) {
             border()

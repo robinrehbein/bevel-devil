@@ -158,7 +158,8 @@ object World2Part3C {
         },
 
         // 36 — access log (a trap room: U16 the replay, with saws). A staircase from the bottom left to the top right, no way back: a pendulum hangs over the
-        // lane right at the start (slip under it when it is up), the next login rolls out of the foot of the stairs along the lane (hop it), one drops
+        // lane right at the start (slip under it when it is up), and a few steps past it the log replays your last half second: you are back under
+        // the pendulum (so pass it when it stays up a while), while the next login rolls out of the foot of the stairs along the lane (hop it), one drops
         // onto the first step as you land on it (climb on), and the
         // last one patrols the roof in front of the door, where it appears as you land on it (hop it). Every attempt is written to the log, and
         // from the second attempt on the log is replayed against you: your last try walks the lane again as a ghost, a moment behind you
@@ -167,7 +168,7 @@ object World2Part3C {
             intro = T("Nothing new here. Honestly.", "Nichts Neues hier. Ehrlich."),
             traps = listOf(
                 trap(PastX(2.6f), PathSaw(6f, 7.5f to 9.5f, 7.5f to 14f, 7.5f to 5f, r = 1f), say("Login 1: it hangs, and it swings.", "Login 1: Er hängt, und er pendelt.")),
-                trap(PastX(8.5f), Play(Card.UNDO), Undo(0.05f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you. Your last step, replayed.", "Login 2: Er kommt zu dir. Dein letzter Schritt, nochmal abgespielt.")),
+                trap(PastX(12f), Play(Card.UNDO), Undo(0.5f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you. And your last half second, replayed: under the pendulum.", "Login 2: Er kommt zu dir. Und deine letzte halbe Sekunde, nochmal abgespielt: unter dem Pendel.")),
                 trap(Landed(14.9f, 16.9f), Saw(16f, -1f, 0f, 9f), say("Login 2b: dropped in from the cloud.", "Login 2b: aus der Cloud reingefallen.")),
                 trap(Landed(21f, 26f), PathSaw(3.5f, 30f to 6.4f, 22.2f to 6.4f), say("Login 3: the door sends its regards.", "Login 3: Die Tür lässt grüßen.")),
                 trap(PastX(2.6f), Ghost(0.4f), say("Replay attack: I sent your last run again.", "Replay-Angriff: Ich habe deinen letzten Versuch nochmal gesendet.")),
