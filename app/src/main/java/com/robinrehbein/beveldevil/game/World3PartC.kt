@@ -148,37 +148,48 @@ object World3PartC {
             spawn(1, 14); door(30, 14)
         },
 
-        // 21 — three plates that share their heat and two sinks between them; the sinks make the plates nervous, the last leg
-        // turns up as you leave the second sink (leap from the sink), and the floor after it is overclocked
+        // 21 — two storeys: the stove under the shelf, the door on the shelf above where you start. A wall of fins that has been waiting behind
+        // you sets off as you step onto the stove; stop on the heatsink for a breath (the far plate flares as you do) and it gains on you, so
+        // do not stay. At the far end two steps lead up and back onto the shelf, and a fin that was only a bump on the shelf slides at whoever
+        // lands there.
+        // Rematch: the heatsink is the trap: it sends the wall at full speed, and the whole stove is on for good. Hop it on the blocks.
         Level(
             name = T("Relay Race", "Staffellauf"),
-            intro = T("Three plates, two heatsinks. Do the math.", "Drei Platten, zwei Kühlkörper. Rechne nach."),
-            start = listOf(Heat('h', rise = 1f), Heatsink('k', cools = "h")),
+            intro = T("Three runners, one baton. Guess who is holding it.", "Drei Läufer, ein Staffelholz. Rate, wer es hält."),
+            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
+            start = listOf(Heat('a', rise = 1.0f), Heat('b', rise = 1.05f, cool = 1.0f), Heatsink('k', cools = "ab")),
             traps = listOf(
-                trap(Touch('k'), Play(Card.THROTTLE), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates are warmed up. So to speak.", "Platten sind warmgelaufen. Sozusagen.")),
-                trap(PastX(19.2f), Heat('h', rise = 0.55f, cool = 1.4f), say("Last leg: sprint mode.", "Letzte Etappe: Sprintmodus.")),
-                trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4 is a plain floor. I counted.", "Platte 4 ist ein schlichter Boden. Ich hab mitgezählt.")),
+                trap(PastX(5.3f), Play(Card.STALKER), Chase('S', 4f, 0f, 12f), say("The next runner is right behind you. Do not wait for him.", "Der nächste Läufer ist direkt hinter dir. Warte nicht auf ihn.")),
+                trap(Touch('k'), HeatSpike('b', 1f), say("Hand-over zone: the next plate is not ready.", "Wechselzone: Die nächste Platte ist noch nicht so weit.")),
+                trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
+                trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 10f, 9f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
             ),
-            // rematch: the throttle is old news; the card is the landing: the leap off the second sink lands on an
-            // overclocked plate. The last leg is walkable now
+            hint = T("Cool the far plate on the sink, but the wall behind you does not wait. Upstairs, hop what comes at you.", "Kühl die hintere Platte am Kühlkörper, aber die Wand hinter dir wartet nicht. Oben spring über das, was auf dich zuläuft."),
             rematch = listOf(
                 Round(
-                    T("Second lap. The baton is hot.", "Zweite Runde. Staffelübergabe mit Brandblase."),
-                    start = listOf(Heat('h', rise = 1f), Heatsink('k', cools = "h")),
+                    T("Same baton. New hand-over.", "Gleiches Staffelholz. Neue Übergabe."),
+                    hint = T("The sink hands the wall over at full speed now. Hop the stove on the blocks.", "Der Kühlkörper übergibt die Wand jetzt mit Vollgas. Spring auf den Klötzen über den Herd."),
                     traps = listOf(
-                        trap(Touch('k'), Heat('h', rise = 0.85f, cool = 1.4f), say("Plates warmed up. Again.", "Platten warmgelaufen. Schon wieder.")),
-                        trap(Landed(19f, 25f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.95f), say("Long jump? Hot landing.", "Weitsprung? Heiße Landung.")),
-                        trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Plate 4: still counted.", "Platte 4: immer noch mitgezählt.")),
+                        trap(Zone(4.4f, 13.5f, 5.2f, 15.2f), Heat('a', rise = 1.0f, cool = 9f), Heat('b', rise = 1.0f, cool = 9f), HeatSpike('a', 1f), HeatSpike('b', 1f), say("The stove is on. All of it. Nobody turned it off.", "Der Herd ist an. Ganz. Keiner hat ihn ausgemacht.")),
+                        trap(PastX(5.3f), Chase('S', 4f, 0f, 12f), say("The next runner is behind you again.", "Der nächste Läufer ist wieder hinter dir.")),
+                        trap(Touch('k'), Play(Card.COLLAPSE), Move('S', 11f, 0f, 16f), say("Hand-over zone, full speed.", "Wechselzone, volle Fahrt.")),
+                        trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
+                        trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 10f, 9f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
                     ),
-                ),
+                ) {
+                    fill(6..12, 14..14); fill(14..18, 14..14)
+                    put(4, 14, '.'); spawn(3, 14); put(3, 9, '.'); door(2, 9)
+                },
             ),
         ) {
             border(); floor()
-            fill(5..10, 15..15, 'h'); put(11, 15, 'k'); fill(12..17, 15..15, 'h'); put(18, 15, 'k'); fill(19..24, 15..15, 'h')
-            fill(27..28, 15..15, 'f')
-            spawn(); door()
+            fill(1..20, 10..11)
+            fill(6..9, 15..15, 'a'); fill(10..11, 15..15, 'k'); fill(12..18, 15..15, 'b')
+            fill(1..2, 13..14, 'S')
+            fill(22..23, 13..14); fill(24..29, 11..14)
+            put(10, 9, 'U')
+            spawn(4, 14); door(3, 9)
         },
-
 
         // 22 — the chip warms up; linger on it and it goes to full load; a fan blade rolls in, so hop it without slowing down;
         // run on and the floor behind it is the problem

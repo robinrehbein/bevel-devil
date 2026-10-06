@@ -2,6 +2,9 @@ package com.robinrehbein.beveldevil.game
 
 /** Bot solutions of the rebuilt block C of World 3 (levels 17-24): one per round, round 1 first. Registered in [World3DesignTest]. */
 object World3RoomsC {
+    /** The x of the first piece of group [id] (home plus offset). */
+    private fun gx(w: World, id: Char): Float = w.group(id).let { it.homeX + it.ox }
+
     /** Group [id] has fallen and lies still, [low] tiles or more below where it hung. */
     private fun landed(w: World, id: Char, low: Float = 1.5f): Boolean = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > low }
 
@@ -25,6 +28,16 @@ object World3RoomsC {
             { rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
                 .rightTo(28.0f).leftJump(0.5f).landLeft().leftTo(21.3f).leftJump(0.5f).landLeft().leftTo(14.3f).leftJump(0.5f).landLeft()
                 .leftTo(7.3f).leftJump(0.5f).landLeft().leftTo(2.6f).left(1f) },
+        ),
+        21 to listOf<Solution>(
+            { rightTo(10.7f).waitCooled('b').rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
+                .leftTo(25.2f).leftJump(0.55f).landLeft()
+                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+            // rematch: the stove is on for good and the sink sends the wall at once: hop over it on the blocks
+            { rightTo(4.6f).rightJump(0.4f).landRight().rightTo(11.6f).rightJump(0.4f).landRight().rightTo(18.2f)
+                .rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
+                .leftTo(25.2f).leftJump(0.55f).landLeft()
+                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(2.4f).left(1f) },
         ),
     )
 }
