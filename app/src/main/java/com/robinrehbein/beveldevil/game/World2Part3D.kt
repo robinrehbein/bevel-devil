@@ -15,6 +15,7 @@ import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
@@ -227,22 +228,23 @@ object World2Part3D {
             spawn(); put(29, 10, 'D'); bits(46)
         },
 
-        // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls at you along the lane, a second,
-        // faster one starts behind you, and the steps at the end lead up to a deck over the lane, (the top step: the integer overflows and left is right).
-        // The way to the door is back along the deck with swapped hands, and a cart comes at you there as well
+        // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls out of the foot of the stairs at you, and the
+        // moment you leave the ground to hop it the integer overflows: left is right, in mid-air. A pendulum hangs over the lane in front of the stairs (stop,
+        // slip under it when it is up) and the stairs are narrow, five steps up to the deck at the top right. On the first step the counter
+        // wraps around once more: left is left again. No way back: the door is at the far end
         Level(
             name = T("Math Problem", "Rechenaufgabe"),
             intro = T("What's 127 plus 1? Take your time.", "Was ist 127 plus 1? Lass dir Zeit."),
             traps = listOf(
-                trap(PastX(6f), Saw(32f, 14.4f, -6f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
-                trap(PastX(24f), Saw(-1.5f, 14.4f, 12f, 0f), say("Integer overflow: the next one comes from behind.", "Ganzzahlüberlauf: Die nächste kommt von hinten.")),
-                trap(Landed(21f, 24.9f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
-                trap(Zone(15f, 8f, 18f, 10.5f), Saw(-1.5f, 9.4f, 6f, 0f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
+                trap(PastX(3f), Saw(22.5f, 14.4f, -7f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
+                trap(Airborne(7.5f, 16f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
+                trap(PastX(13f), PathSaw(4f, 18.5f to 11f, 18.5f to 14f, 18.5f to 5f, r = 1f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
+                trap(Landed(21.9f, 23.1f), Swap(false), say("-128 + 1 = -127. Left is left again. I am as surprised as you.", "-128 + 1 = -127. Links ist wieder links. Ich bin genauso überrascht wie du.")),
             ),
         ) {
             border(); floor()
-            fill(25..26, 14..14); fill(27..30, 12..14); fill(1..26, 10..10)
-            spawn(); door(3, 9); bits(47)
+            fill(22..22, 13..14); fill(23..23, 11..14); fill(24..24, 9..14); fill(25..25, 7..14); fill(26..30, 5..14)
+            spawn(); door(30, 4); bits(47)
         },
 
         // 48 — shutdown, the act and world finale, two rooms (R4 the switch, R3 the portal routing; U11 the route is re-pointed, U9 the controls swap,

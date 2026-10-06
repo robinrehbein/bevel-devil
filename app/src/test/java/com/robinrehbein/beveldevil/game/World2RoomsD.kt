@@ -86,10 +86,26 @@ object World2RoomsD {
     fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
         .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().rightJump(0.35f).right(2f)
 
-    /** 47: hop the cart on the lane (the controls swap as you land), up the steps with swapped hands, left onto the deck, hop the cart that comes at you and run on to the door. */
-    fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().hopS(24.2f, 0.35f).hopS(26.4f, 0.55f)
-        .rightUntil { it.player.box.cx < 28.6f }.rightJump(0.55f).landRight()
-        .rightUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.rightJump(0.5f).landRight().right(3f)
+    /** 47: hop the cart on the lane (the controls swap as you leave the ground, so go on with the other key), stop for the pendulum, slip under it, up the narrow steps with swapped hands; on the first step the controls are back to normal: to the deck and the door. */
+    fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).leftJump(0.45f).landLeft()
+        .leftKeyRightTo(16.0f).waitFor { World2Rooms.pendulumCalm(it, 18.5f, 0.1f, 0.6f, 10.0f) }
+        .leftKeyRightTo(21.0f).leftJump(0.5f).landLeft().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.4f).landRight().right(2f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * 48: left to the pad behind the start (the portal is re-pointed), into the portal onto the deck, wait for the firewall, hop the tripwire, to the door and through the
