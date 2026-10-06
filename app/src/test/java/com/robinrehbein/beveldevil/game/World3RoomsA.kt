@@ -28,5 +28,11 @@ object World3RoomsA {
                 .leftTo(15.8f).waitFor { w -> pend(w, 12.5f) < 12.0f }.leftTo(13.4f).leftJump(0.55f).landLeft().leftTo(9.6f)
                 .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(1f) },
         ),
+        5 to listOf<Solution>(
+            { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.box.cx > 23.8f }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight()
+                .leftTo(30.1f).leftJump(0.55f).landLeft().waitFor { w -> w.group('d').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }
+                .leftJump(0.55f).landLeft().leftTo(2.4f) },
+        ),
     )
 }

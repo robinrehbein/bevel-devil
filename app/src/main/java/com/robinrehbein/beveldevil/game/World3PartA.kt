@@ -128,5 +128,30 @@ object World3PartA {
             fill(7..8, 13..14); fill(5..6, 11..14); fill(3..4, 9..14); fill(1..2, 7..14)
             spawn(29, 8); door(1, 6)
         },
+
+        // 5 — a ceiling that is on its way down: along the floor, up the stairs and back along the copper shelf to the door above
+        // the spawn. Under the shelf the first slab falls where you want to go and turns into a step (wait for it, then
+        // climb); the second only falls on whoever dawdles. Upstairs the next one waits for you again (wait, climb),
+        // and the last one comes down behind you: keep moving.
+        Level(
+            name = T("Turnstile", "Drehkreuz"),
+            intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
+            start = listOf(Circuit('r')),
+            traps = listOf(
+                trap(PastX(5.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.5f),
+                trap(PastX(14.5f), Fall('g'), say("Second door, second ceiling.", "Zweite Tür, zweite Decke."), delay = 1f),
+                trap(Zone(17f, 6f, 26f, 9.3f), Fall('d'), say("Upstairs the ceiling is already waiting.", "Oben wartet die Decke schon."), delay = 0.3f),
+                trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one is for the door itself.", "Die letzte gehört der Tür selbst."), delay = 0.8f),
+            ),
+            hint = T("The ceiling is on the floor now. Floors can be jumped.", "Die Decke liegt jetzt am Boden. Über Böden kann man springen."),
+        ) {
+            border(); floor()
+            fill(1..25, 9..9, 'r')
+            fill(25..26, 13..14); fill(27..28, 11..14); fill(29..30, 9..14)
+            fill(9..12, 10..11, 'c'); fill(17..20, 10..11, 'g')
+            fill(17..21, 1..2); fill(17..21, 3..4, 'd')
+            fill(12..14, 1..2); fill(12..14, 3..4, 'e')
+            spawn(2, 14); door(2, 8)
+        },
     )
 }
