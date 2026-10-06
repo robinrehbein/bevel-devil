@@ -458,8 +458,8 @@ class World1Test {
     @Test fun level47() = World1DesignTest.play(47)
     @Test fun level48() = World1DesignTest.play(48)
 
-    /** 41: the wall in front of the aerial is too high: running on ends at its foot. */
-    @Test fun level41TheWallStopsTheRunner() = b(41).right(6f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 20.5f) }.expect(WorldState.PLAYING)
+    /** 41: the wall in front of the aerial is too high: running on ends at its foot, under the last stalactites. */
+    @Test fun level41TheWallStopsTheRunner() = b(41).right(6f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 20.5f) }.expect(WorldState.DEAD)
     /** 48: the door is not the end: the wall breaks open and the door slips into the second room. */
     @Test fun level48TheDoorWasNeverTheEnd() {
         val run = b(48).also(World1DesignTest.SOLUTIONS.getValue(48)[0]).also { it.expect(WorldState.WON) }

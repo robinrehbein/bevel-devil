@@ -241,7 +241,7 @@ class World1DeckTest {
     }
 
     @Test fun level47Rematch() = World1DesignTest.play(47, 2)
-    /** sudo make me a sandwich, round 2: the pickle comes down on whoever stands still under the bread, so the old stand-and-butt run dies. */
+    /** sudo make me a sandwich, round 2: the bread and the pickle come down on whoever stands under them, so the old stand-and-butt run dies at the pickle. */
     @Test fun level47RematchTheOldRunFails() = assertTrue(solved(47, 1, 0).world.state != WorldState.WON)
 
     @Test fun level48Encore() = World1DesignTest.play(48, 2)
