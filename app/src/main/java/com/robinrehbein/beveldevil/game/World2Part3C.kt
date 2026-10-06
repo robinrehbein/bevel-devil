@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Fall
@@ -31,7 +32,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 /**
  * World 2, levels 33-40 (block C of the V2 rollout, docs/LEVEL_DESIGN_V2.md §8 and §11). Act 3, "Root": the traps repeat,
- * flip, queue and sudo. Cards in this block: CRUMBLE 33, UPSIDE_DOWN 34, DECOY 34r2, COLLAPSE 35, DEVIL_SAW 36, HEADBUTT 37,
+ * flip, queue and sudo. Cards in this block: CRUMBLE 33, UPSIDE_DOWN 34, DECOY 34r2, COLLAPSE 35, UNDO 36, HEADBUTT 37,
  * SINKING 38, SPIKE_SEED 39, STALKER 40, a bluff of CRUMBLE in 33r2.
  */
 object World2Part3C {
@@ -165,8 +166,8 @@ object World2Part3C {
             name = T("Access Log", "Zugriffsprotokoll"),
             intro = T("Nothing new here. Honestly.", "Nichts Neues hier. Ehrlich."),
             traps = listOf(
-                trap(PastX(2.6f), Play(Card.DEVIL_SAW), PathSaw(6f, 7.5f to 9.5f, 7.5f to 14f, 7.5f to 5f, r = 1f), say("Login 1: it hangs, and it swings.", "Login 1: Er hängt, und er pendelt.")),
-                trap(PastX(8.5f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you.", "Login 2: Er kommt zu dir.")),
+                trap(PastX(2.6f), PathSaw(6f, 7.5f to 9.5f, 7.5f to 14f, 7.5f to 5f, r = 1f), say("Login 1: it hangs, and it swings.", "Login 1: Er hängt, und er pendelt.")),
+                trap(PastX(8.5f), Play(Card.UNDO), Undo(0.05f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you. Your last step, replayed.", "Login 2: Er kommt zu dir. Dein letzter Schritt, nochmal abgespielt.")),
                 trap(Landed(14.9f, 16.9f), Saw(16f, -1f, 0f, 9f), say("Login 2b: dropped in from the cloud.", "Login 2b: aus der Cloud reingefallen.")),
                 trap(Landed(21f, 26f), PathSaw(3.5f, 30f to 6.4f, 22.2f to 6.4f), say("Login 3: the door sends its regards.", "Login 3: Die Tür lässt grüßen.")),
                 trap(PastX(2.6f), Ghost(0.4f), say("Replay attack: I sent your last run again.", "Replay-Angriff: Ich habe deinen letzten Versuch nochmal gesendet.")),

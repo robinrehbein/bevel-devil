@@ -97,7 +97,7 @@ object World2Part3D {
                 trap(Zone(5.5f, 12.5f, 12.9f, 15.5f), Power('A', true), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
                 trap(PastX(15.5f), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("Pulley 1: ore on the way out. Mind the rope.", "Flaschenzug 1: Erz auf dem Weg nach draußen. Achtung, das Seil.")),
                 trap(PastX(22.5f), Saw(22.9f, -1f, 0f, 10f), say("Loose rock. Mines have those.", "Lockerer Fels. Gibt's in Minen.")),
-                trap(Landed(27.5f, 31f), Play(Card.SHORT_CIRCUIT), Saw(-1.5f, 14.4f, 12f, 0f), Power('A', true), say("Cart 2: it knows the mine better than you. The honeypot is live now, too.", "Lore 2: Sie kennt die Grube besser als du. Der Honeypot steht jetzt auch unter Strom.")),
+                trap(Landed(27.5f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 12f, 0f), Power('A', true), say("Cart 2: it knows the mine better than you. The honeypot is live now, too.", "Lore 2: Sie kennt die Grube besser als du. Der Honeypot steht jetzt auch unter Strom.")),
                 trap(Zone(16.5f, 12f, 19.9f, 15.5f), Saw(-1.5f, 14.4f, 9f, 0f), say("Cart 3: express to the exit. Racing you.", "Lore 3: Express zum Ausgang. Mit dir um die Wette.")),
             ),
             rematch = listOf(
@@ -130,8 +130,8 @@ object World2Part3D {
             intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
             start = listOf(Portal('1', 10 to 14, 17 to 13, twoWay = false)),
             traps = listOf(
-                trap(PastX(4f), Play(Card.THROTTLE), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
-                trap(Shaken, Reroute('1', 3 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
+                trap(PastX(4f), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
+                trap(Shaken, Play(Card.DECOY), Reroute('1', 3 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
                 trap(Zone(6f, 7f, 9f, 10.6f), Laser('B', 14 to 1, 14 to 9, on = 0.9f, off = 60f, delay = 0.5f), say("Now it is screwed on properly. Mostly.", "Jetzt ist es ordentlich festgeschraubt. Größtenteils.")),
                 trap(Zone(6f, 7f, 9f, 10.6f), Laser('D', 6 to 1, 6 to 9, on = 1f, off = 60f, delay = 1.2f), say("And a test beam where the cable came out. Safety first.", "Und ein Prüfstrahl, wo das Kabel rauskam. Sicherheit geht vor.")),
                 trap(Zone(18f, 7f, 22f, 10.6f), Laser('C', 27 to 1, 27 to 14, on = 0.9f, off = 60f, delay = 0.5f), say("One more screw. Stand clear.", "Noch eine Schraube. Bitte zurücktreten.")),
@@ -212,11 +212,11 @@ object World2Part3D {
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
             start = listOf(Belt('a', 0f), Belt('b', -3f), Belt('c', -14f), Belt('p', 0f)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.BACKDRAFT), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
+                trap(Touch('a'), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
                 trap(Touch('a'), Belt('b', -5f), say("admin: sudo required. Starting now.", "admin: sudo nötig. Ab sofort."), delay = 1.5f),
                 trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', 0f), say("root: maintenance window. One second.", "root: Wartungsfenster. Eine Sekunde."), delay = 1.0f),
                 trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', -14f), say("root: window closed. You were not invited.", "root: Fenster zu. Du warst nicht eingeladen."), delay = 2.0f),
-                trap(Zone(16.4f, 10f, 18f, 13.2f), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
+                trap(Zone(16.4f, 10f, 18f, 13.2f), Play(Card.SINKING), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
                 trap(Touch('p'), Belt('p', -6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
                 trap(Touch('p'), Move('p', 0f, 4f, 8f), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
             ),

@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Chase
@@ -254,9 +255,10 @@ object World2Part1 {
             intro = T("POST: 640K ought to be enough for anybody.", "POST: 640K sollten für jeden reichen."),
             start = listOf(Circuit('a'), Circuit('b')),
             traps = listOf(
-                trap(PastX(16.4f), Play(Card.SHORT_CIRCUIT), Power('a', false), say("RAM check: 3 of 4 blocks OK. Yours is number 4.", "RAM-Check: 3 von 4 Blöcken OK. Deiner ist Nummer 4."), delay = 0.12f),
+                trap(PastX(16.4f), Power('a', false), say("RAM check: 3 of 4 blocks OK. Yours is number 4.", "RAM-Check: 3 von 4 Blöcken OK. Deiner ist Nummer 4."), delay = 0.12f),
                 trap(PastX(16.4f), Power('a', true), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
                 trap(PastX(23f), Power('b', false), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
+                trap(PastX(21.5f), Play(Card.UNDO), Undo(0.2f), say("Parity error. Replaying the last fifth of a second.", "Paritätsfehler. Die letzte Fünftelsekunde nochmal.")),
             ),
         ) {
             border()

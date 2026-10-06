@@ -90,7 +90,7 @@ object World2Rooms {
     fun l22ToLane(b: Bot) = b.hopR(15.0f).rightUntil { sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }
 
     /** 22: then hop the LEDs, hop the second bouncer who rolls out of the back door, and run on to the door before the first one is back. */
-    fun l22(b: Bot) = l22ToLane(b).hopL(22.3f, 0.5f).leftUntil { sawAheadLeft(it, 4.0f) }.leftJump(0.5f).landLeft().left(1.5f)
+    fun l22(b: Bot) = l22ToLane(b).hopL(22.8f, 0.6f).leftUntil { sawAheadLeft(it, 4.0f) }.leftJump(0.5f).landLeft().left(1.5f)
 
     /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
     fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(19f).left(1f)
@@ -196,7 +196,7 @@ object World2Rooms {
 
     /** 36: slip under the pendulum at the start, along the lane (hop the login that rolls out of the stairs), up the three steps, hop the saw that patrols the roof and run to the door. */
     fun l36(b: Bot) = b.rightTo(5.0f).waitFor { pendulumCalm(it, 7.5f, 0.05f, 0.5f, 12.6f) }.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.35f).landRight()
-        .rightTo(14.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .rightUntil { it.player.box.cx > 14.3f }.rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
         .rightJump(0.5f).landRight().waitFor { w -> w.saws.any { it.path != null && it.x > 20f && it.x < 26.0f } }.rightJump(0.5f).landRight().right(2f)
 
     /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */

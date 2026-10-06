@@ -1,5 +1,6 @@
 package com.robinrehbein.beveldevil.game
 
+import com.robinrehbein.beveldevil.game.Action.Undo
 import com.robinrehbein.beveldevil.game.Action.Bluff
 import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Blink
@@ -49,8 +50,8 @@ object World2Part2 {
             traps = listOf(
                 trap(Zone(9.6f, 9f, 15f, 12.2f), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
                 trap(Zone(14f, 6.5f, 19f, 8.4f), Fall('d'), say("Shelf 2 is decoration. Do not stand on it.", "Regal 2 ist Deko. Nicht draufstellen."), delay = 0.4f),
-                trap(Zone(7f, 5f, 8.5f, 8.2f), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
-                trap(Touch('s'), Play(Card.BACKDRAFT), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
+                trap(Zone(7f, 5f, 8.5f, 8.2f), Play(Card.CRUMBLE), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
+                trap(Touch('s'), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
                 trap(Zone(6.5f, 13.5f, 21f, 15f), Fall('e'), say("Last stop. The station is closed. Please jump.", "Endstation. Der Bahnhof ist gesperrt. Bitte springen.")),
             ),
             hint = T("The bus turns around somewhere. Not down here.", "Irgendwo dreht der Bus um. Nicht hier unten."),
@@ -76,8 +77,8 @@ object World2Part2 {
                 Pad('1', at = 26 to 12),
             ),
             traps = listOf(
-                trap(PastX(10.5f), Move('a', 0f, 12f, 30f), say("Packet loss. The floor was never in the rule set.", "Paketverlust. Der Boden stand nie im Regelwerk.")),
-                trap(PastX(20.6f), Play(Card.SPIKE_SEED), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
+                trap(PastX(10.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss. The floor was never in the rule set.", "Paketverlust. Der Boden stand nie im Regelwerk.")),
+                trap(PastX(20.6f), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
                     say("Rule 2: no entry. I count to one.", "Regel 2: Zutritt verboten. Ich zähle bis eins.")),
                 trap(Pressed('1'), Power('W', false), Move('a', 0f, -12f, 25f), Laser('K', 25 to 12, 28 to 12, on = 1.0f, off = 40f, delay = 0.8f),
                     say("Rule 1 disabled. Port scan on the rack. Don't linger.", "Regel 1 deaktiviert. Portscan auf dem Rack. Nicht trödeln.")),
@@ -157,7 +158,7 @@ object World2Part2 {
             ),
             traps = listOf(
                 trap(Pressed('2'), say("Second check started. The stairs are powered.", "Zweite Kontrolle gestartet. Die Treppe steht unter Strom.")),
-                trap(Landed(6f, 7.9f), Play(Card.THROTTLE), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
+                trap(Landed(6f, 7.9f), Play(Card.SPIKE_SEED), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
                     say("Gate 2 now runs on a rhythm.", "Tor 2 läuft jetzt im Takt.")),
                 trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
                 trap(Touch('s'), Circuit('s', on = false), say("This step times out, too. Do not camp.", "Diese Stufe läuft auch ab. Nicht campen."), delay = 1.7f),
@@ -239,23 +240,22 @@ object World2Part2 {
         },
 
         // 22 — the bouncer, a trap room (U7 the saw, U1 the floor goes): you start up on the top floor and run right; the first bouncer rolls
-        // out of the far wall and walks toward you (hop him), and the carpet in front of the end drops out over the LEDs on the lane (hop that,
-        // too). At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door
+        // out of the far wall and walks toward you (hop him; the guest list is reloaded on the way and sets you back a step). At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door
         // to walk you out (hop the LEDs under the hole, then him). The first bouncer has turned round and follows you to the door: as you land
         // behind the second one, he comes back along the lane (do not stop)
         Level(
             name = T("Bouncer", "Türsteher"),
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             traps = listOf(
-                trap(PastX(8.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 6.4f, -4.5f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
-                trap(Zone(12.5f, 3f, 14.5f, 7.4f), Hide('c'), say("Guest list updated. The carpet was crossed off.", "Gästeliste aktualisiert. Der Teppich wurde gestrichen.")),
+                trap(PastX(8.5f), Saw(33.5f, 6.4f, -4.5f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
+                trap(Zone(16f, 3f, 18f, 7.4f), Play(Card.UNDO), Undo(0.3f), say("Guest list reloaded. You were not on it. Again.", "Gästeliste neu geladen. Du standest nicht drauf. Schon wieder.")),
                 trap(Zone(1f, 12.5f, 31f, 15.5f), Saw(-1.5f, 14.4f, 6f, 0f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
                 trap(Landed(3.5f, 11f), Saw(32f, 14.4f, -9f, 0f), say("The first bouncer is back. He remembers faces.", "Der erste Türsteher ist zurück. Er merkt sich Gesichter.")),
             ),
             hint = T("The bouncer rolls toward you. Jump him.", "Der Türsteher rollt auf dich zu. Spring über ihn."),
         ) {
             border(); floor()
-            fill(1..28, 7..7); fill(16..17, 7..7, 'c')
+            fill(1..28, 7..7)
             leds(19..20)
             spawn(2, 6); put(2, 14, 'D'); bits(22)
         },
@@ -297,10 +297,10 @@ object World2Part2 {
             intro = T("The uplink is in the basement. So is the elevator.", "Der Uplink ist im Keller. Der Aufzug auch."),
             legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN), 'W' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(PastX(3.0f), Play(Card.HEADBUTT), Move('V', 0f, 16f, 14f), say("Stalactites. Patience is a virtue.", "Stalaktiten. Geduld ist eine Tugend."), delay = 0.58f),
+                trap(PastX(3.0f), Move('V', 0f, 16f, 14f), say("Stalactites. Patience is a virtue.", "Stalaktiten. Geduld ist eine Tugend."), delay = 0.58f),
                 trap(Zone(6.2f, 3f, 8.8f, 6f), Move('W', 0f, 16f, 14f), say("Virtue is overrated.", "Tugend wird überschätzt."), delay = 0.75f),
                 trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 3.6f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
-                trap(Landed(26f, 31f), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
+                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
             ),
             hint = T("Let the first stalactites pass, but do not wait right in front of them. Under the deck, keep running.", "Lass die ersten Stalaktiten vorbei, aber warte nicht direkt davor. Unter dem Deck: weiterlaufen."),
         ) {
@@ -319,8 +319,8 @@ object World2Part2 {
             name = T("Load Balancer", "Lastverteiler"),
             intro = T("I distribute the load evenly. Onto you.", "Ich verteile die Last gleichmäßig. Auf dich."),
             traps = listOf(
-                trap(Touch('a'), Move('a', 0f, 3f, 2.4f), say("Node 1 is overloaded.", "Knoten 1 ist überlastet.")),
-                trap(Touch('b'), Play(Card.BACKDRAFT), Belt('b', -6f), say("Node 2 passes the load back.", "Knoten 2 reicht die Last zurück.")),
+                trap(Touch('a'), Play(Card.HEADBUTT), Move('a', 0f, 3f, 2.4f), say("Node 1 is overloaded.", "Knoten 1 ist überlastet.")),
+                trap(Touch('b'), Belt('b', -6f), say("Node 2 passes the load back.", "Knoten 2 reicht die Last zurück.")),
                 trap(Landed(14.5f, 18f), Move('e', 0f, 2.5f, 10f), say("Node 4 is busy. Please hold.", "Knoten 4 ist besetzt. Bitte warten.")),
                 trap(Landed(14.5f, 18f), Move('e', 0f, -2.5f, 5f), delay = 0.9f),
                 trap(Touch('e'), Move('e', 0f, 3f, 6f), say("Node 4: maintenance window. Starts now.", "Knoten 4: Wartungsfenster. Beginnt jetzt."), delay = 1.05f),

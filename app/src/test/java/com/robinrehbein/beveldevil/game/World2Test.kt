@@ -275,7 +275,7 @@ class World2Test {
         // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
         val second = first.retry().right(0.28f).wait(2.5f)
         second.expect(WorldState.DEAD)
-        assertEquals(Card.DEVIL_SAW, second.world.lastCard)
+        assertEquals(null, second.world.lastCard) // the replay plays no card: the log does it, not a trap
         // without a previous attempt nothing replays: standing there for as long is fine
         b(36).right(0.28f).wait(2.5f).expect(WorldState.PLAYING)
     }
