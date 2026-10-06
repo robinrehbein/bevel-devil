@@ -645,6 +645,22 @@ class ScreenshotTest {
         }
     }
 
+    /** Every level of World 2 as the player first sees it (round 1, start state), for the rollout contact sheets. */
+    @Test
+    fun worldTwoAllLevels() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((i, level) in com.robinrehbein.beveldevil.game.World2.levels.withIndex()) {
+            val w = Bot(level, 0).wait(0.5f).world
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, Themes.DATA_CENTER)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "150-w2-level-${i + 1}.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
     /** Act 1 of World 1: every room as the player first sees it (plain and calm), and a few moments after a trap fired. */
     @Test
     fun worldOneActOne() {
