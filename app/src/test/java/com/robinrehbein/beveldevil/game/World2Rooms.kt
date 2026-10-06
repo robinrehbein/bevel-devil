@@ -147,13 +147,13 @@ object World2Rooms {
         return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < yMax }
     }
 
-    /** 29: stop in front of the first pendulum and slip under it when it is up, stop for the saw out of the slot and hop the slot, wait short of the freed floor until the third pendulum is up, then under it and up the three steps to the door. */
-    fun l29(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }
-        .rightTo(18.6f).waitFor { pendulumCalm(it, 23.5f, 0.2f, 0.75f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+    /** 29: stop in front of the first pendulum and slip under it when it is up, stop for the saw out of the floor, wait short of the freed floor until the third pendulum is up, then under it and up the three steps to the door. */
+    fun l29(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(10.9f).wait(0.45f)
+        .rightTo(17.6f).waitFor { pendulumCalm(it, 23.5f, 0.3f, 0.85f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
-    /** 29, round 2: slip under the swinging first pendulum, run on past the fork, wait well before the third pendulum (the fork comes up at round 1's waiting spot) and go in one run when it will be up, over the freed floor, up the steps. */
-    fun l29r2(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(15.4f)
-        .waitFor { pendulumCalm(it, 23.5f, 0.85f, 1.35f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+    /** 29, round 2: slip under the swinging first pendulum, run on past the fork, wait well before the third pendulum (the fork comes up at round 1's waiting spot) and go in one run when it will be up, and from under it jump over the freed floor straight onto the steps. */
+    fun l29r2(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(10.9f).wait(0.45f).rightTo(15.4f)
+        .waitFor { pendulumCalm(it, 23.5f, 0.85f, 1.35f, 10.8f) }.rightTo(22.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
     /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
     fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
