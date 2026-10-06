@@ -16,6 +16,9 @@ object World3RoomsA {
     val solutions: Map<Int, List<Solution>> = mapOf(
         1 to listOf<Solution>(
             { hopL(18.5f).leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 14f }.rightTo(5.3f).rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
+            // rematch: the plates moved, the landing wakes a stalker
+            { leftTo(12.7f).leftJump(0.55f).landLeft().leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 14f }
+                .rightTo(9.8f).rightJump(0.55f).landRight().rightTo(22.3f).rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
         ),
         2 to listOf<Solution>(
             { rightUntil { w -> w.group('K').let { it.homeX + it.ox - w.player.box.cx < 3.0f } }.rightJump(0.55f).landRight()

@@ -49,6 +49,28 @@ object World3PartA {
                 trap(Landed(2f, 8f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.95f), say("Landing pad: warm, as promised.", "Landeplatz: warm, wie versprochen.")),
             ),
             hint = T("The deck bites the runner. The wire bites the dawdler.", "Das Deck beißt den Läufer. Der Draht beißt den Trödler."),
+            // rematch: the wall is gone and the button rings nothing; the warm plates moved house (hop them where they are now),
+            // and the landing wakes a stalker that follows along the floor: do not stop to look back
+            rematch = listOf(
+                Round(
+                    T("Same copper, new manners.", "Gleiches Kupfer, neue Manieren."),
+                    start = listOf(Pad('1', at = 5 to 5)),
+                    legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
+                    hint = T("The wall is gone. Something else is coming for you now.", "Die Wand ist weg. Jetzt kommt etwas anderes hinter dir her."),
+                    traps = listOf(
+                        trap(BeforeX(14.5f), HeatSpike('g', 0.95f), say("The warm bit moved house.", "Das Warme ist umgezogen.")),
+                        trap(Pressed('1'), say("Click. Nothing. I did say: decorative.", "Klick. Nichts. Ich sagte ja: Deko.")),
+                        trap(Landed(2f, 8f), Play(Card.STALKER), Chase('W', speed = 4.2f, left = 0f, right = 28f), say("Someone followed you down. Politely.", "Jemand ist dir nach unten gefolgt. Höflich.")),
+                        trap(Zone(9f, 12f, 10.5f, 15f), HeatSpike('h', 1f), say("And the landing pad moved with it.", "Und der Landeplatz ist mitgezogen.")),
+                        trap(Zone(21.8f, 12f, 23f, 15f), HeatSpike('k', 1f), say("One more warm bit for the road.", "Noch ein warmes Stück für unterwegs.")),
+                    ),
+                ) {
+                    fill(15..17, 6..6); fill(6..8, 15..15)
+                    fill(15..15, 7..14, '.')
+                    fill(9..11, 6..6, 'g'); fill(11..13, 15..15, 'h'); fill(24..26, 15..15, 'k')
+                    fill(1..1, 12..14, 'W')
+                },
+            ),
         ) {
             border(); floor()
             fill(3..30, 6..6)
