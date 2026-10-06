@@ -168,9 +168,10 @@ object World3PartC {
             rematch = listOf(
                 Round(
                     T("Same baton. New hand-over.", "Gleiches Staffelholz. Neue Übergabe."),
-                    hint = T("The sink hands the wall over at full speed now. Hop the stove on the blocks.", "Der Kühlkörper übergibt die Wand jetzt mit Vollgas. Spring auf den Klötzen über den Herd."),
+                    hint = T("The sink hands the wall over at full speed now. Hop the stove on the blocks, and do not stand on the first one: it heats up.", "Der Kühlkörper übergibt die Wand jetzt mit Vollgas. Spring auf den Klötzen über den Herd, und bleib nicht auf dem ersten stehen: Er wird heiß."),
                     traps = listOf(
-                        trap(Zone(4.4f, 13.5f, 5.2f, 15.2f), Heat('a', rise = 1.0f, cool = 9f), Heat('b', rise = 1.0f, cool = 9f), HeatSpike('a', 1f), HeatSpike('b', 1f), say("The stove is on. All of it. Nobody turned it off.", "Der Herd ist an. Ganz. Keiner hat ihn ausgemacht.")),
+                        trap(Zone(4.4f, 13.5f, 5.2f, 15.2f), Heat('q', rise = 1.0f, cool = 3f), say("The blocks are hot-swappable. Please do not stand on them.", "Die Klötze sind hot-swap-fähig. Bitte nicht draufstellen.")),
+                        trap(Landed(6f, 9.8f), HeatSpike('q', 1f), say("Block one: a little warm. Under you.", "Klotz eins: ein bisschen warm. Unter dir."), delay = 0.55f),
                         trap(PastX(5.3f), Chase('S', 4f, 0f, 12f), say("The next runner is behind you again.", "Der nächste Läufer ist wieder hinter dir.")),
                         trap(Touch('k'), Play(Card.COLLAPSE), Move('S', 11f, 0f, 16f), say("Hand-over zone, full speed.", "Wechselzone, volle Fahrt.")),
                         trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
@@ -178,7 +179,7 @@ object World3PartC {
                     ),
                 ) {
                     put(11, 15, 'b')
-                    fill(6..9, 14..14); fill(11..16, 14..14)
+                    fill(6..9, 14..14, 'q'); fill(11..16, 14..14)
                     put(4, 14, '.'); spawn(3, 14); put(4, 9, '.'); door(2, 9)
                 },
             ),
