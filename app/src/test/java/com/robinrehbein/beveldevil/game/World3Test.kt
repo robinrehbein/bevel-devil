@@ -94,11 +94,11 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26, 27, 28, 31, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
+        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, the fallen slabs of the waiting room
-        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 23, 24, 25, 29, 30, 32, 33, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
+        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, the fallen slabs of the waiting room, a lift that never ran
+        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 23, 24, 25, 29, 30, 32, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
@@ -108,8 +108,11 @@ class World3Test {
         b(24).leftTo(27f).landLeft().leftTo(12f).wait(0.5f).expect(WorldState.DEAD)
         b(27).rightTo(4.5f).rightTo(21.9f).rightJump(0.5f).landRight().right(3f).expect(WorldState.DEAD)
         b(31).rightTo(9.8f).right(4f).expect(WorldState.DEAD)
-        b(34).hopR(8f).right(3f).expect(WorldState.DEAD)
-        b(37).rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(3f).expect(WorldState.DEAD)
+        // 33: the leap that is obvious on the bridge (a long one) comes down on the plank that gives way; 36: hugging the right wall of the chute is where the second bar comes from;
+        // 39: running on after the lift runs into the stud on the bridge
+        b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight().wait(2f).expect(WorldState.DEAD)
+        b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
+        b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
         b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).right(6f).expect(WorldState.DEAD)
     }
 
@@ -169,12 +172,10 @@ class World3Test {
 
     @Test
     fun aFanThatLooksDeadlyCarriesYou() {
-        for (n in listOf(36, 40)) {
-            val bot = b(n).rightTo(8.6f).rightJump(0.55f)
-            bot.expect(WorldState.PLAYING)
-            assertTrue("level $n: over the spikes", bot.world.player.box.b < 14.5f)
-        }
-        assertTrue(actions(World3.levels[35]).none { it is Action.Fan && it.dir != Dir.UP })
+        // 40: the pit is full of spikes, and the draft carries you across it
+        val bot = b(40).rightTo(8.8f).right(0.6f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("over the spikes", bot.world.player.box.b < 14f)
     }
 
     @Test
@@ -217,9 +218,7 @@ class World3Test {
 
     @Test
     fun fallingThroughABrokenLedgeLeavesTheWayUpOpen() {
-        // 33: the ledge breaks under a leap that is too short; 41: the top ledge breaks under a walk. The fans keep blowing.
-        b(33).rightTo(12.6f).waitFor { it.player.box.cy < 5.6f }.rightTo(21.4f).rightJump(0.25f).landRight().wait(1f)
-            .leftTo(13.3f).waitFor { it.player.box.cy < 5.6f }.rightTo(21.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
+        // 41: the top ledge breaks under a walk. The fans keep blowing. (33 and 40 end in a void: falling is a death, never a dead end.)
         b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
             .rightTo(22.3f).right(1.5f).wait(0.8f)
             .hopL(25.5f).leftTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
@@ -272,7 +271,8 @@ class World3Test {
             val levels = World3.levels.count { l -> l.traps.flatMap { it.actions }.any(f) }
             assertTrue("$name in only $levels levels", levels >= 2)
         }
-        assertTrue(World3.levels.any { l -> l.traps.flatMap { it.actions }.any { it is Action.Fan } })
+        // a trap starts or sets a fan (a fan that wakes up when the player comes near, or the lift that waits for a passenger)
+        assertTrue(World3.levels.any { l -> l.traps.flatMap { it.actions }.any { it is Action.Fan || (it is Action.Power && it.on && l.start.any { s -> s is Action.Fan && s.id == it.id }) } })
         // every trap springs on the spot: no level opens with a hidden spike right after the spawn
         World3.levels.forEachIndexed { i, l ->
             val early = l.traps.filter { t -> (t.trigger as? Trigger.PastX)?.x?.let { it < 5f } == true && t.actions.any { it is Action.Show || it is Action.HeatSpike } }
@@ -306,8 +306,9 @@ class World3Test {
         val tagged = World3Part3.levels.withIndex().filter { (_, l) -> actions(l).any(::fans) }.map { it.index + 33 }
         assertTrue("only $tagged use fans", tagged.size >= 14)
         val a = World3Part3.levels.flatMap(::actions)
-        assertTrue(a.any { it is Action.Fan && it.dir == Dir.UP } && a.any { it is Action.Fan && it.dir == Dir.RIGHT })
-        assertTrue(a.any { it is Action.Fan && it.dir == Dir.LEFT } && a.any { it is Action.Fan && it.dir == Dir.DOWN })
+        // a fan blowing right is a LEFT-facing fan on the right wall with a negative speed (34), or a RIGHT-facing one
+        assertTrue(a.any { it is Action.Fan && it.dir == Dir.UP } && a.any { it is Action.Fan && (it.dir == Dir.RIGHT || (it.dir == Dir.LEFT && it.speed < 0f)) })
+        assertTrue(a.any { it is Action.Fan && it.dir == Dir.LEFT && it.speed > 0f } && a.any { it is Action.Fan && it.dir == Dir.DOWN })
         assertTrue(a.any { it is Action.FanSet } && a.any { it is Action.Fan && it.off > 0f })
     }
 
@@ -410,12 +411,16 @@ class World3Test {
     }
 
     @Test
-    fun theStoneOfReverseThrustSavesTheFloater() {
-        val bot = b(40).rightTo(11.35f)
-        assertTrue(bot.world.fans[0].target < 0f)
-        bot.waitFor { it.player.grounded }
+    fun theKeepOfReverseThrustSavesTheFloater() {
+        // 40: the draft reverses as you float (a weaker wind pushes down), the stone keep is where you wait, and touching it brings the draft back
+        val bot = b(40).rightTo(8.6f)
         assertTrue(bot.world.fans[0].target > 0f)
-        bot.waitFor { it.fans[0].wind > 5f }.rightTo(25.5f).landRight().right(3f).expect(WorldState.WON)
+        bot.rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
+        assertTrue(bot.world.fans[0].target < 0f)
+        bot.expect(WorldState.PLAYING)
+        bot.waitFor { it.fans[0].wind > 4.5f }
+        assertTrue(bot.world.fans[0].target > 0f)
+        bot.expect(WorldState.PLAYING)
     }
 
     @Test
@@ -470,14 +475,14 @@ class World3Test {
     @Test fun level32() { World3DesignTest.play(32) }
 
     // ---------- Act 3: Lüfter ----------
-    @Test fun level33() = b(33).rightTo(12.6f).waitFor { it.player.box.cy < 5.6f }.rightTo(21.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level34() = b(34).hopR(8f).rightTo(21.6f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
-    @Test fun level35() = b(35).rightTo(22f).waitFor { it.fans[0].wind == 0f }.rightTo(24.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level36() = b(36).hopR(8f).rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
-    @Test fun level37() = b(37).rightTo(9f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().rightTo(22.4f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
-    @Test fun level38() = b(38).rightTo(6f).rightTo(10f).waitFor { it.player.box.cy < 7f }.rightTo(16.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level39() = b(39).rightTo(14.2f).leftTo(10.3f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight().rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(1f).left(3f).expect(WorldState.WON)
-    @Test fun level40() = b(40).rightTo(11.35f).waitFor { it.player.grounded }.waitFor { it.fans[0].wind > 5f }.rightTo(25.5f).landRight().right(3f).expect(WorldState.WON)
+    @Test fun level33() { World3DesignTest.play(33) }
+    @Test fun level34() { World3DesignTest.play(34) }
+    @Test fun level35() { World3DesignTest.play(35) }
+    @Test fun level36() { World3DesignTest.play(36) }
+    @Test fun level37() { World3DesignTest.play(37) }
+    @Test fun level38() { World3DesignTest.play(38) }
+    @Test fun level39() { World3DesignTest.play(39) }
+    @Test fun level40() { World3DesignTest.play(40) }
     @Test fun level41() = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight().rightTo(21.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
     @Test fun level42() = b(42).rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level43() = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().rightTo(24.8f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)

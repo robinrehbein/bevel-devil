@@ -53,7 +53,7 @@ object World3PartE {
             spawn(1, 14); door(29, 2)
         },
 
-        // 34 — Tailwind (breather, U12 as gusts that come and go): scratch v13
+        // 34 — Tailwind (breather, U12 as gusts that come and go)
         Level(
             name = T("Tailwind", "Rückenwind"),
             intro = T("Go with the flow. Jump into it.", "Schwimm mit dem Strom. Spring hinein."),
@@ -71,7 +71,7 @@ object World3PartE {
             spawn(1, 14); door(30, 14)
         },
 
-        // 35 — Headwind (R4, U7): scratch v3
+        // 35 — Headwind (R4, U7)
         Level(
             name = T("Headwind", "Gegenwind"),
             intro = T("Breezy today.", "Heute ist es windig."),
@@ -119,7 +119,7 @@ object World3PartE {
             spawn(1, 14); door(30, 14)
         },
 
-        // 36 — Air Cushion (trap room, U6): scratch v1
+        // 36 — Air Cushion (trap room, U6)
         Level(
             name = T("Air Cushion", "Luftkissen"),
             intro = T("Soft landing guaranteed.", "Weiche Landung garantiert."),
@@ -139,7 +139,7 @@ object World3PartE {
             spawn(1, 3); door(29, 14)
         },
 
-        // 37 — Lull (trap room, U3): scratch v2
+        // 37 — Lull (trap room, U3)
         Level(
             name = T("Lull", "Flaute"),
             intro = T("Union rules apply to fans too.", "Für Lüfter gilt der Betriebsrat."),
@@ -161,7 +161,7 @@ object World3PartE {
             spawn(3, 14); door(29, 5)
         },
 
-        // 38 — Silence (trap room, U15): scratch v3
+        // 38 — Silence (trap room, U15)
         Level(
             name = T("Silence", "Stille"),
             intro = T("It's so quiet in here.", "Schön leise hier."),
@@ -183,7 +183,7 @@ object World3PartE {
             spawn(10, 14); door(30, 5)
         },
 
-        // 39 — Downdraft (R10, U2): scratch v4
+        // 39 — Downdraft (R10, U2)
         Level(
             name = T("Downdraft", "Fallwind"),
             intro = T("Gravity, but with a motor.", "Schwerkraft, aber mit Motor."),
@@ -208,7 +208,7 @@ object World3PartE {
             spawn(1, 14); door(29, 14)
         },
 
-        // 40 — Air Castle (trap room, U12): scratch v6
+        // 40 — Air Castle (trap room, U12)
         Level(
             name = T("Air Castle", "Luftschloss"),
             intro = T("Wind is free. Take as much as you like.", "Wind ist kostenlos. Nimm, so viel du willst."),
