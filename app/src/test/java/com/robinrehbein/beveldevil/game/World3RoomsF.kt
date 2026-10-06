@@ -22,5 +22,11 @@ object World3RoomsF {
             { rightTo(15.0f).fidgetUntil { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
                 .right(6f) },
         ),
+        43 to listOf<Solution>(
+            { rightTo(5.6f).rightTo(18.0f).rightUntil { it.player.box.cy < 7.4f }
+                .leftUntil { it.player.grounded && it.player.box.cx < 16.8f }.leftTo(11.8f)
+                .rightUntil { it.player.box.cx > 19.5f }.rightTo(23.5f).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .right(3f) },
+        ),
     )
 }

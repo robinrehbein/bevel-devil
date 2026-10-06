@@ -90,5 +90,29 @@ object World3PartF {
             fill(30..30, 7..14)
             spawn(3, 14); door(29, 14)
         },
+
+        // 43 — Wiring Diagram
+        Level(
+            name = T("Wiring Diagram", "Schaltplan"),
+            intro = T("Page one: everything is connected.", "Seite eins: Alles hängt zusammen."),
+            start = listOf(
+                Circuit('a'), Circuit('p'), Circuit('l'), Circuit('w'),
+                Fan('f', at = 17 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
+                Pad('1', at = 5 to 14), Pad('2', at = 11 to 7, circuits = "w", mode = PadMode.OFF),
+            ),
+            traps = listOf(
+                trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
+                trap(Touch('p'), Power('p', false), say("The landing is on a different circuit.", "Die Landefläche hängt an einem anderen Stromkreis."), delay = 0.4f),
+                trap(Touch('l'), Clock('l', on = 1.8f, off = 1.2f), say("The ledge is on a timer. Page two.", "Der Sims hat einen Timer. Seite zwei.")),
+            ),
+        ) {
+            border(); floor()
+            pit(8..16); put(8, 15, 'a')
+            fill(8..14, 15..15, 'a'); fill(15..16, 15..15, 'p')
+            fill(19..23, 8..14)
+            fill(9..16, 8..8, 'l')
+            fill(26..27, 1..14, 'w')
+            spawn(2, 14); door(29, 14)
+        },
     )
 }
