@@ -808,7 +808,7 @@ class ScreenshotTest {
             film(19).apply { play(1.0f); save("148-w3-l19-melt-fuse$tag") }
             film(22).apply { play(1.8f); save("149-w3-l22-heat-soak$tag") }
             film(24).apply { play(1.0f); save("150-w3-l24-cooling-fins$tag") }
-            film(26).apply { play(6f) { w().circuits['Z']!!.warn > 0.5f }; save("151-w3-l26-hot-wire$tag") }
+            film(26).apply { play(2.0f); save("151-w3-l26-hot-wire$tag") }
             film(30).apply { play(1.0f); save("152-w3-l30-burn-in$tag") }
             film(32).apply { play(1.0f); save("153-w3-l32-runaway$tag") }
             // act 3: Lüfter, the blue board

@@ -18,12 +18,8 @@ class World3DeckTest {
 
     // ---------- the solutions ----------
 
-    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (acts 2-3); the rebuilt levels 1-24 are in [rebuilt]. */
+    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (acts 2-3); the rebuilt levels 1-32 are in [rebuilt]. */
     private val first: Map<Int, (Bot) -> Bot> = mapOf(
-        28 to { b -> b.rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f) },
-        30 to { b -> b.rightTo(6.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
-            .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
-        32 to { b -> b.rightTo(5.5f).waitCooled('c').rightTo(25.5f).rightJump(0.55f).landRight().right(3f) },
         34 to { b -> b.hopR(8f).rightTo(21.6f).waitFor { it.fans[0].wind > 9.5f }.rightJump(0.55f).landRight().right(1f).left(3f) },
         36 to { b -> b.hopR(8f).rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(1f).left(3f) },
         39 to { b -> b.rightTo(14.2f).leftTo(10.3f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight()
@@ -34,15 +30,11 @@ class World3DeckTest {
 
     private fun climb41(b: Bot) = b.rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
 
-    /** The rebuilt levels with a rematch (block A of act 1): their solutions are the registered ones, round 1 first. */
+    /** The rebuilt levels with a rematch (blocks A to D): their solutions are the registered ones, round 1 first. */
     private val rebuilt: Map<Int, List<Solution>> = World3DesignTest.SOLUTIONS.filterValues { it.size > 1 }
 
     /** Rematch rounds: level to the solution of each extra round. */
     private val rematch: Map<Int, List<(Bot) -> Bot>> = mapOf(
-        28 to listOf { b -> b.rightTo(16.5f).waitCooled('h').right(3f) },
-        30 to listOf { b -> b.rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
-            .waitWhile(2f) { !it.player.grounded || it.door.moving }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f) },
-        32 to listOf { b -> b.rightTo(5.5f).waitCooled('c').rightTo(21.6f).rightJump(0.55f).landRight().right(3f) },
         34 to listOf { b -> b.hopR(8f).waitFor { it.fans[0].wind > 3f }.rightTo(21.6f).rightJump(0.55f).landRight().right(1f).left(3f) },
         36 to listOf { b -> b.hopR(8f).rightTo(22f).rightJump(0.12f).landRight().rightTo(24.4f).rightJump(0.35f).landRight().right(1f).left(3f) },
         39 to listOf { b -> b.rightTo(14.2f).waitFor { it.fans[0].wind == 0f }.rightTo(14.3f).rightJump(0.55f).landRight().rightTo(21.3f).rightJump(0.55f).landRight()
@@ -61,8 +53,8 @@ class World3DeckTest {
         assertEquals(rematch.keys + rebuilt.keys, levels.toSet())
         rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
         rebuilt.forEach { (n, sols) -> assertEquals("level $n", sols.size - 1, level(n).rematch.size) }
-        // blocks A, B and C keep exactly seven rematch levels (3 + 2 + 2: levels 17 and 21 in block C)
-        assertEquals(7, rebuilt.size)
+        // blocks A to D keep exactly ten rematch levels (3 + 2 + 2 + 3: levels 17 and 21 in block C, 28, 30 and 32 in block D)
+        assertEquals(10, rebuilt.size)
     }
 
     /**
