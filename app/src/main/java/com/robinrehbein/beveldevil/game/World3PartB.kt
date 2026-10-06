@@ -187,24 +187,31 @@ object World3PartB {
             spawn(1, 14); door(28, 14)
         },
 
-        // 14 — the pad powers the bridge for a few seconds only
+        // 14 — a lift in the floor takes you up to a long shelf under a beam with spiked fins hanging from it: the first drops where you run
+        // under it (do not stop), the second slams down in front of you the moment you pass (wait for it to go back up), and in front
+        // of the door the shelf is live. The lift is part of the supply: step on it and it goes, whether you are ready or not.
         Level(
             name = T("Power Supply", "Netzteil"),
             intro = T("Unlimited power. Terms and conditions apply.", "Unbegrenzter Strom. Es gelten die AGB."),
-            legend = mapOf('A' to hidden),
-            start = listOf(Circuit('a', on = false), Pad('1', at = 4 to 14, circuits = "a", mode = PadMode.ON), Circuit('Z')),
+            legend = mapOf('A' to Glyph(spike = true, dir = Dir.DOWN), 'B' to Glyph(spike = true, dir = Dir.DOWN), 'C' to Glyph(spike = true, dir = Dir.DOWN)),
+            start = listOf(Circuit('Z', on = false)),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.SINKING), Power('a', false), say("Timer's up. Did you think it was a gift?", "Die Zeit ist um. Dachtest du, das sei ein Geschenk?"), delay = 3.2f),
-                trap(PastX(17f), Power('Z', false), say("The cable was never live. I just like the glow.", "Das Kabel war nie unter Strom. Ich mag nur das Glühen.")),
-                trap(PastX(26.4f), Show('A'), say("Made it? Here, a spike. On the house.", "Geschafft? Hier, ein Spike. Aufs Haus.")),
+                trap(Zone(8.3f, 13f, 10.7f, 15.2f), Move('l', 0f, -6f, 2.6f), say("Going up. Terms and conditions apply.", "Wir fahren nach oben. Es gelten die AGB.")),
+                trap(Zone(8f, 7.5f, 11f, 9.6f), Move('C', 0f, 3.5f, 18f), say("Top floor. Please do not loiter. It is not a lounge.", "Oberstes Stockwerk. Bitte nicht herumstehen. Das ist keine Lounge."), delay = 0.4f),
+                trap(Zone(13f, 6f, 16.5f, 9.5f), Move('A', 0f, 3.5f, 18f), say("Clause one: do not stand under clause one.", "Paragraf eins: Unter Paragraf eins nicht stehen bleiben."), delay = 0.35f),
+                trap(PastX(17.2f), Play(Card.HEADBUTT), Move('B', 0f, 3.5f, 22f), say("Clause two takes effect immediately.", "Paragraf zwei gilt sofort.")),
+                trap(PastX(17.2f), Move('B', 0f, -3.5f, 14f), delay = 1.3f),
+                trap(PastX(22.5f), Power('Z', true), say("Final clause: the shelf is live. In writing.", "Letzte Klausel: Das Regal ist unter Strom. Schriftlich.")),
             ),
+            hint = T("The second fin comes down right after you pass the first. Stop in front of it.", "Die zweite Finne fällt, sobald du die erste hinter dir hast. Bleib davor stehen."),
         ) {
             border(); floor()
-            put(8, 14, '^'); put(10, 14, '^')
-            bridge(13..25, 'a')
-            wire(19, 'Z')
-            put(27, 14, 'A'); put(28, 14, 'A')
-            spawn(); door()
+            fill(8..10, 15..16, 'l')
+            fill(11..30, 9..10); fill(11..12, 11..14)
+            fill(8..28, 1..2)
+            fill(8..10, 3..5, 'C'); fill(15..15, 3..5, 'A'); fill(20..20, 3..5, 'B')
+            fill(26..26, 8..8, 'Z')
+            spawn(1, 14); door(29, 8)
         },
 
         // 15 — a pad swaps the controls until the second pad swaps them back

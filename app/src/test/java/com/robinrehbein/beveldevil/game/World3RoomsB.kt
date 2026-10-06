@@ -54,5 +54,10 @@ object World3RoomsB {
                 .rightTo(27.6f).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
                 .leftTo(28.4f).left(1f) },
         ),
+        14 to listOf<Solution>(
+            { rightTo(8.8f).rightUntil { it.player.grounded && it.player.box.b < 9.1f }
+                .rightTo(18.4f).waitFor { w -> w.time > 3f && w.group('B').let { it.mode == GroupMode.IDLE && it.oy < 1.5f } }
+                .rightTo(24.4f).rightJump(0.55f).landRight().rightTo(29.0f).right(1f) },
+        ),
     )
 }

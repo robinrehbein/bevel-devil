@@ -154,6 +154,10 @@ object Dbg2 {
             val b = bot.world.player.box
             out.append("%s t=%.2f x=%.2f y=%.2f g=%s %s saws=%s\n".format(tag, bot.world.time, b.cx, b.b, bot.world.player.grounded, bot.world.state, bot.world.saws.map { "(%.1f,%.1f)".format(it.x, it.y) }))
         }
+        if (n == 14) {
+            bot.rightTo(8.8f)
+            for (i in 0 until 50) { bot.wait(0.1f); if (i % 3 == 0) log("stand") }
+        }
         if (n == 12) {
             bot.rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(17.8f)
