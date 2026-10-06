@@ -31,9 +31,10 @@ import org.junit.Assert.assertTrue
  * The world's level test can play the same script, so the solution lives in one place:
  * `@Test fun level12() = World2DesignTest.play(12)` (and `play(12, round = 2)` in the deck test).
  *
- * The round rules A–K ([roundRules], docs/LEVEL_DESIGN_V2.md §9a) run on every round of every level of a world (the
+ * The round rules A–Q ([roundRules], docs/LEVEL_DESIGN_V2.md §9a) run on every round of every level of a world (the
  * W1 tutorial: A–C only); a round that still fails one of them must be listed in [PendingRounds] (shrink-only). F is H3,
- * E is H9, J is the card rule of §7; they run only there.
+ * E is H9, J is the card rule of §7; they run only there. L–Q (punchline signatures, card fits its effect, card is real,
+ * door away from the spawn, layout variety, two killers after level 10) came with the three reviews after A–K.
  *
  * The rules (all for rebuilt levels only, except H6 and the table checks, which run on the whole §8 table):
  * - H3 / F [densityViolations]: never more than [GAP] s without a real trap ([Weight]) in the clean run, standing still at
@@ -1145,7 +1146,7 @@ object DesignRules {
     /** J: a card comes back in an act at the earliest this many levels after its last use. */
     const val CARD_GAP = 8
     /** The round rules, in order. */
-    const val ROUND_RULES = "ABCDEFGHIJK"
+    const val ROUND_RULES = "ABCDEFGHIJKLMNOPQ"
 
     /** G: the lead family of an act (§8: W3 act 2 heat, act 3 fans) may dominate this many levels of it. */
     const val LEAD_FAMILY_CAP = 6
@@ -1165,8 +1166,8 @@ object DesignRules {
      */
     class WorldRounds(val world: Int, val levels: List<Level>, val design: Map<Int, Design>, val solutions: Map<Int, List<Solution>>, val lead: Map<Int, String> = emptyMap())
 
-    /** The round rules of one world: round id ("2-26-1") → failing rule letter → why; [report] one line per round. */
-    class RoundRules(val failures: Map<String, Map<Char, String>>, val report: List<String>)
+    /** The round rules of one world: round id ("2-26-1") → failing rule letter → why; [report] one line per round, [tables] what L–Q measured. */
+    class RoundRules(val failures: Map<String, Map<Char, String>>, val report: List<String>, val tables: List<String> = emptyList())
 
     fun roundId(world: Int, n: Int, round: Int) = "$world-$n-${round + 1}"
 
@@ -1175,7 +1176,13 @@ object DesignRules {
      * when it won, the room's width, the direction changes ([Bot.shape], `R`/`L` stretches of 0.25 s or more, standing
      * still left out) and [bait] (I: the greedy hopper heading straight for the door dies to a trap).
      */
-    class Path(val xs: List<Float>, val spawn: Float, val door: Float, val cols: Int, val turns: Int, val bait: Boolean) {
+    class Path(
+        val xs: List<Float>, val spawn: Float, val door: Float, val cols: Int, val turns: Int, val bait: Boolean,
+        /** L/O: the player's feet (y of the box bottom) and x speed at every step, in the order of [xs]. */
+        val ys: List<Float> = emptyList(), val vxs: List<Float> = emptyList(), val ts: List<Float> = emptyList(),
+        /** O/P: the feet at the spawn and the bottom of the door when the run won (tiles, y down). */
+        val spawnY: Float = 0f, val doorY: Float = 0f,
+    ) {
         /** How far the run got from the spawn, in tiles. */
         val reach: Float get() = xs.maxOfOrNull { abs(it - spawn) } ?: 0f
         /**
@@ -1190,13 +1197,22 @@ object DesignRules {
 
     fun path(level: Level, round: Int, solution: Solution, probes: NaiveProbes.Measured): Path {
         val xs = ArrayList<Float>()
-        val bot = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.WAIT, 0f) { xs += it.world.player.box.cx; false })
+        val ys = ArrayList<Float>()
+        val vxs = ArrayList<Float>()
+        val ts = ArrayList<Float>()
+        val bot = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.WAIT, 0f) {
+            val p = it.world.player
+            xs += p.box.cx; ys += p.box.b; vxs += p.vx; ts += it.world.time
+            false
+        })
         val spawn = bot.world.player.box.cx
+        val spawnY = bot.world.player.box.b
         val door0 = bot.world.door.box.cx
         bot.apply(solution)
         val toward = if (door0 >= spawn) "P2R" else "P2L"
         val p = probes.naive.first { it.name == toward }
-        return Path(xs, spawn, bot.world.door.box.cx, level.cols, turns(bot.shape()), p.base.dead && p.killerUnits.isNotEmpty())
+        return Path(xs, spawn, bot.world.door.box.cx, level.cols, turns(bot.shape()), p.base.dead && p.killerUnits.isNotEmpty(),
+            ys, vxs, ts, spawnY, bot.world.door.box.b)
     }
 
     /**
@@ -1219,8 +1235,290 @@ object DesignRules {
         }
     }
 
+    // ---------- round rules L–Q (the three reviews after A–K) ----------
+
+    /** L: levels per act that may share one punchline signature, and that may have an idle punchline (a). */
+    const val PUNCHLINE_CAP = 3
+    /** L (c): two trap constructions whose numbers (tiles, tiles/s, s) all differ by at most this are the same. */
+    const val CONSTRUCTION_TOLERANCE = 1f
+    /** N: the shortest UNDO rewind a player feels, in seconds. */
+    const val UNDO_MIN = 0.5f
     /**
-     * The round rules A–K over every level of [w] (docs/LEVEL_DESIGN_V2.md §9a). Per round (W1 1–6 is the tutorial: no
+     * O: the door ends at least a third of the room's width to the side of the spawn: of the 30 tiles between the side
+     * walls ([ROOM_COLS] minus the two border columns), 10 tiles ...
+     */
+    const val DOOR_DX = (ROOM_COLS - 2) / 3f
+    /** O: ... or at least half the room's height ([ROOM_ROWS] / 2, 9 tiles) above or below it, and then at least [DOOR_DX_MIN] tiles to the side. */
+    const val DOOR_DY = ROOM_ROWS / 2f
+    const val DOOR_DX_MIN = 4f
+    /** P: levels per act one layout class may hold; levels in a row that may share one is one less than [LAYOUT_RUN]. */
+    const val LAYOUT_CAP = 5
+    const val LAYOUT_RUN = 3
+    /** Q: distinct trap killers of the naive probes a round needs, from level [KILLERS_FROM] on (★ breathers aside). */
+    const val KILLERS = 2
+    const val KILLERS_FROM = 11
+
+    /** L: the trigger class of [t]: idle, progress, landing, jump, button, timer, door or meta. */
+    fun triggerClass(t: Trigger): String = when (t) {
+        is Trigger.Idle -> "idle"
+        is Trigger.PastX, is Trigger.BeforeX, is Trigger.Zone -> "progress"
+        is Trigger.Landed, is Trigger.Touch -> "landing"
+        is Trigger.Airborne -> "jump"
+        is Trigger.Pressed -> "button"
+        is Trigger.After, is Trigger.Heated -> "timer"
+        Trigger.AtDoor -> "door"
+        Trigger.Shaken, is Trigger.Resumed -> "meta"
+    }
+
+    /** L: a punchline signature: trigger class, effect family (H20's split families) and where it comes from. */
+    data class Punchline(val trigger: String, val family: String, val dir: String) {
+        override fun toString() = "$trigger/$family/$dir"
+    }
+
+    /** The tile rectangle x0, y0, x1, y1 (exclusive) of [group] in [round], null without tiles. */
+    private fun bbox(round: Level, group: Char): List<Float>? {
+        val ts = tiles(round, group)
+        if (ts.isEmpty()) return null
+        return listOf(ts.minOf { it.first }.toFloat(), ts.minOf { it.second }.toFloat(), ts.maxOf { it.first } + 1f, ts.maxOf { it.second } + 1f)
+    }
+
+    /** Where the lethal action [a] acts, as a tile rectangle (see [bbox]); null for what has no place (a saw: see [direction]). */
+    private fun area(a: Action, round: Level): List<Float>? = when (a) {
+        is Action.Fall -> bbox(round, a.group)
+        is Action.Hide -> bbox(round, a.group)
+        is Action.Show -> bbox(round, a.group)
+        is Action.Move -> bbox(round, a.group)
+        is Action.Chase -> bbox(round, a.group)
+        is Action.Blink -> bbox(round, a.group)
+        is Action.Clock -> bbox(round, a.group)
+        is Action.HeatSpike -> bbox(round, a.group)
+        is Action.Circuit -> bbox(round, a.group)
+        is Action.Belt -> bbox(round, a.group)
+        is Action.Laser -> listOf(a.x0, a.y0, a.x1, a.y1)
+        is Action.Power -> flatten(round.start + round.traps.flatMap { it.actions }).filterIsInstance<Action.Laser>().firstOrNull { it.id == a.id }
+            ?.let { listOf(it.x0, it.y0, it.x1, it.y1) } ?: bbox(round, a.id)
+        is Action.FrameCrack -> listOf(a.x0.toFloat(), a.y0.toFloat(), a.x1 + 1f, a.y1 + 1f)
+        else -> null
+    }
+
+    /**
+     * L: where the lethal action [a] of [round] comes from, seen from the player standing at [px] with the feet at [feet]
+     * and heading [heading] (+1 right, -1 left), the moment its trap's trigger held:
+     *
+     * - a saw: from the side it starts on (`ahead` or `behind` the heading) when it rolls sideways, else `above`/`below`;
+     *   a path saw by its first point the same way; a ghost always comes from `behind`;
+     * - anything with a place ([area]) that reaches within 1.5 tiles of the player's x: `above` if it lies over the head,
+     *   `under` if at or below the feet, `at` beside them at their height (a wall); further away: `ahead` or `behind`;
+     * - an action without a place (door, gravity, controls ...): `-`.
+     */
+    fun direction(a: Action, round: Level, px: Float, feet: Float, heading: Int): String {
+        val head = feet - Physics.PLAYER_H
+        val mid = feet - Physics.PLAYER_H / 2
+        fun side(x: Float) = if ((x - px) * heading >= 0f) "ahead" else "behind"
+        fun vertical(y: Float) = if (y < mid) "above" else "below"
+        return when (a) {
+            is Action.Saw -> if (abs(a.vx) >= abs(a.vy)) side(a.x) else vertical(a.y)
+            is Action.PathSaw -> a.points.first().let { (x, y) -> if (abs(x - px) >= abs(y - mid)) side(x) else vertical(y) }
+            is Action.Ghost -> "behind"
+            else -> {
+                val r = area(a, round) ?: return "-"
+                val near = r[0] <= px + 1.5f && r[2] >= px - 1.5f
+                when {
+                    !near -> side((r[0] + r[2]) / 2)
+                    r[3] <= head + 0.5f -> "above"
+                    r[1] >= feet - 0.5f -> "under"
+                    else -> "at"
+                }
+            }
+        }
+    }
+
+    /** L (c): a trap construction, what it is ([kind]) and its numbers, the same as another within [CONSTRUCTION_TOLERANCE]. */
+    data class Construction(val kind: String, val nums: List<Float>) {
+        fun same(o: Construction) = kind == o.kind && nums.size == o.nums.size && nums.indices.all { abs(nums[it] - o.nums[it]) <= CONSTRUCTION_TOLERANCE + 1e-4f }
+        override fun toString() = "$kind(${nums.joinToString(",") { "%.1f".format(it) }})"
+    }
+
+    private fun triggerNums(t: Trigger): Pair<String, List<Float>> = when (t) {
+        is Trigger.PastX -> "PastX" to listOf(t.x)
+        is Trigger.BeforeX -> "BeforeX" to listOf(t.x)
+        is Trigger.Zone -> "Zone" to listOf(t.x0, t.y0, t.x1, t.y1)
+        is Trigger.Landed -> "Landed" to listOf(t.x0, t.x1)
+        is Trigger.Airborne -> "Airborne" to listOf(t.x0, t.x1)
+        is Trigger.Idle -> "Idle" to listOf(t.seconds)
+        is Trigger.After -> "After" to listOf(t.seconds)
+        is Trigger.Heated -> "Heated" to listOf(t.above)
+        is Trigger.Touch -> "Touch" to emptyList()
+        is Trigger.Pressed -> "Pressed" to listOf(t.times.toFloat())
+        Trigger.AtDoor -> "AtDoor" to emptyList()
+        Trigger.Shaken -> "Shaken" to emptyList()
+        is Trigger.Resumed -> "Resumed" to listOf(t.times.toFloat())
+    }
+
+    /**
+     * L (c): the construction of the lethal action [a] of [trap]. A saw, path saw, laser, moving or stalking group is its
+     * own numbers (start, speed, size; the group by its tile rectangle); a footprint trap (Fall, Hide, Show, Blink, Clock,
+     * HeatSpike, Circuit) is its tile rectangle together with its trigger and the trigger's numbers, since a pit or a spike
+     * row at the same spot is common ground and only the same trigger on it makes it the same beat. Null: no construction.
+     */
+    fun construction(a: Action, trap: Trap, round: Level): Construction? {
+        val (tk, tn) = triggerNums(trap.trigger)
+        fun at(g: Char, what: String) = bbox(round, g)?.let { Construction("$what@$tk", it + tn) }
+        return when (a) {
+            is Action.Saw -> Construction("Saw", listOf(a.x, a.y, a.vx, a.vy, a.r))
+            is Action.PathSaw -> Construction("PathSaw/${a.points.size}/${a.loop}", a.points.flatMap { listOf(it.first, it.second) } + a.speed)
+            is Action.Laser -> Construction("Laser", listOf(a.from.first.toFloat(), a.from.second.toFloat(), a.to.first.toFloat(), a.to.second.toFloat(), a.on, a.off))
+            is Action.Move -> bbox(round, a.group)?.let { Construction("Move", it + listOf(a.dx, a.dy, a.speed)) }
+            is Action.Chase -> bbox(round, a.group)?.let { Construction("Chase", it + a.speed) }
+            is Action.Fall -> at(a.group, "Fall")
+            is Action.Hide -> at(a.group, "Hide")
+            is Action.Show -> at(a.group, "Show")
+            is Action.Blink -> at(a.group, "Blink")
+            is Action.Clock -> at(a.group, "Clock")
+            is Action.HeatSpike -> at(a.group, "HeatSpike")
+            is Action.Circuit -> at(a.group, "Circuit")
+            else -> null
+        }
+    }
+
+    /** L: one real trap unit of a round ([Ablation.real]) as the punchline rule sees it. */
+    class TrapUnit(val key: String, val traps: List<Trap>, val trigger: String, val idle: Boolean, val lethal: Boolean,
+        val signatures: Set<Punchline>, val constructions: List<Construction>) {
+        /**
+         * L (a): an idle punchline, something that comes down on whoever stands still: an idle trigger, or a lethal unit
+         * that [punishesStandingStill] from `above` the player. Ground that gives way under a stander (a crumbling floor, a
+         * hot plate) or a pin or wall that walks at you (you jump it, so stopping in its way kills) is no such punchline; they
+         * have their own signatures (`idle/drop/under`, `idle/heat/under`, `idle/wall-move/ahead` ...) under the cap of (b).
+         */
+        val idlePunchline get() = lethal && idle && (traps.first().trigger is Trigger.Idle || signatures.any { it.dir == "above" })
+        override fun toString() = "$key ${signatures.joinToString("+")}${if (idlePunchline) " IDLE" else ""}"
+    }
+
+    /** The moving hazards a player escapes by running: they never make a trap an idle punchline (L a). */
+    private fun moving(a: Action) = a is Action.Saw || a is Action.PathSaw || a is Action.Chase || a is Action.Ghost
+
+    /**
+     * L (a): the unit [unit] of round [r] of [level] punishes standing still: from the step its trigger held ([triggered]),
+     * the player who stops for [NaiveProbes.FREEZE] s dies within that time and the room without the unit does not end
+     * that probe the same way, while the reckless one who keeps the key down ([recklessProbe]) does not die to it (it
+     * survives, or dies the same without the unit).
+     */
+    fun punishesStandingStill(level: Level, r: Int, sol: Solution, unit: List<Trap>, triggered: Float): Boolean {
+        val cut = without(level.rounds[r], unit.toSet())
+        val stop = { l: Level, rr: Int -> Bot(l, rr, probe = Bot.Probe(Bot.Probe.Kind.WAIT, NaiveProbes.FREEZE) { it.world.time >= triggered - 1e-4f }).apply(sol) }
+        val b = try { stop(level, r) } catch (_: RuntimeException) { return false }
+        if (b.world.state != WorldState.DEAD || b.world.time > triggered + NaiveProbes.FREEZE + 0.05f) return false
+        if (outcome { stop(cut, 0) } == Outcome.of(b)) return false
+        val run = try { recklessProbe(level, r, sol, triggered) } catch (_: RuntimeException) { return true }
+        val free = try { recklessProbe(cut, 0, sol, triggered) } catch (_: RuntimeException) { return true }
+        // a runner pressed against a wall (in the room without the unit it is still within 1.5 tiles of where the stopper
+        // stood) stands still too: it does not tell
+        val blocked = free.ranThrough && abs(free.world.player.box.cx - b.world.player.box.cx) < 1.5f
+        return run.ranThrough || blocked || Outcome.of(run) == Outcome.of(free)
+    }
+
+    /**
+     * L: the real trap units of round [r] of [level] ([Ablation.real]) with their punchline signatures. A unit's signature
+     * is, for every lethal action ([Weight.LETHAL]; a unit without one: its route actions, direction `-`), its trigger class
+     * ([triggerClass]; `idle` also when it [punishesStandingStill]), its split effect family ([familyOf] with `split`) and
+     * its [direction] from where the player was when the trigger held in the clean run (heading: the run's x speed then,
+     * or towards the door when standing). A unit that did not go off in the clean run is placed at the clean-run step
+     * nearest its trigger's x.
+     */
+    fun trapUnits(level: Level, r: Int, sol: Solution, path: Path): List<TrapUnit> {
+        val stage = level.rounds[r]
+        val clean = cleanRun(level, r, sol)
+        val firedAt = clean.moments.flatMap { m -> m.parts.map { it.trap to (m.triggered to it.lethal) } }.toMap()
+        val probeWorld = World(stage)
+        return ablation(level, r, sol).real.map { unit ->
+            val trig = unit.first().trigger
+            val fired = unit.firstNotNullOfOrNull { firedAt[it] }
+            val i = if (fired != null && path.ts.isNotEmpty()) {
+                path.ts.indices.minByOrNull { abs(path.ts[it] - fired.first) }!!
+            } else {
+                val x = when (trig) {
+                    is Trigger.PastX -> trig.x; is Trigger.BeforeX -> trig.x
+                    is Trigger.Zone -> (trig.x0 + trig.x1) / 2; is Trigger.Landed -> (trig.x0 + trig.x1) / 2
+                    is Trigger.Airborne -> (trig.x0 + trig.x1) / 2; else -> null
+                }
+                if (x == null || path.xs.isEmpty()) 0 else path.xs.indices.minByOrNull { abs(path.xs[it] - x) }!!
+            }
+            val px = path.xs.getOrElse(i) { path.spawn }
+            val feet = path.ys.getOrElse(i) { path.spawnY }
+            val vx = path.vxs.getOrElse(i) { 0f }
+            val heading = if (abs(vx) > 0.5f) (if (vx > 0) 1 else -1) else if (path.door >= px) 1 else -1
+            val acts = unit.flatMap { t -> flatten(t.actions).map { t to it } }
+            val lethal = unit.flatMap { t -> firedAt[t]?.second?.map { t to it } ?: flatten(t.actions).filter { weigh(it, stage, probeWorld) == Weight.LETHAL }.map { t to it } }
+            val idle = trig is Trigger.Idle || (fired != null && lethal.any { !moving(it.second) } && punishesStandingStill(level, r, sol, unit, fired.first))
+            val cls = if (idle) "idle" else triggerClass(trig)
+            val sigs = if (lethal.isNotEmpty()) lethal.mapNotNull { (_, a) -> familyOf(a, stage, split = true)?.let { Punchline(cls, it, direction(a, stage, px, feet, heading)) } }
+            else acts.mapNotNull { (_, a) -> if (weigh(a, stage, probeWorld) == Weight.NONE) null else familyOf(a, stage, split = true)?.let { Punchline(cls, it, "-") } }
+            TrapUnit(NaiveProbes.unitKey(stage, unit), unit, cls, idle, lethal.isNotEmpty(), sigs.toCollection(LinkedHashSet()),
+                lethal.mapNotNull { (t, a) -> construction(a, t, stage) }.distinct())
+        }
+    }
+
+    /**
+     * M: the effects a card stands for (docs/LEVEL_DESIGN_V2.md §7, from its title and flavor in Cards.kt and its correct
+     * uses in the levels), as split effect families ([familyOf] with `split`) or actions. The unit that carries the card
+     * (its trap and the traps with the same trigger) must contain at least one. Stricter than the lint H8 ([cardFits]).
+     */
+    fun cardEffectFits(card: Card, unit: List<Trap>, round: Level): Boolean {
+        val acts = unit.flatMap { flatten(it.actions) }
+        val fams = acts.mapNotNull { familyOf(it, round, split = true) }.toSet()
+        fun has(vararg f: String) = f.any { it in fams }
+        val floorGone = acts.any { a -> (a is Action.Fall || a is Action.Hide) && familyOf(a, round, split = true) == "drop" }
+        return when (card) {
+            // the floor was only borrowed: what you stand on (or are about to) falls away
+            Card.COLLAPSE -> has("drop")
+            // keep moving: the floor breaks apart or flickers away
+            Card.CRUMBLE -> floorGone || has("blink")
+            // solid ground, limited offer: a floor or platform sinks
+            Card.SINKING -> has("drop")
+            // the ceiling comes to you
+            Card.HEADBUTT -> has("ceiling-move")
+            // spikes grow
+            Card.SPIKE_SEED -> has("spikes")
+            Card.UNDO -> acts.any { it is Action.Undo }
+            Card.GRAND_FINALE, Card.BLUFF -> true
+            // the others keep the lint's table (H8): it already names the one mechanic of the card
+            else -> unit.any { cardFits(card, it, round) }
+        }
+    }
+
+    /** M/N: the cards (bluffs aside) played in [round], each with the trap unit (traps with the same trigger) that carries it. */
+    fun playedCards(round: Level): List<Pair<Card, List<Trap>>> = round.traps.flatMap { t ->
+        flatten(t.actions).filterIsInstance<Action.Play>().map { it.card to round.traps.filter { o -> o.trigger == t.trigger } }
+    }
+
+    /**
+     * O: the door ends (where it is when the clean run wins) at least [DOOR_DX] tiles to the side of the spawn, or at
+     * least [DOOR_DY] tiles above or below it and then at least [DOOR_DX_MIN] tiles to the
+     * side. In a level whose door ends in another room (U18), the spawn is replaced by the player's first position in
+     * that room. Null: it holds; else why.
+     */
+    fun doorFromSpawn(path: Path): String? {
+        val doorRoom = (path.door / ROOM_COLS).toInt()
+        val entry = if ((path.spawn / ROOM_COLS).toInt() == doorRoom) -1 else path.xs.indexOfFirst { (it / ROOM_COLS).toInt() == doorRoom }
+        val sx = if (entry >= 0) path.xs[entry] else path.spawn
+        val sy = if (entry >= 0) path.ys[entry] else path.spawnY
+        val dx = abs(path.door - sx)
+        val dy = abs(path.doorY - sy)
+        // tiles are whole, the door's box is a little wider than the player's: a quarter tile of slack
+        if (dx >= DOOR_DX - 0.25f) return null
+        if (dy >= DOOR_DY - 0.25f && dx >= DOOR_DX_MIN - 0.25f) return null
+        return "the door ends %.1f tiles to the side and %.1f above/below the %s (needs %.0f to the side, or %.0f above/below and %.0f to the side)".format(
+            dx, dy, if (entry >= 0) "entry of its room" else "spawn", DOOR_DX, DOOR_DY, DOOR_DX_MIN)
+    }
+
+    /** P: the layout class of a round: spawn third (L, M, R) and half (top, bottom), door third, room-local. */
+    fun layoutClass(path: Path): String {
+        fun third(x: Float) = when (((x % ROOM_COLS) / (ROOM_COLS / 3f)).toInt()) { 0 -> "L"; 1 -> "M"; else -> "R" }
+        return "spawn ${third(path.spawn)}-${if (path.spawnY <= ROOM_ROWS / 2f) "top" else "bottom"}, door ${third(path.door)}"
+    }
+
+    /**
+     * The round rules A–Q over every level of [w] (docs/LEVEL_DESIGN_V2.md §9a). Per round (W1 1–6 is the tutorial: no
      * D, and like every level outside the V2 rollout no F):
      *
      * - A naive: no naive runner of [NaiveProbes] reaches the door (NAIVE_CLEAR, ZIGZAG_CLEAR);
@@ -1238,6 +1536,20 @@ object DesignRules {
      * - J cards: a card (bluffs aside, GRAND_FINALE in a finale free) comes back in an act only [CARD_GAP] levels after its
      *   last legal use; the round that plays it too early fails;
      * - K ghost: a ghost in round 1 has to matter ([ghostMatters]), else it belongs in a rematch.
+     *
+     * L–Q (not in the W1 tutorial; [RoundRules.tables] prints what they measured):
+     *
+     * - L punchlines ([trapUnits], [Punchline]): (a) per act at most [PUNCHLINE_CAP] levels with an idle punchline
+     *   ([TrapUnit.idlePunchline]); (b) a kill-trap signature in at most [PUNCHLINE_CAP] levels of an act and never in two
+     *   neighbours (the second no finale); (c) no trap [Construction] of an earlier level of the world again. The levels
+     *   past a cap, the second neighbour and the later level fail;
+     * - M card fits effect: the unit carrying a card ([playedCards]) shows what the card says ([cardEffectFits]);
+     * - N card is real: that unit is real by ablation ([Ablation.real]); UNDO rewinds at least [UNDO_MIN] s;
+     * - O door away from the spawn ([doorFromSpawn]);
+     * - P layout variety: per act at most [LAYOUT_CAP] round-1 layouts ([layoutClass]) of one class, never
+     *   [LAYOUT_RUN] in a row;
+     * - Q two killers: from level [KILLERS_FROM] on (★ aside) at least [KILLERS] distinct trap killers of the naive
+     *   probes (not LOW_THREAT), and the learning naive runner needs more than one death (not ONE_DEATH).
      */
     fun roundRules(w: WorldRounds): RoundRules {
         val fails = LinkedHashMap<String, MutableMap<Char, String>>()
@@ -1246,7 +1558,8 @@ object DesignRules {
         // the W1 tutorial (1–6): A–C only, and it counts for no act cap
         val tutorial = { n: Int -> !ruled(w.world, n) }
         // per round, in parallel: the probes, the ablation, the path
-        class Row(val n: Int, val r: Int, val probes: NaiveProbes.Measured, val real: Int?, val path: Path?, val sig: Signature?, val density: List<String>, val idle: String)
+        class Row(val n: Int, val r: Int, val probes: NaiveProbes.Measured, val real: Int?, val path: Path?, val sig: Signature?, val density: List<String>, val idle: String,
+            val units: List<TrapUnit>?, val realTraps: Set<Trap>)
         val jobs = ns.flatMap { n -> w.levels[n - 1].rounds.indices.map { r -> n to r } }
         val rows = jobs.parallelStream().map { (n, r) ->
             val level = w.levels[n - 1]
@@ -1257,9 +1570,11 @@ object DesignRules {
             val real = if (ok) ablation(level, r, sol!!).real.size else null
             val path = if (ok) path(level, r, sol!!, m) else null
             val sig = if (ok) signature(level, sol!!, r) else null
+            val units = if (ok && ruled(w.world, n)) trapUnits(level, r, sol!!, path!!) else null
+            val realTraps = if (ok) ablation(level, r, sol!!).real.flatten().toSet() else emptySet()
             val density = if (sol != null && ruled(w.world, n)) densityViolations(level, r, sol, minDuration(w.world, n, w.design[n])) else emptyList()
             val idle = if (ok) measured(level, r, sol!!).let { b -> "%.2f/%.2f".format(b.longestIdle, b.idleTime) } else "-"
-            Row(n, r, m, real, path, sig, density, idle)
+            Row(n, r, m, real, path, sig, density, idle, units, realTraps)
         }.toList().sortedWith(compareBy({ it.n }, { it.r }))
         val byLevel = rows.groupBy { it.n }
         for (row in rows) {
@@ -1303,6 +1618,97 @@ object DesignRules {
         for ((n, matters) in ghosts) if (matters == false) {
             fail(n, 0, 'K', "the ghost of round 1 changes nothing (no ablation probe, no second attempt): move it to a rematch or give it a payoff")
         }
+        // ---------- L–Q (the W1 tutorial is exempt) ----------
+        val tables = ArrayList<String>()
+        val ruledNs = ns.filterNot(tutorial)
+        val unitsOf = { row: Row -> row.units.orEmpty() }
+        for ((act, acts) in ruledNs.groupBy(::act)) {
+            // L (a): levels with an idle punchline (a lethal unit that punishes standing still)
+            val idleLevels = acts.filter { n -> byLevel.getValue(n).any { row -> unitsOf(row).any { it.idlePunchline } } }
+            for (n in idleLevels.drop(PUNCHLINE_CAP)) for (row in byLevel.getValue(n)) {
+                val us = unitsOf(row).filter { it.idlePunchline }
+                if (us.isNotEmpty()) fail(n, row.r, 'L', "act $act: ${idleLevels.size} levels punish standing still $idleLevels (max $PUNCHLINE_CAP): ${us.joinToString()}")
+            }
+            // L (b): one signature in at most PUNCHLINE_CAP levels of the act, never in two neighbours (the second no finale: it
+            // combines the act on purpose, as in H6 and H20). Only kill traps count: a unit without a lethal action (a door that
+            // flees, a reroute, a fan turned, swapped keys) is a route change, capped per act by H12 and asked for by §8 (W2 routing,
+            // the W3 fan act), and listed apart in the table.
+            val sigsOf = acts.associateWith { n -> byLevel.getValue(n).flatMap { row -> unitsOf(row).filter { it.lethal }.flatMap { it.signatures } }.toSet() }
+            val bySig = sigsOf.values.flatten().distinct().associateWith { s -> acts.filter { s in sigsOf.getValue(it) } }
+            // the lead family of an act (§8) has no extra allowance here: G lets it dominate more levels, but it can do so with
+            // different punchlines (a plate that heats under you, one ahead that you hop, a heatsink, a melting floor ...)
+            for ((s, with) in bySig) {
+                val bad = LinkedHashMap<Int, String>()
+                for (n in with.drop(PUNCHLINE_CAP)) bad[n] = "act $act: $s in ${with.size} levels $with (max $PUNCHLINE_CAP)"
+                for (n in with) if (n - 1 in with && !isFinale(n)) bad.merge(n, "$s also in level ${n - 1} next door") { a, b -> "$a; $b" }
+                for ((n, why) in bad) for (row in byLevel.getValue(n)) {
+                    val us = unitsOf(row).filter { it.lethal && s in it.signatures }
+                    if (us.isNotEmpty()) fail(n, row.r, 'L', "$why (${us.joinToString { it.key }})")
+                }
+            }
+            tables += "L act $act: idle punchlines in ${idleLevels.size} levels $idleLevels (max $PUNCHLINE_CAP)"
+            for ((s, with) in bySig.entries.sortedWith(compareByDescending<Map.Entry<Punchline, List<Int>>> { it.value.size }.thenBy { it.key.toString() })) {
+                val neighbours = with.filter { it - 1 in with && !isFinale(it) }
+                val over = with.size > PUNCHLINE_CAP || neighbours.isNotEmpty()
+                tables += "L act $act: %-34s %2d levels %s%s".format(s, with.size, with, if (over) "  OVER" + (if (neighbours.isNotEmpty()) " (next door: $neighbours)" else "") else "")
+            }
+            val routes = acts.flatMap { n -> byLevel.getValue(n).flatMap { row -> unitsOf(row).filterNot { it.lethal }.flatMap { it.signatures } }.distinct().map { it to n } }
+                .groupBy({ it.first }, { it.second }).mapValues { it.value.distinct() }
+            for ((s, with) in routes.entries.sortedByDescending { it.value.size }) tables += "L act $act: %-34s %2d levels %s (route change, not capped by L)".format(s, with.size, with)
+            // P: the layout class of round 1
+            val cls = acts.associateWith { n -> byLevel.getValue(n)[0].path?.let(::layoutClass) }
+            for ((c, with) in acts.filter { cls[it] != null }.groupBy { cls.getValue(it)!! }) {
+                tables += "P act $act: %-30s %2d levels %s%s".format(c, with.size, with, if (with.size > LAYOUT_CAP) "  OVER" else "")
+                for (n in with.drop(LAYOUT_CAP)) fail(n, 0, 'P', "act $act: layout \"$c\" in ${with.size} levels $with (max $LAYOUT_CAP)")
+            }
+            for (i in LAYOUT_RUN - 1 until acts.size) {
+                val run = acts.subList(i - LAYOUT_RUN + 1, i + 1)
+                val c = cls[run.last()]
+                if (c != null && run.zipWithNext().all { (a, b) -> b == a + 1 } && run.all { cls[it] == c }) {
+                    fail(run.last(), 0, 'P', "levels $run in a row share the layout \"$c\" (max ${LAYOUT_RUN - 1})")
+                }
+            }
+        }
+        // L (c): the same trap construction in two levels of the world; the later level fails
+        val seenC = ArrayList<Triple<Int, Construction, String>>()
+        for (n in ruledNs.sorted()) {
+            val mine = byLevel.getValue(n).flatMap { row -> unitsOf(row).flatMap { u -> u.constructions.map { Triple(row.r, it, u.key) } } }
+            for ((r, c, key) in mine) seenC.firstOrNull { it.first != n && it.second.same(c) }?.let { twin ->
+                fail(n, r, 'L', "$key is the construction $c of level ${twin.first} (${twin.third}) again")
+                tables += "L construction: ${roundId(w.world, n, r)} $key $c = level ${twin.first} ${twin.third} ${twin.second}"
+            }
+            seenC += mine.map { Triple(n, it.second, it.third) }
+        }
+        for (row in rows) if (row.units != null) tables += "L units ${roundId(w.world, row.n, row.r)}: ${row.units.joinToString("; ")}"
+        val killers = LinkedHashMap<Int, MutableList<String>>()
+        for (row in rows) {
+            val n = row.n
+            val r = row.r
+            if (tutorial(n) || row.path == null) continue
+            val stage = w.levels[n - 1].rounds[r]
+            // M and N: the unit that carries a card
+            for ((card, unit) in playedCards(stage)) {
+                val on = unit.flatMap { flatten(it.actions) }.filterNot { it is Action.Say || it is Action.Play }
+                    .joinToString("+") { a -> (a::class.simpleName ?: "?") + (familyOf(a, stage, split = true)?.let { "[$it]" } ?: "") }.ifEmpty { "nothing" }
+                val real = unit.any { it in row.realTraps }
+                val undo = unit.flatMap { flatten(it.actions) }.filterIsInstance<Action.Undo>().maxOfOrNull { it.seconds }
+                val fits = cardEffectFits(card, unit, stage)
+                tables += "M/N ${roundId(w.world, n, r)} $card on $on: ${if (fits) "fits" else "DOES NOT FIT"}, ${if (real) "real" else "NOT REAL"}${undo?.let { ", rewind %.2f s".format(it) } ?: ""}"
+                if (!fits) fail(n, r, 'M', "$card does not show what it says: it sits on $on")
+                if (!real) fail(n, r, 'N', "$card sits on a trap unit that changes nothing by ablation ($on)")
+                if (card == Card.UNDO && (undo ?: 0f) < UNDO_MIN - 1e-4f) fail(n, r, 'N', "UNDO rewinds %.2f s (min %.1f s)".format(undo ?: 0f, UNDO_MIN))
+            }
+            // O: the door away from the spawn
+            doorFromSpawn(row.path)?.let { fail(n, r, 'O', it) }
+            // Q: two killers after level 10
+            val m = row.probes
+            if (n >= KILLERS_FROM) killers.getOrPut(minOf(m.distinct, 4)) { ArrayList() } += roundId(w.world, n, r) + if ("ONE_DEATH" in m.flags) "(one death)" else ""
+            if (n >= KILLERS_FROM && w.design[n]?.breather != true && (m.distinct < KILLERS || "ONE_DEATH" in m.flags)) {
+                fail(n, r, 'Q', "${m.distinct} distinct trap killers of the naive probes {${m.trapKillers.joinToString(",")}} (min $KILLERS)" +
+                    if ("ONE_DEATH" in m.flags) ", and the learning naive runner dies once, then walks through (ONE_DEATH)" else "")
+            }
+        }
+        tables += "Q distinct trap killers per round, levels $KILLERS_FROM-48 (4 = 4+): " + killers.toSortedMap().entries.joinToString("; ") { (k, ids) -> "$k: ${ids.size} ${ids}" }
         val report = rows.map { row ->
             val m = row.probes
             val id = roundId(w.world, row.n, row.r)
@@ -1316,7 +1722,7 @@ object DesignRules {
                 if ("LOW_THREAT" in m.flags) " LOW_THREAT" else "", if ("ONE_DEATH" in m.flags) " ONE_DEATH" else "",
                 fails[id]?.keys?.joinToString("")?.ifEmpty { "-" } ?: "-")
         }
-        return RoundRules(fails, report)
+        return RoundRules(fails, report, tables)
     }
 
     // ---------- rollout blocks (§11): parallel builders share an act ----------

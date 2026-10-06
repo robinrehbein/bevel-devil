@@ -386,8 +386,8 @@ class World2Test {
         .rightTo(14.7f).wait(5f).expect(WorldState.DEAD)
     @Test fun level28() { World2DesignTest.play(28) }
     @Test fun level29() { World2DesignTest.play(29) }
-    @Test fun level29StoppingAfterTheFirstPendulumMeetsTheForkFromBelow() =
-        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(12.0f).wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level29RunningOnAfterTheFirstPendulumMeetsTheForkFromBelow() =
+        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(2f).expect(WorldState.DEAD)
     @Test fun level29WaitingRightInFrontOfTheLastPendulumFreesTheFloor() =
         b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(21f).wait(1.5f).expect(WorldState.DEAD)
     @Test fun level30() { World2DesignTest.play(30) }

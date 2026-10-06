@@ -18,9 +18,9 @@ object KitLock {
      * is deliberately not here: it may only shrink (docs/LEVEL_DESIGN_V2.md §9a), and deleting a line needs no new hash.
      */
     val HASHES = mapOf(
-        "DesignRules.kt" to "482a9823a3d9732c58229b1f7cfc92ba4a722041832dbfe9764989f1982ef110",
-        "DesignTestBase.kt" to "644589b222668beae2727fa5b812996a29a7276f2b642cb00377c4e715b96b6a",
-        "NaiveProbes.kt" to "0bb188aa7701341c1af56be12933d1f5e373469ac7721b905104d50fc204ff72",
+        "DesignRules.kt" to "d5eb018d16855166a24ea648c0dc66cee81c9dae042f6e9c0ed16fa696d70f5e",
+        "DesignTestBase.kt" to "de858b4a146faaceef6114263b756d46df8635ae9f5dab823c950392544d849c",
+        "NaiveProbes.kt" to "915788d33fe652b16fd4be4023576997e4c171fddc8051c851456c6d6c929dc6",
     )
 
     private const val DIR = "src/test/java/com/robinrehbein/beveldevil/game"
