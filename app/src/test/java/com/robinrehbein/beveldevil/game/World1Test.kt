@@ -219,6 +219,13 @@ class World1Test {
     /** 12: walking home with swapped keys but without hopping meets the pit. */
     @Test fun level12WalkingIntoThePitDies() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().rightKeyLeftTo(11.5f).wait(1f).expect(WorldState.DEAD)
 
+    /** 12: the keys come back on the landing behind the last spike, so the old swapped habit now walks away from the door. */
+    @Test fun level12TheKeysComeBackOnTheLandingBehindTheLastSpike() {
+        val home = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f)
+        assertFalse("the keys are straight again", home.world.swapped)
+        home.right(1.2f).also { assertTrue("the old key walks away from the door", it.world.player.box.cx > 4f) }.expect(WorldState.PLAYING)
+    }
+
     /** 13: up on the floor the ceiling drops on whoever stops under it; down on the ground the spikes in the ceiling are a bluff, the plain ceiling is not. */
     @Test fun level13StandingUnderTheCeilingOnTheUpperFloorIsFatal() = b(13).leftTo(22.8f).wait(1f).expect(WorldState.DEAD)
     @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).leftTo(3.5f).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)

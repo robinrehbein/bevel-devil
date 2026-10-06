@@ -313,6 +313,7 @@ object World1Part1 {
             traps = listOf(
                 trap(Landed(15f, 23.8f), Play(Card.TWISTED), Swap(true), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
                 trap(BeforeX(13.5f), Say(T("That pit is real. Unlike my promises.", "Das Loch ist echt. Anders als meine Versprechen."))),
+                trap(Landed(2.5f, 7.5f), Swap(false), Say(T("Keys back. Old habits die hard.", "Tasten zur\u00fcck. Alte Gewohnheiten sterben langsam."))),
             ),
             // rematch: the keys are swapped from the first steps, and the spike you hop with them grows where you land
             rematch = listOf(
