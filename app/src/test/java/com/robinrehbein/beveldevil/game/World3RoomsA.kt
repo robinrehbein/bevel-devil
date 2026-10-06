@@ -44,6 +44,11 @@ object World3RoomsA {
                 .rightUntil { it.player.box.cx > 23.8f }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(30.1f).leftJump(0.55f).landLeft().waitFor { w -> w.group('d').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }
                 .leftJump(0.55f).landLeft().leftTo(2.4f) },
+            // rematch: wait where you ran (the slab before the stairs, the last one on the shelf), run where you waited
+            { rightTo(18.2f).waitFor { w -> w.group('g').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+                .rightTo(24.4f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight()
+                .leftTo(30.1f).leftJump(0.55f).landLeft().leftTo(17.0f).waitFor { w -> w.group('e').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }
+                .leftJump(0.55f).landLeft().leftTo(2.4f) },
         ),
         6 to listOf<Solution>(
             { leftTo(7.2f).leftJump(0.55f).landLeft().rightUntil(0.3f) { it.pads[0].presses >= 1 || it.player.box.cx > 2.9f }.leftUntil(0.3f) { it.pads[0].presses >= 1 || it.player.box.cx < 2.1f }

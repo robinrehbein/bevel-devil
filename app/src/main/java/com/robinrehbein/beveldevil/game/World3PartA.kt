@@ -160,12 +160,31 @@ object World3PartA {
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
             start = listOf(Circuit('r')),
             traps = listOf(
-                trap(PastX(5.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.5f),
+                trap(PastX(5.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.4f),
                 trap(PastX(14.5f), Fall('g'), say("Second door, second ceiling.", "Zweite Tür, zweite Decke."), delay = 1f),
                 trap(Zone(17f, 6f, 26f, 9.3f), Fall('d'), say("Upstairs the ceiling is already waiting.", "Oben wartet die Decke schon."), delay = 0.3f),
                 trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one is for the door itself.", "Die letzte gehört der Tür selbst."), delay = 0.8f),
             ),
             hint = T("The ceiling is on the floor now. Floors can be jumped.", "Die Decke liegt jetzt am Boden. Über Böden kann man springen."),
+            // rematch: the habits are reversed. What waited for you now drops after you passed, what fell on whoever dawdled is
+            // now the one to wait for: wait where you used to run, run where you used to wait
+            rematch = listOf(
+                Round(
+                    T("Same ceiling, different habits.", "Gleiche Decke, andere Gewohnheiten."),
+                    hint = T("Wait where you ran last time. Run where you waited.", "Warte, wo du zuletzt gerannt bist. Renn, wo du gewartet hast."),
+                    traps = listOf(
+                        trap(PastX(5.0f), Fall('c'), say("This one takes its time. Don't wait for it.", "Die hier lässt sich Zeit. Warte nicht auf sie."), delay = 3f),
+                        trap(PastX(17.0f), Play(Card.GRAND_FINALE), Fall('g'), say("Everything at once. Starting with this door.", "Alles auf einmal. Fangen wir mit dieser Tür an."), delay = 0.3f),
+                        trap(Landed(29f, 31f), Fall('k'), say("Even the top step has a ceiling now.", "Selbst die oberste Stufe hat jetzt eine Decke."), delay = 1.7f),
+                        trap(Landed(25f, 27f), Fall('d'), say("Upstairs they close behind you. Slowly.", "Oben schließen sie sich hinter dir. Langsam."), delay = 2.8f),
+                        trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one wants you to look at it.", "Die letzte will, dass du sie ansiehst."), delay = 0.35f),
+                    ),
+                ) {
+                    fill(17..20, 10..11, '.'); fill(20..24, 10..11, 'g')
+                    fill(29..30, 1..2); fill(29..30, 3..4, 'k')
+                    fill(17..21, 3..4, '.'); fill(17..22, 1..2); fill(19..22, 3..4, 'd')
+                },
+            ),
         ) {
             border(); floor()
             fill(1..25, 9..9, 'r')
