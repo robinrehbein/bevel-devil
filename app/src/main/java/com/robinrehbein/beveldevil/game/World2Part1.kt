@@ -78,7 +78,7 @@ object World2Part1 {
             start = listOf(
                 Portal('a', 28 to 12, 28 to 10, twoWay = false),
                 Portal('h', 17 to 14, 3 to 14, twoWay = false),
-                Portal('g', 18 to 10, 10 to 10, twoWay = false), Power('g', false),
+                Portal('g', 18 to 10, 2 to 10, twoWay = false), Power('g', false),
             ),
             traps = listOf(
                 trap(Zone(16.5f, 13.9f, 18f, 15.5f), Reroute('h', 20 to 2), say("Loopback again? Rerouted to the server room ceiling.", "Schon wieder Loopback? Umgeleitet an die Serverraumdecke."), delay = 0.1f),
@@ -89,10 +89,10 @@ object World2Part1 {
         ) {
             border(); floor()
             fill(1..10, 11..11); fill(17..30, 11..11)
-            fill(7..8, 9..10); fill(5..6, 7..10); fill(3..4, 5..10); fill(1..2, 3..10)
+            fill(3..4, 9..10); fill(5..6, 7..10); fill(7..8, 5..10); fill(9..10, 3..10)
             fill(26..30, 13..14)
             fill(20..23, 14..14, 'A'); put(20, 1, 'v'); fill(19..21, 3..3, '^')
-            spawn(); door(2, 2); bits(2)
+            spawn(); door(10, 2); bits(2)
         },
 
         // 3 — EASTER EGG: HTTP 404, the door is gone. A two-storey room: you start on the upper floor and the door stands at its far end, in plain
@@ -117,7 +117,7 @@ object World2Part1 {
             border(); floor()
             fill(1..25, 11..11); fill(29..30, 11..11)
             fill(9..10, 10..10); fill(15..16, 10..10)
-            spawn(2, 10); door(30, 10); bits(3)
+            spawn(13, 10); door(30, 10); bits(3)
         },
 
         // 4 — EASTER EGG: off-by-one. The door is in plain sight behind a wall; the way is a stair up, the upper lane under the string of lights
@@ -141,7 +141,7 @@ object World2Part1 {
                     hint = T("A bulb hangs under the lane, too. It flickers twice.", "Unter der Etage hängt auch eine Birne. Sie flackert zweimal."),
                     legend = mapOf('C' to Glyph(spike = true, dir = Dir.DOWN)),
                     traps = listOf(
-                        trap(PastX(11.5f), Play(Card.SINKING), Move('A', 0f, 7f, 30f), say("Same bulb. Different cable.", "Gleiche Birne. Anderes Kabel."), delay = 0.1f),
+                        trap(PastX(11.5f), Play(Card.HEADBUTT), Move('A', 0f, 7f, 30f), say("Same bulb. Different cable.", "Gleiche Birne. Anderes Kabel."), delay = 0.1f),
                         trap(PastX(11.5f), Move('A', 0f, -7f, 14f), delay = 0.8f),
                         trap(PastX(17.5f), Move('B', 0f, 7f, 30f), delay = 0.1f),
                         trap(PastX(17.5f), Move('B', 0f, -7f, 14f), delay = 1.0f),
@@ -159,7 +159,7 @@ object World2Part1 {
             fill(10..26, 9..9)
             fill(15..16, 1..1, 'A'); fill(21..22, 1..1, 'B')
             fill(12..13, 14..14, 'G')
-            spawn(); door(11); bits(4)
+            spawn(1); door(11); bits(4)
         },
 
         // 5 — EASTER EGG: NullPointerException. A snake through three floors: along the top to the right, down to the middle floor and back to
@@ -277,13 +277,13 @@ object World2Part1 {
                 trap(After(0.2f), Play(Card.TWISTED), Swap(true), say("Hot swap: left and right exchanged.", "Hot Swap: links und rechts getauscht.")),
                 trap(PastX(3f), Saw(28f, 8.4f, -7f, 0f), say("Driver signed by nobody. Delivered anyway.", "Treiber von niemandem signiert. Trotzdem geliefert."), delay = 0.6f),
                 trap(Landed(22f, 31f), Swap(false), say("Kernel reloaded the driver.", "Kernel hat den Treiber neu geladen.")),
-                trap(Zone(14f, 12f, 18f, 15.5f), Saw(-1f, 14.4f, 7f, 0f), say("Second delivery. Same signature.", "Zweite Lieferung. Dieselbe Signatur.")),
+                trap(Zone(20.5f, 11f, 23.5f, 15.5f), PathSaw(6f, 18.5f to 9.6f, 18.5f to 14.4f, 40f to 14.4f), say("Second delivery. Straight through the shelf.", "Zweite Lieferung. Direkt durchs Regal.")),
             ),
             hint = T("Up here left is right. Hop the saw, then go down. Below, the cable is plugged in properly again.", "Hier oben ist links rechts. Spring über die Säge und geh runter. Unten steckt das Kabel wieder richtig."),
         ) {
             border(); floor()
             fill(0..21, 9..10)
-            spawn(2, 8); door(2); bits(9)
+            spawn(2, 8); door(13); bits(9)
         },
 
         // 10 — a routing puzzle: a wall splits the room and the door is on the other side of it. Three tunnels wait in the room (the nearest hangs in mid-air above the floor, a hop away)
@@ -373,19 +373,20 @@ object World2Part1 {
                 trap(Touch('b'), Move('b', 0f, 12f, 20f), delay = 0.2f),
                 trap(Touch('c'), Move('c', 0f, 12f, 20f), delay = 0.14f),
                 trap(Touch('d'), Move('d', 0f, 12f, 20f), delay = 0.08f),
-                trap(Zone(26f, 5f, 31f, 9.5f), Move('g', 0f, 12f, 20f), say("Dangling pointer: this page is freed too.", "Hängender Zeiger: Diese Seite wird auch freigegeben."), delay = 0.8f),
-                trap(Zone(16.9f, 3f, 21f, 9.9f), Play(Card.SINKING), Move('f', 0f, 12f, 40f),
+                trap(Touch('g'), Move('g', 0f, 12f, 20f), say("Dangling pointer: this page is freed too.", "Hängender Zeiger: Diese Seite wird auch freigegeben."), delay = 0.8f),
+                trap(Zone(17.9f, 3f, 22f, 9.9f), Play(Card.SINKING), Move('f', 0f, 12f, 40f),
                     say("realloc(): page moved to a new address. Below you.", "realloc(): Seite an neue Adresse verschoben. Unter dir.")),
-                trap(Zone(16.9f, 3f, 21f, 9.9f), Move('f', 0f, -12f, 30f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 0.55f),
-                trap(Zone(1f, 5f, 10.6f, 9.9f), Move('l', 0f, 12f, 20f), say("Last page before the door: freed on arrival.", "Letzte Seite vor der Tür: bei Ankunft freigegeben."), delay = 0.45f),
+                trap(Zone(17.9f, 3f, 22f, 9.9f), Move('f', 0f, -12f, 30f), say("...and back. Address space is a loan.", "...und zurück. Adressraum ist geliehen."), delay = 0.35f),
+                trap(Zone(1f, 5f, 10.4f, 9.9f), Move('l', 0f, 12f, 20f), say("Last page before the stairs: freed on arrival.", "Letzte Seite vor der Treppe: bei Ankunft freigegeben."), delay = 0.45f),
             ),
             hint = T("Whatever you touch gets freed. Keep moving. The pointer is on the right.", "Was du berührst, wird freigegeben. Bleib in Bewegung. Der Zeiger ist rechts."),
         ) {
             border()
             fill(0..6, 15..17); fill(26..30, 15..17)
             fill(7..9, 15..15, 'a'); fill(12..14, 15..15, 'b'); fill(17..19, 15..15, 'c'); fill(22..24, 15..15, 'd')
-            fill(26..26, 9..9); fill(27..30, 9..9, 'g'); fill(19..23, 9..9); fill(13..16, 9..9, 'f'); fill(1..5, 9..9); fill(6..10, 9..9, 'l')
-            spawn(); door(4, 8); bits(12, x0 = 12)
+            fill(26..26, 9..9); fill(27..30, 9..9, 'g'); fill(20..23, 9..9); fill(14..17, 9..9, 'f'); fill(1..6, 9..9); fill(7..12, 9..9, 'l')
+            fill(1..2, 7..7); fill(4..12, 5..5)
+            spawn(); door(12, 4); bits(12, x0 = 12)
         },
 
         // 13 — EASTER EGG: "works on my machine". The door sits on a ledge nobody can jump to. The deploy switch flips you onto
@@ -410,10 +411,10 @@ object World2Part1 {
         ) {
             border(); floor()
             leds(10..22)
-            fill(1..7, 10..10); door(1, 9); put(1, 11, 'K')
-            put(20, 1, 'v'); put(9, 1, 'v'); put(29, 1, 'v')
+            fill(1..7, 6..6); door(1, 5); put(1, 7, 'K')
+            put(20, 1, '#'); put(9, 1, 'v'); put(29, 1, 'v')
             fill(12..14, 0..0, 'f')
-            spawn(2)
+            spawn(6)
         },
 
         // 14 — EASTER EGG: 127.0.0.1 and traceroute. The room is four subnets (a slab and a wall split it into quarters), and the
@@ -482,14 +483,14 @@ object World2Part1 {
             name = T("Greeting", "Begrüßung"),
             intro = T("Politeness is free, they say.", "Höflichkeit kostet nichts, sagt man."),
             legend = (bridgeTiles + 'a' + 'b').associateWith { hiddenSolid },
-            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 26 to 14)),
+            start = listOf(Pad('1', at = 4 to 14), Pad('2', at = 26 to 14), Pad('3', at = 15 to 14)),
             traps = listOf(
                 trap(Pressed('1'), *(listOf<Action>(Play(Card.GHOST_BLOCK), say("SYN. A port opened over there. The cookie is good for 8 seconds.", "SYN. Drüben ging ein Port auf. Das Cookie hält 8 Sekunden.")) +
                     bridgeTiles.map { Show(it) }).toTypedArray()),
                 trap(Pressed('1'), Move('i', 0f, 12f, 20f), say("The client socket closes behind you. Politely.", "Der Client-Socket schließt hinter dir. Höflich."), delay = 0.9f),
                 trap(Pressed('1'), *bridgeTiles.map { Move(it, 0f, 12f, 30f) }.toTypedArray(), say("SYN cookie expired.", "SYN-Cookie abgelaufen."), delay = 8f),
-                trap(PastX(14f), Move('h', 0f, 11f, 40f), say("Cooling rack: lowering for inspection.", "Kühlrack: wird zur Inspektion abgesenkt."), delay = 0.15f),
-                trap(PastX(14f), Move('h', 0f, -11f, 40f), delay = 0.7f),
+                trap(Touch('k'), Move('h', 0f, 11f, 40f), say("RST. Connection reset. The cooling rack too.", "RST. Verbindung zurückgesetzt. Das Kühlrack auch."), delay = 0.05f),
+                trap(Touch('k'), Move('h', 0f, -11f, 40f), delay = 0.75f),
                 trap(Pressed('2'), Show('a'), say("SYN-ACK. The server is building you a staircase. ACK it.", "SYN-ACK. Der Server baut dir eine Treppe. Bestätige sie."), delay = 0.5f),
                 trap(Pressed('2'), Show('b'), delay = 1f),
                 trap(Zone(28.8f, 8f, 31f, 11f), say("ACK. Connection established. Hello!", "ACK. Verbindung steht. Hallo!")),
@@ -500,7 +501,7 @@ object World2Part1 {
             fill(0..6, 15..17, 'i'); pit(7..9); pit(20..25)
             for (n in 0 until 6) put(20 + n, 15, bridgeTiles[n])
             fill(28..29, 13..14, 'a'); fill(30..30, 11..14, 'b')
-            fill(17..18, 1..3, 'h')
+            fill(17..18, 1..3, 'h'); put(15, 15, 'k')
             spawn(13); door(30, 10); bits(15)
         },
 

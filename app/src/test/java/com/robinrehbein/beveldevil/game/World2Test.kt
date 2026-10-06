@@ -398,11 +398,11 @@ class World2Test {
         assertTrue(bot.world.door.tx > 32f)
     }
     /** Hop Limit: the link in front of you after the drop was re-pointed and sends you home (TTL), while the real one waits behind you, under the ledge. */
-    @Test fun level30TheLinkInFrontGoesHome() {
-        val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
-            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.rightUntil(6f) { it.player.box.cx < 10f }
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 10f)
+    @Test fun level30TheLinkInFrontGoesToDevNull() {
+        val bot = b(30).rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
+            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.right(3f)
+        bot.expect(WorldState.DEAD)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 15f)
     }
     @Test fun level31() { World2DesignTest.play(31) }
     @Test fun level32() { World2DesignTest.play(32) }
@@ -465,28 +465,28 @@ class World2Test {
     @Test fun l20RunningStraightAtTheFirstGateIsFatal() = b(20).right(3f).expect(WorldState.DEAD)
     @Test fun l20RunningOffTheLedgeAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
     @Test fun l20TheStairsGoDarkBehindYou() {
-        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['w']?.powered == true)
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.circuits['w']?.powered == true)
         assertTrue(World2Rooms.l20ToScanner(b(20)).wait(0.3f).world.circuits['w']?.powered == false)
     }
     @Test fun l20TheFloorBehindYouGoesDarkOnTheFirstStep() {
-        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['x']?.powered == true)
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.circuits['x']?.powered == true)
         assertTrue(World2Rooms.l20ToScanner(b(20)).world.circuits['x']?.powered == false)
     }
     @Test fun l20TheHopperWhoSkipsTheSecondCheckMeetsGateThree() = b(20).rightJump(0.35f).landRight().right(8f).expect(WorldState.DEAD)
     @Test fun l20TheFirstCheckPowersTheStairs() {
         assertTrue(b(20).world.circuits['w']?.powered == false)
-        assertTrue(b(20).rightTo(6.3f).wait(0.1f).world.circuits['w']?.powered == true)
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.rightTo(4.3f).wait(0.1f).world.circuits['w']?.powered == true)
     }
 
     // 21: the far portal is dead until the closet (the near portal) opens the port, the treadmill drags you toward the LED, the portal next to the door is a captive portal
     @Test fun l21TheNearPortalIsTheControlRoom() {
-        val bot = World2Rooms.l21ToCloset(b(21)).wait(0.5f)
+        val bot = World2Rooms.l21ToCloset(b(21)).leftUntil { it.player.box.cx < 14.9f }.wait(0.3f)
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx in 14f..17f)
         assertTrue("the port opens in the closet", bot.world.links[1].on)
         bot.right(3f).expect(WorldState.PLAYING)
     }
     @Test fun l21TheFarPortalIsDeadAtFirst() {
-        val bot = b(21).hopR(3.6f).rightTo(10.5f).wait(0.5f)
+        val bot = b(21).leftTo(3.4f).wait(0.5f)
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.cy}", bot.world.player.box.cy > 13f && !bot.world.links[1].on)
     }
     @Test fun l21TheRouteNeedsBothPortals() {

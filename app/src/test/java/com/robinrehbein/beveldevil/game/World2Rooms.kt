@@ -40,7 +40,7 @@ object World2Rooms {
         .leftTo(9.6f).leftJump(0.24f).landLeft().leftTo(5.6f).leftJump(0.24f)
 
     /** 18: press the pad, leave the rack before the port scan, run back and climb the stairs without stopping. */
-    fun l18(b: Bot) = stairs18(l18ToPad(b)).landLeft().left(1f)
+    fun l18(b: Bot) = stairs18(l18ToPad(b)).landLeft().wait(0.3f).rightJump(0.45f).landRight().right(1f)
 
     /** 18, round 2, up to the pad: the hole is two tiles further on (hop it late), wait for the gate, climb the rack and step onto the pad (the rack is the lift now). */
     fun l18r2ToPad(b: Bot) = b.hopR(17.8f).wait(0.05f).waitFor(cond = clear('G')).rightTo(23.1f).rightJump(0.24f).landRight().leftTo(26.3f)
@@ -54,10 +54,10 @@ object World2Rooms {
     /** 19: the whole room: stairs with swapped hands, the top floor with normal ones, hop the wall that drives toward you and the block before the door. */
     fun l19(b: Bot) = l19ToShelf(b).leftTo(25.6f).leftJump(0.35f).landLeft()
         .leftUntil { wallOnTheLeft(it, 'w', 4.3f) }.leftJump(0.35f).landLeft()
-        .leftTo(13.2f).waitFor { it.group('K').ox > 1.9f }.hopL(12.8f).left(2.5f)
+        .leftTo(13.2f).waitFor { it.group('K').ox > 1.9f }.hopL(12.8f).leftTo(8.6f).leftJump(0.4f).landLeft().left(1.5f)
 
     /** 20, through the second check, the flashing gate and up the stairs to the ledge: landing on the ledge presses the scanner. */
-    fun l20ToLedge(b: Bot) = b.hopR(4.1f, 0.24f).wait(0.05f).waitFor(cond = clear('M')).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).wait(0.05f).waitFor(cond = clear('N')).hopR(13.0f, 0.24f).hopR(16.0f, 0.24f).hopR(19.0f, 0.24f)
+    fun l20ToLedge(b: Bot) = b.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(4.1f, 0.24f).wait(0.05f).waitFor(cond = clear('M')).hopR(7.0f, 0.24f).hopR(10.0f, 0.24f).wait(0.05f).waitFor(cond = clear('N')).hopR(13.0f, 0.24f).hopR(16.0f, 0.24f).hopR(19.0f, 0.24f)
 
     /** 20, up to the scanner on the ledge (it is where you land). */
     fun l20ToScanner(b: Bot) = l20ToLedge(b)
@@ -72,10 +72,10 @@ object World2Rooms {
     fun l20r2(b: Bot) = l20r2Stairs(b).rightTo(23.8f).rightJump(0.35f).landRight().rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(15.5f).left(1f)
 
     /** 21, into the near portal: the closet between the walls (the port opens on the way in). */
-    fun l21ToCloset(b: Bot) = b.rightUntil { it.player.box.cx > 14.2f }
+    fun l21ToCloset(b: Bot) = b.leftTo(10.6f).leftJump(0.3f).leftUntil { it.player.box.cx > 14.2f }
 
     /** 21, out of the closet again (step off the portal tile and back onto it) and through the far portal: up on the shelf, where the treadmill starts. */
-    fun l21Up(b: Bot) = l21ToCloset(b).leftTo(14.6f).rightUntil { it.player.box.cx < 12f }.rightUntil { it.player.box.cy < 9f }
+    fun l21Up(b: Bot) = l21ToCloset(b).leftUntil { it.player.box.cx in 13f..14.9f }.rightUntil { it.player.box.cx < 12f }.leftUntil { it.player.box.cy < 9f }
 
     /** 21, up on the shelf and along the treadmill to the hole. */
     fun l21ToShelf(b: Bot) = l21Up(b).rightTo(12.5f)
@@ -156,14 +156,16 @@ object World2Rooms {
         .waitFor { pendulumCalm(it, 23.5f, 0.85f, 1.35f, 10.8f) }.rightTo(22.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
     /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
-    fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
+    fun l30(b: Bot) = b.rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
         .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.right(0.3f).rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
 
     /** Blinking group [id] is solid during the whole stretch from [from] to [to] seconds ahead. */
     fun stoneUp(w: World, id: Char, from: Float, to: Float): Boolean {
         val g = w.group(id)
-        val b = g.blink ?: return false
-        return (0..6).all { k -> b.solidAt(w.time - g.blinkT0 + from + (to - from) * k / 6f) }
+        g.blink?.let { b -> return (0..6).all { k -> b.solidAt(w.time - g.blinkT0 + from + (to - from) * k / 6f) } }
+        val c = w.circuits[id] ?: return false
+        val clock = c.clock ?: return false
+        return (0..6).all { k -> clock.timing.solidAt(w.time - c.clockT0 + from + (to - from) * k / 6f) }
     }
 
     /** 31: wait on the deck for the first stone, hop over the three stones as each one is up, off the end of the deck, and back left along the lane to the door. */

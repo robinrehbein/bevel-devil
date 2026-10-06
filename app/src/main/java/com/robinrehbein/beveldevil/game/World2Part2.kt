@@ -6,6 +6,7 @@ import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
+import com.robinrehbein.beveldevil.game.Action.Clock
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.PathSaw
@@ -58,7 +59,7 @@ object World2Part2 {
         ) {
             border(); floor()
             fill(4..5, 13..14)
-            fill(7..20, 12..12); fill(8..14, 13..13, 'v'); fill(7..20, 15..15, 'b')
+            fill(7..20, 12..12); fill(8..14, 13..13, 'v'); fill(7..24, 15..15, 'b')
             fill(21..21, 1..12); fill(19..20, 10..11)
             fill(25..26, 15..17, 'e')
             fill(3..18, 8..8); fill(3..4, 8..8, 's'); fill(11..13, 8..8, 'c'); fill(14..18, 8..8, 'd'); fill(5..6, 1..1, 'k')
@@ -77,7 +78,7 @@ object World2Part2 {
                 Pad('1', at = 26 to 12),
             ),
             traps = listOf(
-                trap(PastX(10.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss. The floor was never in the rule set.", "Paketverlust. Der Boden stand nie im Regelwerk.")),
+                trap(After(1.2f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss. The floor was never in the rule set.", "Paketverlust. Der Boden stand nie im Regelwerk.")),
                 trap(PastX(20.6f), Laser('G', 23 to 1, 23 to 14, on = 0.4f, off = 40f, delay = 0.1f),
                     say("Rule 2: no entry. I count to one.", "Regel 2: Zutritt verboten. Ich zähle bis eins.")),
                 trap(Pressed('1'), Power('W', false), Move('a', 0f, -12f, 25f), Laser('K', 25 to 12, 28 to 12, on = 1.0f, off = 40f, delay = 0.8f),
@@ -100,7 +101,7 @@ object World2Part2 {
                         Pad('1', at = 26 to 12),
                     ),
                     traps = listOf(
-                        trap(PastX(14.5f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss, second edition. A bit further on.", "Paketverlust, zweite Auflage. Etwas weiter hinten.")),
+                        trap(After(1.6f), Play(Card.COLLAPSE), Move('a', 0f, 12f, 30f), say("Packet loss, second edition. A bit later.", "Paketverlust, zweite Auflage. Etwas später.")),
                         trap(PastX(19.2f), Laser('G', 24 to 1, 24 to 14, on = 0.4f, off = 40f, delay = 0.35f),
                             say("Rule 2: still no entry. Still counting to one.", "Regel 2: immer noch kein Zutritt. Ich zähle immer noch bis eins.")),
                         trap(Pressed('1'), Move('k', 0f, -8f, 8f), say("Going up. Rule 1 stays on. It likes the stairs.", "Fahrstuhl nach oben. Regel 1 bleibt an. Sie mag die Treppe.")),
@@ -113,10 +114,10 @@ object World2Part2 {
             ),
         ) {
             border(); floor()
-            fill(12..14, 13..13); fill(8..10, 11..11); fill(4..6, 9..9); fill(1..2, 7..7)
+            fill(12..14, 13..13); fill(8..10, 11..11); fill(4..6, 9..9); fill(1..2, 7..7); fill(4..6, 5..5)
             fill(25..27, 13..14)
             fill(17..18, 15..17, 'a')
-            spawn(2); put(2, 6, 'D'); bits(18)
+            spawn(2); put(6, 4, 'D'); bits(18)
         },
 
         // 19 — a trap room: the floor drops out ahead (a hop), the packets get reordered (left and right swap) while the stairs
@@ -126,7 +127,7 @@ object World2Part2 {
             name = T("Delivery", "Zustellung"),
             intro = T("Packets arrive in order. Guaranteed.", "Pakete kommen der Reihe nach an. Garantiert."),
             traps = listOf(
-                trap(PastX(4.5f), Move('a', 0f, 12f, 30f), say("Packet 1 got lost in transit.", "Paket 1 ging unterwegs verloren.")),
+                trap(PastX(6.6f), Move('a', 0f, 12f, 30f), say("Packet 1 got lost in transit. Under you.", "Paket 1 ging unterwegs verloren. Unter dir.")),
                 trap(Landed(10.9f, 12.7f), Play(Card.TWISTED), Swap(true), say("Packet reordering! Left and right arrive swapped.", "Paket-Umsortierung! Links und rechts kommen vertauscht an.")),
                 trap(Landed(25f, 28f), Swap(false), say("In-order delivery restored. You're welcome.", "Reihenfolge wiederhergestellt. Gern geschehen.")),
                 trap(Landed(25f, 28f), Move('w', 9f, 0f, 5f), say("Return to sender. Express.", "Rücksendung an den Absender. Per Express."), delay = 0.2f),
@@ -137,8 +138,8 @@ object World2Part2 {
             border(); floor()
             fill(8..10, 15..17, 'a')
             fill(13..14, 13..14); fill(16..19, 13..14); fill(22..24, 11..14); fill(25..27, 9..14); fill(7..8, 7..7, 'K')
-            fill(2..21, 8..8); fill(11..12, 6..7, 'w')
-            spawn(1); put(2, 7, 'D'); bits(19)
+            fill(2..21, 8..8); fill(11..12, 6..7, 'w'); fill(4..6, 6..7)
+            spawn(1); put(5, 5, 'D'); bits(19)
         },
 
         // 20 — a stateful firewall (R8 gates and a way, U13 firewall). Gate 3 at the exit is shut. The second check (a pad right at the start)
@@ -153,18 +154,18 @@ object World2Part2 {
             start = listOf(
                 Laser('K', 25 to 1, 25 to 14),
                 Circuit('x'), Circuit('w', on = false), Circuit('s'),
-                Pad('2', at = 2 to 14, circuits = "w"),
+                Pad('2', at = 1 to 14, circuits = "w"),
                 Pad('1', at = 21 to 2),
             ),
             traps = listOf(
                 trap(Pressed('2'), say("Second check started. The stairs are powered.", "Zweite Kontrolle gestartet. Die Treppe steht unter Strom.")),
-                trap(Landed(6f, 7.9f), Play(Card.SPIKE_SEED), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
+                trap(Landed(6f, 7.9f), Play(Card.THROTTLE), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
                     say("Gate 2 now runs on a rhythm.", "Tor 2 läuft jetzt im Takt.")),
                 trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
                 trap(Touch('s'), Circuit('s', on = false), say("This step times out, too. Do not camp.", "Diese Stufe läuft auch ab. Nicht campen."), delay = 1.7f),
                 trap(Landed(12f, 13.9f), Laser('N', 14 to 1, 14 to 14, on = 1.3f, off = 1.4f, phase = 0.4f), say("Gate 2 has a twin. Same rhythm, other hole.", "Tor 2 hat einen Zwilling. Gleicher Takt, anderes Loch.")),
                 trap(Landed(21.2f, 24.6f), Circuit('w', on = false), say("Stairs closed. The ledge is one-way.", "Treppe gesperrt. Der Sims ist eine Einbahnstraße.")),
-                trap(Pressed('1'), Power('K', false), Laser('K', 25 to 1, 25 to 14, on = 0.5f, off = 40f, delay = 0.1f),
+                trap(Pressed('1'), Power('K', false), Laser('K', 25 to 1, 25 to 12, on = 0.5f, off = 40f, delay = 0.1f),
                     say("ID scanned. Gate 3 open. The queue at the exit has other plans.", "Ausweis gescannt. Tor 3 offen. Die Schlange am Ausgang hat andere Pläne.")),
             ),
             hint = T("The scanner is up on the ledge. Wait up there.", "Der Scanner steht oben auf dem Sims. Warte dort oben."),
@@ -188,7 +189,7 @@ object World2Part2 {
                         trap(Touch('w'), Circuit('w', on = false), say("Idle connection dropped. Step by step.", "Verbindung im Leerlauf getrennt. Stufe für Stufe."), delay = 0.9f),
                         trap(Touch('w'), Circuit('k', on = false), delay = 1.5f),
                         trap(Touch('w'), Circuit('u', on = false), delay = 2.1f),
-                        trap(Landed(21.9f, 24.5f), Laser('H', 25 to 4, 26 to 4, on = 0.6f, off = 40f, delay = 0.2f), say("Tripwire. I hid it in plain sight.", "Stolperdraht. Ich habe ihn offen versteckt.")),
+                        trap(Landed(21.9f, 24.5f), Laser('H', 25 to 4, 26 to 4, on = 1.8f, off = 40f, delay = 0.2f), say("Tripwire. I hid it in plain sight.", "Stolperdraht. Ich habe ihn offen versteckt.")),
                         trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('y', on = false), say("Lane floor: expired as well. Right to left.", "Boden unten: auch abgelaufen. Von rechts nach links."), delay = 0.7f),
                         trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('z', on = false), delay = 1.05f),
                         trap(Zone(26.5f, 13f, 31f, 15.5f), Circuit('q', on = false), delay = 1.4f),
@@ -199,13 +200,15 @@ object World2Part2 {
                     fill(10..11, 11..11, 'w'); fill(14..15, 9..9, 'k'); fill(18..19, 7..7, 'u'); fill(22..28, 5..5)
                     put(29, 14, '.'); put(15, 14, 'D'); put(26, 1, '.'); put(28, 1, '.')
                     fill(26..28, 15..17, 'y'); fill(23..25, 15..17, 'z'); fill(20..22, 15..17, 'q'); fill(17..19, 15..17, 'r')
+                    fill(2..4, 9..9, '.'); put(3, 8, '.'); put(1, 14, 'P')
                 },
             ),
         ) {
             border(); floor()
             fill(2..14, 15..17, 'x')
             fill(6..7, 13..13, 's'); fill(9..10, 11..11, 'w'); fill(12..13, 9..9, 'w'); fill(15..16, 7..7, 'w'); fill(18..19, 5..5, 'w'); fill(21..24, 3..3)
-            spawn(1); door(); bits(20)
+            fill(2..4, 9..9)
+            spawn(3, 8); door(); bits(20)
         },
 
         // 21 — EASTER EGG: the flat rate (R3 portal routing, U11 the route is manipulated). Two walls close off the lane, and in front
@@ -219,14 +222,14 @@ object World2Part2 {
             name = T("Flat Rate", "Flatrate"),
             intro = T("Unlimited flat rate. There is no small print.", "Unbegrenzte Flatrate. Ein Kleingedrucktes gibt es nicht."),
             start = listOf(
-                Portal('a', 5 to 14, 15 to 14),
-                Portal('b', 9 to 14, 4 to 7, twoWay = false),
+                Portal('a', 9 to 13, 16 to 14),
+                Portal('b', 3 to 14, 6 to 7, twoWay = false),
                 Power('b', false),
                 Portal('r', 26 to 14, 28 to 14, twoWay = false),
             ),
             traps = listOf(
-                trap(Zone(14f, 13f, 17f, 15.5f), Power('b', true), say("Walled garden. Unlimited flat rate, limited to this cell. And port 80.", "Walled Garden. Flatrate unbegrenzt, begrenzt auf diese Zelle. Und Port 80.")),
-                trap(Zone(3.5f, 5.5f, 6f, 8f), Belt('c', -6.5f), say("Terms accepted. Throttled to 56k, as agreed.", "AGB akzeptiert. Gedrosselt auf 56k, wie vereinbart.")),
+                trap(Zone(14f, 13f, 15f, 15.5f), Power('b', true), say("Walled garden. Unlimited flat rate, limited to this cell. And port 80.", "Walled Garden. Flatrate unbegrenzt, begrenzt auf diese Zelle. Und Port 80.")),
+                trap(Zone(3.5f, 5.5f, 7.2f, 8f), Belt('c', -6.5f), say("Terms accepted. Throttled to 56k, as agreed.", "AGB akzeptiert. Gedrosselt auf 56k, wie vereinbart.")),
                 trap(Zone(10.5f, 5.5f, 12f, 8f), Reroute('b', 26 to 7), Belt('d', -3f), say("Portal b has moved on. The rest of the shelf is throttled, too.", "Portal b ist weitergezogen. Der Rest vom Regal ist auch gedrosselt.")),
                 trap(Zone(24.4f, 13f, 25.8f, 15.5f), Play(Card.DECOY), Reroute('r', 4 to 7), say("301 Moved Permanently. The portal too.", "301 Moved Permanently. Das Portal auch.")),
             ),
@@ -236,7 +239,7 @@ object World2Part2 {
             fill(12..13, 9..14); fill(17..18, 9..14)
             fill(1..19, 8..8); fill(2..6, 8..8, 'c'); fill(7..19, 8..8, 'd'); fill(22..30, 8..8)
             put(2, 7, '^'); ceilingSpikes(1..21, 6)
-            spawn(1); door(); bits(21)
+            spawn(11); door(); bits(21)
         },
 
         // 22 — the bouncer, a trap room (U7 the saw, with a replay as the punchline): you start down on the lane at the right and run left; the
@@ -485,19 +488,19 @@ object World2Part2 {
             rooms = 2,
             start = listOf(
                 Portal('a', 9 to 14, 10 to 8, twoWay = false),
-                Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 19f).toInt() to 14, twoWay = false),
+                Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 25f).toInt() to 14, twoWay = false),
                 Portal('c', roomX(1, 5) to 14, roomX(1, 25) to 14, twoWay = false),
             ),
             traps = listOf(
                 trap(PastX(16f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
                 trap(Trigger.AtDoor, Play(Card.ANNEX), Action.Extend(into = 1, top = 6, bottom = 8, door = roomX(1, 30f).toInt() to 14)),
-                trap(Zone(roomX(1, 6f), 6f, roomX(1, 9.5f), 9f), Reroute('b', 3 to 14), say("Hop 2 of 3: the obvious route was deprecated.", "Hop 2 von 3: Die offensichtliche Route wurde abgekündigt.")),
+                trap(Zone(roomX(1, 6f), 1f, roomX(1, 9.5f), 9f), Reroute('b', roomX(1, 20) to 16), say("Hop 2 of 3: the obvious route was deprecated. It goes to /dev/null now.", "Hop 2 von 3: Die offensichtliche Route wurde abgekündigt. Sie führt jetzt nach /dev/null.")),
                 trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes.", "Hop 3 von 3: Spikes.")),
             ),
         ) {
             border(); floor()
             room(0) {
-                put(1, 14, 'P')
+                fill(1..3, 9..9); put(2, 8, 'P')
                 fill(10..30, 9..9); fill(19..21, 9..9, 'f')
                 pit(17..23)
                 put(28, 8, 'D')
@@ -519,10 +522,10 @@ object World2Part2 {
             intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),
             legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'X' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
-                trap(PastX(5.5f), Play(Card.SINKING), Move('W', 13f, 0f, 3.2f), say("Detention. Sit down. Stay seated.", "Nachsitzen. Setzen. Sitzen bleiben.")),
-                trap(PastX(5f), Blink('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat is leaving.", "Bitte nehmen Sie Platz. Der Platz geht gerade.")),
-                trap(Zone(11f, 6f, 14f, 8.5f), Blink('t', 1.6f, 1.2f, phase = -0.9f)),
-                trap(Zone(16f, 6f, 19f, 8.5f), Blink('u', 1.6f, 1.2f, phase = -0.9f)),
+                trap(PastX(5.5f), Move('W', 13f, 0f, 3.2f), say("Detention. Sit down. Stay seated.", "Nachsitzen. Setzen. Sitzen bleiben.")),
+                trap(PastX(5f), Play(Card.SHORT_CIRCUIT), Clock('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat runs on the school bell.", "Bitte nehmen Sie Platz. Der Platz hängt an der Schulklingel.")),
+                trap(Zone(11f, 6f, 14f, 8.5f), Clock('t', 1.6f, 1.2f, phase = -0.9f)),
+                trap(Zone(16f, 6f, 19f, 8.5f), Clock('u', 1.6f, 1.2f, phase = -0.9f)),
                 trap(Zone(26f, 12f, 31f, 15.5f), Move('X', -25f, 0f, 7f), say("The second class has to go home, too.", "Die zweite Klasse muss auch nach Hause.")),
                 trap(Zone(19f, 12f, 21f, 15.5f), Move('X', -25f, 0f, 9.5f), say("Oh, and they are in a hurry.", "Ach so, und sie haben es eilig.")),
             ),
