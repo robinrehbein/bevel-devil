@@ -21,6 +21,7 @@ import com.robinrehbein.beveldevil.game.Action.Swap
 import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
+import com.robinrehbein.beveldevil.game.Trigger.Idle
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
@@ -198,7 +199,7 @@ object World2Part1 {
         // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device). The only level that runs right to left: the door is at
         // the far left, behind the hill. Over the hill the ceiling crashes: the first piece lands on the plateau and becomes a step, the second
         // (in the low tunnel to the door) is made of paper: it falls where you come down, and is gone again a moment later. Dashing under either
-        // is the end, so wait for it. Round 2: the first piece stalks you
+        // is the end, so wait for it. Round 2: the first piece stalks you and drops on whoever stops under it
         Level(
             name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
@@ -213,8 +214,8 @@ object World2Part1 {
                     T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
                     hint = T("The ceiling follows you now. Do not wait where you waited. Two paper pieces at the end.", "Die Decke folgt dir jetzt. Warte nicht, wo du gewartet hast. Zwei Papierstücke am Ende."),
                     traps = listOf(
-                        trap(BeforeX(23.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 9f, right = 12f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
-                        trap(Zone(18f, 3.5f, 20f, 5.5f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.55f),
+                        trap(BeforeX(23.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 12f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(Idle(0.6f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.1f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Paper again. Two sheets this time.", "Wieder Papier. Diesmal zwei Blatt."), delay = 0.25f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('e'), delay = 0.15f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('e'), delay = 1.0f),
