@@ -138,15 +138,40 @@ object World2Rooms {
         return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < yMax }
     }
 
-    /** 29: stop in front of each pendulum saw and slip under it when it is up. */
-    fun l29(b: Bot) = b.rightTo(7.7f).waitFor { pendulumCalm(it, 10f) }.rightUntil { it.player.box.cx > 11.7f }
-        .rightTo(13.7f).waitFor { pendulumCalm(it, 16f) }.rightUntil { it.player.box.cx > 17.7f }
-        .rightTo(19.7f).waitFor { pendulumCalm(it, 22f) }.right(3f)
+    /** 29: stop in front of the first pendulum and slip under it when it is up, hop the saw that patrols the lane, stop in front of the third pendulum, slip under it and up the three steps to the door. */
+    fun l29(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightUntil { sawAhead(it, 3.8f) }.rightJump(0.35f).landRight()
+        .rightTo(20.4f).waitFor { pendulumCalm(it, 23.5f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
-    /** 29, round 2: slip under the first pendulum as before, wait in front of the lane for the second saw to lap off into the upper corner, run the lane, and slip under the last pendulum. */
-    fun l29r2(b: Bot) = b.rightTo(6.7f).waitFor { pendulumCalm(it, 10f, 0.1f, 0.65f) }.rightUntil { it.player.box.cx > 11.7f }
-        .waitFor { w -> w.saws.any { it.path?.loop == true && it.x > 21f && it.y < 12.2f } }.rightUntil { it.player.box.cx > 21.9f }
-        .waitFor { pendulumCalm(it, 25f) }.right(3f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /** 29, round 2: slip under the first pendulum (it is swinging already), wait in front of the lane for the thread that laps the middle to have turned up into the corner, run the lane, stop at the last pendulum and up the steps. */
+    fun l29r2(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(11.0f)
+        .waitFor { w -> w.saws.any { it.path?.loop == true && it.y < 9f && it.x < 17f } }.rightTo(21.9f)
+        .waitFor { pendulumCalm(it, 23.5f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, through the second tunnel, hop the spikes. */
     fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }

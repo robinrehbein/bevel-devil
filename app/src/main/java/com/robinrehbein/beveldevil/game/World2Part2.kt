@@ -423,36 +423,40 @@ object World2Part2 {
             spawn(); door(8, 8); bits(28)
         },
 
-        // 29 — the race condition, a trap room (U7 the saw): three pendulum saws hang over the lane, each one set off when you come within six tiles of it.
-        // It stays down on the floor for a moment and then swings up and down: running on runs into it, the clever way is to stop in front of it and
-        // slip under it when it is up.
-        // Rematch: a thread hunts you from behind, so there is no time to wait it out. The pendulums start swinging at once; the way through is to
-        // run on and stop only for the one that is down when you get there
+        // 29 — the race condition, a trap room (U7 the saw): the lane ends in three steps up to the door, and three threads fight for it. The first is
+        // a pendulum that is set off when you come within five tiles of it: it sits down on the floor for a moment and then swings up and down (stop in
+        // front of it and slip under it when it is up). The second is a saw that patrols the middle of the lane, back and forth (hop it). The third
+        // hangs in front of the stairs (stop, slip under it, up the steps to the door; the second step is an escalator that runs down).
+        // Rematch: a thread hunts you from behind, so there is no time to wait it out. The first pendulum is swinging already, and a big saw laps the middle
+        // of the lane, coming toward you first (no hopping that one); run on and stop only for what is down when you get there
         Level(
             name = T("Race Condition", "Wettlaufsituation"),
             intro = T("The winner gets a cookie. I have no cookies.", "Der Sieger bekommt einen Keks. Ich habe keine Kekse."),
-            start = listOf(Belt('b', -5f)),
+            start = listOf(Belt('b', -4f)),
             traps = listOf(
-                trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 10f to 14f, 10f to 11.2f, delay = 0.6f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
-                trap(PastX(10f), PathSaw(3f, 16f to 14f, 16f to 11.2f, delay = 0.6f, r = 1f), say("Thread 2 holds it now.", "Jetzt hält es Thread 2.")),
-                trap(PastX(19f), PathSaw(3f, 22f to 14f, 22f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
+                trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 9f to 14f, 9f to 11.2f, delay = 1.15f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
+                trap(PastX(11f), PathSaw(5f, 18.5f to 14.4f, 13.5f to 14.4f), say("Thread 2 is waiting for thread 3.", "Thread 2 wartet auf Thread 3.")),
+                trap(PastX(18.5f), PathSaw(3f, 23.5f to 14f, 23.5f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
             ),
             hint = T("Do not run into the saw. Wait until it is up.", "Lauf nicht in die Säge. Warte, bis sie oben ist."),
             rematch = listOf(
                 Round(
                     T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
-                    hint = T("The second thread laps the lane now. Run when it is up in the corner.", "Der zweite Thread dreht jetzt Runden über die Bahn. Lauf, wenn er oben in der Ecke ist."),
+                    start = emptyList(),
+                    legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
+                    hint = T("Something follows you now. Do not wait for the first saw: it swings already.", "Jetzt folgt dir etwas. Warte nicht auf die erste Säge: Sie schwingt schon."),
                     traps = listOf(
-                        trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 10f to 14f, 10f to 11.2f, delay = 0.4f, r = 1f), say("Thread 1 is the same as before. I am proud of it.", "Thread 1 ist wie vorher. Ich bin stolz auf ihn.")),
-                        trap(PastX(11.5f), PathSaw(10f, 13f to 14f, 22f to 14f, 22f to 6f, 13f to 6f, loop = true, r = 1f), say("Thread 2 has joined the race. It laps.", "Thread 2 ist ins Rennen eingestiegen. Er überrundet.")),
-                        trap(PastX(19.5f), PathSaw(3f, 25f to 14f, 25f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
+                        trap(PastX(4.5f), Play(Card.STALKER), Chase('S', 1.8f, left = 0f, right = 29f), say("Scheduler: your time slice is over.", "Scheduler: Deine Zeitscheibe ist abgelaufen.")),
+                        trap(PastX(4f), PathSaw(3f, 9f to 12.2f, 9f to 14f, 9f to 6f, r = 1f), say("Thread 1 is the same as before. I am proud of it.", "Thread 1 ist wie vorher. Ich bin stolz auf ihn.")),
+                        trap(PastX(10f), PathSaw(10f, 19f to 14f, 14f to 14f, 14f to 6f, 19f to 6f, loop = true, r = 1.5f), say("Thread 2 has joined the race. It laps, and it comes your way first.", "Thread 2 ist ins Rennen eingestiegen. Er überrundet und kommt dir zuerst entgegen.")),
+                        trap(PastX(17.5f), PathSaw(3f, 23.5f to 12.2f, 23.5f to 14f, 23.5f to 6f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
                     ),
-                ),
+                ) { fill(1..1, 13..14, 'S') },
             ),
         ) {
             border(); floor()
-            fill(26..29, 15..15, 'b')
-            spawn(); door(30); bits(29)
+            fill(26..27, 13..14); fill(28..29, 11..14); fill(30..30, 9..14); fill(28..29, 11..11, 'b')
+            spawn(); door(30, 8); bits(29)
         },
 
         // 30 — hop limit, a puzzle room of two rooms (R3 the portal, R5 the floors, U11 the route is manipulated, U18 the room goes on): the tunnel on the
