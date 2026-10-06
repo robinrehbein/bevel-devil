@@ -43,7 +43,7 @@ class World3DesignTest : DesignTestBase() {
             // Act 2 "Überhitzung"
             17 to d("R11", "U17"),
             18 to d("R1+R11", "U7"),
-            19 to d("–", "U1"),
+            19 to d("–", "U1", breather = true),
             20 to d("R6", "U4"),
             21 to d("R11+R5", "U8"),
             22 to d("–", "U3"),

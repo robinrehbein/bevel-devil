@@ -102,22 +102,25 @@ object World3PartC {
             spawn(5, 14); door(2, 14)
         },
 
-        // 19 — melting stones: each one is gone for good if you stand on it too long; the next ones are already warm
+        // 19 ★ — a breather with one gag: the floor is a floor until you walk on it. As you set off the solder between three copper
+        // stones lets go (the stones were the only part of the floor that was meant to stay), the first stone flares under whoever lands
+        // on it and the second one gives way. Keep hopping; the third one is only slowly melting, as promised.
         Level(
             name = T("Melt Fuse", "Schmelzsicherung"),
             intro = T("Lead-free solder. Also free of mercy.", "Bleifreies Lot. Und gnadenfrei."),
-            start = listOf(Heat('m', rise = 0.9f, melt = true), Heat('n', rise = 0.9f, melt = true), Heat('o', rise = 0.9f, melt = true)),
+            start = listOf(Heat('m', rise = 2.2f, melt = true), Heat('n', rise = 2.2f, melt = true), Heat('o', rise = 2.2f, melt = true)),
             traps = listOf(
-                trap(Touch('n'), Play(Card.GHOST_BLOCK), HeatSpike('o', 0.85f), say("The last stone was already warm. Sorry.", "Der letzte Stein war schon warm. Sorry.")),
-                trap(Landed(14f, 18f), Heat('o', rise = 0.5f, melt = true), say("Solder with a lower melting point.", "Lot mit niedrigerem Schmelzpunkt.")),
-                trap(Airborne(21.5f, 26.5f), HeatSpike('g', 0.7f), say("Dry land. Dry and warm.", "Festland. Trocken und warm.")),
+                trap(PastX(4f), Fall('f'), say("Floor plan: three stones. The rest was a rumor.", "Grundriss: drei Steine. Der Rest war ein Gerücht.")),
+                trap(Landed(10f, 12f), HeatSpike('m', 1f), say("Stone one: a little warm. Under you.", "Stein eins: ein bisschen warm. Unter dir."), delay = 0.3f),
+                trap(Landed(15f, 17f), Play(Card.SINKING), Fall('n'), say("Stone two: solid ground, limited offer.", "Stein zwei: fester Boden, nur kurz gültig."), delay = 0.3f),
             ),
+            hint = T("Do not stop on a stone. Any stone.", "Auf keinem Stein stehen bleiben. Auf keinem."),
         ) {
-            border(); floor(); pit(7..25)
-            fill(8..11, 15..15, 'm'); fill(14..17, 15..15, 'n'); fill(20..23, 15..15, 'o'); fill(26..27, 15..15, 'g')
-            spawn(); door()
+            border(); floor()
+            fill(10..11, 15..17, 'm'); fill(15..16, 15..17, 'n'); fill(20..21, 15..17, 'o')
+            fill(7..9, 15..17, 'f'); fill(12..14, 15..17, 'f'); fill(17..19, 15..17, 'f'); fill(22..23, 15..17, 'f')
+            spawn(2, 14); door(29, 14)
         },
-
 
         // 20 — the plate that glows is cool; the plain floor is what burns; as you land behind the last plate the door flies home
         // to the cool plate, and the floor on the way back is overclocked again: wait for it to cool

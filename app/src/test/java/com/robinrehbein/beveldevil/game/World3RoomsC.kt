@@ -18,5 +18,8 @@ object World3RoomsC {
             { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
                 .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c').leftTo(3.0f).left(1.5f) },
         ),
+        19 to listOf<Solution>(
+            { rightTo(6.3f).rightJump(0.45f).landRight().rightTo(11.0f).rightJump(0.45f).landRight().rightTo(16.0f).rightJump(0.45f).landRight().rightTo(21.0f).rightJump(0.45f).landRight().right(1.5f) },
+        ),
     )
 }

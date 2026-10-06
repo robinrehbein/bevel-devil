@@ -422,7 +422,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |---|---|---|---|---|
 |17|Hot Plate|R11|U17|Rätsel|
 |18|Full Load|R1+R11|U7|Rätsel|
-|19|Melt Fuse|–|U1|Falle|
+|19|Melt Fuse ★|–|U1|★|
 |20|Cold Start|R6|U4|Rätsel|
 |21|Relay Race|R11+R5|U8|Rätsel|
 |22|Warm-up|–|U3|Falle|
