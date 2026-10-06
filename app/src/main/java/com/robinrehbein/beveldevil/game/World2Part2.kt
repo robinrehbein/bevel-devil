@@ -438,37 +438,37 @@ object World2Part2 {
         // 29 — the race condition, a trap room (U7 the saw, U1 the floor): the lane ends in three steps up to the door, and the threads fight for
         // it. The first is a pendulum that is set off when you come near: it sits on the floor for a moment and then swings up and down (stop
         // in front of it and slip under it when it is up). The second is forked from below: a saw shoots up out of the slot in the lane as you
-        // run at it (stop, let it pass, hop the slot). The third pendulum hangs in front of the stairs, and the floor where everybody stops to
+        // run at it, in front of you (stop, let it pass). The third pendulum hangs in front of the stairs, and the floor where everybody stops to
         // wait for it is freed while you stand on it (wait further back, then go in one run).
         // Rematch: a new scheduler. The first pendulum swings already, the slot forks twice (once right where round 1 waited), and the third
-        // pendulum's floor is freed the moment you step on it, so the waiting happens before the slot
+        // floor behind the third pendulum, in front of the stairs, is freed the moment you step on it: jump from under the pendulum straight onto the stairs
         Level(
             name = T("Race Condition", "Wettlaufsituation"),
             intro = T("The winner gets a cookie. I have no cookies.", "Der Sieger bekommt einen Keks. Ich habe keine Kekse."),
             traps = listOf(
                 trap(PastX(4f), PathSaw(3f, 9f to 14f, 9f to 11.2f, delay = 0.8f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
-                trap(PastX(11.5f), Saw(12.4f, 19.5f, 0f, -11f, r = 0.8f), say("Thread 2 was forked from below. Right behind you.", "Thread 2 wurde von unten geforkt. Direkt hinter dir."), delay = 0.1f),
+                trap(PastX(10.4f), Saw(13.4f, 19.5f, 0f, -16f, r = 0.8f), say("Thread 2 was forked from below. Right in front of you.", "Thread 2 wurde von unten geforkt. Direkt vor dir.")),
                 trap(PastX(17f), PathSaw(3f, 23.5f to 14f, 23.5f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
-                trap(Zone(20.3f, 12f, 22.6f, 15.5f), Play(Card.CRUMBLE), Fall('w'), say("Memory freed. You were standing on it.", "Speicher freigegeben. Du standest drauf."), delay = 0.5f),
+                trap(Zone(19.3f, 12f, 21.6f, 15.5f), Play(Card.CRUMBLE), Fall('w'), say("Memory freed. You were standing on it.", "Speicher freigegeben. Du standest drauf."), delay = 0.4f),
             ),
-            hint = T("Wait for the saws, but not right in front of the last one: the floor there is freed.", "Warte auf die Sägen, aber nicht direkt vor der letzten: Der Boden dort wird freigegeben."),
+            hint = T("Stop for the saw out of the floor. Wait for the last saw, but not right in front of it: the floor there is freed.", "Bleib stehen für die Säge aus dem Boden. Warte auf die letzte Säge, aber nicht direkt davor: Der Boden dort wird freigegeben."),
             rematch = listOf(
                 Round(
                     T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
                     start = emptyList(),
-                    hint = T("Where you waited for the last saw, a fork comes up now. Wait further back and go in one run.", "Wo du auf die letzte Säge gewartet hast, kommt jetzt ein Fork hoch. Warte weiter hinten und lauf in einem Zug."),
+                    hint = T("Where you waited for the last saw, a fork comes up now. Wait further back, go in one run, and behind the last saw jump straight onto the stairs.", "Wo du auf die letzte Säge gewartet hast, kommt jetzt ein Fork hoch. Warte weiter hinten, lauf in einem Zug, und hinter der letzten Säge spring direkt auf die Treppe."),
                     traps = listOf(
                         trap(PastX(4f), PathSaw(3f, 9f to 12.2f, 9f to 14f, 9f to 6f, r = 1f), say("Thread 1 swings already. I am proud of it.", "Thread 1 schwingt schon. Ich bin stolz auf ihn.")),
-                        trap(PastX(11.5f), Saw(12.4f, 19.5f, 0f, -11f, r = 0.8f), say("Thread 2 forks early.", "Thread 2 forkt früh."), delay = 0.1f),
-                        trap(PastX(14f), PathSaw(3f, 23.5f to 14f, 23.5f to 7f, delay = 1.3f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
+                        trap(PastX(10.4f), Saw(13.4f, 19.5f, 0f, -16f, r = 0.8f), say("Thread 2 forks early.", "Thread 2 forkt früh.")),
+                        trap(PastX(14f), PathSaw(3f, 23.5f to 14f, 23.5f to 7f, delay = 0.9f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
                         trap(PastX(17.5f), Saw(18.8f, 19.5f, 0f, -11f, r = 0.8f), say("Fork bomb. The second child likes your waiting spot.", "Fork-Bombe. Das zweite Kind mag deinen Warteplatz."), delay = 0.3f),
-                        trap(Zone(20.3f, 12f, 22.6f, 15.5f), Play(Card.CRUMBLE), Fall('w'), say("Freed before you even asked.", "Freigegeben, bevor du gefragt hast."), delay = 0.35f),
+                        trap(Zone(23.7f, 12f, 26f, 15.5f), Play(Card.CRUMBLE), Fall('q'), say("Freed before you even asked.", "Freigegeben, bevor du gefragt hast."), delay = 0.05f),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            fill(20..22, 15..17, 'w')
+            fill(19..21, 15..17, 'w'); fill(24..25, 15..17, 'q')
             fill(26..27, 13..14); fill(28..29, 11..14); fill(30..30, 9..14)
             spawn(); door(30, 8); bits(29)
         },
@@ -523,8 +523,8 @@ object World2Part2 {
                 trap(PastX(5f), Blink('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat is leaving.", "Bitte nehmen Sie Platz. Der Platz geht gerade.")),
                 trap(Zone(11f, 6f, 14f, 8.5f), Blink('t', 1.6f, 1.2f, phase = -0.9f)),
                 trap(Zone(16f, 6f, 19f, 8.5f), Blink('u', 1.6f, 1.2f, phase = -0.9f)),
-                trap(Zone(26f, 12f, 31f, 15.5f), Move('X', -25f, 0f, 3.4f), say("The second class has to go home, too.", "Die zweite Klasse muss auch nach Hause.")),
-                trap(Zone(15f, 12f, 17f, 15.5f), Move('X', -10f, 0f, 5f), say("Oh, and they are in a hurry.", "Ach so, und sie haben es eilig.")),
+                trap(Zone(26f, 12f, 31f, 15.5f), Move('X', -25f, 0f, 7f), say("The second class has to go home, too.", "Die zweite Klasse muss auch nach Hause.")),
+                trap(Zone(19f, 12f, 21f, 15.5f), Move('X', -25f, 0f, 9.5f), say("Oh, and they are in a hurry.", "Ach so, und sie haben es eilig.")),
             ),
             hint = T("The wall is slower than you. The stones are not.", "Die Wand ist langsamer als du. Die Steine nicht."),
         ) {

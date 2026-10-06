@@ -167,6 +167,8 @@ class World2DeckTest {
     @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
     /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
     @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
+    @Test fun l29r2RunningOverTheFreedFloorFallsThrough() = b(29, 2).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(10.9f).wait(0.45f).rightTo(15.4f)
+        .waitFor { World2Rooms.pendulumCalm(it, 23.5f, 0.85f, 1.35f) }.right(3f).expect(WorldState.DEAD)
     @Test fun l29r2TheRoundOneWaitingSpotForksASaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
     @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(3f).expect(WorldState.DEAD)
 
