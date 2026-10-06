@@ -51,7 +51,6 @@ object World3RoomsC {
         ),
         23 to listOf<Solution>(
             { rightTo(5.2f).waitFor { it.player.grounded }.rightTo(6.8f).waitFor { landed(it, 'a', 1f) }.rightJump(0.55f).landRight()
-                .rightTo(19.4f).landRight().waitFor { landed(it, 'm', 1f) }.rightJump(0.55f).landRight()
                 .rightTo(24.0f).waitFor { landed(it, 'e', 1f) }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1.5f) },
         ),
         24 to listOf<Solution>(

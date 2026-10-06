@@ -216,24 +216,24 @@ object World3PartC {
         },
 
         // 23 — you start on a little tower and step off it into a long ground floor under a ceiling of slabs. Three numbers are called, one
-        // after the other: each time a whole slab lets go just ahead of you and comes down just as you would be underneath (stop, wait for
-        // it to land, climb on, walk across). The last one is a staircase: the door sits on a ledge (a warm plate: do not dawdle) that is a hop too high without it.
-        // Waiting is what the room asks for.
+        // after the other: the first lets go just ahead of you and comes down just as you would be underneath (stop, wait for it to land, climb
+        // on, walk across), the second comes down where you were a moment ago (do not wait for that one: run), and the last one is a staircase
+        // (wait again): the door sits on a ledge (a warm plate: do not dawdle) that is a hop too high without it.
         Level(
             name = T("Waiting Room", "Wartezimmer"),
             intro = T("Please take a seat. You will be called.", "Bitte nehmen Sie Platz. Sie werden aufgerufen."),
             start = listOf(Heat('p', rise = 1.0f)),
             traps = listOf(
-                trap(Landed(4.4f, 8f), Play(Card.CRUMBLE), Fall('a'), say("Number one, please.", "Nummer eins, bitte."), delay = 0.6f),
-                trap(Landed(17.4f, 20.5f), Fall('m'), say("Number two. Wait, I said.", "Nummer zwei. Warten, hatte ich gesagt."), delay = 0.5f),
-                trap(Touch('m'), Fall('e'), say("Number three. Take the stairs.", "Nummer drei. Nehmen Sie die Treppe."), delay = 0.35f),
+                trap(Landed(4.4f, 8f), Play(Card.CRUMBLE), Fall('a'), say("Number one, please.", "Nummer eins, bitte."), delay = 0.85f),
+                trap(Zone(17f, 11f, 21f, 15f), Fall('m'), say("Number two. I did not say wait this time.", "Nummer zwei. Diesmal hatte ich nicht gesagt, Sie sollen warten."), delay = 0.45f),
+                trap(Zone(23f, 11f, 26f, 15f), Fall('e'), say("Number three. Take the stairs.", "Nummer drei. Nehmen Sie die Treppe."), delay = 0.65f),
             ),
-            hint = T("Do not walk under what hangs over you. Wait for it to land, then climb on.", "Lauf nicht unter dem durch, was über dir hängt. Warte, bis es unten liegt, und klettere drauf."),
+            hint = T("Some of them want you to wait for them to land, one wants you gone before it does. Wait where it falls ahead of you, run where it falls behind.", "Manche wollen, dass du wartest, bis sie unten liegen, eine will, dass du weg bist, bevor sie fällt. Warte, wo sie vor dir fällt, lauf, wo sie hinter dir fällt."),
         ) {
             border(); floor()
             fill(1..3, 6..14)
             fill(10..26, 8..9)
-            fill(10..16, 10..10, 'a'); fill(22..24, 10..10, 'm'); fill(26..26, 10..11, 'e')
+            fill(10..16, 10..10, 'a'); fill(17..20, 10..10, 'm'); fill(26..26, 10..11, 'e')
             fill(27..30, 11..14); fill(27..30, 11..11, 'p')
             spawn(1, 5); door(29, 10)
         },
