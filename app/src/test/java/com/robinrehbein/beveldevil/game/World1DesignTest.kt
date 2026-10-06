@@ -7,6 +7,7 @@ class World1DesignTest : DesignTestBase() {
     override val design = DESIGN
     override val rebuilt = REBUILT
     override val solutions = SOLUTIONS
+    override val allSolutions = ALL_SOLUTIONS
 
     companion object {
         /** §8, World 1 "Höllenkeller". Levels 1-6 are the tutorial; the V2 rules start at 7. A row without block ("–") and without ★ is a trap room. */
@@ -69,6 +70,39 @@ class World1DesignTest : DesignTestBase() {
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = World1RoomsA.solutions + World1RoomsB.solutions + World1RoomsC.solutions + World1RoomsD.solutions + World1RoomsE.solutions
+
+        /**
+         * The tutorial 1-6 (outside the V2 rollout, never in [REBUILT]): its clean runs, the same scripts as [World1Test]
+         * and [World1DeckTest] play. The round rules A-C and E ([DesignRules.roundRules]) and the naive probe report need them.
+         */
+        val TUTORIAL_SOLUTIONS: Map<Int, List<Solution>> = mapOf(
+            1 to listOf({ rightTo(17.6f).rightJump(0.35f).right(3f) }),
+            2 to listOf({ rightTo(8f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(2f) }),
+            3 to listOf({
+                hopR(21.2f).rightTo(26.5f).leftTo(24.3f).leftJump(0.35f).landLeft().rightTo(21.3f).rightJump(0.35f).landRight()
+                    .rightTo(25.6f).rightJump(0.35f).landRight().leftTo(23f).right(4f)
+            }),
+            4 to listOf(
+                {
+                    rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
+                        .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
+                        .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
+                        .rightJump(0.35f).landRight().right(1f).left(2f)
+                },
+                { rightTo(18.3f).left(0.3f).wait(0.6f).rightTo(18.6f).rightJump(0.35f).landRight().right(3f) },
+            ),
+            5 to listOf({
+                rightTo(18.5f).jump(0.3f).wait(0.5f).leftTo(16.8f).wait(0.2f).rightJump(0.35f).right(0.2f).rightJump(0.35f)
+                    .rightTo(21.4f).wait(0.6f).rightTo(22.4f).rightJump(0.35f).landRight().rightJump(0.35f).right(2f)
+            }),
+            6 to listOf(
+                { rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f) },
+                { rightTo(12.8f).rightJump(0.3f).right(3f) },
+            ),
+        )
+
+        /** Every level's solutions, the tutorial included. */
+        val ALL_SOLUTIONS: Map<Int, List<Solution>> = TUTORIAL_SOLUTIONS + SOLUTIONS
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World1Test]). */
         fun play(n: Int, round: Int = 1) =

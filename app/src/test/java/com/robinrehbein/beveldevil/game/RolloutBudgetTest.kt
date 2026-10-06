@@ -51,7 +51,7 @@ class RolloutBudgetTest {
         }
     }
 
-    /** The caps of one act: H12, H21, H5 and §7. */
+    /** The caps of one act: H12, H21 and H5 (cards: rule J, no block budget). */
     private val caps = mapOf("pad" to 3, "gate" to 3, "blink" to 3, "door" to 1, "gravity" to 1, "swap" to 2, "wall" to DesignRules.WALL_MOVE_CAP,
         "spikes" to DesignRules.ACT_QUOTA, "heatspike" to DesignRules.ACT_QUOTA)
 
@@ -69,11 +69,6 @@ class RolloutBudgetTest {
                     if (blocks.none { item in it.budget }) continue
                     val sum = blocks.sumOf { it.budget[item] ?: 0 } + used.getValue(item)
                     if (sum > cap) out += "world $w act $act: $item budgets ${blocks.map { it.budget[item] }} + ${used[item]} outside the blocks = $sum > $cap"
-                }
-                val fixedCards = DesignRules.blockCards(fixed.associateWith { levels[it - 1] })
-                for (c in Card.entries.filter { it != Card.GRAND_FINALE && it != Card.BLUFF }) {
-                    val sum = blocks.sumOf { it.cardBudget(c) } + (fixedCards[c] ?: 0)
-                    if (sum > DesignRules.CARD_LIMIT) out += "world $w act $act: card $c budgets $sum > ${DesignRules.CARD_LIMIT}"
                 }
             }
             // the rematch levels stay where they are (47 in all), and U18 is where §5a puts it
@@ -106,16 +101,15 @@ class RolloutBudgetTest {
         val fromDoc = rows.associate { m ->
             val cells = m.groupValues[3].split('|').map { it.trim() }
             val budget = DesignRules.BUDGET_ITEMS.withIndex().mapNotNull { (i, item) -> number(cells[i + 1])?.let { item to it } }.toMap()
-            val cardCell = cells[1 + DesignRules.BUDGET_ITEMS.size]
-            val exceptions = Regex("""([A-Z_]+) (\d+)""").findAll(cardCell).associate { Card.valueOf(it.groupValues[1]) to it.groupValues[2].toInt() }
-            val forbidCell = cells[2 + DesignRules.BUDGET_ITEMS.size]
+            // the card column is gone: cards are spaced by rule J (§7, §9a), not budgeted per block
+            val forbidCell = cells[1 + DesignRules.BUDGET_ITEMS.size]
             val forbidden = if (forbidCell == "–") emptyMap() else forbidCell.split(';').associate { e ->
                 val (n, fs) = e.split(':')
                 n.trim().toInt() to fs.split(',').map { it.trim() }.toSet()
             }
-            "W${m.groupValues[1]}-${m.groupValues[2]}" to listOf(levelsOf(cells[0]), budget, number(cardCell), exceptions, forbidden)
+            "W${m.groupValues[1]}-${m.groupValues[2]}" to listOf(levelsOf(cells[0]), budget, forbidden)
         }
-        val fromKit = DesignRules.ROLLOUT.associate { b -> "W${b.world}-${b.id}" to listOf(b.levels, b.budget, b.card, b.cards, b.forbidden) }
+        val fromKit = DesignRules.ROLLOUT.associate { b -> "W${b.world}-${b.id}" to listOf(b.levels, b.budget, b.forbidden) }
         val diff = (fromDoc.keys + fromKit.keys).sorted().filter { fromDoc[it] != fromKit[it] }.map { "$it: doc ${fromDoc[it]}, kit ${fromKit[it]}" }
         assertTrue("§11 in the doc and DesignRules.ROLLOUT differ:\n" + diff.joinToString("\n"), diff.isEmpty())
     }

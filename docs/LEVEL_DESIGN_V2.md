@@ -2,7 +2,7 @@
 
 Verbindliche Vorgabe für den Umbau aller drei Welten. Jeder Agent, der Level baut oder prüft, liest dieses Dokument zuerst.
 
-**Stand: Rezept v2** (nach dem Pilot W2 11–24 und drei Reviews; vom Gründer freigegeben). Kurz gesagt: **Dichte statt Dauer.** Ein Raum ist kurz (6–9 s) und voller echter Fallen, nicht lang durch Warten und Rückwege. Was sich gegenüber v1 geändert hat, steht in §1a.
+**Stand: Rezept v2** (nach dem Pilot W2 11–24 und drei Reviews; vom Gründer freigegeben). Kurz gesagt: **Dichte statt Dauer.** Ein Raum ist kurz und voller echter Fallen, nicht lang durch Warten und Rückwege: Die Spielzeit kommt aus Sterben und Verstehen, nicht aus Sekunden (ein bekannter Lauf von 4–6 s nach dem zehnten Versuch ist in Ordnung). Was sich gegenüber v1 geändert hat, steht in §1a; die Rundenregeln A–K nach dem Playtest von Welt 2 stehen in §9a.
 
 ---
 
@@ -51,13 +51,13 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 |---|---|---|
 | H1 | **Ein Bildschirm** (32×18), kein Scrollen. Einzige Ausnahme: U18, siehe §5a. | vorhanden (Grid), `RoomsTest` |
 | H2 | **Nie nur rechts:** Rechts halten, gerade oder mit Hüpfern alle 0,4 / 0,7 / 1,0 s, gewinnt nie. Auch nicht, wenn man vorher 8 s still steht. | `holdRightWithHopsNeverWins` |
-| H3 | **Dichte statt Dauer:** Im sauberen Bot-Lauf vergehen nie mehr als **3 s ohne echte Falle** (Definition §6a; Deko zählt nicht, siehe „Deko“ in §6a): vom Start bis zur ersten, zwischen zwei Fallen, von der letzten bis zur Tür. **Stillstehen höchstens 40 %** des Laufs und **höchstens 1,5 s am Stück.** Die Untergrenze aus §6 ist nur noch eine Plausibilitätsprüfung. | `cleanRunIsDense` |
-| H4 | **2–4 echte Fallen pro Runde.** Sie bauen aufeinander auf: Jede bestraft die Lösung, die die vorige nahegelegt hat. Zustandswechsel („Pad öffnet“, „Band dreht dir zuliebe“) und reine Sprüche zählen nicht. | über H3 |
+| H3 | **Dichte statt Dauer:** Im sauberen Bot-Lauf vergehen nie mehr als **2,5 s ohne echte Falle** (Definition §6a; Deko zählt nicht, siehe „Deko“ in §6a): vom Start bis zur ersten, zwischen zwei Fallen, von der letzten bis zur Tür. **Stillstehen höchstens 40 %** des Laufs und **höchstens 1,5 s am Stück.** Die Untergrenze aus §6 (4 s, Finale 10 s) ist nur noch eine Plausibilitätsprüfung. | `roundRulesHoldOrArePending` (Regel F, §9a) |
+| H4 | **3–4 echte Fallen pro Runde** (mindestens 3 per Ablation, ★ 2: Regel D, §9a). Sie bauen aufeinander auf: Jede bestraft die Lösung, die die vorige nahegelegt hat. Zustandswechsel („Pad öffnet“, „Band dreht dir zuliebe“) und reine Sprüche zählen nicht. | über H3 |
 | H5 | **Höchstens eine** `Show`-Stachelfalle pro Runde. Höchstens 25 % der Level eines Aktes haben überhaupt eine. Für W3 gilt dasselbe für `HeatSpike` als Schlussfalle. | `spikePopupQuota` |
 | H6 | **Abwechslung:** Zwei aufeinanderfolgende Level (Akt-Finale ausgenommen) teilen weder die Hauptüberraschung noch den Haupt-Baustein aus der Zuordnung in §8. Kein Baustein oder keine Überraschung kommt in drei von vier aufeinanderfolgenden Leveln vor. | `noSameTwistTwiceInARow` |
 | H7 | **Deterministisch und fair:** Jeder Versuch läuft identisch ab. Lösungen vertragen etwa 1 Tile und etwa 0,15 s Spielraum. Jede Falle ist nach einem Tod verstanden. Kein Tod ohne sichtbare Ursache. | `solutionToleratesSlop` |
 | H8 | **Genau eine Karte pro Runde, und sie passt zur Falle**, auf der sie liegt (Karten-Lint, §7): `GHOST_BLOCK` auf versteckten oder Kopfstoß-Blöcken, `SHY_DOOR` auf `DoorTo`, `STALKER` auf `Chase`, `DEVIL_SAW` auf Sägen, `HEADBUTT` auf fallenden Decken. Bluffs bleiben, wo sie sind. | `cardsFitTheirTraps`, vorhanden |
-| H9 | **Revanche gegen Runde 1** (wo vorhanden, §7): Die Revanche arbeitet gegen das Verhalten aus Runde 1 (Vorbilder: 14r2 Konzept, 20r2 Bluff), braucht eine andere Route, ist mindestens so lang wie Runde 1 und nie leichter. Die Runde-1-Lösung gewinnt sie nie. | `rematchWorksAgainstRoundOne`, vorhanden |
+| H9 | **Revanche gegen Runde 1** (wo vorhanden, §7): Die Revanche arbeitet gegen das Verhalten aus Runde 1 (Vorbilder: 14r2 Konzept, 20r2 Bluff), braucht eine andere Route, hat mindestens so viele echte Fallen (Ablation) wie Runde 1 und ist nie leichter. Die Runde-1-Lösung gewinnt sie nie. | `roundRulesHoldOrArePending` (Regel E, §9a) |
 | H10 | **Still stehen ist 2 s lang sicher**, außer in ausgewiesenen Idle-Leveln. | vorhanden |
 | H11 | **Name, Gag und Story bleiben.** Wenn die Mechanik wechselt, schreibst du den Gag passend neu, auf Englisch und Deutsch, in Mephis Ton. Der Name hat höchstens 26 Zeichen. | vorhanden |
 | H12 | **Rotation pro Akt** (16 Level), gezählt aus den Aktionen im Level-Code, nicht aus der Tabelle: Tür flieht (`DoorTo`) **höchstens 1-mal**, Pads und Schalter (`Pad`) **3-mal** (das Akt-Finale darf einen Schalter obendrauf bringen, es kombiniert den Akt absichtlich), Laser-Tore **3-mal**, Blink-Warten (`Blink`) **3-mal**, Schwerkraft-Flip **1-mal**, vertauschte Steuerung (`Swap`) **2-mal**. Ein **Laser-Tor** ist jeder Strahl, dessen Leuchtfenster höchstens 2 s lang ist, egal wodurch er an- und ausgeht: jeder Laser, der mit einer Auszeit unter 10 s taktet; jeder Laser, der höchstens 2 s am Stück leuchtet und taktet (auch ein Start-Laser mit Auszeit ≥ 10 s) oder den eine Falle zündet, egal womit sie auslöst (`Landed`, `PastX`, `Zone`, aber auch `Pressed`, `After`, `Idle` …; ein einmaliger Blitz ist ein Tor); jeder Laser, den Fallen an- **und** ausschalten (`Power` an oder ein `Laser` aus einer Falle, dazu `Power` aus), außer beide hängen am selben Auslöser und der Strahl bleibt länger als 2 s an (an- und ausschalten auf verschiedenen Auslösern zählt immer: dann bestimmt der Spieler das Fenster); ein `Power(an)` aus einer Falle auf einen Laser mit kurzem Fenster; und eine Strom-Leiterbahn (Großbuchstabe) auf einem `Clock` mit Auszeit unter 10 s oder höchstens 2 s an. Ein `Clock` auf einer Kupferschiene (Kleinbuchstabe) ist kein Tor. Die Tabelle in §8 hält dieselben Grenzen für R6/U4, R1/R2/R4 und U9 ein. | `mechanicsRotatePerAct`, Tabelle |
@@ -70,6 +70,7 @@ Diese Regeln gelten für jedes Level ab W1-7. Wo eine Regel prüfbar ist, wird s
 | H19 | **Keine Zeile doppelt im Akt (Say-Lint):** Kein Spruch (`Say`), keine Intro und kein Hinweis steht wörtlich in zwei Leveln desselben Aktes, weder auf Englisch noch auf Deutsch (Groß-/Kleinschreibung, Satzzeichen und Leerzeichen zählen nicht: „Nope.“ und „nope!“ sind dieselbe Zeile). Dieselbe Zeile zweimal im selben Level (Revanche) ist erlaubt. Jedes Level hat seine eigenen Pointen. Nur als Warnung (gedruckt, nie rot): drei oder mehr gemeinsame Wörter hintereinander in zwei Leveln desselben Aktes, sehr häufige Wörter (Artikel, „you“, „du“ …) nicht mitgezählt. | `noRepeatedLinesInAnAct` |
 | H20 | **Nachbarn spielen sich anders (Raum-Abwechslung):** H6 liest nur die Tabelle. Zusätzlich gilt eine **binäre Regel**: Zwei aufeinanderfolgende Level eines Aktes (das zweite kein Finale) müssen sich in der **dominanten Effektfamilie** unterscheiden, und zwar **jede Runde gegen jede Runde** (auch die Revanche gegen den Nachbarn). Dominant ist die Familie mit den meisten tödlichen Momenten im sauberen Lauf der Runde; ein Moment zählt nur für die Familien seiner tödlichen Aktionen, Deko (§6a) zählt nicht. **Gleichstand:** Alle gleichauf liegenden Familien sind dominant, und jede davon darf der Nachbar nicht haben (ein billiger früher Moment nimmt der eigentlichen Familie nichts weg). `Move` wird nach Bewegung und Objekt getrennt: eine Gruppe, die an der Decke hängt, ist `ceiling-move`, wenn sie flach ist oder senkrecht fährt; was seitwärts fährt (dx ≠ 0) und mindestens 2 Tiles hoch ist, ist `wall-move` (auch eine flache breite Wand); sonst nach unten (dy > 0) `drop`, senkrecht mit mehr freien Seiten als Oberseiten `wall-move`, sonst `floor-move`. `Chase` ist immer `wall-move`. Ein `Fall` einer Gruppe, die an der Decke hängt, ist `ceiling-move`. Die frühere Prozentzahl zur Ähnlichkeit der Lösungsform bleibt nur ein gedruckter Bericht und lässt nie einen Test fehlschlagen. | `neighboursPlayDifferently` |
 | H21 | **Bewegte Wände sind gedeckelt:** Pro Akt haben **höchstens 3 Level** `wall-move` als dominante Familie (Zählung, kein Anteil), in irgendeiner Runde, auch im Gleichstand. | `atMostThreeMovingWallLevelsPerAct` |
+| H22 | **Rundenregeln A–K** nach dem Playtest von Welt 2 (§9a): kein naiver Läufer kommt durch, keine Falle hilft ihm, eine Falle tötet den, der stehen bleibt, mindestens 3 echte Fallen, Revanche mit mindestens so vielen, Dichte, Familien- und Kehrtwende-Deckel pro Akt, Rätselräume mit Richtungswechseln, Karten mit Abstand, Geister mit Zweck. | `roundRulesHoldOrArePending` |
 
 ## 3. Weiche Regeln (Handwerk)
 
@@ -169,11 +170,11 @@ Level(
 | Abschnitt | Sauberer Lauf (Ziel) | Untergrenze (Plausibilität) | Echte Fallen pro Runde | Bausteine pro Level |
 |---|---|---|---|---|
 | W1 Level 1–6 (Tutorial) | 3–6 s | 4 s | 1–3 | 0–1 (R5/R6 dürfen schon auftauchen) |
-| Alle anderen Level (W1 ab 7, W2, W3) | 6–9 s | 6 s | 2–4 | Rätselraum 1–2, Fallenraum 0 |
+| Alle anderen Level (W1 ab 7, W2, W3) | 4–9 s | 4 s | 3–4 (Regel D) | Rätselraum 1–2, Fallenraum 0 |
 | Akt-Finale (16, 32, 48) | 10–12 s, nicht 15 | 10 s | 4 | 2–3, kombiniert das Beste aus dem Akt |
-| ★ Verschnaufpause (max. 2 pro Akt) | 3–5 s | keine | 1–2, aber eine starke Pointe | 0–1 |
+| ★ Verschnaufpause (max. 2 pro Akt) | 3–5 s | keine | 2, aber eine starke Pointe | 0–1 |
 
-Für alle gilt H3: nie mehr als 3 s ohne echte Falle, Stillstehen höchstens 40 % des Laufs und höchstens 1,5 s am Stück. Gemessen wird der saubere Bot-Lauf. Gewinnt die Lösung auch ohne ihre Warte-Befehle, zählt dieser schnellere Lauf: Warten, das der Raum nicht verlangt, streckt nichts.
+Für alle gilt H3 (Regel F): nie mehr als 2,5 s ohne echte Falle, Stillstehen höchstens 40 % des Laufs und höchstens 1,5 s am Stück. Gemessen wird der saubere Bot-Lauf. Gewinnt die Lösung auch ohne ihre Warte-Befehle, zählt dieser schnellere Lauf: Warten, das der Raum nicht verlangt, streckt nichts. Die Untergrenze ist eine Plausibilitätsprüfung, kein Ziel: Spielzeit entsteht durch Tode und das Verstehen des Raums.
 
 Eine neue Mechanik wird im ersten Level allein und sicher eingeführt. Im zweiten Level wird sie gebrochen, im dritten mit etwas Altem kombiniert.
 
@@ -212,7 +213,7 @@ Eine Falle (`trap(…)`) zählt nach ihrer schwersten Aktion (auch in `FakeWin(�
 
 ## 7. Karten, Revanche und Hinweis
 
-- **Karten-Verteilung:** In einem Akt wird keine Karte öfter als 3-mal gespielt (Ausnahme: GRAND_FINALE im Finale).
+- **Karten-Abstand (Regel J, §9a):** Innerhalb eines Aktes darf eine Karte wiederkommen, sobald seit ihrem letzten Einsatz 8 Level vergangen sind (Level 5 und 13 dürfen dieselbe Karte spielen, 5 und 12 nicht); pro Akt also höchstens zweimal. Ein Level ist ein Einsatz, egal in wie vielen Runden: Eine Revanche darf die Karte aus Runde 1 noch einmal spielen. Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht. Die alten Karten-Budgets pro Block (§11) und „höchstens 3-mal pro Akt“ entfallen.
 - **Karten-Lint (H8):** Die Karte passt zu der Aktion, auf der sie liegt (in derselben `trap(…)`):
 
 | Karte | liegt auf |
@@ -239,9 +240,15 @@ Eine Falle (`trap(…)`) zählt nach ihrer schwersten Aktion (auch in `FakeWin(�
 | BIOS | `BitFlip`, `Toggle`, `Power`, `FakeWin`, `PauseTrap` |
 | GRAND_FINALE | alles |
 
-- **Revanche-Level** bleiben die bisherigen 47. Jede Revanche-Runde arbeitet **gegen das Verhalten aus Runde 1** (H9): Was in Runde 1 richtig war, ist jetzt die Falle. Vorbilder sind 14r2 (die Links sind getauscht, und wer wie in Runde 1 auf die Brücke wartet, trifft die Firewall) und 20r2 (der Scanner auf dem Sims ist ein Bluff, der Sims geht weiter, und wer wie in Runde 1 an derselben Stelle hinunterfällt, landet in den LEDs). Eine verschobene Tür oder ein verlegter Schalter (so war 18r2 früher) oder ein Schalter, den man suchen muss (11r2), reicht nicht. Die Revanche braucht eine andere Route, ist mindestens so lang wie Runde 1 und nie leichter.
+- **Revanche-Level** bleiben die bisherigen 47. Jede Revanche-Runde arbeitet **gegen das Verhalten aus Runde 1** (H9): Was in Runde 1 richtig war, ist jetzt die Falle. Vorbilder sind 14r2 (die Links sind getauscht, und wer wie in Runde 1 auf die Brücke wartet, trifft die Firewall) und 20r2 (der Scanner auf dem Sims ist ein Bluff, der Sims geht weiter, und wer wie in Runde 1 an derselben Stelle hinunterfällt, landet in den LEDs). Eine verschobene Tür oder ein verlegter Schalter (so war 18r2 früher) oder ein Schalter, den man suchen muss (11r2), reicht nicht. Die Revanche braucht eine andere Route, hat mindestens so viele echte Fallen (Ablation, §6a) wie Runde 1 und ist nie leichter (Regel E). Länger muss sie nicht sein.
 - Mindestens 50 % der Revanchen spielen eine andere Karte als Runde 1. Die Regel gilt weiter.
 - **Hinweis nach Toden:** Mephis Tipp (`hint`) kommt nach **2 Toden in der aktuellen Runde**, beim Respawn, einmal pro Runde (Neustart aus dem Pausenmenü zählt als Tod). Er kommt nicht mehr nach 9 s am Leben: Bei Läufen von 6–9 s hätte er das Rätsel im ersten Versuch verraten.
+
+### Hinweis W1-B (Level 17-24): Kartenarithmetik
+
+Die frühere Behauptung in §11, 22 Karten reichten für W1 Akt 2, stimmte so nicht: Block B hat 12 Runden (17, 18, 21, 24 mit Revanche), spielbar sind aber nur 10 Karten plus Bluff (höchstens 1 im Block). Jede Karte höchstens einmal im Block heißt also: eine Runde bekommt GRAND_FINALE (hier 24 Runde 2), eine (21 Runde 2) den Bluff `Bluff(SPIKE_SEED)`. Sollte §11 angepasst werden: entweder Karten dürfen sich innerhalb eines Akts nach 8 Leveln wiederholen, oder Revanchen bekommen keine neue Karte.
+
+**Umgesetzt** (nach dem Playtest von Welt 2): Karten dürfen sich innerhalb eines Akts nach 8 Leveln wiederholen (Regel J, §9a); die Karten-Budgets pro Block sind entfallen.
 
 ## 8. Zuordnung aller Level
 
@@ -466,12 +473,13 @@ Die Tests liegen in `app/src/test/java/com/robinrehbein/beveldevil/game/`: die R
 
 | Test | Regel | Was er misst |
 |---|---|---|
-| `cleanRunIsDense` | H3 | Bot-Lösung gewinnt. Lücken ohne echte Falle (§6a, Deko per Ablation ausgenommen) höchstens 3 s, vom Start bis zur Tür. Stillstehen ≤ 40 % und ≤ 1,5 s am Stück. Untergrenze aus §6, auch ohne Warte-Befehle (`wait`, `waitUntil`, `waitFor`, `waitWhile`, `fidgetUntil`, `untilSaw`, Sprung auf der Stelle). Gewinnt die Lösung auch ohne sie, wird dieser Lauf gemessen. |
+| `roundRulesHoldOrArePending` | §9a | Die Rundenregeln A–K für jede Runde jedes Levels (das Tutorial W1 1–6 mit A–C), mit der schrumpfenden Liste `PendingRounds.kt` (§9a). Dazu gehören H3 (Regel F), H9 (Regel E) und der Karten-Abstand (Regel J). |
+| (Regel F) | H3 | Bot-Lösung gewinnt. Lücken ohne echte Falle (§6a, Deko per Ablation ausgenommen) höchstens 2,5 s, vom Start bis zur Tür. Stillstehen ≤ 40 % und ≤ 1,5 s am Stück. Untergrenze aus §6 (4 s, Finale 10 s), auch ohne Warte-Befehle (`wait`, `waitUntil`, `waitFor`, `waitWhile`, `fidgetUntil`, `untilSaw`, Sprung auf der Stelle). Gewinnt die Lösung auch ohne sie, wird dieser Lauf gemessen. |
 | `holdRightWithHopsNeverWins` | H2 | Rechts halten, gerade oder mit Hüpfern (0,4 / 0,7 / 1,0 s), sofort oder nach 8 s Stillstehen, gewinnt nie. |
 | `solutionToleratesSlop` | H7 | Die Lösung mit allen Zeiten, Zielen und Reaktionen 0,15 s und 1 Tile später *oder* früher gewinnt. |
 | `everyTrapHasTeeth` | H15 | Für jede tödliche Falle des sauberen Laufs zwei Proben ab dem Moment, in dem sie auslöst: (a) 8 s still stehen, dann die Lösung weiterspielen; (b) die gerade gehaltene Taste (sonst rechts) 2 s weiter halten, ohne zu springen. Die Falle hat Zähne, wenn (a) verliert oder (b) stirbt **und** dieselbe Probe ohne die tödlichen Aktionen der Falle anders endet (`DesignRules.withoutActions`: was die Falle sonst tut, etwa ein Tor öffnen, bleibt). Sonst ist sie Deko. Routenänderungen (Tür, Schwerkraft, Steuerung, Portal) haben ihre Zähne in der neuen Route, die H2 für den ganzen Raum prüft. |
 | `noFillerDeathAtTheStart` | H17 | Rechts halten vom Spawn stirbt nicht in den ersten 2 s, außer eine echte Falle hat den Tod verursacht: Ohne die echten Aktionen der vorher ausgelösten Fallen muss derselbe Lauf anders enden. Ein Pad-Druck (`Pressed`) zählt nicht als ausgelöste Falle. |
-| `rematchWorksAgainstRoundOne` | H9 | Jede Revanche-Runde: sauberer Lauf ≥ Runde 1, Runde-1-Lösung verliert. |
+| (Regel E) | H9 | Jede Revanche-Runde: echte Fallen (Ablation) ≥ Runde 1, Runde-1-Lösung verliert. |
 | `atMostTwoEffectFamiliesPerRoom` | H13 | Familien aus §6a pro Runde ≤ 2 (Finale 3, U18 2 pro Raum). |
 | `cardsFitTheirTraps` | H8 | Karten-Lint aus §7. |
 | `mechanicsRotatePerAct` | H12 | Rotations-Obergrenzen pro Akt, aus den Aktionen im Code. Laser-Tore: jeder Strahl mit einem Leuchtfenster von höchstens 2 s, egal von welchem Auslöser, dazu Takte mit Auszeit unter 10 s, An/Aus-Paare aus Fallen und getaktete Strom-Leiterbahnen (`DesignRules.laserGates`, Definition in H12); das Finale darf einen Schalter obendrauf bringen. |
@@ -479,10 +487,9 @@ Die Tests liegen in `app/src/test/java/com/robinrehbein/beveldevil/game/`: die R
 | `noRepeatedLinesInAnAct` | H19 | Say-Lint: kein `Say`, keine Intro, kein Hinweis wörtlich in zwei Leveln desselben Aktes, EN und DE getrennt geprüft, ohne Satzzeichen (`DesignRules.sayKey`). Zusätzlich eine gedruckte Warnung (kein Fehler) bei 3 oder mehr gemeinsamen Wörtern in Folge (`DesignRules.sayNgramWarnings`). |
 | `neighboursPlayDifferently` | H20 | Zwei Nachbarn eines Aktes (das zweite kein Finale) haben in keinem Rundenpaar eine gemeinsame dominante Effektfamilie (meiste tödliche Momente im sauberen Lauf der Runde, nur tödliche Aktionen, ohne Deko; Gleichstand: alle gleichauf liegenden Familien; `Move` nach Bewegung getrennt in `floor-move`, `wall-move`, `ceiling-move`, `drop`; `Chase` ist `wall-move`). Die Ähnlichkeit der Lösungsform in Prozent wird nur gedruckt. |
 | `atMostThreeMovingWallLevelsPerAct` | H21 | Höchstens 3 Level pro Akt mit `wall-move` als dominanter Familie (in irgendeiner Runde, auch im Gleichstand). |
-| `rolloutBlocksKeepTheirBudgets` | §11 | Jeder Block, dessen Level alle in `REBUILT` stehen, hält seinen Anteil an den Akt-Deckeln, seine Karten und seine Ränder ein (auch `RolloutBudgetTest`). |
+| `rolloutBlocksKeepTheirBudgets` | §11 | Jeder Block, dessen Level alle in `REBUILT` stehen, hält seinen Anteil an den Akt-Deckeln und seine Ränder ein (auch `RolloutBudgetTest`). |
 | `rebuiltComesInWholeBlocks` | §11 | Ein Block steht ganz oder gar nicht in `REBUILT`. |
-| `theKitIsLocked` | §9 | `DesignRules.kt` und `DesignTestBase.kt` haben die SHA-256-Werte aus `KitLock.kt` („kit is locked; only the orchestrator may change it“, auch `KitLockTest`). |
-| `cardsSpreadPerAct` | §7 | Keine Karte öfter als 3-mal pro Akt. |
+| `theKitIsLocked` | §9 | `DesignRules.kt`, `DesignTestBase.kt` und `NaiveProbes.kt` haben die SHA-256-Werte aus `KitLock.kt` („kit is locked; only the orchestrator may change it“, auch `KitLockTest`). |
 
 **Für die Tabelle:** `designTableMatchesTheDoc` (Tabelle im Test = §8), `designTableCoversTheWorldWithItsActStructure` (gültige Codes; Finale mit ≥ 2 Bausteinen und ≥ 2 Überraschungen; ≤ 2 ★ pro Akt; pro Akt ein bis zwei Drittel Rätselräume, H18; Rotation R6/U4 ≤ 1, R1/R2/R4 ≤ 3, U9 ≤ 2 pro Akt, H12), `noSameTwistTwiceInARow` (H6), W2: ≥ 8 Routing-Level, W3: spätestens jedes dritte Level eine andere Familie.
 
@@ -494,19 +501,19 @@ So prüfen die Tests im Detail:
 - **H19 (Say-Lint):** Gezählt werden alle `Say`-Aktionen aller Runden (auch in `FakeWin`), die Intro jeder Runde und der Hinweis. Verglichen wird getrennt auf Englisch und Deutsch, ohne Groß-/Kleinschreibung, ohne Satzzeichen und mit zusammengefassten Leerzeichen (eine Zeile nur aus Satzzeichen, etwa „…“, zählt als sie selbst). Pro Akt darf jeder Text in höchstens einem Level vorkommen. Die n-Gramm-Warnung (`sayNgramWarnings`) zerlegt jede Zeile in Wörter ohne die häufigen (`COMMON_WORDS`), bildet Dreiergruppen und meldet, welche zwei Level der Akt-Gruppe sich eine teilen. Sie wird nur gedruckt.
 - **H20 (Nachbar-Check):** Jede Runde mit Lösung hat eine Signatur aus ihrem sauberen Lauf. Gezählt werden die tödlichen Momente (§6a, Gewicht „tödlich“, ohne Deko); jeder Moment zählt für die Familien seiner **tödlichen** Aktionen (eine Brücke, die im selben Moment erscheint, zählt nicht mit). Die dominanten Familien sind die mit den meisten Momenten, bei Gleichstand **alle** gleichauf liegenden. Ohne tödlichen Moment gibt es keine dominante Familie und nichts zu vergleichen. Die Familien sind die aus §6a, mit Ausnahmen (`DesignRules.familyOf` mit `split`): `Move` wird nach Bewegung und Objekt getrennt (`DesignRules.moveFamily`). Hängt die Gruppe an der Decke (jede Kachel ihrer obersten Reihe hat etwas Festes direkt darüber, `DesignRules.hangs`), ist es `ceiling-move`, wenn sie flach ist oder senkrecht fährt. Fährt sie seitwärts und ist mindestens 2 Tiles hoch, ist es `wall-move`. Sonst: nach unten (dy > 0) `drop`; senkrecht mit mehr freien Seiten als Oberseiten (Säule, Block auf dem Boden) `wall-move`; sonst `floor-move`. `Chase` ist `wall-move`, ein `Fall` einer Gruppe an der Decke `ceiling-move`. H13 zählt weiter mit dem groben `move` und `drop`. Zwei Nachbarn verstoßen, wenn irgendeine Runde des einen und irgendeine Runde des anderen eine dominante Familie teilen. Der Bericht (`adjacentReport`) druckt zusätzlich, wie ähnlich die Lösungsformen sind (`Bot.shape()`: ein Zeichen pro Strecke, `R`, `L` oder `W`, `^` bei Sprung; Strecken unter 0,25 s zählen nicht; längste gemeinsame Teilfolge in Prozent). Der Bericht entscheidet nie.
 - **H21 (Wand-Deckel):** Gezählt werden die Level eines Akts (aus den Leveln mit Lösung), bei denen in irgendeiner Runde `wall-move` dominant ist (auch im Gleichstand). Mehr als 3 verstoßen.
-- **Kit gesperrt:** Während des Rollouts ändert nur der Orchestrator `DesignRules.kt` und `DesignTestBase.kt`. `theKitIsLocked` vergleicht ihre SHA-256-Werte mit `KitLock.kt` und schlägt sonst fehl („kit is locked; only the orchestrator may change it“). Ein rotes Level wird geändert, nie die Regel. Budgets pro Block: §11.
-- **Keine Ausnahmeliste:** Es gibt keine Allowlist, keinen TODO-Mechanismus und keinen „nur Bericht“-Modus für umgebaute Level. Ein Test wird nicht ausgenommen, übersprungen, auf ein anderes Level umgelenkt oder aufgeweicht, damit er grün wird. Findet eine Regel etwas, wird das Level geändert (oder, wenn die Regel falsch ist, die Regel mit einem eigenen Test, nie ein einzelner Eintrag). Ein Level, das noch nicht umgebaut ist, steht nicht in `REBUILT`.
+- **Kit gesperrt:** Nur der Orchestrator ändert `DesignRules.kt`, `DesignTestBase.kt` und `NaiveProbes.kt`. `theKitIsLocked` vergleicht ihre SHA-256-Werte mit `KitLock.kt` und schlägt sonst fehl („kit is locked; only the orchestrator may change it“). Ein rotes Level wird geändert, nie die Regel. Budgets pro Block: §11.
+- **Keine Ausnahmeliste:** Es gibt keine Allowlist, keinen TODO-Mechanismus und keinen „nur Bericht“-Modus für umgebaute Level. Die einzige Ausnahme ist `PendingRounds.kt` für die Rundenregeln A–K (§9a): Sie hält den Stand beim Einführen der Regeln fest und darf nur schrumpfen (eine Zeile pro Runde und Regel; wer eine Runde repariert, löscht ihre Zeile, und eine Zeile, deren Regel die Runde inzwischen erfüllt, ist selbst ein Fehler). Neue Zeilen gibt es nicht. Ein Test wird nicht ausgenommen, übersprungen, auf ein anderes Level umgelenkt oder aufgeweicht, damit er grün wird. Findet eine Regel etwas, wird das Level geändert (oder, wenn die Regel falsch ist, die Regel mit einem eigenen Test, nie ein einzelner Eintrag). Ein Level, das noch nicht umgebaut ist, steht nicht in `REBUILT`.
 - **H5:** Eine Spike-Popup-Falle ist ein `Show`, das eine Gruppe mit `Glyph(spike = true, hidden = true)` sichtbar macht. In W3 gilt dasselbe für `HeatSpike` als Schlussfalle (letzte Falle der Liste, Auslöser `AtDoor` oder Auslöser höchstens 3 Tiles von der Tür entfernt, egal von welcher Seite, auch an der Stelle, an die `DoorTo` die Tür schiebt). Gezählt wird auch, was in einem `FakeWin(..., then)` steckt.
 - **H7 (Spielraum):** Die Lösung läuft zweimal: einmal „spät“ (jede Haltezeit +0,15 s, jedes `rightTo`/`leftTo`-Ziel 1 Tile weiter) und einmal „früh“ (−0,15 s, 1 Tile kürzer). Eine der beiden muss gewinnen. Warten auf eine Bedingung (`waitFor`, `rightUntil`, `waitWhile`, `fidgetUntil`, `untilSaw`) reagiert ebenfalls 0,15 s zu spät oder zu früh. Eine Bedingung auf `player.box.cx` oder `world.time` ist also kein Weg um den Test herum. Nur das Landen (`landRight`) bleibt exakt.
 - **H3 (Dichte):** Die Zeitpunkte sind die, an denen die Aktionen einer Falle laufen (also nach ihrem `delay`). Mehrere Fallen mit demselben Auslöser im selben Moment sind ein Moment. Stillstehen heißt: weder links noch rechts gedrückt, im Spiel und nicht in einem Fake-Sieg.
-- **§7:** Gezählt werden alle `Play`-Karten (auch in `FakeWin`) aller Runden der umgebauten Level eines Aktes. Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht.
+- **§7 (Regel J):** Gezählt werden alle `Play`-Karten (auch in `FakeWin`) aller Runden aller Level eines Aktes (ohne das Tutorial W1 1–6). Bluffs zählen nicht, GRAND_FINALE im Finale auch nicht. Ein Level ist ein Einsatz; zwischen zwei Einsätzen einer Karte liegen mindestens 8 Level. Ein zu früher Einsatz verschiebt den letzten erlaubten nicht.
 
 ### Leitplanken-Tests: so trägst du ein Level ein
 
 1. **Zuordnung prüfen:** `DESIGN` enthält die Zeile aus §8, zum Beispiel `12 to d("R1+R5", "U7")`, einen Fallenraum als `d("–", "U1")`, ★ als `d("–", "U9", breather = true)` und Meta als `d("R5", "U16:Ghost")`. Wenn du innerhalb deines Blocks tauschst, änderst du die Zeile hier und in §8. Die Tabellen-Tests sagen dir, ob der Tausch H6, H12 und H18 einhält.
 2. **Bot-Lösung eintragen:** in `SOLUTIONS`, eine Lösung pro Runde. Zuerst kommt Runde 1, dann jede Revanche. Nimm `rightTo`, `hopR`, `waitFor` und Wände als Anschlag statt vieler kurzer Haltezeiten, sonst scheitert der Spielraum-Test. Polstere die Lösung nicht mit `wait`: Der Dichte-Test misst den Lauf ohne Warte-Befehle, wenn er auch so gewinnt, und Stillstehen zählt gegen die 40 %.
 3. **Level freischalten:** die Nummer in `REBUILT` eintragen. Ab dann laufen alle Prüfungen aus der Tabelle oben.
-4. **Lauf:** `./gradlew --offline testDebugUnitTest --tests '*DesignTest*' --tests '*DesignRulesTest*'`. Jede Meldung nennt Level, Runde und den Wert, zum Beispiel `no real trap for 4.69 s (t=5.65–10.34, last trap to door; max 3 s)`. Die Zeitleiste der echten Fallen einer Runde liefert `DesignRules.timeline(level, round, solution)`.
+4. **Lauf:** `./gradlew --offline testDebugUnitTest --tests '*DesignTest*' --tests '*DesignRulesTest*'`. Jede Meldung nennt Level, Runde und den Wert, zum Beispiel `no real trap for 4.69 s (t=5.65–10.34, last trap to door; max 2.5 s)`. Die Zeitleiste der echten Fallen einer Runde liefert `DesignRules.timeline(level, round, solution)`.
 
 ```kotlin
 // World2DesignTest.kt, companion object
@@ -527,6 +534,32 @@ val SOLUTIONS: Map<Int, List<Solution>> = mapOf(
 ```
 
 Die Level-Tests spielen dieselbe Lösung, damit sie nur an einer Stelle steht: `@Test fun level13() = World2DesignTest.play(13)` und im Revanche-Test `World2DesignTest.play(14, round = 2)`. Ein Beispielraum, der alle Regeln erfüllt, steht in `DesignDemos.puzzle` (Schalter oben links, Tür hinter einer Kupferwand, die Decke kommt, der Boden fällt nach dem Schalter).
+
+## 9a. Rundenregeln A–K (nach dem Playtest von Welt 2)
+
+Der Gründer hat Welt 2 angespielt, und ein Proben-Harness mit naiven Spielern (`NaiveProbeReport`, die Proben selbst in `NaiveProbes.kt`) hat alle 191 Runden vermessen. Daraus sind elf Regeln geworden. Sie gelten für **jede Runde jedes Levels aller drei Welten**; das Tutorial W1 1–6 prüft nur A–C und zählt bei keinem Akt-Deckel mit. Geprüft werden sie von `roundRulesHoldOrArePending` in jedem `World{n}DesignTest` (`DesignRules.roundRules`). Die Proben sind dieselben wie im Bericht: Es gibt sie nur einmal (`NaiveProbes`), der Bericht druckt sie, die Regeln prüfen sie.
+
+| Regel | Was gilt | Schwelle |
+|---|---|---|
+| **A** naiv | Kein naiver Läufer erreicht die Tür: rechts oder links halten ohne Sprung (P1), stehen bleiben (P3), der gierige Hüpfer in beide Richtungen (P2: springt, wenn er blockiert ist, an einer Kante oder vor sichtbaren Stacheln, mit 0,2 s Reaktionszeit), die Zickzack-Läufer (Z1/Z2: wie P2, kehren aber nach jedem Absturz auf einen tieferen Boden um). | keiner, 20 s Zeit |
+| **B** hilfreich | Keine Falle, die auslöst, macht die Tür für einen naiven Läufer erreichbar oder schneller erreichbar als derselbe Raum ohne sie (2-26: der erste Deck-Absturz war eine Abkürzung). | keine, 0,3 s Toleranz |
+| **C** passiv | Mindestens eine Fallengruppe tötet den, der die Lösung spielt und direkt nach ihrem Auslösen 2 s nichts drückt (2-32 hat das gelehrt). Gilt auch als verletzt, wenn der saubere Lauf keinen echten Moment hat. | ≥ 1 |
+| **D** echte Fallen | Echte Fallen-Einheiten (Fallen mit demselben Auslöser sind eine) nach der bestehenden Ablation aus §6a (`DesignRules.ablation`): was etwas wiegt, in einem Probelauf auslöst und keine Deko ist. Nicht im Tutorial. | ≥ 3, ★ ≥ 2 |
+| **E** Revanche | Eine Revanche-Runde hat mindestens so viele echte Fallen (D) wie Runde 1, und die Lösung von Runde 1 verliert sie. Ersetzt „mindestens so lang wie Runde 1“ (H9). | ≥ Runde 1 |
+| **F** Dichte | H3 mit Lücke 2,5 s (vorher 3 s), Untergrenze 4 s (vorher 6 s; Finale 10 s, ★ keine), Stillstehen ≤ 40 % und ≤ 1,5 s am Stück wie bisher. Nur für Level der V2-Regeln (nicht das Tutorial). | 2,5 s |
+| **G** Familien-Deckel | Pro Akt dominiert eine Familie (H20, irgendeine Runde, Gleichstand zählt) höchstens 4 Level; `wall-move` höchstens 3 (H21); die Leitfamilie eines Aktes aus §8 (W3 Akt 2 `heat` für R11, Akt 3 `fan` für R10) höchstens 6. Die Level über dem Deckel (in Level-Reihenfolge) verstoßen. | 4 / 3 / 6 |
+| **H** Kehrtwende | Pro Akt höchstens 4 Level, in denen eine Runde umkehrt und an einer Tür auf der Spawn-Seite endet: der Lauf kommt mindestens ein Drittel der Raumbreite vom Spawn weg, wechselt die Richtung, und die Tür (wo sie beim Sieg steht) ist höchstens ein Viertel der Raumbreite vom Spawn entfernt (darüber, darunter, daneben). Die Level über dem Deckel verstoßen. | 4 |
+| **I** Rätselraum | Jede Runde eines Levels mit R-Code (§8) braucht in der Lösung mindestens 2 Richtungswechsel (`Bot.shape`: Strecken links/rechts ab 0,25 s, Stehen ignoriert) oder einen Köder: Der gierige Hüpfer, der direkt auf die Tür zuläuft (P2 in Türrichtung), stirbt an einer Falle. | 2 Wechsel oder Köder |
+| **J** Karten | Eine Karte kommt im Akt frühestens 8 Level nach ihrem letzten erlaubten Einsatz wieder (§7). | Abstand ≥ 8 |
+| **K** Geist | Ein U16-Geist (`Ghost`) steht nur in Revanchen oder hat in Runde 1 eine Wirkung: Seine Falle ist per Ablation echt, oder die Lösung als zweiter Versuch nach einem naiven ersten (rechts halten, hüpfen, 8 s warten) endet ohne ihn anders. | Wirkung in Runde 1 |
+
+**Nur Bericht** (gedruckt und in `build/reports/round-rules-w{n}.txt`, nie ein Fehler): P6, die Timing-Empfindlichkeit (wie viele Verschiebungen einer Falle um ±0,3 s die Lösung brechen; 2-28 brach bei 4 von 5, und der Gründer liebte es, 2-27 und 2-29 bei 0–1, und er war nach einem Tod durch), LOW_THREAT (unter 2 verschiedene Fallen töten die Proben), ONE_DEATH (ein lernender naiver Läufer braucht nur einen Tod), dazu die echten Fallen (D), Richtungswechsel, Kehrtwende, Köder, Stillstehen (längstes Stück / gesamt) und die dominante Familie jeder Runde, und die Verteilung von D.
+
+**Verteilung von D beim Einführen** (echte Fallen-Einheiten pro Runde, alle 191 Runden, Tutorial eingeschlossen): 1: 4, 2: 21, 3: 60, 4: 68, 5: 22, 6: 5, 7: 6, 8: 2, 9: 2, 15: 1. Der Median liegt bei 4; mit der Schwelle 3 (★ 2) verstießen 12 Runden außerhalb des Tutorials.
+
+**Schrumpfende Liste `PendingRounds.kt`:** Beim Einführen der Regeln verstießen noch viele Runden gegen sie. Sie stehen in `PendingRounds.kt`, eine Zeile pro Runde und Regel (`"2-26-1 B"`). Der Test prüft in beide Richtungen: Eine Runde, die eine Regel verletzt und nicht mit dieser Regel gelistet ist, ist rot; eine gelistete Zeile, deren Regel die Runde inzwischen erfüllt, ist auch rot. Wer eine Runde repariert, löscht ihre Zeile. Neue Zeilen kommen nicht hinzu, ein späterer Diff der Datei enthält nur entfernte Zeilen. Die Datei steht deshalb nicht im Hash von `KitLock.kt`.
+
+**Stillstehen (H3) gemessen wie ein Mensch?** Ein Review behauptete für W3 3, 7, 10, 23, 24, 28 und 47 2–2,5 s Stillstehen, während H3 höchstens 1,5 s am Stück meldet. Nachgemessen (Position des Spielers pro Schritt gegen die H3-Zählung „keine Taste gedrückt“): Die längsten Stücke stimmen bis auf 0,07 s überein (0,9–1,3 s, die Bot-Lösung reagiert auf den Frame genau); nur in 47 zählt H3 mehr, als man sieht (1,25 s ohne Taste, aber der Spieler fährt mit). Die 2–2,5 s sind die **Summe** pro Lauf: Diese Level lassen zweimal etwa 1 s warten (2,0–2,5 s von etwa 6,3 s, genau an der 40-%-Grenze). H3 misst also wie ein Mensch; ein Mensch wartet pro Halt zusätzlich seine Reaktionszeit. Der Bericht druckt deshalb beide Werte (längstes Stück / gesamt).
 
 ## 10. Ablauf
 
@@ -564,43 +597,39 @@ Im Rollout bauen bis zu 15 Agenten parallel, je einer pro Block. Die Deckel aus 
 
 **So entstehen die Zahlen** (eine Regel für alle, keine Handarbeit):
 
-- **Deckel pro Akt** wie im Kit: Pad 3 (das Finale darf einen Schalter obendrauf bringen, „+F“), Laser-Tor 3, Blink 3, `DoorTo` 1, Schwerkraft-Flip 1, `Swap` 2, `wall-move`-dominant 3 (H21), Stachel-Popup 4 (H5), W3 `HeatSpike`-Schluss 4, jede Karte 3 (§7, GRAND_FINALE im Finale frei).
-- **Fest verbraucht** ist, was Level außerhalb der Blöcke schon im Code nutzen und was das Kit zählt (Level in `REBUILT`): in W2 Akt 1 der Pilot 11–16 (Pads 11, 13, 15; Blink 13; Schwerkraft 13; `Swap` 16; `wall-move` 14r2; Karten HEADBUTT 14 und 16, DEVIL_SAW, COLLAPSE, SINKING, UPSIDE_DOWN, STALKER, GHOST_BLOCK je 1), in W2 Akt 2 die Pilot-Level 17, 19, 21, 22 (`Swap` 19; `wall-move` 19; Karten HEADBUTT 17, TWISTED 19, DECOY 21, DEVIL_SAW 22). 18 und 20 gehören zu W2-B, ihre Runde 1 (Pads, Laser-Tore 18 und 20) zählt also im Anteil von W2-B mit. Das Tutorial W1 1–6 zählt nicht (es steht nie in `REBUILT`).
+- **Deckel pro Akt** wie im Kit: Pad 3 (das Finale darf einen Schalter obendrauf bringen, „+F“), Laser-Tor 3, Blink 3, `DoorTo` 1, Schwerkraft-Flip 1, `Swap` 2, `wall-move`-dominant 3 (H21), Stachel-Popup 4 (H5), W3 `HeatSpike`-Schluss 4. Karten haben kein Budget pro Block mehr: Sie folgen dem Karten-Abstand (Regel J, §7 und §9a).
+- **Fest verbraucht** ist, was Level außerhalb der Blöcke schon im Code nutzen und was das Kit zählt (Level in `REBUILT`): in W2 Akt 1 der Pilot 11–16 (Pads 11, 13, 15; Blink 13; Schwerkraft 13; `Swap` 16; `wall-move` 14r2), in W2 Akt 2 die Pilot-Level 17, 19, 21, 22 (`Swap` 19; `wall-move` 19). 18 und 20 gehören zu W2-B, ihre Runde 1 (Pads, Laser-Tore 18 und 20) zählt also im Anteil von W2-B mit. Das Tutorial W1 1–6 zählt nicht (es steht nie in `REBUILT`).
 - **Geplante Zeilen aus §8** bekommen ihr Stück zuerst: `DoorTo` für R6/U4, Pad für R1/R2/R4 (ohne Finale), `Swap` für U9, Schwerkraft für U10, `wall-move` für U3/U8, U18 nach §5a. Sind es mehr Zeilen als der Akt hergibt, bekommt die früheste Zeile den Platz, die andere setzt ihre Überraschung ohne diese Mechanik um (siehe Hinweise unten).
-- **Der Rest des Aktes** (Deckel minus fest verbraucht minus geplant) wird geteilt: der frühere Block bekommt die abgerundete Hälfte, der spätere den Rest. Laser-Tor, Blink, Stachel-Popup, `HeatSpike`-Schluss und Karten haben keine geplanten Zeilen und werden nur so geteilt (zwei Blöcke: 1 und 2, bei Stachel-Popups 2 und 2).
+- **Der Rest des Aktes** (Deckel minus fest verbraucht minus geplant) wird geteilt: der frühere Block bekommt die abgerundete Hälfte, der spätere den Rest. Laser-Tor, Blink, Stachel-Popup und `HeatSpike`-Schluss haben keine geplanten Zeilen und werden nur so geteilt (zwei Blöcke: 1 und 2, bei Stachel-Popups 2 und 2).
 - **Revanche (genau):** Die 47 Revanche-Level bleiben, wo sie sind. Ein Block hat genau so viele, wie heute im Code stehen. **Bluff:** höchstens so viele wie heute. **U18:** die Level aus §5a.
 - **Verboten am Rand:** die dominante Familie (H20) des Nachbarn außerhalb des Blocks, im selben Akt und nicht über ein Finale hinweg. Bei Pilot-Nachbarn ist es die gemessene Familie aus dem Code (alle Runden), sonst die geplante aus §8 (U1 drop, U2 ceiling-move, U3/U8 wall-move, U5/U6 spikes, U7 saw, U12 belt, U13 laser, U17 heat/power; Tür, Steuerung, Schwerkraft, Portal, Fake und Meta ohne tödliche Familie: keine Vorgabe). Das Randlevel darf in keiner Runde von dieser Familie dominiert sein.
 
-**Budgets** (Zahl = höchstens so viele Level des Blocks; Revanche = genau; Karte = höchstens so oft pro Karte, in Klammern die Ausnahmen; Verboten: Randlevel und Familie):
+**Budgets** (Zahl = höchstens so viele Level des Blocks; Revanche = genau; Verboten: Randlevel und Familie):
 
-| Block | Level | Pad | Laser-Tor | Blink | DoorTo | Schwerkraft | Swap | wall-move | Stachel-Popup | HeatSpike-Schluss | Revanche | Bluff | U18 | Karte | Verboten am Rand |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|W1-A|7–16|3 (+F)|3|3|1|1|2|3|4|–|3|0|1|3|7: saw|
-|W1-B|17–24|2|1|1|0|0|1|1|2|–|4|1|0|1|–|
-|W1-C|25–32|1 (+F)|2|2|1|1|1|2|2|–|1|0|1|2|25: wall-move|
-|W1-D|33–40|0|1|1|1|1|1|0|2|–|2|0|1|1|40: ceiling-move|
-|W1-E|41–48|3 (+F)|2|2|0|0|1|3|2|–|4|1|1|2|–|
-|W2-A|1–10|0|3|2|1|0|1|2|4|–|3|1|0|3 (HEADBUTT 1, DEVIL_SAW 2, COLLAPSE 2, SINKING 2, UPSIDE_DOWN 2, STALKER 2, GHOST_BLOCK 2)|10: saw|
-|W2-B|18, 20, 23–32|3 (+F)|3|3|1|1|1|2|4|–|5|1|1|3 (HEADBUTT 2, TWISTED 2, DECOY 2, DEVIL_SAW 2)|18: drop, wall-move; 20: drop, wall-move, belt; 23: saw|
-|W2-C|33–40|1|1|1|0|1|0|1|2|–|2|1|0|1|40: drop|
-|W2-D|41–48|2 (+F)|2|2|1|0|2|2|2|–|4|0|1|2|–|
-|W3-A|1–8|2|1|1|0|0|0|1|2|2|3|0|0|1|8: wall-move|
-|W3-B|9–16|1 (+F)|2|2|1|1|2|2|2|2|2|1|1|2|–|
-|W3-C|17–24|1|1|1|1|0|1|2|2|2|2|0|0|1|24: belt|
-|W3-D|25–32|2 (+F)|2|2|0|1|1|1|2|2|3|0|1|2|25: heat, power|
-|W3-E|33–40|1|1|1|0|0|1|1|2|2|3|0|0|1|–|
-|W3-F|41–48|2 (+F)|2|2|1|1|1|2|2|2|2|1|2|2|41: belt|
+| Block | Level | Pad | Laser-Tor | Blink | DoorTo | Schwerkraft | Swap | wall-move | Stachel-Popup | HeatSpike-Schluss | Revanche | Bluff | U18 | Verboten am Rand |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|W1-A|7–16|3 (+F)|3|3|1|1|2|3|4|–|3|0|1|7: saw|
+|W1-B|17–24|2|1|1|0|0|1|1|2|–|4|1|0|–|
+|W1-C|25–32|1 (+F)|2|2|1|1|1|2|2|–|1|0|1|25: wall-move|
+|W1-D|33–40|0|1|1|1|1|1|0|2|–|2|0|1|40: ceiling-move|
+|W1-E|41–48|3 (+F)|2|2|0|0|1|3|2|–|4|1|1|–|
+|W2-A|1–10|0|3|2|1|0|1|2|4|–|3|1|0|10: saw|
+|W2-B|18, 20, 23–32|3 (+F)|3|3|1|1|1|2|4|–|5|1|1|18: drop, wall-move; 20: drop, wall-move, belt; 23: saw|
+|W2-C|33–40|1|1|1|0|1|0|1|2|–|2|1|0|40: drop|
+|W2-D|41–48|2 (+F)|2|2|1|0|2|2|2|–|4|0|1|–|
+|W3-A|1–8|2|1|1|0|0|0|1|2|2|3|0|0|8: wall-move|
+|W3-B|9–16|1 (+F)|2|2|1|1|2|2|2|2|2|1|1|–|
+|W3-C|17–24|1|1|1|1|0|1|2|2|2|2|0|0|24: belt|
+|W3-D|25–32|2 (+F)|2|2|0|1|1|1|2|2|3|0|1|25: heat, power|
+|W3-E|33–40|1|1|1|0|0|1|1|2|2|3|0|0|–|
+|W3-F|41–48|2 (+F)|2|2|1|1|1|2|2|2|2|1|2|41: belt|
 
 **Was der Block mit seinem Anteil tun muss (Hinweise, wo §8 und der Code nicht zusammenpassen):**
 
 - **W2-A, Pad 0:** Der Pilot hat in Akt 1 schon drei Pad-Level (11, 13, 15; 13 nutzt seine Pads für die Schwerkraft, obwohl §8 dort R5 sagt). Die §8-Zeile W2-6 (R4, Umschalter) wird deshalb **ohne `Pad`** gebaut: der Schalter ist ein `Touch`-Block oder eine Zone mit `Toggle`/`Reroute`.
 - **W2-A, Schwerkraft 0:** 13 hat den einen Flip des Aktes. Keine §8-Zeile in 1–10 plant U10.
-- **W2-B:** 18 und 20 bringen aus Runde 1 schon zwei Pads und zwei Laser-Tore mit. Für 23–32 bleiben also **ein** Pad-Level (dazu der Schalter des Finales 32) und **ein** Laser-Tor (§8: 26, 28 und 32 haben heute eines, nur eines behält es). HEADBUTT darf in W2-B noch zweimal vorkommen (17 hat es, 24 hat es heute).
+- **W2-B:** 18 und 20 bringen aus Runde 1 schon zwei Pads und zwei Laser-Tore mit. Für 23–32 bleiben also **ein** Pad-Level (dazu der Schalter des Finales 32) und **ein** Laser-Tor (§8: 26, 28 und 32 haben heute eines, nur eines behält es).
 - **W2-C/W2-D, Schwerkraft:** §8 plant U10 in 34 und 47. Nur 34 (W2-C) bekommt den Flip; 47 setzt U10 mit `Flip` (Bild dreht sich) oder `Roll` um, ohne `Gravity(true)`.
 - **W3-F, Schwerkraft 1:** §8 plant U10 in 44 und 48. Nur eines von beiden nutzt `Gravity(true)`.
 - **W3, Laser-Tor:** Ein Takt-Strom (`Clock` auf einer Leiterbahn mit Großbuchstaben) mit kurzem Fenster ist ein Tor (H12). §8 plant R8 in W3-3, 7, 10 und im Finale 16. Mit nur 3 Toren im Akt (W3-A 1, W3-B 2) setzt mindestens eine dieser Zeilen ihren Takt mit einer **Kupferschiene** (Kleinbuchstabe, `Clock` auf einer festen Gruppe: zählt nicht als Tor) oder einem Laser mit langem Fenster um.
-- **Karten:** Ein Block mit 1 pro Karte (der frühere Block eines Aktes) spielt jede Karte höchstens einmal. Pro Runde gibt es genau eine Karte (H8), also bei 8 Leveln mit Revanchen 8–12 Karten: dafür reichen die 22 Karten.
-
-### Hinweis W1-B (Level 17-24): Kartenarithmetik
-
-Die Behauptung in §11, 22 Karten reichten für W1 Akt 2, stimmt so nicht: Block B hat 12 Runden (17, 18, 21, 24 mit Revanche), spielbar sind aber nur 10 Karten plus Bluff (höchstens 1 im Block). Jede Karte höchstens einmal im Block heißt also: eine Runde bekommt GRAND_FINALE (hier 24 Runde 2), eine (21 Runde 2) den Bluff `Bluff(SPIKE_SEED)`. Sollte §11 angepasst werden: entweder Karten dürfen sich innerhalb eines Akts nach 8 Leveln wiederholen, oder Revanchen bekommen keine neue Karte.
+- **Karten:** kein Budget pro Block; der Karten-Abstand (Regel J) gilt für den ganzen Akt. Die Kartenarithmetik von W1-B steht als Hinweis in §7.

@@ -31,8 +31,12 @@ import org.junit.Assert.assertTrue
  * The world's level test can play the same script, so the solution lives in one place:
  * `@Test fun level12() = World2DesignTest.play(12)` (and `play(12, round = 2)` in the deck test).
  *
+ * The round rules A–K ([roundRules], docs/LEVEL_DESIGN_V2.md §9a) run on every round of every level of a world (the
+ * W1 tutorial: A–C only); a round that still fails one of them must be listed in [PendingRounds] (shrink-only). F is H3,
+ * E is H9, J is the card rule of §7; they run only there.
+ *
  * The rules (all for rebuilt levels only, except H6 and the table checks, which run on the whole §8 table):
- * - H3 [densityViolations]: never more than [GAP] s without a real trap ([Weight]) in the clean run, standing still at
+ * - H3 / F [densityViolations]: never more than [GAP] s without a real trap ([Weight]) in the clean run, standing still at
  *   most [WAIT_SHARE] of it and at most [WAIT_STRETCH] s in one go, and no shorter than [minDuration], also with idle
  *   waits skipped,
  * - H2 [holdRightWithHopsViolations]: holding right, plain or hopping every 0.4 / 0.7 / 1.0 s, right away or after
@@ -40,9 +44,11 @@ import org.junit.Assert.assertTrue
  * - H7 [slopViolations]: the solution still wins with all its timings late *or* all early,
  * - H5 [spikePopupCount] ≤ 1 per round, and at most [ACT_QUOTA] rebuilt levels per act with any (W3: also [heatSpikeFinaleCount]),
  * - H6 [h6Violations] on the §8 table, [tableRotationViolations] and the puzzle share on the table,
- * - §7 [cardSpreadViolations]: no card more than 3 times in an act (GRAND_FINALE in a finale does not count),
+ * - §7 / J [cardGapFindings]: a card comes back in an act only [CARD_GAP] levels after its last use (GRAND_FINALE in a
+ *   finale and bluffs do not count),
  * - H8 [cardLintViolations]: the card fits the trap it sits on ([cardFits]),
- * - H9 [rematchViolations]: a rematch round's clean run is at least as long as round 1's, and round 1's solution loses it,
+ * - H9 / E [rematchFindings]: a rematch round has at least as many real traps ([Ablation.real]) as round 1, and round 1's
+ *   solution loses it,
  * - H12 [rotationViolations]: per act at most [CAPS] levels with a door that flees, pads, timed lasers, blinking,
  *   gravity flip, swapped controls (counted from the actions in the level code),
  * - H13 [familyViolations]: at most [MAX_FAMILIES] effect families ([families]) per room,
@@ -56,7 +62,7 @@ import org.junit.Assert.assertTrue
  * - trap ablation [decorations]: a trap that changes no probe is decoration and counts for none of H3, H15, H17, H20,
  * - §11 [ROLLOUT], [budgetViolations], [partialBlocks]: the rollout blocks and their share of the act caps.
  *
- * The kit is locked during the rollout ([KitLock]): only the orchestrator changes this file and [DesignTestBase].
+ * The kit is locked ([KitLock]): only the orchestrator changes this file, [DesignTestBase] and [NaiveProbes].
  */
 typealias Solution = Bot.() -> Unit
 
@@ -91,9 +97,6 @@ object DesignRules {
     val FINALES = setOf(16, 32, 48)
     /** H5: rebuilt levels per act (of 16) with a spike popup, 25 %. */
     const val ACT_QUOTA = 4
-    /** §7: plays of one card per act. */
-    const val CARD_LIMIT = 3
-
     val BLOCKS = (1..12).map { "R$it" }.toSet()
     val TWISTS = (1..18).map { "U$it" }.toSet()
     /** The families W3 has to bring in at least every third level (§8, World 3). */
@@ -106,14 +109,18 @@ object DesignRules {
 
     /**
      * §6 (recipe v2): the floor a clean run must not fall below, a sanity check only (density, not duration, is the
-     * goal, see [densityViolations]). 6 s; W1 1–6 4 s; act finales 10 s; ★ breathers none.
+     * goal, see [densityViolations]; rule F of §9a). [MIN_DURATION] s; act finales [FINALE_DURATION] s; ★ breathers none.
      */
     fun minDuration(world: Int, n: Int, design: Design?): Float = when {
         design?.breather == true -> 0f
-        isFinale(n) -> 10f
-        world == 1 && n <= 6 -> 4f
-        else -> 6f
+        isFinale(n) -> FINALE_DURATION
+        else -> MIN_DURATION
     }
+
+    /** F: the floor of a clean run (a sanity check, not the goal). */
+    const val MIN_DURATION = 4f
+    /** F: an act finale keeps its longer floor. */
+    const val FINALE_DURATION = 10f
 
     // ---------- playing ----------
 
@@ -244,12 +251,32 @@ object DesignRules {
         return out
     }
 
-    /** §7: no card more than [CARD_LIMIT] times per act among [levels]; GRAND_FINALE in a finale is free. */
-    fun cardSpreadViolations(levels: Map<Int, Level>): List<String> = levels.keys.groupBy(::act).flatMap { (a, ns) ->
-        ns.flatMap { n -> cards(levels.getValue(n)).filterNot { it == Card.GRAND_FINALE && isFinale(n) } }
-            .groupingBy { it }.eachCount().filter { it.value > CARD_LIMIT }
-            .map { (c, k) -> "act $a: $c played $k times (max $CARD_LIMIT)" }
+    /**
+     * §7 / rule J: within an act a card comes back only [CARD_GAP] levels after its last legal use (level 5 and level 13
+     * may play the same card, 5 and 12 may not), so at most twice per act. A level is one use, whatever its rounds play
+     * (a rematch may play round 1's card again). Bluffs do not count, GRAND_FINALE in a finale is free. A use too early
+     * does not move the last legal use. [levels]: number → level. Level, round (0-based) of the early use → why.
+     */
+    fun cardGapFindings(levels: Map<Int, Level>): List<Triple<Int, Int, String>> {
+        val out = ArrayList<Triple<Int, Int, String>>()
+        for ((a, ns) in levels.keys.groupBy(::act).toSortedMap()) {
+            val last = HashMap<Card, Int>()
+            for (n in ns.sorted()) {
+                val played = levels.getValue(n).rounds.map { round -> flatten(round.start + round.traps.flatMap { it.actions }).filterIsInstance<Action.Play>().map { it.card } }
+                for (c in played.flatten().distinct()) {
+                    if (c == Card.GRAND_FINALE && isFinale(n)) continue
+                    val prev = last[c]
+                    if (prev != null && n - prev < CARD_GAP) {
+                        for ((r, cs) in played.withIndex()) if (c in cs) out += Triple(n, r, "act $a: $c in level $n, ${n - prev} levels after level $prev (min $CARD_GAP)")
+                    } else last[c] = n
+                }
+            }
+        }
+        return out
     }
+
+    /** [cardGapFindings] as lines. */
+    fun cardGapViolations(levels: Map<Int, Level>): List<String> = cardGapFindings(levels).map { it.third }.distinct()
 
     /**
      * H6 on a §8 table: two neighbours (neither an act finale) share neither the main block nor the main twist; no code
@@ -313,7 +340,7 @@ object DesignRules {
     // ---------- recipe v2 ----------
 
     /** H3: seconds the clean run may go without a real trap. */
-    const val GAP = 3f
+    const val GAP = 2.5f
     /** H3: share of the clean run the player may stand still. */
     const val WAIT_SHARE = 0.4f
     /** H3: seconds of standing still in one go. */
@@ -505,7 +532,16 @@ object DesignRules {
         { l, r -> naive(l, r, null, PROBE_WAIT) },
     )
 
-    private val decorationCache = java.util.Collections.synchronizedMap(java.util.IdentityHashMap<Level, MutableMap<Any, Set<Trap>>>())
+    /**
+     * The result of trap ablation for one round and solution: [units] are the trap units (traps with the same trigger)
+     * that weighed something when they went off in a probe, [decoration] the traps of the units whose removal changes no
+     * probe. [real] are the units that are no decoration: the traps the room really has (rule D counts them).
+     */
+    class Ablation(val units: List<List<Trap>>, val decoration: Set<Trap>) {
+        val real: List<List<Trap>> get() = units.filter { u -> u.none { it in decoration } }
+    }
+
+    private val ablationCache = java.util.Collections.synchronizedMap(java.util.IdentityHashMap<Level, MutableMap<Any, Ablation>>())
 
     /**
      * Trap ablation, the principled answer to "a trap that does nothing": for every trap of [round] of [level] that
@@ -516,9 +552,12 @@ object DesignRules {
      * density H3, for the teeth H15, for the dominant family H20/H21, nor as the trap that excuses a death at the start
      * H17. A trap whose removal makes a run throw (something later needs it) is no decoration.
      */
-    fun decorations(level: Level, round: Int, solution: Solution): Set<Trap> {
+    fun decorations(level: Level, round: Int, solution: Solution): Set<Trap> = ablation(level, round, solution).decoration
+
+    /** [decorations] with the units it looked at; [Ablation.real] are the real (non-decoration) trap units of rule D. */
+    fun ablation(level: Level, round: Int, solution: Solution): Ablation {
         val stage = level.rounds[round]
-        return decorationCache.getOrPut(stage) { java.util.Collections.synchronizedMap(java.util.IdentityHashMap()) }.getOrPut(solution) {
+        return ablationCache.getOrPut(stage) { java.util.Collections.synchronizedMap(java.util.IdentityHashMap()) }.getOrPut(solution) {
             val probes = baseProbes(level, round, solution)
             val runs = probes.map { p -> try { p(level, round) } catch (_: RuntimeException) { null } }
             val base = runs.map { it?.let(Outcome::of) ?: Outcome.THREW }
@@ -528,7 +567,8 @@ object DesignRules {
             val firedAt = clean?.moments?.flatMap { m -> m.parts.map { it.trap to m.triggered } }?.toMap().orEmpty()
             // traps with the same trigger go off together and are one moment: they are taken out together (six tiles of
             // one bridge that crumble one after the other are one trap, not six that each change nothing on their own)
-            stage.traps.filter { it in weighed }.groupBy { it.trigger }.values.filter { unit ->
+            val units = stage.traps.filter { it in weighed }.groupBy { it.trigger }.values.toList()
+            val deco = units.filter { unit ->
                 val cut = without(stage, unit.toSet())
                 val same = probes.indices.all { k -> base[k] == outcome { probes[k](cut, 0) } }
                 same && (unit.firstNotNullOfOrNull { firedAt[it] }?.let { at ->
@@ -536,6 +576,7 @@ object DesignRules {
                         outcome { recklessProbe(level, round, solution, at) } == outcome { recklessProbe(cut, 0, solution, at) }
                 } ?: true)
             }.flatten().toSet()
+            Ablation(units, deco)
         }
     }
 
@@ -562,7 +603,7 @@ object DesignRules {
         val marks = (listOf(0f) + counted(bot, level, round, solution).filter { it.real }.map { it.time } + w.time).sorted()
         for ((a, b) in marks.zipWithNext()) if (b - a > GAP + 1e-3f) {
             val what = if (a == 0f && b == w.time) "start to door" else if (a == 0f) "start to first trap" else if (b == w.time) "last trap to door" else "between traps"
-            out += "$where: no real trap for %.2f s (t=%.2f–%.2f, %s; max %.0f s)%s".format(b - a, a, b, what, GAP, run)
+            out += "$where: no real trap for %.2f s (t=%.2f–%.2f, %s; max %.1f s)%s".format(b - a, a, b, what, GAP, run)
         }
         if (bot.idleTime > WAIT_SHARE * w.time + 1e-3f) {
             out += "$where: stands still %.1f %% of the run (%.2f of %.2f s, max %.0f %%)".format(100 * bot.idleTime / w.time, bot.idleTime, w.time, 100 * WAIT_SHARE)
@@ -810,23 +851,27 @@ object DesignRules {
     }
 
     /**
-     * H9: every rematch round of [level] is at least as long as round 1 (clean runs of [solutions], round 1 first) and
-     * round 1's solution does not win it.
+     * H9 / rule E: every rematch round of [level] has at least as many real trap units ([Ablation.real]) as round 1
+     * (with [solutions], round 1 first) and round 1's solution does not win it. (Until the W2 playtest H9 asked for a
+     * clean run at least as long as round 1; length is no goal any more, the traps are.) Rematch round (0-based) → why.
      */
-    fun rematchViolations(level: Level, solutions: List<Solution>): List<String> {
+    fun rematchFindings(level: Level, solutions: List<Solution>): List<Pair<Int, String>> {
         if (level.rounds.size < 2 || solutions.isEmpty()) return emptyList()
-        val first = cleanRun(level, 0, solutions[0]).world
-        val out = ArrayList<String>()
+        val first = if (cleanRun(level, 0, solutions[0]).world.state == WorldState.WON) ablation(level, 0, solutions[0]).real.size else null
+        val out = ArrayList<Pair<Int, String>>()
         for (r in 1 until level.rounds.size) {
-            if (play(level, r, solutions[0]).world.state == WorldState.WON) out += "${level.name.en} round ${r + 1}: round 1's solution wins it"
+            val old = outcome { play(level, r, solutions[0]) }
+            if (old.state == WorldState.WON) out += r to "${level.name.en} round ${r + 1}: round 1's solution wins it"
             val s = solutions.getOrNull(r) ?: continue
-            val w = cleanRun(level, r, s).world
-            if (first.state == WorldState.WON && w.state == WorldState.WON && w.time < first.time - 0.05f) {
-                out += "${level.name.en} round ${r + 1}: clean run %.2f s, shorter than round 1 (%.2f s)".format(w.time, first.time)
-            }
+            if (first == null || cleanRun(level, r, s).world.state != WorldState.WON) continue
+            val real = ablation(level, r, s).real.size
+            if (real < first) out += r to "${level.name.en} round ${r + 1}: $real real traps, round 1 has $first"
         }
         return out
     }
+
+    /** [rematchFindings] as lines. */
+    fun rematchViolations(level: Level, solutions: List<Solution>): List<String> = rematchFindings(level, solutions).map { it.second }
 
     /**
      * H17: holding right from the spawn dies within [FILLER_WINDOW] s, and no trap that went off before is what killed
@@ -1086,21 +1131,208 @@ object DesignRules {
     @JvmName("wallMoveViolationsOfRoundOne")
     fun wallMoveViolations(signatures: Map<Int, Signature>): List<String> = wallMoveViolations(perRound(signatures))
 
+    // ---------- round rules A–K (the W2 playtest and the naive probe harness) ----------
+
+    /** D: real traps (ablation, [Ablation.real]) per round; ★ breathers [REAL_TRAPS_BREATHER]. */
+    const val REAL_TRAPS = 3
+    const val REAL_TRAPS_BREATHER = 2
+    /** G: levels per act a dominant family may have (any round, ties included); wall-move keeps H21's [WALL_MOVE_CAP]. */
+    const val FAMILY_CAP = 4
+    /** H: levels per act whose run turns around and ends at a door on the spawn side ([turnsAround]). */
+    const val TURNAROUND_CAP = 4
+    /** I: direction changes a puzzle room's solution needs (or a bait, [Path.bait]). */
+    const val PUZZLE_TURNS = 2
+    /** J: a card comes back in an act at the earliest this many levels after its last use. */
+    const val CARD_GAP = 8
+    /** The round rules, in order. */
+    const val ROUND_RULES = "ABCDEFGHIJK"
+
+    /** G: the lead family of an act (§8: W3 act 2 heat, act 3 fans) may dominate this many levels of it. */
+    const val LEAD_FAMILY_CAP = 6
+    /** G: the family a §8 lead block stands for. */
+    val LEAD_FAMILIES = mapOf("R11" to "heat", "R10" to "fan")
+
+    /** G: the cap of [family] per act; [lead] is the act's lead family, if any. */
+    fun familyCap(family: String, lead: String? = null) = when (family) {
+        "wall-move" -> WALL_MOVE_CAP
+        lead -> LEAD_FAMILY_CAP
+        else -> FAMILY_CAP
+    }
+
+    /**
+     * One world for the round rules: every level, its §8 row, a solution per round (the W1 tutorial included) and the
+     * lead block of an act (§8, act → code, as [DesignTestBase.lead]).
+     */
+    class WorldRounds(val world: Int, val levels: List<Level>, val design: Map<Int, Design>, val solutions: Map<Int, List<Solution>>, val lead: Map<Int, String> = emptyMap())
+
+    /** The round rules of one world: round id ("2-26-1") → failing rule letter → why; [report] one line per round. */
+    class RoundRules(val failures: Map<String, Map<Char, String>>, val report: List<String>)
+
+    fun roundId(world: Int, n: Int, round: Int) = "$world-$n-${round + 1}"
+
+    /**
+     * The path of a clean run, for H and I: the player's x at every step, where the run started and where the door was
+     * when it won, the room's width, the direction changes ([Bot.shape], `R`/`L` stretches of 0.25 s or more, standing
+     * still left out) and [bait] (I: the greedy hopper heading straight for the door dies to a trap).
+     */
+    class Path(val xs: List<Float>, val spawn: Float, val door: Float, val cols: Int, val turns: Int, val bait: Boolean) {
+        /** How far the run got from the spawn, in tiles. */
+        val reach: Float get() = xs.maxOfOrNull { abs(it - spawn) } ?: 0f
+        /**
+         * H: the run turns around (a direction change) after going out at least a third of the room, and the door it
+         * ends at is within a quarter of the room of the spawn (above, below or next to it).
+         */
+        val turnsAround: Boolean get() = abs(door - spawn) <= cols / 4f && reach >= cols / 3f && turns >= 1
+    }
+
+    /** Direction changes of a [Bot.shape]: `R` to `L` and back, standing still in between ignored. */
+    fun turns(shape: List<String>): Int = shape.map { it.first() }.filter { it != 'W' }.zipWithNext().count { (a, b) -> a != b }
+
+    fun path(level: Level, round: Int, solution: Solution, probes: NaiveProbes.Measured): Path {
+        val xs = ArrayList<Float>()
+        val bot = Bot(level, round, probe = Bot.Probe(Bot.Probe.Kind.WAIT, 0f) { xs += it.world.player.box.cx; false })
+        val spawn = bot.world.player.box.cx
+        val door0 = bot.world.door.box.cx
+        bot.apply(solution)
+        val toward = if (door0 >= spawn) "P2R" else "P2L"
+        val p = probes.naive.first { it.name == toward }
+        return Path(xs, spawn, bot.world.door.box.cx, level.cols, turns(bot.shape()), p.base.dead && p.killerUnits.isNotEmpty())
+    }
+
+    /**
+     * K: whether the [Action.Ghost] of round 1 of [level] matters. A replay needs a past attempt, so besides trap
+     * ablation ([Ablation.real]) the solution is played as the second attempt after a naive first one (holding right,
+     * hopping every 0.7 s, standing [PROBE_WAIT] s first), with and without the ghost's trap unit: it matters if one ends
+     * differently. Null: round 1 has no ghost.
+     */
+    fun ghostMatters(level: Level, solution: Solution): Boolean? {
+        val stage = level.rounds[0]
+        val unit = stage.traps.filter { t -> flatten(t.actions).any { it is Action.Ghost } }
+        if (unit.isEmpty()) return null
+        val units = stage.traps.filter { t -> unit.any { it.trigger == t.trigger } }.toSet()
+        if (ablation(level, 0, solution).real.any { u -> u.any { it in units } }) return true
+        val cut = without(stage, units)
+        val firsts: List<(Level) -> Bot> = listOf({ l -> naive(l, 0, null) }, { l -> naive(l, 0, 0.7f) }, { l -> naive(l, 0, null, PROBE_WAIT) })
+        return firsts.any { first ->
+            val second = { l: Level -> first(l).let { b -> if (b.world.state == WorldState.DEAD) b.retry().apply(solution) else b } }
+            outcome { second(stage) } != outcome { second(cut) }
+        }
+    }
+
+    /**
+     * The round rules A–K over every level of [w] (docs/LEVEL_DESIGN_V2.md §9a). Per round (W1 1–6 is the tutorial: no
+     * D, and like every level outside the V2 rollout no F):
+     *
+     * - A naive: no naive runner of [NaiveProbes] reaches the door (NAIVE_CLEAR, ZIGZAG_CLEAR);
+     * - B helpful: no trap that went off makes the door reachable or 0.3 s faster for a naive runner (HELPFUL_TRAP);
+     * - C passive: the clean run wins and one real moment of it kills the player who freezes [NaiveProbes.FREEZE] s right
+     *   after it (not PASSIVE_SAFE);
+     * - D real traps: at least [REAL_TRAPS] ([REAL_TRAPS_BREATHER] for ★) real trap units by ablation ([Ablation.real]);
+     * - E rematch: a rematch round has at least as many real trap units as round 1, and round 1's solution loses it;
+     * - F density: H3 ([densityViolations]) with the floor of [minDuration];
+     * - G family cap: per act at most [familyCap] levels dominated by one family (any round, ties included); the levels
+     *   past the cap, in level order, fail;
+     * - H turnaround door: per act at most [TURNAROUND_CAP] levels where a round's run turns around and ends at a door on
+     *   the spawn side ([Path.turnsAround]); the levels past the cap fail;
+     * - I puzzle: a round of an R-coded row needs [PUZZLE_TURNS] direction changes or a bait ([Path]);
+     * - J cards: a card (bluffs aside, GRAND_FINALE in a finale free) comes back in an act only [CARD_GAP] levels after its
+     *   last legal use; the round that plays it too early fails;
+     * - K ghost: a ghost in round 1 has to matter ([ghostMatters]), else it belongs in a rematch.
+     */
+    fun roundRules(w: WorldRounds): RoundRules {
+        val fails = LinkedHashMap<String, MutableMap<Char, String>>()
+        fun fail(n: Int, r: Int, rule: Char, why: String) { fails.getOrPut(roundId(w.world, n, r)) { java.util.TreeMap() }.merge(rule, why) { a, b -> "$a; $b" } }
+        val ns = (1..w.levels.size).toList()
+        // the W1 tutorial (1–6): A–C only, and it counts for no act cap
+        val tutorial = { n: Int -> !ruled(w.world, n) }
+        // per round, in parallel: the probes, the ablation, the path
+        class Row(val n: Int, val r: Int, val probes: NaiveProbes.Measured, val real: Int?, val path: Path?, val sig: Signature?, val density: List<String>, val idle: String)
+        val jobs = ns.flatMap { n -> w.levels[n - 1].rounds.indices.map { r -> n to r } }
+        val rows = jobs.parallelStream().map { (n, r) ->
+            val level = w.levels[n - 1]
+            val sols = w.solutions[n]
+            val sol = sols?.getOrNull(r)
+            val m = NaiveProbes.measured(w.world, n, level, r, sols)
+            val ok = sol != null && m.cleanWon
+            val real = if (ok) ablation(level, r, sol!!).real.size else null
+            val path = if (ok) path(level, r, sol!!, m) else null
+            val sig = if (ok) signature(level, sol!!, r) else null
+            val density = if (sol != null && ruled(w.world, n)) densityViolations(level, r, sol, minDuration(w.world, n, w.design[n])) else emptyList()
+            val idle = if (ok) measured(level, r, sol!!).let { b -> "%.2f/%.2f".format(b.longestIdle, b.idleTime) } else "-"
+            Row(n, r, m, real, path, sig, density, idle)
+        }.toList().sortedWith(compareBy({ it.n }, { it.r }))
+        val byLevel = rows.groupBy { it.n }
+        for (row in rows) {
+            val (n, r, m) = Triple(row.n, row.r, row.probes)
+            val level = w.levels[n - 1]
+            val d = w.design[n]
+            if (w.solutions[n]?.getOrNull(r) == null) { fail(n, r, 'C', "no solution registered"); continue }
+            if (!m.cleanWon) { fail(n, r, 'C', "the solution does not win"); continue }
+            val won = m.naive.filter { it.base.won }.map { it.name }
+            if (won.isNotEmpty()) fail(n, r, 'A', "naive runners reach the door: $won")
+            if ("HELPFUL_TRAP" in m.flags) fail(n, r, 'B', "a trap helps a naive runner: " +
+                m.naive.flatMap { p -> p.helpfulDoor.map { "${p.name}:${NaiveProbes.unitKey(level.rounds[r], it)}" } })
+            if ("PASSIVE_SAFE" in m.flags) fail(n, r, 'C', "no trap kills the player who freezes ${NaiveProbes.FREEZE} s after it (${m.p4.size} moments)")
+            if (tutorial(n)) continue
+            val min = if (d?.breather == true) REAL_TRAPS_BREATHER else REAL_TRAPS
+            if (row.real!! < min) fail(n, r, 'D', "${row.real} real traps by ablation (min $min)")
+            if (r == 1) for ((rr, why) in rematchFindings(level, w.solutions.getValue(n))) fail(n, rr, 'E', why)
+            if (row.density.isNotEmpty()) fail(n, r, 'F', row.density.joinToString("; "))
+            if (d != null && d.blocks.isNotEmpty() && row.path!!.turns < PUZZLE_TURNS && !row.path.bait) {
+                fail(n, r, 'I', "puzzle room ${d.blocks}: ${row.path.turns} direction changes, no bait")
+            }
+        }
+        // per act: G, H, J
+        for ((act, acts) in ns.filterNot(tutorial).groupBy(::act)) {
+            val lead = w.lead[act]?.let { LEAD_FAMILIES[it] }
+            val solved = acts.filter { n -> byLevel.getValue(n).all { it.sig != null } }
+            for (family in solved.flatMap { n -> byLevel.getValue(n).flatMap { it.sig!!.dominant } }.distinct().sorted()) {
+                val with = solved.filter { n -> byLevel.getValue(n).any { family in it.sig!!.dominant } }
+                val cap = familyCap(family, lead)
+                for (n in with.drop(cap)) for (row in byLevel.getValue(n)) if (family in row.sig!!.dominant) {
+                    fail(n, row.r, 'G', "act $act: $family dominates ${with.size} levels $with (max $cap)")
+                }
+            }
+            val turning = acts.filter { n -> byLevel.getValue(n).any { it.path?.turnsAround == true } }
+            for (n in turning.drop(TURNAROUND_CAP)) for (row in byLevel.getValue(n)) if (row.path?.turnsAround == true) {
+                fail(n, row.r, 'H', "act $act: ${turning.size} levels turn around to a door on the spawn side $turning (max $TURNAROUND_CAP)")
+            }
+        }
+        for ((n, r, why) in cardGapFindings(ns.filterNot(tutorial).associateWith { w.levels[it - 1] })) fail(n, r, 'J', why)
+        val ghosts = ns.filterNot(tutorial).associateWith { n -> w.solutions[n]?.firstOrNull()?.let { ghostMatters(w.levels[n - 1], it) } }
+        for ((n, matters) in ghosts) if (matters == false) {
+            fail(n, 0, 'K', "the ghost of round 1 changes nothing (no ablation probe, no second attempt): move it to a rematch or give it a payoff")
+        }
+        val report = rows.map { row ->
+            val m = row.probes
+            val id = roundId(w.world, row.n, row.r)
+            val ghost = if (row.r == 0) ghosts[row.n]?.let { if (it) " ghost=matters" else " ghost=idle" } ?: "" else ""
+            "%-8s real=%s P6=%s turns=%s turnaround=%s(spawn %s door %s reach %s of %s) bait=%s idle(longest/total)=%s dominant=%s$ghost%s%s | %s".format(
+                id, row.real ?: "-", if (m.p6runs == 0) "n/a" else "${m.p6broke.size}/${m.p6runs}",
+                row.path?.turns ?: "-", row.path?.turnsAround ?: "-", row.path?.spawn?.let { "%.1f".format(it) } ?: "-",
+                row.path?.door?.let { "%.1f".format(it) } ?: "-", row.path?.reach?.let { "%.1f".format(it) } ?: "-", row.path?.cols ?: "-",
+                row.path?.bait ?: "-", row.idle,
+                row.sig?.dominant?.joinToString("+")?.ifEmpty { "-" } ?: "-",
+                if ("LOW_THREAT" in m.flags) " LOW_THREAT" else "", if ("ONE_DEATH" in m.flags) " ONE_DEATH" else "",
+                fails[id]?.keys?.joinToString("")?.ifEmpty { "-" } ?: "-")
+        }
+        return RoundRules(fails, report)
+    }
+
     // ---------- rollout blocks (§11): parallel builders share an act ----------
 
     /**
      * A rollout block of docs/LEVEL_DESIGN_V2.md §11: the levels one builder rebuilds and the share of every per-act cap it
      * may use, so that two blocks built in parallel cannot both eat the act's budget. [budget] keys are [BUDGET_ITEMS];
      * a missing key is not checked (HeatSpike finales outside World 3). `pad` counts like H12: the act finale may bring
-     * one switch on top. `rematch` is exact (the 47 rematch levels stay). [card] is the budget of every card, [cards] the
-     * exceptions (cards that levels outside the block already play in the act). [forbidden]: an edge level of the block
-     * and the dominant families (H20) it must not have, because the neighbour outside the block has (or plans) them.
+     * one switch on top. `rematch` is exact (the 47 rematch levels stay). Cards have no block budget any more: the card
+     * rule J ([cardGapFindings]) spaces them per act. [forbidden]: an edge level of the block and the dominant families
+     * (H20) it must not have, because the neighbour outside the block has (or plans) them.
      */
     class Block(
         val world: Int, val id: String, val levels: Set<Int>, val budget: Map<String, Int>,
-        val card: Int, val cards: Map<Card, Int> = emptyMap(), val forbidden: Map<Int, Set<String>> = emptyMap(),
+        val forbidden: Map<Int, Set<String>> = emptyMap(),
     ) {
-        fun cardBudget(c: Card) = cards[c] ?: card
         override fun toString() = "W$world $id"
     }
 
@@ -1111,32 +1343,29 @@ object DesignRules {
     val PILOT = (11..24).toSet()
 
     private fun b(world: Int, id: String, levels: Iterable<Int>, pad: Int, gate: Int, blink: Int, door: Int, gravity: Int, swap: Int, wall: Int,
-        spikes: Int, heatspike: Int?, rematch: Int, bluff: Int, annex: Int, card: Int, cards: Map<Card, Int> = emptyMap(), forbidden: Map<Int, Set<String>> = emptyMap()) =
+        spikes: Int, heatspike: Int?, rematch: Int, bluff: Int, annex: Int, forbidden: Map<Int, Set<String>> = emptyMap()) =
         Block(world, id, levels.toSet(), listOfNotNull("pad" to pad, "gate" to gate, "blink" to blink, "door" to door, "gravity" to gravity, "swap" to swap,
-            "wall" to wall, "spikes" to spikes, heatspike?.let { "heatspike" to it }, "rematch" to rematch, "bluff" to bluff, "annex" to annex).toMap(), card, cards, forbidden)
+            "wall" to wall, "spikes" to spikes, heatspike?.let { "heatspike" to it }, "rematch" to rematch, "bluff" to bluff, "annex" to annex).toMap(), forbidden)
 
     /** §11, the rollout blocks and their budgets (the table in the doc must say the same, `RolloutBudgetTest`). */
     val ROLLOUT: List<Block> = listOf(
-        //     world id      levels                                pad gate blink door grav swap wall spikes heat rematch bluff annex card
-        b(1, "A", 7..16, 3, 3, 3, 1, 1, 2, 3, 4, null, 3, 0, 1, 3, forbidden = mapOf(7 to setOf("saw"))),
-        b(1, "B", 17..24, 2, 1, 1, 0, 0, 1, 1, 2, null, 4, 1, 0, 1),
-        b(1, "C", 25..32, 1, 2, 2, 1, 1, 1, 2, 2, null, 1, 0, 1, 2, forbidden = mapOf(25 to setOf("wall-move"))),
-        b(1, "D", 33..40, 0, 1, 1, 1, 1, 1, 0, 2, null, 2, 0, 1, 1, forbidden = mapOf(40 to setOf("ceiling-move"))),
-        b(1, "E", 41..48, 3, 2, 2, 0, 0, 1, 3, 2, null, 4, 1, 1, 2),
-        b(2, "A", 1..10, 0, 3, 2, 1, 0, 1, 2, 4, null, 3, 1, 0, 3,
-            cards = mapOf(Card.HEADBUTT to 1, Card.DEVIL_SAW to 2, Card.COLLAPSE to 2, Card.SINKING to 2, Card.UPSIDE_DOWN to 2, Card.STALKER to 2, Card.GHOST_BLOCK to 2),
-            forbidden = mapOf(10 to setOf("saw"))),
-        b(2, "B", listOf(18, 20, 23, 24) + (25..32), 3, 3, 3, 1, 1, 1, 2, 4, null, 5, 1, 1, 3,
-            cards = mapOf(Card.HEADBUTT to 2, Card.TWISTED to 2, Card.DECOY to 2, Card.DEVIL_SAW to 2),
+        //     world id      levels                                pad gate blink door grav swap wall spikes heat rematch bluff annex
+        b(1, "A", 7..16, 3, 3, 3, 1, 1, 2, 3, 4, null, 3, 0, 1, forbidden = mapOf(7 to setOf("saw"))),
+        b(1, "B", 17..24, 2, 1, 1, 0, 0, 1, 1, 2, null, 4, 1, 0),
+        b(1, "C", 25..32, 1, 2, 2, 1, 1, 1, 2, 2, null, 1, 0, 1, forbidden = mapOf(25 to setOf("wall-move"))),
+        b(1, "D", 33..40, 0, 1, 1, 1, 1, 1, 0, 2, null, 2, 0, 1, forbidden = mapOf(40 to setOf("ceiling-move"))),
+        b(1, "E", 41..48, 3, 2, 2, 0, 0, 1, 3, 2, null, 4, 1, 1),
+        b(2, "A", 1..10, 0, 3, 2, 1, 0, 1, 2, 4, null, 3, 1, 0, forbidden = mapOf(10 to setOf("saw"))),
+        b(2, "B", listOf(18, 20, 23, 24) + (25..32), 3, 3, 3, 1, 1, 1, 2, 4, null, 5, 1, 1,
             forbidden = mapOf(18 to setOf("drop", "wall-move"), 20 to setOf("drop", "wall-move", "belt"), 23 to setOf("saw"))),
-        b(2, "C", 33..40, 1, 1, 1, 0, 1, 0, 1, 2, null, 2, 1, 0, 1, forbidden = mapOf(40 to setOf("drop"))),
-        b(2, "D", 41..48, 2, 2, 2, 1, 0, 2, 2, 2, null, 4, 0, 1, 2),
-        b(3, "A", 1..8, 2, 1, 1, 0, 0, 0, 1, 2, 2, 3, 0, 0, 1, forbidden = mapOf(8 to setOf("wall-move"))),
-        b(3, "B", 9..16, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2),
-        b(3, "C", 17..24, 1, 1, 1, 1, 0, 1, 2, 2, 2, 2, 0, 0, 1, forbidden = mapOf(24 to setOf("belt"))),
-        b(3, "D", 25..32, 2, 2, 2, 0, 1, 1, 1, 2, 2, 3, 0, 1, 2, forbidden = mapOf(25 to setOf("heat", "power"))),
-        b(3, "E", 33..40, 1, 1, 1, 0, 0, 1, 1, 2, 2, 3, 0, 0, 1),
-        b(3, "F", 41..48, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 2, forbidden = mapOf(41 to setOf("belt"))),
+        b(2, "C", 33..40, 1, 1, 1, 0, 1, 0, 1, 2, null, 2, 1, 0, forbidden = mapOf(40 to setOf("drop"))),
+        b(2, "D", 41..48, 2, 2, 2, 1, 0, 2, 2, 2, null, 4, 0, 1),
+        b(3, "A", 1..8, 2, 1, 1, 0, 0, 0, 1, 2, 2, 3, 0, 0, forbidden = mapOf(8 to setOf("wall-move"))),
+        b(3, "B", 9..16, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 1),
+        b(3, "C", 17..24, 1, 1, 1, 1, 0, 1, 2, 2, 2, 2, 0, 0, forbidden = mapOf(24 to setOf("belt"))),
+        b(3, "D", 25..32, 2, 2, 2, 0, 1, 1, 1, 2, 2, 3, 0, 1, forbidden = mapOf(25 to setOf("heat", "power"))),
+        b(3, "E", 33..40, 1, 1, 1, 0, 0, 1, 1, 2, 2, 3, 0, 0),
+        b(3, "F", 41..48, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, forbidden = mapOf(41 to setOf("belt"))),
     )
 
     /** What [levels] (number → level) of a block use, per [BUDGET_ITEMS] item; `wall` needs [signatures] (level → per round). */
@@ -1160,13 +1389,9 @@ object DesignRules {
         )
     }
 
-    /** Cards played in [levels] (every round, bluffs aside), GRAND_FINALE in a finale left out, as in §7. */
-    fun blockCards(levels: Map<Int, Level>): Map<Card, Int> =
-        levels.flatMap { (n, l) -> cards(l).filterNot { it == Card.GRAND_FINALE && isFinale(n) } }.groupingBy { it }.eachCount()
-
     /**
-     * §11: a block whose levels are all rebuilt stays within its budget ([Block.budget], `rematch` exactly), plays no card
-     * more often than [Block.cardBudget], and its edge levels are not dominated (any round, H20) by a [Block.forbidden] family.
+     * §11: a block whose levels are all rebuilt stays within its budget ([Block.budget], `rematch` exactly), and its edge
+     * levels are not dominated (any round, H20) by a [Block.forbidden] family.
      */
     fun budgetViolations(block: Block, levels: Map<Int, Level>, signatures: Map<Int, List<Signature>>): List<String> {
         val out = ArrayList<String>()
@@ -1176,7 +1401,6 @@ object DesignRules {
             if (item == "rematch") { if (k != max) out += "$block: $k rematch levels, the block keeps exactly $max" }
             else if (k > max) out += "$block: $item in $k levels (budget $max)"
         }
-        for ((c, k) in blockCards(levels)) if (k > block.cardBudget(c)) out += "$block: card $c played $k times (budget ${block.cardBudget(c)})"
         for ((n, fs) in block.forbidden) {
             val dominant = signatures[n].orEmpty().flatMap { it.dominant }.toSet()
             val clash = dominant intersect fs

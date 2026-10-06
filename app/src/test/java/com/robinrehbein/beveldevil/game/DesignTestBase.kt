@@ -19,6 +19,8 @@ abstract class DesignTestBase {
     abstract val rebuilt: Set<Int>
     /** Level number → one solution per round. */
     abstract val solutions: Map<Int, List<Solution>>
+    /** Every level's solutions for the round rules (§9a), the W1 tutorial included. */
+    open val allSolutions: Map<Int, List<Solution>> get() = solutions
     /** Act → its lead mechanic, exempt from "3 of 4" in H6 (§8, World 3). */
     open val lead: Map<Int, String> = emptyMap()
 
@@ -82,12 +84,10 @@ abstract class DesignTestBase {
 
     /** Rule code → its check. [acts] is the scope the per-act rules count over. */
     private fun rules(scope: Scope, acts: Scope): Map<String, () -> List<Finding>> = linkedMapOf(
-        "H3 density" to { perRound("H3", scope) { n, r, s -> DesignRules.densityViolations(level(n), r, s, DesignRules.minDuration(world, n, design[n])) } },
         "H2 naive runs" to { scope.rounds.flatMap { (n, r, _) -> DesignRules.holdRightWithHopsViolations(level(n), r).map { Finding("H2", n, it) } } },
         "H7 slop" to { perRound("H7", scope) { n, r, s -> DesignRules.slopViolations(level(n), r, s) } },
         "H15 teeth" to { perRound("H15", scope) { n, r, s -> DesignRules.teethViolations(level(n), r, s) } },
         "H17 filler death" to { scope.rounds.flatMap { (n, r, _) -> DesignRules.fillerDeathViolations(level(n), r).map { Finding("H17", n, it) } } },
-        "H9 rematch" to { per("H9", scope) { n, l -> DesignRules.rematchViolations(l, scope.solutions[n].orEmpty()) } },
         "H13 effect families" to { per("H13", scope) { n, l -> DesignRules.familyViolations(n, l) } },
         "H8 card lint" to { per("H8", scope) { _, l -> DesignRules.cardLintViolations(l) } },
         "H12 rotation" to { DesignRules.rotationViolations(acts.levels).map { Finding("H12", null, it) } },
@@ -108,7 +108,6 @@ abstract class DesignTestBase {
             DesignRules.adjacentViolations(sigs).map { Finding("H20", null, it) }
         },
         "H21 moving walls" to { DesignRules.wallMoveViolations(signatures(acts)).map { Finding("H21", null, it) } },
-        "§7 card spread" to { DesignRules.cardSpreadViolations(acts.levels).map { Finding("§7", null, it) } },
     )
 
     /** H20/H21: the signature of every round with a solution, of every level of [scope] that has one. */
@@ -132,12 +131,10 @@ abstract class DesignTestBase {
         }
     }
 
-    @Test fun cleanRunIsDense() = check("H3 density")
     @Test fun holdRightWithHopsNeverWins() = check("H2 naive runs")
     @Test fun solutionToleratesSlop() = check("H7 slop")
     @Test fun everyTrapHasTeeth() = check("H15 teeth")
     @Test fun noFillerDeathAtTheStart() = check("H17 filler death")
-    @Test fun rematchWorksAgainstRoundOne() = check("H9 rematch")
     @Test fun atMostTwoEffectFamiliesPerRoom() = check("H13 effect families")
     @Test fun cardsFitTheirTraps() = check("H8 card lint")
     @Test fun mechanicsRotatePerAct() = check("H12 rotation")
@@ -145,7 +142,37 @@ abstract class DesignTestBase {
     @Test fun noRepeatedLinesInAnAct() = check("H19 say lint")
     @Test fun neighboursPlayDifferently() = check("H20 adjacent rooms")
     @Test fun atMostThreeMovingWallLevelsPerAct() = check("H21 moving walls")
-    @Test fun cardsSpreadPerAct() = check("§7 card spread")
+
+    // ---------- the round rules A–K (§9a) and the shrink-only pending list ----------
+
+    /**
+     * §9a: every round of every level (the W1 tutorial included, with A–C) follows the round rules A–K
+     * ([DesignRules.roundRules]), or the failing rule of that round is listed in [PendingRounds], one line per round and
+     * rule. Both ways: a failure that is not listed is red, and so is a listed line whose rule the round no longer fails
+     * (a fixer deletes the line). The per-round measurement (real traps, P6 timing sensitivity, turns, idle, LOW_THREAT,
+     * ONE_DEATH) is printed and written to `build/reports/round-rules-w{n}.txt`; it never fails.
+     */
+    @Test
+    fun roundRulesHoldOrArePending() {
+        val rr = DesignRules.roundRules(DesignRules.WorldRounds(world, levels, design, allSolutions, lead))
+        val dist = rr.report.mapNotNull { Regex("""real=(\d+)""").find(it)?.groupValues?.get(1)?.toInt() }.groupingBy { it }.eachCount().toSortedMap()
+        val text = "Round rules of world $world (A naive, B helpful, C passive, D real traps, E rematch, F density, G family cap, " +
+            "H turnaround door, I puzzle turns, J card gap, K ghost)\n" + rr.report.joinToString("\n") +
+            "\nD distribution (real traps by ablation: rounds): $dist\n" +
+            rr.failures.toSortedMap().flatMap { (id, m) -> m.map { (k, why) -> "$id $k: $why" } }.joinToString("\n") + "\n"
+        println(text)
+        try { File("build/reports/round-rules-w$world.txt").apply { parentFile?.mkdirs() }.writeText(text) } catch (_: Throwable) {}
+        val failing = rr.failures.flatMap { (id, m) -> m.keys.map { "$id $it" } }.toSet()
+        val listed = PendingRounds.ENTRIES.filter { it.startsWith("$world-") }
+        val malformed = listed.filterNot { Regex("""$world-\d+-\d+ [${DesignRules.ROUND_RULES}]""").matches(it) } +
+            listed.groupingBy { it }.eachCount().filter { it.value > 1 }.keys.map { "$it (twice)" }
+        val unlisted = (failing - listed.toSet()).sorted().map { e ->
+            val (id, k) = e.split(' ')
+            "$e: ${rr.failures.getValue(id).getValue(k.single())}"
+        }
+        val stale = (listed.toSet() - failing).sorted().map { "$it: passes now, delete the line from PendingRounds" }
+        assertNone("round rules of world $world (§9a; PendingRounds only shrinks)", malformed.map { "malformed entry $it" } + unlisted + stale)
+    }
 
     // ---------- the rollout (§11) and the lock ----------
 

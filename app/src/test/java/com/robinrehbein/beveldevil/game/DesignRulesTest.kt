@@ -27,7 +27,7 @@ class DesignRulesTest {
         assertEquals(1, DesignRules.spikePopupCount(puzzle))
         assertEquals(0, DesignRules.heatSpikeFinaleCount(puzzle))
         assertEquals(emptyList<String>(), DesignRules.spikeQuotaViolations(mapOf(20 to puzzle)))
-        assertEquals(emptyList<String>(), DesignRules.cardSpreadViolations(mapOf(20 to puzzle)))
+        assertEquals(emptyList<String>(), DesignRules.cardGapViolations(mapOf(20 to puzzle)))
     }
 
     @Test
@@ -58,14 +58,32 @@ class DesignRulesTest {
     }
 
     @Test
-    fun aFifthSpikeLevelOrAFourthCardInAnActIsCaught() {
+    fun aFifthSpikeLevelOrACardTooSoonAgainInAnActIsCaught() {
         val act = (17..21).associateWith { DesignDemos.corridor(Card.CRUMBLE) }
         assertTrue(DesignRules.spikeQuotaViolations(act).any { it.startsWith("act 2: 5 levels") })
-        assertEquals(listOf("act 2: CRUMBLE played 5 times (max 3)"), DesignRules.cardSpreadViolations(act))
-        // three are fine, and the grand finale may be played in a finale on top
-        assertEquals(emptyList<String>(), DesignRules.cardSpreadViolations((17..19).associateWith { DesignDemos.corridor(Card.CRUMBLE) }))
-        val finales = mapOf(16 to DesignDemos.corridor(Card.GRAND_FINALE)) + (1..3).associateWith { DesignDemos.corridor(Card.GRAND_FINALE) }
-        assertEquals(emptyList<String>(), DesignRules.cardSpreadViolations(finales))
+        // J: the first use is legal, every use within 8 levels of it is not (and does not move the last legal use)
+        assertEquals((18..21).map { "act 2: CRUMBLE in level $it, ${it - 17} levels after level 17 (min 8)" }, DesignRules.cardGapViolations(act))
+        // 8 levels apart is fine, so is the next act, and the grand finale may be played in a finale on top
+        assertEquals(emptyList<String>(), DesignRules.cardGapViolations(listOf(17, 25, 33).associateWith { DesignDemos.corridor(Card.CRUMBLE) }))
+        val finales = mapOf(16 to DesignDemos.corridor(Card.GRAND_FINALE), 1 to DesignDemos.corridor(Card.GRAND_FINALE))
+        assertEquals(emptyList<String>(), DesignRules.cardGapViolations(finales))
+        // a rematch may play round 1's card again: a level is one use
+        assertEquals(emptyList<String>(), DesignRules.cardGapViolations(mapOf(20 to DesignDemos.lazyRematch, 28 to DesignDemos.lazyRematch)))
+        assertEquals(listOf(Triple(27, 0, "act 2: COLLAPSE in level 27, 7 levels after level 20 (min 8)")),
+            DesignRules.cardGapFindings(mapOf(20 to DesignDemos.lazyRematch, 27 to DesignDemos.lazyRematch)))
+    }
+
+    @Test
+    fun roundRuleHelpersCountTurnsCapsAndTurnarounds() {
+        assertEquals(0, DesignRules.turns(listOf("R^", "W", "R")))
+        assertEquals(2, DesignRules.turns(listOf("R", "W", "L^", "R")))
+        assertEquals(DesignRules.WALL_MOVE_CAP, DesignRules.familyCap("wall-move", "heat"))
+        assertEquals(DesignRules.LEAD_FAMILY_CAP, DesignRules.familyCap("heat", "heat"))
+        assertEquals(DesignRules.FAMILY_CAP, DesignRules.familyCap("heat", null))
+        // out 20 tiles and back to a door 3 tiles from the spawn turns around; a door at the far end does not
+        val back = DesignRules.Path(listOf(2f, 12f, 22f, 12f, 5f), 2f, 5f, 32, 1, false)
+        assertTrue(back.turnsAround)
+        assertFalse(DesignRules.Path(listOf(2f, 12f, 30f), 2f, 30f, 32, 0, false).turnsAround)
     }
 
     @Test
@@ -215,11 +233,11 @@ class DesignRulesTest {
         val plain = d("R1", "U1")
         val star = d("–", "U1", breather = true)
         assertEquals(4f, DesignRules.minDuration(1, 6, d("–", "U7")))
-        assertEquals(6f, DesignRules.minDuration(1, 7, plain))
-        assertEquals(6f, DesignRules.minDuration(1, 17, plain))
-        assertEquals(6f, DesignRules.minDuration(2, 10, plain))
-        assertEquals(6f, DesignRules.minDuration(2, 25, d("–", "U1")))
-        assertEquals(6f, DesignRules.minDuration(3, 1, plain))
+        assertEquals(4f, DesignRules.minDuration(1, 7, plain))
+        assertEquals(4f, DesignRules.minDuration(1, 17, plain))
+        assertEquals(4f, DesignRules.minDuration(2, 10, plain))
+        assertEquals(4f, DesignRules.minDuration(2, 25, d("–", "U1")))
+        assertEquals(4f, DesignRules.minDuration(3, 1, plain))
         for (w in 1..3) for (n in DesignRules.FINALES) assertEquals(10f, DesignRules.minDuration(w, n, d("R1+R5", "U1+U4")))
         assertEquals(0f, DesignRules.minDuration(2, 40, star))
     }
@@ -647,7 +665,8 @@ class DesignRulesTest {
         val round2: Solution = { right(3f) }
         val v = DesignRules.rematchViolations(l, listOf(round1, round2))
         assertTrue(v.joinToString("\n"), v.any { "round 1's solution wins it" in it })
-        assertTrue(v.joinToString("\n"), v.any { "shorter than round 1" in it })
+        // E: the rematch without traps has fewer real traps than round 1 (the floor that falls)
+        assertTrue(v.joinToString("\n"), v.any { "0 real traps, round 1 has 1" in it })
     }
 
     // ---------- hardening after round 3: laser gates (H12) ----------
@@ -890,22 +909,19 @@ class DesignRulesTest {
     // ---------- rollout budgets (§11) ----------
 
     @Test
-    fun aBlockKeepsItsBudgetItsCardsAndItsEdges() {
-        val block = DesignRules.Block(2, "X", setOf(17, 18), mapOf("pad" to 1, "rematch" to 0, "spikes" to 2), card = 1,
-            cards = mapOf(Card.CRUMBLE to 2), forbidden = mapOf(17 to setOf("drop")))
+    fun aBlockKeepsItsBudgetAndItsEdges() {
+        val block = DesignRules.Block(2, "X", setOf(17, 18), mapOf("pad" to 1, "rematch" to 0, "spikes" to 2), forbidden = mapOf(17 to setOf("drop")))
         val pad = DesignDemos.puzzle            // a pad level that plays COLLAPSE, dominated by drop
         val plain = DesignDemos.corridor(Card.CRUMBLE)
         val sigs = mapOf(17 to listOf(sig("saw", "R", "saw")), 18 to listOf(sig("drop", "R", "drop")))
         assertEquals(emptyList<String>(), DesignRules.budgetViolations(block, mapOf(17 to pad, 18 to plain), sigs))
-        // a second pad level, a card over its budget, a rematch the block does not keep, the neighbour's family at the edge
+        // a second pad level, a rematch the block does not keep, the neighbour's family at the edge (cards: rule J, not the block)
         val v = DesignRules.budgetViolations(block, mapOf(17 to pad, 18 to pad), mapOf(17 to listOf(sig("drop", "R", "drop"))))
         assertTrue(v.joinToString("\n"), v.any { "pad in 2 levels (budget 1)" in it })
-        assertTrue(v.joinToString("\n"), v.any { "card COLLAPSE played 2 times (budget 1)" in it })
+        assertTrue(v.joinToString("\n"), v.none { "card" in it })
         assertTrue(v.joinToString("\n"), v.any { "level 17 is dominated by [drop]" in it })
         val r = DesignRules.budgetViolations(block, mapOf(17 to DesignDemos.lazyRematch), emptyMap())
         assertTrue(r.joinToString("\n"), r.any { "1 rematch levels, the block keeps exactly 0" in it })
-        // the exception lets CRUMBLE be played twice
-        assertEquals(emptyList<String>(), DesignRules.budgetViolations(block, mapOf(17 to plain, 18 to plain), emptyMap()).filter { "CRUMBLE" in it })
     }
 
     @Test
