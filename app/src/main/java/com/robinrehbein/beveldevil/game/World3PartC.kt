@@ -192,24 +192,27 @@ object World3PartC {
             spawn(5, 14); door(4, 9)
         },
 
-        // 22 — the chip warms up; linger on it and it goes to full load; a fan blade rolls in, so hop it without slowing down;
-        // run on and the floor behind it is the problem
+        // 22 — a three-storey serpentine: along the top slab (the plates in front of you light up: hop them), down the right shaft, back
+        // along the middle slab (the spiked strip that has been waiting at the far end slides at whoever lands), down the left shaft and along
+        // the floor to the door: another hot patch right where you land, and a second strip that slides out from behind the door.
         Level(
             name = T("Warm-up", "Warmlaufen"),
             intro = T("A warm chip is a happy chip.", "Ein warmer Chip ist ein glücklicher Chip."),
-            start = listOf(Heat('c', rise = 4f, load = true)),
+            start = listOf(Heat('p', rise = 0.9f, cool = 1.2f), Heat('q', rise = 0.2f, cool = 0.4f)),
             traps = listOf(
-                trap(Heated('c', 0.7f), HeatSpike('c', 1f), say("Thermal throttling: the chip throttles YOU.", "Thermische Drosselung: der Chip drosselt DICH.")),
-                trap(PastX(6f), Saw(33f, 14.4f, -9f, 0f), say("Fan blade. Stopping is not an option.", "Lüfterblatt. Anhalten ist keine Option.")),
-                trap(PastX(23.4f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.8f), say("Overclocked on the far side, too.", "Auch auf der anderen Seite übertaktet.")),
+                trap(PastX(7.5f), HeatSpike('p', 1f), say("Warm-up exercise one: do not touch the warm part.", "Aufwärmübung eins: Den warmen Teil nicht anfassen.")),
+                trap(Zone(22f, 8f, 30f, 10f), Play(Card.HEADBUTT), Move('F', 17f, 0f, 5f), say("The strip has been waiting at the far end. It missed you.", "Der Streifen hat am anderen Ende gewartet. Du hast ihm gefehlt.")),
+                trap(Zone(10.3f, 13.9f, 11.6f, 15.2f), HeatSpike('q', 1f), say("Exercise two. The same warm part, one floor down.", "Übung zwei. Der gleiche warme Teil, ein Stockwerk tiefer.")),
+                trap(Zone(15.5f, 13f, 17f, 15.2f), Move('G', -16f, 0f, 5f), say("Cool-down: a strip from the other side of the door.", "Abkühlen: ein Streifen von der anderen Seite der Tür.")),
             ),
+            hint = T("Three floors down, and back to the door. Hop the warm plates and whatever slides at you.", "Drei Stockwerke runter, und zurück zur Tür. Spring über die warmen Platten und alles, was auf dich zugleitet."),
         ) {
             border(); floor()
-            bridge(9..20, 'c')
-            fill(24..27, 15..15, 'f')
-            spawn(); door()
+            fill(1..19, 4..5); fill(11..30, 9..10)
+            fill(11..14, 4..4, 'p'); fill(12..13, 15..15, 'q')
+            fill(11..11, 8..8, 'F'); fill(27..27, 14..14, 'G')
+            spawn(2, 3); door(29, 14)
         },
-
 
         // 23 — the plate is lukewarm until you step on it; then Mephi turns it up, so waiting for the rail is not an option there
         Level(

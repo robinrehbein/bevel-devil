@@ -39,5 +39,12 @@ object World3RoomsC {
                 .leftTo(25.2f).leftJump(0.55f).landLeft()
                 .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(2.4f).left(1f) },
         ),
+        22 to listOf<Solution>(
+            { rightTo(10.4f).rightJump(0.55f).landRight().rightTo(21.5f).landRight()
+                .leftUntil { w -> gx(w, 'F') < w.player.box.cx && w.player.box.cx - gx(w, 'F') <= 3.8f }.leftJump(0.55f).landLeft()
+                .leftTo(9.5f).landLeft()
+                .rightTo(10.8f).rightJump(0.55f).landRight()
+                .rightUntil { w -> gx(w, 'G') > w.player.box.cx && gx(w, 'G') - w.player.box.cx <= 3.8f }.rightJump(0.55f).landRight().right(2f) },
+        ),
     )
 }
