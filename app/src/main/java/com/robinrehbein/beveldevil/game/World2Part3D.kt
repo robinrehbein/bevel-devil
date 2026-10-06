@@ -193,22 +193,27 @@ object World2Part3D {
         },
 
         // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,
-        // admin, root. Each belt is calm until you step on it, then it runs against you, a little faster every step, so there is no standing on any of
-        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted. The belts run harder against
-        // you, the bridge and its door are gone, and the way out is a ledge in the top left. The belts have all turned around: they carry you up, to the
-        // right, and off their ends into the LEDs (ride, hop at the end), and from the root belt it is back left onto a carpet that runs the other
-        // way (hold left against it) and on to the ledge with the door. Round 1's door on the bridge does not exist
+        // admin, root. User is calm until you step on it, then it runs against you, and admin follows a moment later. Root runs against you harder than you can walk,
+        // and a gate stands on it, except for one short maintenance window a moment after you step onto the pillar between admin and root (the
+        // gate lifts, the belt stops): wait there for the window (the admin session times out from above meanwhile, so not too long), then cross
+        // root before the gate comes down again. The top is a plank bridge over
+        // the LEDs that runs against you too and sinks a while after you land on it. Rematch: demoted. The bridge is gone; the belts have all turned around: they carry you up, to the right, and off their
+        // ends into the LEDs (ride, hop at the end), and from the root belt it is back left onto a carpet that runs the other way (hold left
+        // against it) to the door in the middle of it. Round 1's door on the bridge does not exist
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
-            start = listOf(Belt('a', 0f), Belt('b', -3f), Belt('c', -3.5f), Belt('p', 0f)),
+            start = listOf(Belt('a', 0f), Belt('b', -3f), Belt('c', -14f), Belt('p', 0f)),
             traps = listOf(
-                trap(Touch('a'), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
-                trap(Touch('b'), Belt('b', -6.5f), say("admin: sudo required.", "admin: sudo nötig."), delay = 0.1f),
-                trap(Touch('c'), Belt('c', -7f), say("root: you shall not pass. (Jump.)", "root: Du kommst hier nicht durch. (Spring.)"), delay = 0.1f),
+                trap(Touch('a'), Play(Card.BACKDRAFT), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
+                trap(Touch('a'), Belt('b', -5f), say("admin: sudo required. Starting now.", "admin: sudo nötig. Ab sofort."), delay = 1.5f),
+                trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', 0f), say("root: maintenance window. One second.", "root: Wartungsfenster. Eine Sekunde."), delay = 1.0f),
+                trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', -14f), say("root: window closed. You were not invited.", "root: Fenster zu. Du warst nicht eingeladen."), delay = 2.0f),
+                trap(Zone(16.4f, 10f, 18f, 13.2f), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
                 trap(Touch('p'), Belt('p', -6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
-                trap(Landed(27f, 30f), Play(Card.CRUMBLE), Fall('p'), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
+                trap(Touch('p'), Move('p', 0f, 4f, 8f), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
             ),
+            hint = T("Root never stops. Almost never. Wait on the pillar.", "Root läuft immer. Fast immer. Warte auf der Säule."),
             rematch = listOf(
                 Round(
                     T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt gegen dich."),
@@ -217,21 +222,22 @@ object World2Part3D {
                         trap(Touch('a'), Belt('a', 2.4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
                         trap(Touch('b'), Belt('b', 2.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
                         trap(Touch('c'), Belt('c', 6f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
-                        trap(Zone(8f, 7f, 15f, 10.5f), Play(Card.BACKDRAFT), Belt('q', 5.5f), Saw(1.5f, 9.4f, 6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
+                        trap(Zone(9f, 8.5f, 13.6f, 9.6f), Play(Card.BACKDRAFT), Belt('q', 5.5f), Saw(1.5f, 9.4f, 6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
                     ),
                 ) {
                     put(29, 10, '.'); fill(27..30, 11..11, '.')
-                    fill(8..14, 10..10, 'q'); fill(2..7, 10..10); fill(17..18, 12..12, 'c')
-                    put(3, 9, 'D')
+                    fill(9..14, 10..10, 'q'); fill(2..8, 10..10); fill(17..18, 12..12, 'c')
+                    fill(16..17, 13..13, '.'); put(16, 14, '^'); put(17, 14, '^')
+                    put(11, 9, 'D')
                 },
             ),
         ) {
             border(); floor()
             fill(4..8, 14..14, 'a')
             fill(11..15, 14..14); fill(11..15, 13..13, 'b')
-            fill(19..23, 13..14); fill(19..23, 12..12, 'c')
+            fill(19..23, 13..14); fill(19..23, 12..12, 'c'); fill(16..17, 1..2, 'k')
             fill(27..30, 11..11, 'p')
-            leds(9..10); leds(16..18); leds(24..30)
+            fill(16..17, 13..14); leds(9..10); put(18, 14, '^'); leds(24..30)
             spawn(); put(29, 10, 'D'); bits(46)
         },
 
