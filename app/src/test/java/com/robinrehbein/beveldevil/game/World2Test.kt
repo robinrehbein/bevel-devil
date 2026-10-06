@@ -271,14 +271,14 @@ class World2Test {
 
     @Test
     fun replayAttackPunishesStandingStillWhileYourLastRunComes() {
-        // first attempt: run right until the first saw gets you; the log keeps the run
+        // first attempt: run right until the pendulum gets you; the log keeps the run
         val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
         // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
-        val second = first.retry().right(0.9f).wait(2.5f)
+        val second = first.retry().right(0.28f).wait(2.5f)
         second.expect(WorldState.DEAD)
         assertEquals(Card.DEVIL_SAW, second.world.lastCard)
         // without a previous attempt nothing replays: standing there for as long is fine
-        b(36).right(0.9f).wait(2.5f).expect(WorldState.PLAYING)
+        b(36).right(0.28f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test

@@ -133,9 +133,9 @@ object World2Rooms {
         .leftUntil { it.player.box.cx < 19.6f }.wait(0.05f).waitFor(cond = clear('O')).left(3f)
 
     /** The pendulum saw at [x] stays clear of the lane (up, not coming down) for the next [from]..[to] seconds. */
-    fun pendulumCalm(w: World, x: Float, from: Float = 0.1f, to: Float = 0.5f): Boolean {
+    fun pendulumCalm(w: World, x: Float, from: Float = 0.1f, to: Float = 0.5f, yMax: Float = 12.2f): Boolean {
         val s = w.saws.firstOrNull { kotlin.math.abs(it.x - x) < 0.2f && it.path != null } ?: return false
-        return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < 12.2f }
+        return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < yMax }
     }
 
     /** 29: stop in front of each pendulum saw and slip under it when it is up. */
@@ -196,10 +196,10 @@ object World2Rooms {
     fun l35(b: Bot) = b.hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
         .rightUntil { it.player.box.cx > 23f }.hopR(24.4f, 0.5f).hopR(26.0f, 0.5f).right(2f)
 
-    /** 36: along the deck (hop the saw that rolls at you, hop the second one as you land), off its end, left along the lane (hop the saw from the left, wait for the guard to turn, run past it) to the door. */
-    fun l36(b: Bot) = b.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.5f).landRight().rightUntil { sawAhead(it, 4.9f) }.rightJump(0.5f).landRight()
-        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { sawAheadRight(it, 4.3f) }.leftJump(0.5f).landLeft()
-        .leftUntil { sawAheadRight(it, 5.7f) }.leftJump(0.5f).landLeft().left(2.5f)
+    /** 36: slip under the pendulum at the start, along the lane (hop the login that rolls out of the stairs), up the three steps, hop the saw that patrols the roof and run to the door. */
+    fun l36(b: Bot) = b.rightTo(5.0f).waitFor { pendulumCalm(it, 7.5f, 0.05f, 0.5f, 12.6f) }.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.35f).landRight()
+        .rightTo(14.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .rightJump(0.5f).landRight().waitFor { w -> w.saws.any { it.path != null && it.x > 20f && it.x < 26.0f } }.rightJump(0.5f).landRight().right(2f)
 
     /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */
     fun sawAheadRight(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
