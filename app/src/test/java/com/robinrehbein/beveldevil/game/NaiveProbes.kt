@@ -4,7 +4,7 @@ import kotlin.math.abs
 import kotlin.math.hypot
 
 /**
- * The naive probes, shared by [NaiveProbeReport] (the printed measurement) and the round rules A-C of
+ * The naive probes, shared by [NaiveProbeReport] (the printed measurement) and the round rules A-C and Q of
  * [DesignRules.roundRules] (the gate), so there is one implementation of each probe. Part of the locked kit
  * ([KitLock]).
  *
