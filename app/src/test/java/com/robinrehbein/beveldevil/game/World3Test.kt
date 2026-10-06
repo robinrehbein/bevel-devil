@@ -94,12 +94,12 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 41, 42, 45)) {
+        for (n in listOf(2, 3, 5, 6, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 41, 42, 45)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
         // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, a lift that never ran,
         // a wall that stays shut (43), a lift he runs through (44, 46, 47), the way up that he never takes (48)
-        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 24, 25, 29, 30, 32, 38, 43, 44, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
+        for (n in listOf(1, 4, 9, 10, 11, 13, 24, 25, 29, 30, 32, 38, 43, 44, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
@@ -387,10 +387,15 @@ class World3Test {
 
     @Test
     fun theSecondButtonPutsTheWallBack() {
-        // 6: the first button cuts the wall of live copper, the second (on the way back) restores it
+        // 6: the first button cuts the wall of copper, the second (on the way back) restores it: whoever walks over it after
+        // the island finds the wall back in place, the solution hops it
         val bot = DesignRules.play(World3.levels[5], 0, World3DesignTest.SOLUTIONS.getValue(6)[0])
         bot.expect(WorldState.WON)
-        assertTrue(bot.world.pads.all { it.presses >= 1 })
+        assertTrue(bot.world.pads[0].presses >= 1 && bot.world.pads[1].presses == 0)
+        val wall = Bot(World3.levels[5]).leftTo(7.2f).leftJump(0.55f).landLeft().wait(0.3f).rightTo(3.2f).rightJump(0.55f).landRight()
+            .rightTo(9.4f).rightJump(0.55f).landRight().rightTo(23.8f)
+        assertTrue(wall.world.pads.all { it.presses >= 1 })
+        assertTrue(wall.world.circuits.getValue('w').powered)
     }
 
     @Test

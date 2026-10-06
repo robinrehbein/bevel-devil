@@ -113,14 +113,15 @@ object World3PartA {
         },
 
         // 3 — a pit with islands, and every floor in it is on loan. A hole opens right behind the spawn (hop it), a clocked rail
-        // wants you to wait for its beat, a stepping stone gives way the moment you land, the island in the middle holds for a
-        // moment (wait there for the second rail, but not too long) and the last tiles before the door follow you.
+        // wants you to wait for its beat at the edge, and the edge only waits for one beat, a stepping stone gives way the moment
+        // you land, the island in the middle holds for a moment (wait there for the second rail, but not too long).
         Level(
             name = T("Clock Cycle", "Taktgeber"),
             intro = T("Punctuality is a feature. Mine, not yours.", "Pünktlichkeit ist ein Feature. Meins, nicht deins."),
             start = listOf(Clock('p', on = 2.2f, off = 2.1f, phase = 2.2f), Clock('m', on = 1.8f, off = 1.6f, phase = 2.0f)),
             traps = listOf(
                 trap(PastX(3.9f), Fall('g'), say("A hole. The floor had a better offer.", "Ein Loch. Der Boden hatte ein besseres Angebot."), delay = 0.2f),
+                trap(PastX(8.0f), Fall('w'), say("The edge waits one beat. Not two.", "Die Kante wartet einen Takt. Nicht zwei."), delay = 1.75f),
                 trap(Touch('s'), Play(Card.CRUMBLE), Fall('s'), say("The stone was only on loan.", "Der Stein war nur geliehen."), delay = 0.4f),
                 trap(Touch('i'), Fall('i'), say("Island time is limited. Check the clock.", "Inselzeit ist begrenzt. Schau auf die Uhr."), delay = 1.8f),
             ),
@@ -129,6 +130,7 @@ object World3PartA {
             border(); floor()
             pit(10..27)
             fill(5..6, 15..17, 'g')
+            fill(7..9, 15..17, 'w')
             fill(10..12, 15..15, 'p')
             fill(15..17, 15..15, 's')
             fill(20..22, 15..15, 'i')
@@ -154,23 +156,25 @@ object World3PartA {
             border(); floor()
             fill(27..30, 9..9)
             pit(11..14); fill(11..12, 15..15, 'a'); fill(13..14, 15..15, 'b')
-            fill(7..8, 13..14); fill(5..6, 11..14); fill(3..4, 9..14); fill(1..2, 7..14)
-            spawn(29, 8); door(1, 6)
+            fill(7..8, 13..14); fill(5..6, 11..14); fill(1..4, 9..14)
+            spawn(29, 8); door(1, 8)
         },
 
         // 5 — a ceiling that is on its way down: along the floor, up the stairs and back along the copper shelf to the door above
         // the spawn. Under the shelf the first slab falls where you want to go and turns into a step (wait for it, then
-        // climb); the second only falls on whoever dawdles. Upstairs the next one waits for you again (wait, climb),
-        // and the last one comes down behind you: keep moving.
+        // climb); the second only falls on whoever dawdles. The middle stair is copper and goes dark under you (keep climbing).
+        // Upstairs the next slab waits for you again (wait, climb), and the last one comes down behind you: keep moving.
         Level(
             name = T("Turnstile", "Drehkreuz"),
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
-            start = listOf(Circuit('r')),
+            start = listOf(Circuit('r'), Circuit('q')),
             traps = listOf(
                 trap(PastX(5.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.4f),
                 trap(PastX(14.5f), Fall('g'), say("Second door, second ceiling.", "Zweite Tür, zweite Decke."), delay = 1f),
+                trap(Landed(27.1f, 28.9f), Power('q', false), say("The middle step is copper. Was.", "Die mittlere Stufe ist aus Kupfer. War."), delay = 0.55f),
+                trap(Landed(27.1f, 28.9f), Power('q', true), delay = 2.6f),
                 trap(Zone(17f, 6f, 26f, 9.3f), Fall('d'), say("Upstairs the ceiling is already waiting.", "Oben wartet die Decke schon."), delay = 0.3f),
-                trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one is for the door itself.", "Die letzte gehört der Tür selbst."), delay = 0.8f),
+                trap(Zone(11.5f, 6f, 13.3f, 9.2f), Fall('e'), say("The last one is for the door itself. And for you, if you stop.", "Die letzte gehört der Tür. Und dir, wenn du anhältst.")),
             ),
             hint = T("The ceiling is on the floor now. Floors can be jumped.", "Die Decke liegt jetzt am Boden. Über Böden kann man springen."),
             // rematch: the habits are reversed. What waited for you now drops after you passed, what fell on whoever dawdled is
@@ -181,7 +185,9 @@ object World3PartA {
                     hint = T("Wait where you ran last time. Run where you waited.", "Warte, wo du zuletzt gerannt bist. Renn, wo du gewartet hast."),
                     traps = listOf(
                         trap(PastX(5.0f), Fall('c'), say("This one takes its time. Don't wait for it.", "Die hier lässt sich Zeit. Warte nicht auf sie."), delay = 3f),
-                        trap(PastX(17.0f), Play(Card.GRAND_FINALE), Fall('g'), say("Everything at once. Starting with this door.", "Alles auf einmal. Fangen wir mit dieser Tür an."), delay = 0.3f),
+                        trap(PastX(17.0f), Play(Card.HEADBUTT), Fall('g'), say("Headbutt, the sequel. Starring this door.", "Kopfnuss, die Fortsetzung. Mit dieser Tür in der Hauptrolle."), delay = 0.3f),
+                        trap(Landed(27.1f, 28.9f), Power('q', false), say("The copper step clocked out early today.", "Die Kupferstufe hat heute früher Feierabend."), delay = 0.4f),
+                        trap(Landed(27.1f, 28.9f), Power('q', true), delay = 2.4f),
                         trap(Landed(29f, 31f), Fall('k'), say("Even the top step has a ceiling now.", "Selbst die oberste Stufe hat jetzt eine Decke."), delay = 1.7f),
                         trap(Landed(25f, 27f), Fall('d'), say("Upstairs they close behind you. Slowly.", "Oben schließen sie sich hinter dir. Langsam."), delay = 2.8f),
                         trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one wants you to look at it.", "Die letzte will, dass du sie ansiehst."), delay = 0.35f),
@@ -195,16 +201,17 @@ object World3PartA {
         ) {
             border(); floor()
             fill(1..25, 9..9, 'r')
-            fill(25..26, 13..14); fill(27..28, 11..14); fill(29..30, 9..14)
+            fill(25..26, 13..14); fill(27..28, 11..14, 'q'); fill(29..30, 9..14)
             fill(9..12, 10..11, 'c'); fill(17..20, 10..11, 'g')
             fill(17..21, 1..2); fill(17..21, 3..4, 'd')
-            fill(12..14, 1..2); fill(12..14, 3..4, 'e')
+            fill(12..13, 1..2); fill(12..13, 3..4, 'e')
             spawn(2, 14); door(2, 8)
         },
 
-        // 6 — the door is sealed by a wall of live copper, the button that cuts it sits on a lonely island across a pit (and the
-        // island sinks while you press it), the second button, in the way back to the door, puts the wall back, and the last
-        // bit of floor in front of the door is on loan. Two buttons: press the one you need, hop the other.
+        // 6 — the door is sealed by a wall of copper, and the straight way to it is a bait: the floor in front of the wall drops
+        // under whoever walks up to it (the locked wall is a dead end, the open one a jump). The button that cuts the wall sits
+        // on a lonely island across a pit (and the island sinks while you press it), the second button, in the way back to the
+        // door, puts the wall back. Two buttons: press the one you need, hop the other.
         Level(
             name = T("Two Buttons", "Zwei Knöpfe"),
             intro = T("Press whichever you like.", "Drück, welchen du willst."),
@@ -216,7 +223,7 @@ object World3PartA {
             traps = listOf(
                 trap(Touch('p'), Play(Card.SINKING), Fall('p'), say("Button 1 undoes the wall. The island undoes itself.", "Knopf 1 räumt die Wand weg. Die Insel räumt sich selbst weg."), delay = 0.5f),
                 trap(Landed(6f, 10.5f), Fall('m'), say("A hole. Handmade.", "Ein Loch. Handarbeit."), delay = 0.2f),
-                trap(Landed(19.5f, 25f), Fall('q'), say("The tiles behind that button have been recalled.", "Die Kacheln hinter dem Knopf wurden zurückgerufen."), delay = 0.5f),
+                trap(PastX(23.3f), Fall('q'), say("The tiles in front of the wall have been recalled.", "Die Kacheln vor der Wand wurden zurückgerufen."), delay = 0.35f),
             ),
             hint = T("Button 2 puts the wall back. Hop it.", "Knopf 2 stellt die Wand wieder hin. Hüpf drüber."),
         ) {
@@ -224,10 +231,10 @@ object World3PartA {
             pit(4..5); pit(1..3)
             fill(1..3, 15..15, 'p')
             fill(11..12, 15..17, 'm')
-            fill(21..23, 15..17, 'q')
+            fill(21..24, 15..17, 'q')
             wire(25, 'w')
             fill(26..27, 13..14); fill(28..30, 11..14)
-            spawn(22, 14); door(30, 10)
+            spawn(17, 14); door(30, 10)
         },
 
         // 7 — a long hall with a ceiling that comes down in pieces and two walls of copper that flicker. The first slab falls

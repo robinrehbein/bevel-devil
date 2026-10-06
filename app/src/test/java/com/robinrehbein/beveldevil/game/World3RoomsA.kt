@@ -41,7 +41,7 @@ object World3RoomsA {
         4 to listOf<Solution>(
             { leftUntil { it.player.grounded && it.player.box.b > 14f }.leftTo(19.3f).waitFor { w -> pend(w, 17.5f) < 12.3f }
                 .leftTo(15.8f).waitFor { w -> pend(w, 12.5f) < 12.0f }.leftTo(13.4f).leftJump(0.55f).landLeft().leftTo(9.6f)
-                .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(1f) },
+                .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(1f) },
         ),
         5 to listOf<Solution>(
             { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
