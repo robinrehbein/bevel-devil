@@ -32,6 +32,8 @@ class World3BProbe {
                     out.append("  sprung: ${bot.world.sprung.joinToString { "%.2f:%s".format(it.time, it.trap.trigger.toString().substringAfterLast('.').take(40)) }}\n")
                     if (bot.world.state != WorldState.WON) {
                         try { bot.expect(WorldState.WON) } catch (e: AssertionError) { out.append("  NOT WON r${r + 1}:\n${e.message}\n") }
+                        val d = bot.world.door
+                        out.append("  door at x=%.2f y=%.2f moving=%s; player x=%.2f y=%.2f t=%.2f\n".format(d.box.x, d.box.y, d.moving, bot.world.player.box.cx, bot.world.player.box.b, bot.world.time))
                         continue
                     }
                 } catch (e: Throwable) { out.append("  play THREW $e\n"); continue }
@@ -50,6 +52,25 @@ class World3BProbe {
             rule("H9") { DesignRules.rematchViolations(l, ss) }
             rule("H13") { DesignRules.familyViolations(n, l) }
             rule("H8") { DesignRules.cardLintViolations(l) }
+        }
+        // slop debug: "n r early|late" prints the trace of the solution played sloppily
+        File("/tmp/claude-0/pr/slop.txt").takeIf { it.exists() }?.readText()?.trim()?.split("\n")?.forEach { line ->
+            val p = line.trim().split(" ")
+            val n = p[0].toInt(); val r = p[1].toInt() - 1
+            val slop = if (p[2] == "early") Slop(-DesignRules.SLOP_TIME, -DesignRules.SLOP_TILES) else Slop(DesignRules.SLOP_TIME, DesignRules.SLOP_TILES)
+            val b = DesignRules.play(levels[n - 1], r, sols.getValue(n)[r], slop)
+            out.append("--- slop ${p[2]} ${levels[n - 1].name.en}: ${b.world.state} t=%.2f x=%.2f\n".format(b.world.time, b.world.player.box.cx))
+            try { b.expect(WorldState.WON) } catch (e: AssertionError) { out.append(e.message).append('\n') }
+        }
+        // free-form debug: the solution of "n r" up to the first time its prefix script ends is not available, so dbg2.txt holds "n r count"
+        // = play the registered solution to the end but print the world every 0.1 s when replaying with a left-hold afterwards (see below)
+        File("/tmp/claude-0/pr/dbg2.txt").takeIf { it.exists() }?.readText()?.trim()?.split("\n")?.forEach { line ->
+            val p = line.trim().split(" ")
+            val n = p[0].toInt(); val r = p[1].toInt() - 1
+            val l = levels[n - 1]
+            val bot = Bot(l, r)
+            out.append("--- dbg2 ${l.name.en}\n")
+            Dbg2.run(n, r, bot, out)
         }
         // ablation debug: "abl n r" lines in abl.txt print, per trap, which probe ends differently without it
         File("/tmp/claude-0/pr/abl.txt").takeIf { it.exists() }?.readText()?.trim()?.split("\n")?.forEach { line ->
@@ -120,5 +141,23 @@ class World3BProbe {
             set("budget") { DesignRules.budgetViolations(block, block.levels.sorted().associateWith { levels[it - 1] }, block.levels.sorted().associateWith { sigs.getValue(it) }) }
         } else out.append("[budget] skipped, block incomplete: ${block.levels.filter { it !in allMine }}\n")
         File("/tmp/claude-0/pr/probe.txt").writeText(out.toString())
+    }
+}
+
+/** Hand-written debugging scripts for the probe (scratch). */
+object Dbg2 {
+    fun run(n: Int, r: Int, bot: Bot, out: StringBuilder) {
+        fun log(tag: String) {
+            val b = bot.world.player.box
+            out.append("%s t=%.2f x=%.2f y=%.2f g=%s %s saws=%s\n".format(tag, bot.world.time, b.cx, b.b, bot.world.player.grounded, bot.world.state, bot.world.saws.map { "(%.1f,%.1f)".format(it.x, it.y) }))
+        }
+        if (n == 12) {
+            bot.rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(17.8f)
+                .waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.wait(0.25f)
+                .leftJump(0.35f).landLeft().leftJump(0.55f).landLeft()
+            log("on wall?")
+            for (i in 0 until 14) { bot.left(0.1f); log("reckless") }
+        }
     }
 }

@@ -118,31 +118,46 @@ object World3PartB {
             spawn(2, 3); door(28, 14)
         },
 
-        // 12 — do not press: the button is a bluff; the ceiling drops when you run under it, and a fan blade rolls in behind the wall
+        // 12 — do not press: start at the left end of a ledge, a fan blade rolls along it towards you, off the right end onto the floor
+        // and back under the ledge, over a big red button (a decoy), under a slab that comes down behind you if you hurry, to a wall of
+        // three tiles and a second slab above the run-up: run under that one and it comes down on you, wait next to it and it comes
+        // down as the stair over the wall. On the wall a third blade rolls in under your feet. Rematch: the card is the bluff, the
+        // button is real: press it twice, and the blade comes from behind.
         Level(
             name = T("The Button", "Der Knopf"),
             intro = T("A very ordinary button.", "Ein ganz gewöhnlicher Knopf."),
-            start = listOf(Pad('1', at = 8 to 14)),
+            start = listOf(Pad('1', at = 28 to 14)),
             traps = listOf(
+                trap(After(0.05f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
+                trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
                 trap(Pressed('1'), say("Nothing happened. Suspicious, isn't it?", "Nichts passiert. Verdächtig, oder?")),
-                trap(PastX(16.5f), Play(Card.HEADBUTT), Fall('c'), say("The button was a decoy. The ceiling is real.", "Der Knopf war Attrappe. Die Decke ist echt.")),
-                trap(Airborne(19f, 23f), Saw(33f, 14.4f, -7f, 0f), say("Delivery! Fan blade, one piece, rolling.", "Lieferung! Lüfterblatt, ein Stück, rollend.")),
+                trap(BeforeX(19.5f), Play(Card.HEADBUTT), Fall('c'), say("The button was a decoy. The ceiling is real.", "Der Knopf war Attrappe. Die Decke ist echt.")),
+                trap(Zone(8.9f, 10f, 14.1f, 12.5f), Saw(-1f, 14.4f, 8f, 0f), say("Delivery! Fan blade, one piece, rolling.", "Lieferung! Lüfterblatt, ein Stück, rollend.")),
             ),
-            // rematch: the ceiling card is a bluff, so there is no slab to stand on while the blade, now early, rolls through
+            hint = T("Do not stand under the slab. Stand next to it and let it land.", "Nicht unter die Platte stellen. Daneben stehen und sie landen lassen."),
+            // rematch: the card is the bluff and the button is real, standing right under the slab: press it, step out from under,
+            // and the slab comes down as the stair. Whoever waits next to the slab like the first time waits for ever.
             rematch = listOf(
                 Round(
                     T("Same button. Different mood.", "Gleicher Knopf. Er hat heute Montag."),
-                    start = listOf(Pad('1', at = 8 to 14)),
+                    start = listOf(Pad('1', at = 15 to 14)),
+                    hint = T("The ceiling called in sick. The button did not.", "Die Decke ist krank. Der Knopf nicht."),
                     traps = listOf(
-                        trap(PastX(16.5f), Bluff(Card.HEADBUTT)),
-                        trap(PastX(21.5f), Saw(33f, 14.4f, -7f, 0f), say("Express delivery.", "Expresslieferung.")),
+                        trap(After(0.05f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
+                        trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
+                        trap(BeforeX(19.5f), Bluff(Card.HEADBUTT), say("Cancelled. The ceiling called in sick.", "Abgesagt. Die Decke hat sich krankgemeldet.")),
+                        trap(Pressed('1'), Fall('c'), say("Now it works. Mondays.", "Jetzt geht er. Montags eben."), delay = 0.9f),
+                        trap(Zone(8.9f, 10f, 14.1f, 12.5f), Saw(-1f, 14.4f, 8f, 0f), say("Delivery! Fan blade, one piece, rolling.", "Lieferung! Lüfterblatt, ein Stück, rollend.")),
                     ),
                 ),
             ),
         ) {
             border(); floor()
-            fill(20..22, 9..10, 'c')
-            spawn(); door()
+            fill(19..28, 8..10)
+            fill(20..22, 11..12, 'd')
+            fill(13..17, 1..4); fill(14..16, 5..6, 'c')
+            fill(9..13, 12..14)
+            spawn(19, 7); door(1, 14)
         },
 
         // 13 — the fuse box is on top of the hill: climb it to switch the live wall off, but it only slows the current;

@@ -31,5 +31,20 @@ object World3RoomsB {
                 .leftTo(19.0f).leftJump(0.55f).landLeft().leftUntil { it.player.grounded && it.player.box.b > 14.5f }
                 .rightTo(19.8f).rightJump(0.55f).landRight().rightTo(27.5f).right(1f) },
         ),
+        12 to listOf<Solution>(
+            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(17.8f)
+                .waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.wait(0.25f)
+                .leftJump(0.35f).landLeft().leftJump(0.55f).landLeft()
+                .waitFor { w -> w.saws.any { it.y > 12f } && w.saws.filter { it.y > 12f }.all { it.x > w.player.box.cx + 0.3f } }
+                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(1.0f).left(1f) },
+            // rematch: press the button under the slab, step out from under it, wait for the stair, then as before
+            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.3f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(15.8f).rightTo(18.2f)
+                .waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.wait(0.25f)
+                .leftJump(0.35f).landLeft().leftJump(0.55f).landLeft()
+                .waitFor { w -> w.saws.any { it.y > 12f } && w.saws.filter { it.y > 12f }.all { it.x > w.player.box.cx + 0.3f } }
+                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(1.0f).left(1f) },
+        ),
     )
 }
