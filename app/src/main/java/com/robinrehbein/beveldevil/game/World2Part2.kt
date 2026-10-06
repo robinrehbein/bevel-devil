@@ -49,6 +49,7 @@ object World2Part2 {
             intro = T("Timetable: every ten seconds. Roughly.", "Fahrplan: alle zehn Sekunden. Ungefähr."),
             start = listOf(Belt('b', -9f)),
             traps = listOf(
+                trap(Zone(3.1f, 14.2f, 3.7f, 15.2f), Fall('y'), say("Nobody queues at my bus stop. Packet dropped.", "An meiner Haltestelle wird nicht angestanden. Paket verworfen."), delay = 0.25f),
                 trap(Zone(9.6f, 9f, 15f, 12.2f), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
                 trap(Zone(14f, 6.5f, 19f, 8.4f), Fall('d'), say("Shelf 2 is decoration. Do not stand on it.", "Regal 2 ist Deko. Nicht draufstellen."), delay = 0.4f),
                 trap(Zone(7f, 5f, 8.5f, 8.2f), Play(Card.HEADBUTT), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
@@ -58,8 +59,8 @@ object World2Part2 {
             hint = T("The bus turns around somewhere. Not down here.", "Irgendwo dreht der Bus um. Nicht hier unten."),
         ) {
             border(); floor()
-            fill(4..5, 13..14)
-            fill(7..20, 12..12); fill(8..14, 13..13, 'v'); fill(7..24, 15..15, 'b')
+            fill(4..5, 13..14); fill(2..3, 15..17, 'y')
+            fill(7..20, 12..12); fill(8..14, 13..13, 'v'); fill(7..20, 15..15, 'b')
             fill(21..21, 1..12); fill(19..20, 10..11)
             fill(25..26, 15..17, 'e')
             fill(3..18, 8..8); fill(3..4, 8..8, 's'); fill(11..13, 8..8, 'c'); fill(14..18, 8..8, 'd'); fill(5..6, 1..1, 'k')
@@ -199,8 +200,8 @@ object World2Part2 {
                     fill(9..10, 11..11, '.'); fill(12..13, 9..9, '.'); fill(15..16, 7..7, '.'); fill(18..19, 5..5, '.'); fill(21..24, 3..3, '.')
                     fill(10..11, 11..11, 'w'); fill(14..15, 9..9, 'k'); fill(18..19, 7..7, 'u'); fill(22..28, 5..5)
                     put(29, 14, '.'); put(15, 14, 'D'); put(26, 1, '.'); put(28, 1, '.')
-                    fill(26..28, 15..17, 'y'); fill(23..25, 15..17, 'z'); fill(20..22, 15..17, 'q'); fill(17..19, 15..17, 'r')
-                    fill(2..4, 9..9, '.'); put(3, 8, '.'); put(1, 14, 'P')
+                    fill(26..30, 15..17, 'y'); fill(23..25, 15..17, 'z'); fill(20..22, 15..17, 'q'); fill(17..19, 15..17, 'r')
+                    fill(2..4, 9..9, '.'); put(3, 8, '.'); put(1, 14, 'P'); fill(13..14, 11..14)
                 },
             ),
         ) {
@@ -488,14 +489,14 @@ object World2Part2 {
             rooms = 2,
             start = listOf(
                 Portal('a', 9 to 14, 10 to 8, twoWay = false),
-                Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 25f).toInt() to 14, twoWay = false),
-                Portal('c', roomX(1, 5) to 14, roomX(1, 25) to 14, twoWay = false),
+                Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 28f).toInt() to 14, twoWay = false),
+                Portal('c', roomX(1, 5) to 14, roomX(1, 26) to 13, twoWay = false),
             ),
             traps = listOf(
                 trap(PastX(16f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
                 trap(Trigger.AtDoor, Play(Card.ANNEX), Action.Extend(into = 1, top = 6, bottom = 8, door = roomX(1, 30f).toInt() to 14)),
                 trap(Zone(roomX(1, 6f), 1f, roomX(1, 9.5f), 9f), Reroute('b', roomX(1, 20) to 16), say("Hop 2 of 3: the obvious route was deprecated. It goes to /dev/null now.", "Hop 2 von 3: Die offensichtliche Route wurde abgekündigt. Sie führt jetzt nach /dev/null.")),
-                trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes.", "Hop 3 von 3: Spikes.")),
+                trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes. Right where the link drops you.", "Hop 3 von 3: Spikes. Genau da, wo der Link dich absetzt."), delay = 0.6f),
             ),
         ) {
             border(); floor()
@@ -508,7 +509,7 @@ object World2Part2 {
             room(1) {
                 fill(0..9, 9..9)
                 pit(17..23); fill(17..23, 17..17, '^')
-                put(28, 14, 'A'); put(29, 14, 'A')
+                fill(24..26, 14..14, 'A')
             }
         },
 

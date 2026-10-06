@@ -29,7 +29,7 @@ object World2Rooms {
         .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
         .rightJump(0.35f).landRight().rightTo(17.4f).rightJump(0.4f).landRight()
         .wait(0.12f).leftJump(0.4f).landLeft().hopL(15.2f)
-        .leftTo(8.2f).waitFor { it.group('k').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }.hopL(7.8f).leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 13.9f }
+        .leftTo(8.2f).waitFor { it.group('k').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }.hopL(7.8f).leftTo(2.6f).waitFor { it.player.grounded && it.player.box.b > 13.9f }
         .rightJump(0.35f).landRight().rightTo(23.5f).rightJump(0.35f).landRight().right(1.5f)
 
     /** 18, up to the pad on the rack: hop the hole, wait for the gate, climb the rack, step back onto the pad. */
@@ -157,7 +157,7 @@ object World2Rooms {
 
     /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
     fun l30(b: Bot) = b.rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
-        .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.right(0.3f).rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
+        .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.waitFor { it.player.grounded }.rightJump(0.35f).landRight().right(2f)
 
     /** Blinking group [id] is solid during the whole stretch from [from] to [to] seconds ahead. */
     fun stoneUp(w: World, id: Char, from: Float, to: Float): Boolean {
