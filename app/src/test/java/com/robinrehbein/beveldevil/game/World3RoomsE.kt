@@ -17,9 +17,11 @@ object World3RoomsE {
             { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         35 to listOf<Solution>(
+            // hop the blade from behind and the one from the front, step on the button, stand at the wall (hop the blade on its way) until the gale is off
             { rightUntil { w -> w.saws.any { it.vx > 0f && w.player.box.cx - it.x < 3.0f } }.rightJump(0.5f).landRight()
                 .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.5f).landRight()
-                .rightTo(15.6f).waitFor { it.fans[0].wind < -7f && it.fans[1].wind == 0f }
+                .rightTo(13.6f)
+                .waitFor { it.fans[1].wind == 0f }.rightUntil { it.player.box.cx > 24.6f }
                 .rightUntil { w -> w.saws.any { it.vx < -9f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 7.5f } }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
             // rematch: hop the button, then slog the whole corridor and hop each blade as it comes
             { rightTo(5.2f).rightJump(0.5f).landRight()

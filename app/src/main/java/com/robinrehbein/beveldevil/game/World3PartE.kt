@@ -61,35 +61,38 @@ object World3PartE {
             traps = listOf(
                 trap(PastX(11f), FanSet('w', 0f), say("Lull. The wind is catching its breath.", "Flaute. Der Wind holt kurz Luft.")),
                 trap(Zone(17f, 12f, 19.2f, 15f), FanSet('w', -12f), say("Here it comes again. Jump into it.", "Da kommt er wieder. Spring hinein."), delay = 0.15f),
-                trap(Landed(25f, 28.5f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.55f), say("The landing strip is preheated.", "Die Landebahn ist vorgeheizt.")),
-                trap(Airborne(21f, 24f), FanSet('w', -6f), say("The gust loses breath mid-air.", "Der Böe geht mitten in der Luft die Luft aus.")),
+                trap(Landed(26f, 29.5f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.55f), say("The landing strip is preheated.", "Die Landebahn ist vorgeheizt.")),
+                trap(Airborne(22f, 25f), FanSet('w', -6f), say("The gust loses breath mid-air.", "Der Böe geht mitten in der Luft die Luft aus.")),
             ),
+            hint = T("The gap is too wide for a run-up. Wait at the edge until the wind is back, then jump into it.", "Die Lücke ist zu breit für einen Anlauf. Warte am Rand, bis der Wind zurück ist, dann spring hinein."),
         ) {
-            border(); floor(); pit(19..24)
-            fill(25..28, 15..15, 'h')
+            border(); floor(); pit(19..25)
+            fill(26..28, 15..15, 'h')
             fill(29..30, 12..12, 'v')
             spawn(1, 14); door(30, 14)
         },
 
-        // 35 — Headwind (R4, U7)
+        // 35 — Headwind (R4, U7): a corridor against the wind, a blade from behind and one from the front. The button at the wall of
+        // wind does not open it right away: the tailwind carries you into the gale and you stand there for a moment, with a blade
+        // on its way, until the gale is switched off. Round two is the other way round: the gale is off, the button turns it on.
         Level(
             name = T("Headwind", "Gegenwind"),
             intro = T("Breezy today.", "Heute ist es windig."),
             start = listOf(
                 Fan('w', at = 31 to 9, dir = Dir.LEFT, reach = 22, speed = 6.6f, width = 6),
-                Fan('g', at = 23 to 9, dir = Dir.LEFT, reach = 4, speed = 14f, width = 6),
-                Pad('1', at = 15 to 14),
+                Fan('g', at = 23 to 9, dir = Dir.LEFT, reach = 4, speed = 17f, width = 6),
+                Pad('1', at = 13 to 14),
             ),
             traps = listOf(
                 trap(PastX(4f), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back. The wind has no say there.", "Ein Blatt für den Rücken. Der Wind hat da nichts zu melden.")),
                 trap(Landed(8f, 14f), Saw(33f, 14.4f, -10f, 0f), say("Fan blade, fresh off the shelf.", "Lüfterblatt, frisch aus dem Regal.")),
-                trap(PastX(11f), FanSet('w', 7.1f), say("Breezy.", "Luftig.")),
-                trap(PastX(13f), FanSet('w', 7.6f), say("Brisk.", "Frisch.")),
-                trap(Pressed('1'), Play(Card.BACKDRAFT), Power('g', false), FanSet('w', -8f), say("Tailwind, as requested.", "Rückenwind, wie bestellt.")),
+                trap(PastX(11f), FanSet('w', 7.6f), say("Breezy.", "Luftig.")),
+                trap(Pressed('1'), Play(Card.BACKDRAFT), FanSet('w', -8f), say("Tailwind, as requested.", "Rückenwind, wie bestellt.")),
+                trap(Pressed('1'), Power('g', false), say("The gale needs a moment to think it over.", "Der Sturm braucht einen Moment zum Nachdenken."), delay = 1.0f),
                 trap(PastX(25f), Power('g', true), Saw(33f, 14.4f, -10f, 0f), say("The wall closes behind you. The blade does not.", "Die Wand schließt hinter dir. Das Blatt nicht.")),
             ),
-            // rematch: the button moved before the wind and bites: it raises the wall and the gale and sends a blade. Hop it, then slog the whole
-            // corridor, with the blades coming from the front
+            hint = T("The gale will not let you through until the button has had a moment. Wait in front of it, and hop the blade that follows you through.", "Der Sturm lässt dich erst durch, wenn der Knopf ausgelöst hat. Warte davor, und hüpf über das Blatt, das dir durch folgt."),
+            // rematch: the gale is down and the button puts it up: do not press it, hop it. The wind turns on its way across and two blades follow
             rematch = listOf(
                 Round(
                     T("Same wind. Better manners.", "Gleicher Wind. Bessere Manieren."),
@@ -103,13 +106,10 @@ object World3PartE {
                         trap(Pressed('1'), Power('g', true), FanSet('w', 9.5f), Saw(33f, 14.4f, -9f, 0f), say("You pressed it! Wall up, wind up, blade out.", "Du hast gedrückt! Wand hoch, Wind hoch, Blatt raus.")),
                         trap(PastX(10.5f), FanSet('w', 7f), say("Breezy again.", "Wieder luftig.")),
                         trap(PastX(13f), Saw(33f, 14.4f, -10f, 0f), say("And the one from the shelf. Regulars get two.", "Und das aus dem Regal. Stammgäste bekommen zwei.")),
-                        trap(PastX(15.5f), FanSet('w', 6.2f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
-                        trap(PastX(18f), FanSet('w', 7f), say("Brisk. Remember brisk?", "Frisch. Weißt du noch, frisch?")),
+                        trap(PastX(16f), FanSet('w', 5.6f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
                         trap(PastX(19.5f), Saw(33f, 14.4f, -11f, 0f), say("Another one, fresh off the shelf.", "Noch eins, frisch aus dem Regal.")),
-                        trap(PastX(22f), FanSet('w', 5.4f), say("A lull, as a treat.", "Eine Flaute, als Leckerli.")),
-                        trap(PastX(24.5f), FanSet('w', 7f), say("And it picks up again.", "Und er zieht wieder an.")),
+                        trap(PastX(22f), FanSet('w', 6.8f), say("And it picks up again.", "Und er zieht wieder an.")),
                         trap(PastX(26.5f), Saw(33f, 14.4f, -12f, 0f), say("The last one. I promise. Roughly.", "Das letzte. Versprochen. Ungefähr.")),
-                        trap(PastX(28.5f), FanSet('w', 6.4f), say("Last gust. Door is right there.", "Letzte Böe. Die Tür ist gleich da.")),
                     ),
                 ),
             ),
