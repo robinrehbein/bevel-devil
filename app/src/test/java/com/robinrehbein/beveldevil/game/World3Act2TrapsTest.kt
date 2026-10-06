@@ -49,55 +49,46 @@ class World3Act2TrapsTest {
         b(22).rightTo(10.4f).rightJump(0.55f).landRight().rightTo(21.5f).landRight().wait(3f).expect(WorldState.DEAD)
     }
 
+    // 25, 28, 29 and 30 are the rebuilt block D: what each one does to the player who plays it the obvious way
+
     @Test
-    fun coolingTowerFloorTurnsUpUnderWhoClimbsDown() {
-        // stepping down from the tower and walking on burns before the exit
-        b(25).rightTo(11.4f).rightJump(0.55f).landRight().waitCooled('h').rightTo(24.2f).expect(WorldState.DEAD)
-        // leaping off the tower lands late enough to make it
-        val leap = b(25).rightTo(11.4f).rightJump(0.55f).landRight().waitCooled('h').rightTo(15.5f).rightJump(0.55f).landRight().rightTo(24.2f)
-        leap.expect(WorldState.PLAYING)
+    fun coolingTowerTheBeltTurnsAroundUnderWhoStandsStill() {
+        // standing on the first ground belt when it turns round carries you back into the spikes in the corner
+        b(25).leftTo(22.5f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft()
+            .leftUntil { it.player.grounded && it.player.box.b > 11.5f }.rightUntil { (it.group('c').belt ?: 0f) < 0f }.wait(3f).expect(WorldState.DEAD)
     }
 
     @Test
-    fun breakTimeFanHasASecondBlade() {
-        // waiting on the heatsink for the first blade to arrive: a faster one comes from behind before it
-        val bot = b(28).rightTo(16.5f).waitCooled('h').wait(3f)
+    fun breakTimeTheBenchIsNoPlaceToStay() {
+        // sitting on the first heatsink for good: the second blade crawls out of the wall of the dip
+        b(28).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.b > 12.5f }.rightTo(12.4f).rightUntil { it.player.grounded && it.player.box.b > 15.5f }
+            .rightTo(16.2f).rightJump(0.3f).landRight().wait(3f).expect(WorldState.DEAD)
+    }
+
+    @Test
+    fun thermostatTheHatchIsOpenOnlyOnThePadAndTheSlabComesDownThroughIt() {
+        // the pad holds the hatch open for as long as you stand on it, and the slab above it comes down through the gap
+        val bot = b(29).rightTo(27.5f).wait(3f)
+        assertFalse(bot.world.group('w').visible)
+        assertTrue(bot.world.group('s').oy > 5f)
+    }
+
+    @Test
+    fun burnInTheTestPatternSpikesAreOnlyRoundOnesLie() {
+        // round one: hopping the spikes that are about to sink lands among the hidden ones
+        val bot = Bot(World3.levels[29], 0).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+            .rightTo(9.4f).rightTo(10.4f).rightJump(0.55f).landRight().rightTo(16.6f).rightTo(17.4f).rightJump(0.55f).landRight()
+            .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f)
         bot.expect(WorldState.DEAD)
-        assertEquals(2, bot.world.saws.size)
-        assertTrue("hit from behind", bot.world.saws.any { it.vx > 0f && kotlin.math.abs(it.x - bot.world.player.box.cx) < 1.2f })
-        assertEquals(2, World3.levels[27].traps.flatMap { it.actions }.count { it is Action.Saw })
-        // a runner who leaves the sink once it has cooled is never caught by it
-        b(28).rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
     }
 
+    /** None of the rebuilt levels of block D strands the player: every registered solution of every round wins, and none needs a second try. */
     @Test
-    fun thermostatLandingRunsIntoAFloorThatIsGone() {
-        val bot = b(29).rightTo(10.5f).waitFor { !it.group('w').visible }.rightTo(17.3f).rightJump(0.55f).landRight().right(3f)
-        bot.expect(WorldState.DEAD)
-        assertTrue(bot.world.player.box.cy > 15f)
-    }
-
-    @Test
-    fun burnInFloorBurnsUnderWhoWaitsAtTheGate() {
-        // waiting right at the gate for its gap burns in; waiting a step back works (see the level test)
-        val bot = b(30).rightTo(9.2f).waitPowered('Z', false, max = 3f)
-        bot.expect(WorldState.DEAD)
-        assertTrue(bot.world.heaters['e']!!.heat >= 1f)
-        assertFalse(World(World3.levels[29]).heaters.containsKey('e'))
-    }
-
-    /** None of the new links strands the player: the exit pits kill, the door that ran off is reachable on foot. */
-    @Test
-    fun theNewLinksLeaveNoSoftlock() {
-        // 29: falling into the opened floor is death, not a floor below
-        val fell = b(29).rightTo(10.5f).waitFor { !it.group('w').visible }.rightTo(17.3f).rightJump(0.55f).landRight().right(3f)
-        assertEquals(WorldState.DEAD, fell.world.state)
+    fun theRebuiltBlockLeavesNoSoftlock() {
+        for (n in 25..32) World3DesignTest.SOLUTIONS.getValue(n).forEachIndexed { r, sol -> DesignRules.play(World3.levels[n - 1], r, sol).expect(WorldState.WON) }
         // 20: the door that ran home ends on the walking row
         val won = DesignRules.play(World3.levels[19], 0, World3DesignTest.SOLUTIONS.getValue(20)[0])
         won.expect(WorldState.WON)
         assertEquals(World(World3.levels[19]).door.box.y, won.world.door.box.y, 0.01f)
-        // 30: waiting a step back from the gate, off the burnt-in floor, still gets through
-        val gate = b(30).rightTo(6.5f).waitPowered('Z', false).rightTo(12f)
-        gate.expect(WorldState.PLAYING)
     }
 }
