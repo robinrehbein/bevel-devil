@@ -114,5 +114,22 @@ object World3PartF {
             fill(26..27, 1..14, 'w')
             spawn(2, 14); door(29, 14)
         },
+
+        // 44 — Display (a breather: one punchline)
+        Level(
+            name = T("Display", "Anzeige"),
+            intro = T("I mounted the monitor myself.", "Den Monitor habe ich selbst montiert."),
+            start = listOf(
+                Fan('f', at = 8 to 15, dir = Dir.UP, reach = 9, speed = 3f, width = 5),
+            ),
+            traps = listOf(
+                trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
+                trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
+            ),
+        ) {
+            border(); floor()
+            put(19, 1, 'v')
+            spawn(2, 14); door(29, 1)
+        },
     )
 }
