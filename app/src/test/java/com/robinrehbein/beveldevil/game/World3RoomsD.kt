@@ -26,8 +26,7 @@ object World3RoomsD {
                 .rightTo(roomX(2, 29.0f)).right(1f) },
         ),
         31 to listOf<Solution>(
-            { rightTo(6.4f).rightJump(0.5f).landRight().waitCooled('c', 0.05f)
-                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+            { rightTo(9.8f).waitCooled('c', 0.05f)
                 .rightTo(25.4f).rightJump(0.5f).landRight()
                 .leftTo(27.8f).leftJump(0.5f).landLeft()
                 .leftTo(24.0f).leftJump(0.5f).landLeft().waitCooled('d', 0.05f)

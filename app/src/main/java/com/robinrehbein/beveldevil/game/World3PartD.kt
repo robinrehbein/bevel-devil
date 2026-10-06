@@ -249,24 +249,24 @@ object World3PartD {
             name = T("Pit Stop", "Boxenstopp"),
             intro = T("Grab a heatsink. They're all trustworthy.", "Nimm ruhig einen Kühlkörper. Alle vertrauenswürdig."),
             start = listOf(
-                Heat('c', rise = 1.5f, load = true), Heatsink('k', cools = "c"),
+                Heat('c', rise = 1.3f, load = true), Heatsink('k', cools = "c"),
                 Heat('d', rise = 1.0f, load = true), Heatsink('l', cools = "d"),
             ),
             traps = listOf(
                 trap(Touch('k'), Play(Card.STALKER), Chase('s', 6f, left = 4f, right = 16f), HeatSpike('c', 1f), say("The crane is a stalker. Not a very good one.", "Der Kran ist ein Verfolger. Kein besonders guter.")),
-                trap(Touch('k'), Move('s', 0f, 11f, 22f), delay = 0.9f),
-                trap(Zone(13.6f, 13f, 14.6f, 15.2f), Move('y', 0f, 12.6f, 22f), say("Pit lane rule one: do not stand in the pit lane.", "Boxengassen-Regel eins: nicht in der Boxengasse stehen."), delay = 0.15f),
+                trap(Touch('k'), Move('s', 0f, 12.6f, 22f), delay = 0.9f),
+                trap(Zone(12.6f, 13f, 13.6f, 15.2f), Move('y', 0f, 12.6f, 30f), say("Pit lane rule one: do not stand in the pit lane.", "Boxengassen-Regel eins: nicht in der Boxengasse stehen.")),
                 trap(Landed(26f, 31f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 0.9f),
                 trap(Touch('l'), Move('t', 0f, 7f, 22f), say("Second heatsink. Second crane. Same warranty.", "Zweiter Kühlkörper. Zweiter Kran. Gleiche Garantie."), delay = 0.8f),
             ),
             hint = T("The heatsink cools the chip only while you stand on it. Stay just long enough: the crane follows you.", "Der Kühlkörper kühlt den Chip nur, solange du draufstehst. Bleib nur kurz: Der Kran folgt dir."),
         ) {
             border(); floor()
-            fill(9..12, 13..14); fill(9..12, 13..13, 'k'); fill(13..21, 15..15, 'c')
+            fill(9..10, 15..15, 'k'); fill(12..20, 15..15, 'c')
             fill(14..24, 11..12); fill(19..22, 9..10); fill(19..22, 9..9, 'l'); fill(16..18, 11..11, 'd')
             fill(14..15, 9..10); fill(10..13, 7..8)
             fill(27..30, 13..14)
-            fill(9..12, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u'); fill(13..15, 1..1, 'y')
+            fill(9..11, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u'); fill(12..13, 1..1, 'y')
             spawn(1, 14); door(10, 6)
         },
 
