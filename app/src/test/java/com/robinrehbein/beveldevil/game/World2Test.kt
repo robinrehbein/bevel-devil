@@ -238,10 +238,10 @@ class World2Test {
         val home = b(38).rightTo(14.4f).wait(1.2f)
         home.expect(WorldState.PLAYING)
         assertTrue("x=${home.world.player.box.cx}", home.world.player.box.cx < 6f)
-        // the second one leads up to the roof, at the far right end
-        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.wait(0.1f)
+        // the second one leads up to the roof, at the far left end above the start
+        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cy < 9f }.wait(0.1f)
         roof.expect(WorldState.PLAYING)
-        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx > 26f && roof.world.player.box.b < 8.5f)
+        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx < 6f && roof.world.player.box.b < 8.5f)
     }
 
     @Test

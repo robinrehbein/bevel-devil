@@ -194,14 +194,14 @@ object World2Part3C {
         },
 
         // 38 — Bobby Tables (a puzzle room: R3 the portals, U1 the floor). DROP TABLE floor: the lane has two holes with a wormhole at the bottom of
-        // each. The first leads back to the start, the second up to the roof, at the far right end, which is the way on: the door sits at the other
-        // end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof: keep moving
+        // each. The first leads back to the start, the second up to the roof, at the far left end above the start, which is the way on: the door sits at
+        // the other end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof: keep moving
         Level(
             name = T("Bobby Tables", "Klein Bobby Tables"),
             intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
             start = listOf(
                 Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 3 to 14, twoWay = false),
-                Portal('3', 21 to 17, 28 to 7, twoWay = false), Portal('4', 22 to 17, 28 to 7, twoWay = false),
+                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 3 to 7, twoWay = false),
             ),
             traps = listOf(
                 trap(Touch('i'), Play(Card.SINKING), Fall('i'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?"), delay = 0.5f),
@@ -215,8 +215,8 @@ object World2Part3C {
             fill(24..25, 9..14)
             fill(2..30, 8..8)
             fill(17..19, 8..8, 'j'); fill(9..11, 8..8, 'k')
-            fill(3..5, 6..7); fill(1..2, 4..5)
-            spawn(2, 14); door(1, 3)
+            fill(26..27, 6..7); fill(28..30, 4..7)
+            spawn(2, 14); door(30, 3)
         },
 
         // 39 — contingency plan (a trap room: U16 the pause, with lasers). Along the deck a rule is installed in front of you: a firewall flashes once

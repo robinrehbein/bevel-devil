@@ -235,8 +235,9 @@ object World2Rooms {
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
         .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f)
 
-    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole, along the roof from the far end to the door, never standing on the planks. */
-    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.leftTo(7.0f).leftJump(0.5f).landLeft().hopL(4.4f, 0.5f).left(1f)
+    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole (it comes out on the roof, at the left end above the start), along the roof to the right (never standing on the planks), up the two steps to the door. */
+    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cy < 9f }.rightTo(24.4f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+
 
     /** 39: along the deck (stop for the flash, hop the trip wire), off its end, left along the lane (stop for the flash), turn the stuck firewall off and on again, to the door. */
     fun l39ToFirewall(b: Bot) = b.rightUntil { it.player.box.cx > 7.8f }.waitFor(cond = clear('A')).hopR(15.0f, 0.5f)
