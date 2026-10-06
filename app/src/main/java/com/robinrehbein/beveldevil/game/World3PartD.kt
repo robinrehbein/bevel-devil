@@ -240,21 +240,33 @@ object World3PartD {
             spawn(2, 14); door(8, 14)
         },
 
-        // 31 — the second heatsink is hotter than advertised: hop over it; the landing plate and the end are warm too
+        // 31 — a puzzle room (R11 cool the chips, R5 two floors, U3 the crane walks with you). The floor is a chip under load that heats all the time;
+        // the heatsink bench in front of it cools it only while you stand on it, and the moment you touch the bench the crane above it starts to walk
+        // after you and comes down on whoever is still there a moment later (stand just long enough, then cross). Along the chip, up a step: a crane
+        // comes down on the step as you land (keep going), back left onto a shelf, over a block that is the second heatsink (a second chip, a second crane)
+        // and up two steps to the door.
         Level(
             name = T("Pit Stop", "Boxenstopp"),
             intro = T("Grab a heatsink. They're all trustworthy.", "Nimm ruhig einen Kühlkörper. Alle vertrauenswürdig."),
-            start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h"), Heatsink('l', cools = "h")),
-            traps = listOf(
-                trap(Touch('l'), Play(Card.SINKING), HeatSpike('l', 1f), say("Heatsink 2 runs hotter than advertised.", "Kühlkörper 2 ist heißer als beworben.")),
-                trap(Landed(21f, 25.5f), HeatSpike('h', 0.6f), say("Pit stop tires: preheated.", "Boxenstopp-Reifen: vorgeheizt.")),
-                trap(PastX(26.2f), HeatSpike('f', 0.9f), say("Pit lane exit: hot.", "Boxenausfahrt: heiß.")),
+            start = listOf(
+                Heat('c', rise = 1.5f, load = true), Heatsink('k', cools = "c"),
+                Heat('d', rise = 1.0f, load = true), Heatsink('l', cools = "d"),
             ),
+            traps = listOf(
+                trap(Touch('k'), Play(Card.STALKER), Chase('s', 6f, left = 4f, right = 16f), HeatSpike('c', 1f), say("The crane is a stalker. Not a very good one.", "Der Kran ist ein Verfolger. Kein besonders guter.")),
+                trap(Touch('k'), Move('s', 0f, 11f, 22f), delay = 0.9f),
+                trap(PastX(23.5f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 1.1f),
+                trap(Touch('l'), Move('t', 0f, 7f, 22f), say("Second heatsink. Second crane. Same warranty.", "Zweiter Kühlkörper. Zweiter Kran. Gleiche Garantie."), delay = 0.8f),
+            ),
+            hint = T("The heatsink cools the chip only while you stand on it. Stay just long enough: the crane follows you.", "Der Kühlkörper kühlt den Chip nur, solange du draufstehst. Bleib nur kurz: Der Kran folgt dir."),
         ) {
             border(); floor()
-            fill(6..14, 15..15, 'h'); put(15, 15, 'k'); fill(16..19, 15..15, 'h'); put(20, 15, 'l'); fill(21..25, 15..15, 'h')
-            fill(27..28, 15..15, 'f')
-            spawn(); door()
+            fill(9..12, 13..14); fill(9..12, 13..13, 'k'); fill(13..21, 15..15, 'c')
+            fill(14..24, 11..12); fill(19..22, 9..10); fill(19..22, 9..9, 'l'); fill(16..18, 11..11, 'd')
+            fill(14..15, 9..10); fill(10..13, 7..8)
+            fill(27..30, 13..14)
+            fill(9..12, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u')
+            spawn(1, 14); door(10, 6)
         },
 
         // 32 — act finale: cool the chip, cut the live wall (it only flickers), hop the last overclocked tiles
