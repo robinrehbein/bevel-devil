@@ -500,15 +500,17 @@ class World2Test {
         val bot = World2Rooms.l21ToShelf(b(21)).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.rightTo(25.9f).wait(0.3f)
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
     }
-    // 22: the first bouncer rolls at you on the top floor, the carpet drops out over LEDs; the second bouncer rolls out of the back door, and the first one comes back behind you
-    // 22: the first bouncer rolls at you on the top floor, the carpet drops out over LEDs; the second bouncer rolls out of the back door, and the floor in front of the door drops
-    @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).hopR(15.0f).right(4f).expect(WorldState.DEAD)
-    @Test fun l22StandingStillWhereTheFirstBouncerComesFromIsFatal() = b(22).rightTo(10f).wait(6f).expect(WorldState.DEAD)
-    @Test fun l22RunningOverTheCarpetThatDropsLandsOnTheLeds() = b(22).rightTo(14.5f).right(3f).expect(WorldState.DEAD)
-    @Test fun l22StandingStillWhereTheSecondBouncerComesFromIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
-    @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.3f).left(4f).expect(WorldState.DEAD)
-    @Test fun l22StoppingBehindTheSecondBouncerMeetsTheFirstAgain() = World2Rooms.l22ToLane(b(22)).hopL(22.3f, 0.5f).leftUntil { World2Rooms.sawAheadLeft(it, 4.0f) }
-        .leftJump(0.5f).landLeft().wait(3f).expect(WorldState.DEAD)
+    // 22: the first bouncer rolls at you along the lane, the second along the club floor, and the door flees back to the left behind the second one
+    private fun l22Hopped(b: Bot) = World2Rooms.l22ToLane(b).rightUntil { World2Rooms.sawAhead(it, 4.8f) }.rightJump(0.35f).landRight()
+    @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).left(4f).expect(WorldState.DEAD)
+    @Test fun l22StandingStillWhenTheFirstBouncerComesIsFatal() = b(22).leftTo(17f).wait(4f).expect(WorldState.DEAD)
+    @Test fun l22StandingStillOnTheClubFloorIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
+    @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).right(4f).expect(WorldState.DEAD)
+    @Test fun l22TheDoorFleesAsYouLandBehindTheSecondBouncer() {
+        val bot = l22Hopped(b(22)).rightUntil { it.door.tx < 20f }
+        assertTrue("door at ${bot.world.door.tx}", bot.world.state == WorldState.PLAYING && bot.world.door.tx < 20f)
+    }
+    @Test fun l22RunningAfterTheDoorIntoTheBouncersBackIsFatal() = l22Hopped(b(22)).rightUntil { it.door.tx < 20f }.left(3f).expect(WorldState.DEAD)
 
     // 23: the on-ramp lift carries you up into the spiked ceiling unless you walk off at the deck, a piece of the deck drops, the exit lift drops away
     @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(10.4f).wait(5f).expect(WorldState.DEAD)

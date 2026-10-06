@@ -86,11 +86,13 @@ object World2Rooms {
     /** On the ground, a saw rolls toward the player from the left within [d] tiles. */
     fun sawAheadLeft(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
 
-    /** 22, up to the lane: along the top floor (hop the bouncer who rolls out of the wall, hop the hole) and down at the right-hand end. */
-    fun l22ToLane(b: Bot) = b.hopR(15.0f).rightUntil { sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }
+    /** 22, up to the club floor: left along the lane, hop the first bouncer, up the two steps at the left end and onto the club floor. */
+    fun l22ToLane(b: Bot) = b.leftUntil { sawAheadLeft(it, 5.5f) }.leftJump(0.5f).landLeft().leftTo(5.6f).leftJump(0.4f).landLeft()
+        .leftJump(0.4f).landLeft().rightJump(0.5f).landRight()
 
-    /** 22: then hop the LEDs, hop the second bouncer who rolls out of the back door, and run on to the door before the first one is back. */
-    fun l22(b: Bot) = l22ToLane(b).hopL(22.8f, 0.6f).leftUntil { sawAheadLeft(it, 4.0f) }.leftJump(0.5f).landLeft().left(1.5f)
+    /** 22: then hop the second bouncer, on to the door until it moves, back left and hop the bouncer again on his way back from the step. */
+    fun l22(b: Bot) = l22ToLane(b).rightUntil { sawAhead(it, 4.8f) }.rightJump(0.35f).landRight()
+        .rightUntil { it.door.tx < 20f }.leftUntil { sawAheadLeft(it, 5.0f) }.leftJump(0.5f).landLeft().left(0.5f)
 
     /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
     fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(19f).left(1f)

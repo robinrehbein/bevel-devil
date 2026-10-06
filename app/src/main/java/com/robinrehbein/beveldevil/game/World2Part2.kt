@@ -239,25 +239,28 @@ object World2Part2 {
             spawn(1); door(); bits(21)
         },
 
-        // 22 — the bouncer, a trap room (U7 the saw, U1 the floor goes): you start up on the top floor and run right; the first bouncer rolls
-        // out of the far wall and walks toward you (hop him; the guest list is reloaded on the way and sets you back a step). At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door
-        // to walk you out (hop the LEDs under the hole, then him). The first bouncer has turned round and follows you to the door: as you land
-        // behind the second one, he comes back along the lane (do not stop)
+        // 22 — the bouncer, a trap room (U7 the saw, with the door as the punchline): you start down on the lane at the right and run left; the first
+        // bouncer rolls out of the far wall and comes at you, fast (hop him). Up the two steps at the left end and onto the club floor, where the
+        // door waits at the far end; as you climb, the second bouncer rolls out of the right wall and patrols the club floor, down to the top step and
+        // back (hop him). As you land, the door checks the list and is gone, back to the other end of the floor, and the bouncer is on his way back
+        // from the step: hop him once more on the way to the door
         Level(
             name = T("Bouncer", "Türsteher"),
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             traps = listOf(
-                trap(PastX(8.5f), Saw(33.5f, 6.4f, -4.5f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
-                trap(Zone(16f, 3f, 18f, 7.4f), Play(Card.UNDO), Undo(0.3f), say("Guest list reloaded. You were not on it. Again.", "Gästeliste neu geladen. Du standest nicht drauf. Schon wieder.")),
-                trap(Zone(1f, 12.5f, 31f, 15.5f), Saw(-1.5f, 14.4f, 6f, 0f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
-                trap(Landed(3.5f, 11f), Saw(32f, 14.4f, -9f, 0f), say("The first bouncer is back. He remembers faces.", "Der erste Türsteher ist zurück. Er merkt sich Gesichter.")),
+                trap(BeforeX(18f), Saw(-1.5f, 14.4f, 9f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
+                trap(Zone(0.5f, 9f, 2.9f, 11.1f), PathSaw(10f, 33.5f to 9.4f, 4f to 9.4f, 1.5f to 10.3f), say("Second bouncer. He patrols the floor.", "Zweiter Türsteher. Er geht Streife.")),
+            ) + doorTrail(
+                Zone(16f, 7f, 18f, 10.1f), 25, 9,
+                listOf(DoorTo(25, 2, 24f, hanging = true), DoorTo(4, 2, 24f, hanging = true), DoorTo(4, 9, 24f)),
+                first = listOf(Play(Card.SHY_DOOR), say("The door checked the list. You are not on it.", "Die Tür hat die Liste geprüft. Du stehst nicht drauf.")),
             ),
-            hint = T("The bouncer rolls toward you. Jump him.", "Der Türsteher rollt auf dich zu. Spring über ihn."),
+            hint = T("Hop each bouncer as he comes. When the door moves, follow the second one out: do not run into his back.", "Spring über jeden Türsteher, wenn er kommt. Wenn die Tür umzieht, folg dem zweiten nach draußen: Lauf ihm nicht in den Rücken."),
         ) {
             border(); floor()
-            fill(1..28, 7..7)
-            leds(19..20)
-            spawn(2, 6); put(2, 14, 'D'); bits(22)
+            fill(4..26, 10..10)
+            fill(3..3, 13..14); fill(1..2, 11..14)
+            spawn(29, 14); door(25, 9); bits(22)
         },
 
         // 23 — the information superhighway, a trap room (U12 the transport goes wrong, floor-move and belts): lifts. The merge lane of the on-ramp
