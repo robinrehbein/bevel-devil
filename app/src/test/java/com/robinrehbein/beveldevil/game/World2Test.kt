@@ -164,8 +164,8 @@ class World2Test {
     fun theObviousRunDiesInTheChain() {
         // 1: the landing after the first pit is a pit too
         b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
-        // 2: the hop over the loopback grows a spike in the lane behind it
-        b(2).hopR(15.5f).right(3f).expect(WorldState.DEAD)
+        // 2: the hop over the loopback grows a spike where it lands: catching your breath there is fatal
+        b(2).hopR(16.0f, 0.5f).wait(1f).expect(WorldState.DEAD)
         // 3: running on, down the hole and into the lower floor, the saw that rolls at you finds you
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).right(6f).expect(WorldState.DEAD)
         // 4: the bulb over the upper lane drops as you come near
@@ -199,7 +199,7 @@ class World2Test {
     /** A chain may end you, but never leaves you alive where the door cannot be reached. */
     @Test
     fun noChainStrandsYouAliveAwayFromTheDoor() {
-        // 3: the hop over the LEDs is long enough to land clear of them
+        // 3: the hops over the blocks on the upper floor land clear of them
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
         // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes), never into a closed room
         World2.levels.forEachIndexed { i, l ->
@@ -221,10 +221,9 @@ class World2Test {
 
     @Test
     fun theDnsEntryAtTheStartLeadsHomeAndTheLastBlockOfTheStairRepointsAndRestartsIt() {
-        // the portal next to the start sends you back to the start
-        val loop = b(6).right(0.5f).wait(0.2f)
-        loop.expect(WorldState.PLAYING)
-        assertTrue("x=${loop.world.player.box.cx}", loop.world.player.box.cx < 13.6f && loop.world.links[0].to == 12 to 14)
+        // the portal next to the start sends you back to the start, where the cache grows spikes under you
+        assertEquals(12 to 11, b(6).world.links[0].to)
+        b(6).right(0.5f).wait(0.6f).expect(WorldState.DEAD)
         // the block at the far end of the stair re-points it and takes it down for a moment
         val touched = b(6).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
             .leftUntil { it.player.box.cx < 2.5f }.wait(0.2f)
@@ -246,10 +245,10 @@ class World2Test {
 
     @Test
     fun theFloorLinkAtHomeIsTheLoopback() {
-        // 14: walking into the obvious link on the floor drops you back at home, alive
-        val loop = b(14).rightTo(12.9f).right(0.2f).wait(0.2f)
-        loop.expect(WorldState.PLAYING)
+        // 14: walking into the obvious link on the floor drops you back at home, where a shelf comes down on you
+        val loop = b(14).rightTo(12.9f).right(0.2f)
         assertTrue("x=${loop.world.player.box.cx}", loop.world.links[0].hopTime > 0f && loop.world.player.box.cx < 6f)
+        loop.wait(1f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -297,9 +296,10 @@ class World2Test {
     @Test fun level02() { World2DesignTest.play(2) }
     /** Open Port: the floor portal in the middle is the loopback; the hop over it grows a spike where you run on. */
     @Test fun level02TheLoopbackSendsYouHome() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 8f) }.expect(WorldState.PLAYING)
+    @Test fun level02TheSecondLoopIsFatal() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).right(3f).expect(WorldState.DEAD)
     @Test fun level03() { World2DesignTest.play(3) }
     /** Reception: hopping the hole in the upper floor, like the door's old neighbour, leaves you holding right at the wall of an upper floor with no door. */
-    @Test fun level03HoppingTheHoleIsTheWrongWay() = b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).hopR(24.6f).right(3f).expect(WorldState.PLAYING)
+    @Test fun level03FollowingTheOldAddressIsFatal() = b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).hopR(24.6f).right(3f).expect(WorldState.DEAD)
     @Test fun level04() { World2DesignTest.play(4) }
     /** String Lights: the bulb over the lane drops when you come near, so dashing under it is the end. */
     @Test fun level04DashingUnderTheBulbIsFatal() = b(4).rightTo(3.0f).rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight()

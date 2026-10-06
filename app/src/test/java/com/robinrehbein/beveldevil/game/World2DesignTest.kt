@@ -87,7 +87,7 @@ class World2DesignTest : DesignTestBase() {
                 { rightTo(17.4f).hopR(18.4f).right(1.5f) },
             ),
             2 to listOf(
-                { hopR(15.5f).hopR(21.9f).rightJump(0.4f).landRight()
+                { hopR(15.0f, 0.5f).hopR(21.9f).rightJump(0.4f).landRight()
                     .rightUntil { it.player.box.cy < 11.5f }.leftUntil { it.player.box.cx < 20.4f }
                     .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 10.2f }
                     .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f) },
@@ -160,16 +160,16 @@ class World2DesignTest : DesignTestBase() {
                     .rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
                     .leftTo(26.2f).hopL(26.0f, 0.5f).leftTo(19.3f)
                     .waitFor { it.group('f').oy > 5f }.waitFor { it.group('f').oy < 0.3f }
-                    .hopL(18.8f, 0.5f).leftJump(0.5f).landLeft().left(2f) },
+                    .hopL(18.8f, 0.5f).leftJump(0.5f).landLeft().leftJump(0.4f).landLeft().left(1f) },
             ),
             14 to listOf(
-                { rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.2f, 0.5f).leftTo(1.5f)
-                    .waitFor { it.links[2].on }.left(0.3f).leftTo(24.1f).wait(0.45f).hopL(23.5f, 0.5f)
-                    .leftUntil { it.player.box.cy > 10f }.left(0.4f)
-                    .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1f) },
-                { right(1.65f).hopL(9.2f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f)
-                    .leftTo(24.1f).wait(0.45f).hopL(23.5f, 0.5f).leftUntil { it.player.box.cy > 10f }.left(0.4f)
-                    .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().right(0.5f) },
+                { rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.8f, 0.5f).leftUntil { it.player.box.cx < 1.6f || it.player.box.cx > 20f }
+                    .waitFor { it.links[2].on }.left(0.3f).leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft()
+                    .leftUntil { it.player.box.cy > 10f }.leftTo(27.0f)
+                    .leftJump(0.5f).landLeft().left(1.2f) },
+                { rightUntil { it.player.box.cy < 9f }.hopL(9.8f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f)
+                    .leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cy > 10f }.leftTo(27.0f)
+                    .leftJump(0.5f).landLeft().left(1.2f) },
             ),
             15 to listOf(
                 { hopL(10.2f, 0.5f).leftTo(4.2f).hopR(6.2f, 0.5f).rightTo(15.4f)
