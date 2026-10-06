@@ -104,7 +104,7 @@ object World3PartC {
             fill(3..3, 1..14, 'w')
             fill(22..23, 15..15, 'm')
             pit(11..20); fill(11..20, 15..15, 'c')
-            fill(4..9, 6..6)
+            fill(5..9, 6..6)
             spawn(6, 5); door(2, 14)
         },
 
@@ -146,7 +146,7 @@ object World3PartC {
                 listOf(DoorTo(30, 1, 24f, hanging = true), DoorTo(14, 1, 24f, hanging = true), DoorTo(14, 14, 24f)),
                 first = listOf(Play(Card.SHY_DOOR), say("The door has plans. The plates have changed theirs.", "Die Tür hat Pläne. Die Platten haben ihre geändert.")),
             ) + listOf(
-                trap(PastX(28.6f), HeatSpike('h', 1f), say("And now the glow means what it says.", "Und jetzt meint das Glühen, was es sagt."), delay = 0.8f),
+                trap(PastX(28.6f), Heat('h', rise = 0.5f, cool = 6f), HeatSpike('h', 1f), say("And now the glow means what it says.", "Und jetzt meint das Glühen, was es sagt."), delay = 0.8f),
             ),
             hint = T("The glowing plates are the cool ones. When the door leaves, they are not any more.", "Die glühenden Platten sind kühl. Wenn die Tür geht, sind sie es nicht mehr."),
         ) {
@@ -168,7 +168,7 @@ object World3PartC {
             legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(Heat('a', rise = 1.0f), Heat('b', rise = 1.05f, cool = 1.0f), Heatsink('k', cools = "ab")),
             traps = listOf(
-                trap(PastX(5.3f), Play(Card.STALKER), Chase('S', 5.4f, 0f, 12f), say("The next runner is right behind you. Do not wait for him.", "Der nächste Läufer ist direkt hinter dir. Warte nicht auf ihn.")),
+                trap(PastX(5.3f), Play(Card.STALKER), Chase('S', 5.7f, 0f, 12f), say("The next runner is right behind you. Do not wait for him.", "Der nächste Läufer ist direkt hinter dir. Warte nicht auf ihn.")),
                 trap(Touch('k'), HeatSpike('b', 1f), say("Hand-over zone: the next plate is not ready.", "Wechselzone: Die nächste Platte ist noch nicht so weit.")),
                 trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
                 trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 5f, 6f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
@@ -181,7 +181,7 @@ object World3PartC {
                     traps = listOf(
                         trap(Zone(4.4f, 13.5f, 5.2f, 15.2f), Heat('q', rise = 1.0f, cool = 3f), say("The blocks are hot-swappable. Please do not stand on them.", "Die Klötze sind hot-swap-fähig. Bitte nicht draufstellen.")),
                         trap(Landed(6f, 9.8f), HeatSpike('q', 1f), say("Block one: a little warm. Under you.", "Klotz eins: ein bisschen warm. Unter dir."), delay = 0.55f),
-                        trap(PastX(5.3f), Play(Card.STALKER), Chase('S', 5.4f, 0f, 12f), say("The next runner is behind you again.", "Der nächste Läufer ist wieder hinter dir.")),
+                        trap(PastX(5.3f), Play(Card.STALKER), Chase('S', 5.7f, 0f, 12f), say("The next runner is behind you again.", "Der nächste Läufer ist wieder hinter dir.")),
                         trap(Touch('k'), Move('S', 11f, 0f, 16f), say("Hand-over zone, full speed.", "Wechselzone, volle Fahrt.")),
                         trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
                         trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 5f, 6f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
@@ -191,7 +191,6 @@ object World3PartC {
                     put(11, 15, 'b')
                     fill(6..9, 14..14, 'q'); fill(11..16, 14..14)
                     fill(30..30, 11..14); fill(28..30, 11..11, 'r')
-                    put(4, 14, '.')
                 },
             ),
         ) {

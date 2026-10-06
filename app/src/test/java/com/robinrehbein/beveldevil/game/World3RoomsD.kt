@@ -14,16 +14,21 @@ object World3RoomsD {
         32 to listOf<Solution>(
             { rightTo(2.6f).rightJump(0.4f).landRight().rightTo(5.0f).rightJump(0.4f).landRight()
                 .rightTo(12.6f).waitFor { landed(it, 'r') }.rightJump(0.5f).landRight().rightTo(28.6f)
-                .rightTo(roomX(1, 14.8f)).waitFor { landed(it, 'q') }
+                .rightTo(roomX(1, 14.3f)).waitFor { landed(it, 'q') }
                 .rightJump(0.45f).landRight().rightTo(roomX(1, 28.6f))
                 .rightTo(roomX(2, 8.9f)).rightJump(0.5f).landRight()
-                .rightTo(roomX(2, 19.8f)).waitFor { landed(it, 'z') }.rightJump(0.5f).landRight()
+                .rightUntil { w -> sawsAhead(w, w.player.box.cx, 13f) && w.saws.any { it.vx < 0f && it.x - w.player.box.cx <= 5.2f } }
+                .rightJump(0.55f).landRight()
                 .rightTo(roomX(2, 29.0f)).right(1f) },
-            { rightTo(8.6f).waitCooled('c', 0.05f).waitFor { landed(it, 'r') }.rightTo(15.6f).rightJump(0.5f).landRight()
-                .rightTo(28.6f).rightTo(roomX(1, 4.9f)).rightJump(0.3f).landRight().rightTo(roomX(1, 9.4f)).waitFor { landed(it, 'q') }
-                .rightJump(0.5f).landRight().rightTo(roomX(1, 28.6f))
+            // rematch: cool the floor chip on the heatsink under the hot roof, run across, let the slab land ahead and hop it
+            { rightTo(8.6f).waitCooled('c', 0.05f)
+                .rightTo(16.0f).waitFor { landed(it, 'r', 0.5f) }.rightJump(0.5f).landRight()
+                .rightTo(28.6f).rightTo(roomX(1, 8.2f)).waitFor { landed(it, 'q') }
+                .rightJump(0.5f).landRight().rightTo(roomX(1, 20.0f)).rightJump(0.5f).landRight().rightTo(roomX(1, 28.6f))
                 .rightTo(roomX(2, 8.9f)).rightJump(0.5f).landRight()
                 .rightTo(roomX(2, 16.4f)).rightJump(0.5f).landRight()
+                .rightUntil { w -> sawsAhead(w, w.player.box.cx, 13f) && w.saws.any { it.vx < 0f && it.x - w.player.box.cx <= 5.2f } }
+                .rightJump(0.55f).landRight()
                 .rightTo(roomX(2, 29.0f)).right(1f) },
         ),
         31 to listOf<Solution>(
@@ -45,7 +50,7 @@ object World3RoomsD {
             { rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
                 .rightUntil { w -> w.group('Q').let { it.homeX + it.ox - w.player.box.cx < 3.2f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-                .leftTo(23.8f).leftJump(0.6f).landLeft().leftTo(11.4f).left(0.5f) },
+                .leftTo(23.9f).leftJump(0.6f).landLeft().leftTo(11.4f).left(0.5f) },
         ),
         29 to listOf<Solution>(
             // over the floor heating to the hatch pad, straight up through the hatch, back left over the radiator, over the
@@ -62,7 +67,8 @@ object World3RoomsD {
                 .rightTo(20.2f).rightUntil { it.player.grounded && it.player.box.b > 15.5f }
                 .rightTo(24.2f).rightJump(0.3f).landRight()
                 .waitFor { w -> w.saws.none { it.vx < 0f && it.x > 25f } }
-                .rightJump(0.55f).landRight().right(1.5f) },
+                .rightJump(0.4f).waitFor { it.player.grounded }
+                .waitFor { w -> w.saws.any { kotlin.math.abs(it.x - 29.5f) < 0.2f && it.y > 14.6f } }.right(1.5f) },
             // rematch: no sitting down; hop the narrowed dips in the air, with each high blade let past first, then up the steps
             { rightTo(4.4f).rightUntil { it.player.grounded && it.player.box.b > 12.5f }
                 .rightTo(10.4f).waitFor { w -> w.saws.none { it.y < 11.5f && it.x > w.player.box.cx - 2.5f } }
@@ -78,11 +84,11 @@ object World3RoomsD {
         26 to listOf<Solution>(
             // hop the tripwire, run through the landing light, off the block before the scan, hop the hot step, wait out the cable
             { rightTo(10.4f).rightJump(0.55f).landRight()
-                .wait(0.1f).waitFor { w -> w.beams.none { it.laser.id == 'b' && it.on } }
+                .waitFor { w -> w.beams.any { it.laser.id == 'b' && it.lit } }.waitFor { w -> w.beams.none { it.laser.id == 'b' && it.lit } }
                 .rightTo(23.4f).rightJump(0.5f).landRight()
                 .leftTo(25.8f).leftJump(0.5f).landLeft()
                 .leftJump(0.5f).landLeft()
-                .leftTo(15.4f).waitFor { w -> w.time > 1f && !w.beams.first { it.laser.id == 'c' }.on }
+                .leftTo(15.4f).waitFor { w -> w.beams.first { it.laser.id == 'c' }.on }.waitFor { w -> !w.beams.first { it.laser.id == 'c' }.on }
                 .leftTo(11.8f).left(0.5f) },
         ),
         25 to listOf<Solution>(

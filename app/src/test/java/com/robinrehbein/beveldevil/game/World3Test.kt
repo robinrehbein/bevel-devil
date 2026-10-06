@@ -94,14 +94,15 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 6, 7, 8, 10, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45)) {
+        for (n in listOf(2, 3, 5, 6, 7, 8, 10, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // (38: the floor cable goes live as soon as he heads for the lift; 44: the floor past the lift is studded)
+        // (29: the floor under the hatch pad flickers away under him; 38: the floor cable goes live as soon as he heads for the lift;
+        // 44: the floor past the lift is studded)
         // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, a lift that never ran, the right wall
         // he starts against (9, 12, 14: the door is to the left),
         // a wall that stays shut (43), a lift he runs through (46, 47), the way up that he never takes (48)
-        for (n in listOf(1, 4, 9, 11, 12, 14, 24, 29, 30, 32, 43, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
+        for (n in listOf(1, 4, 9, 11, 12, 14, 24, 30, 32, 43, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
