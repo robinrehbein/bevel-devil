@@ -209,7 +209,7 @@ object World3PartA {
             traps = listOf(
                 trap(Touch('p'), Play(Card.SINKING), Fall('p'), say("Button 1 undoes the wall. The island undoes itself.", "Knopf 1 räumt die Wand weg. Die Insel räumt sich selbst weg."), delay = 0.5f),
                 trap(Landed(6f, 10.5f), Fall('m'), say("A hole. Handmade.", "Ein Loch. Handarbeit."), delay = 0.2f),
-                trap(Landed(19.5f, 25f), Fall('q'), say("The tiles behind that button are on loan.", "Die Kacheln hinter dem Knopf sind geliehen."), delay = 0.5f),
+                trap(Landed(19.5f, 25f), Fall('q'), say("The tiles behind that button have been recalled.", "Die Kacheln hinter dem Knopf wurden zurückgerufen."), delay = 0.5f),
             ),
             hint = T("Button 2 puts the wall back. Hop it.", "Knopf 2 stellt die Wand wieder hin. Hüpf drüber."),
         ) {
@@ -242,11 +242,11 @@ object World3PartA {
             rematch = listOf(
                 Round(
                     T("Same hall. The ceiling has been rearranged.", "Gleiche Halle. Die Decke wurde umgeräumt."),
-                    hint = T("The ceiling you waited for is now the one you walk away from. And the beam wants a minute.", "Die Decke, auf die du gewartet hast, lässt du jetzt hinter dir. Und der Strahl will eine Minute."),
+                    hint = T("The first slab lands in front of you now: wait for it, and climb. The one you waited for later is the one you walk away from, and the beam wants a minute.", "Die erste Platte fällt jetzt vor dich: Warte und klettere. Die, auf die du später gewartet hast, lässt du hinter dir, und der Strahl will eine Minute."),
                     start = emptyList(),
                     traps = listOf(
-                        trap(PastX(3.0f), Fall('a'), say("Same first slab. I can't think of everything.", "Dieselbe erste Platte. Mir fällt ja nicht alles ein."), delay = 0.5f),
-                        trap(PastX(8.2f), Fall('b'), say("Reserved seating: wait here, it's coming.", "Reservierter Platz: Warte hier, sie kommt gleich."), delay = 0.7f),
+                        trap(PastX(1.8f), Fall('a'), say("First slab: in front of you this time. Take a seat.", "Erste Platte: diesmal vor dir. Nehmen Sie Platz.")),
+                        trap(PastX(8.2f), Fall('b'), say("Reserved seating: wait here, it's coming.", "Reservierter Platz: Warte hier, sie kommt gleich."), delay = 0.5f),
                         trap(PastX(13.5f), Fall('c'), say("This one was always going to be behind you.", "Die hier war schon immer hinter dir."), delay = 0.3f),
                         trap(Landed(14f, 17.5f), Play(Card.SPIKE_SEED), Laser('A', 18 to 1, 18 to 14, on = 0.95f, off = 60f, delay = 0.1f), say("A beam, grown on the step. Fresh.", "Ein Strahl, frisch auf der Stufe gewachsen.")),
                         trap(PastX(20.4f), Fall('d'), say("Mind the last roof. The walls stopped flickering.", "Achtung, letztes Dach. Die Wände flackern nicht mehr."), delay = 0.9f),

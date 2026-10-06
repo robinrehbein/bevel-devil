@@ -131,7 +131,7 @@ object World3PartD {
             intro = T("Take a seat on the heatsink. Relax.", "Setz dich auf den Kühlkörper. Entspann dich."),
             start = listOf(Heat('h', rise = 1.3f), Heat('g', rise = 1.3f), Heatsink('k', cools = "hg"), Heatsink('l', cools = "hg")),
             traps = listOf(
-                trap(Landed(8f, 12.9f), Play(Card.DEVIL_SAW), Saw(33f, 12.4f, -8f, 0f), say("Fan blade! It's rotating. On the floor.", "Lüfterblatt! Es dreht sich. Am Boden.")),
+                trap(Landed(8f, 12.9f), Play(Card.DEVIL_SAW), Saw(33f, 12.4f, -8f, 0f), say("A blade! It rotates. On the floor.", "Ein Blatt! Es dreht sich. Am Boden.")),
                 trap(Zone(17f, 13.8f, 19f, 15.1f), PathSaw(3.2f, 11f to 14.4f, 18.4f to 14.4f), say("Fans have more than one blade.", "Lüfter haben mehr als ein Blatt.")),
                 trap(Zone(25f, 13.8f, 27f, 15.1f), Saw(33f, 12.4f, -7.5f, 0f), PathSaw(2.6f, 20f to 14.4f, 26.4f to 14.4f), say("Second bench, second blades. I do the seating plan.", "Zweite Bank, zweite Blätter. Ich mache den Sitzplan.")),
             ),

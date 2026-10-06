@@ -22,7 +22,7 @@ object World3PartF {
                 trap(Landed(10f, 12f), Play(Card.SINKING), Fall('b'), say("The bridge is built one plank ahead of you.", "Die Brücke wird eine Planke vor dir gebaut. Oder abgebaut.")),
                 trap(Landed(14f, 16f), Hide('d'), say("Planning permission: revoked.", "Baugenehmigung: widerrufen.")),
                 trap(Zone(21f, 5.8f, 24f, 8f), FanSet('g', 6f), say("The lift has a turbo. You're welcome.", "Der Aufzug hat einen Turbo. Gern geschehen.")),
-                trap(Touch('e'), Fall('e'), say("The landing strip is on loan.", "Die Landebahn ist geliehen."), delay = 0.4f),
+                trap(Touch('e'), Fall('e'), say("The landing strip has a lease. It just ran out.", "Die Landebahn hat einen Mietvertrag. Er ist gerade abgelaufen."), delay = 0.4f),
             ),
             hint = T("The planks ahead are the ones that go. Hop as soon as you land, and hold on to the wall in the lift.", "Die Planken vor dir gehen weg. Spring gleich nach der Landung und halt dich im Lift an der Wand."),
             // rematch: the bridge holds its planks but not its jumpers: any hop in the air drops the plank it would land on (the card is a bluff), and the gap is
@@ -37,7 +37,7 @@ object World3PartF {
                         trap(Airborne(13f, 15f), Hide('c')),
                         trap(Airborne(15f, 18f), Hide('d'), say("No jumping on the bridge. Union rules.", "Springen auf der Brücke verboten. Betriebsrat.")),
                         trap(Zone(21f, 5.8f, 24f, 8f), FanSet('g', 6f), say("Turbo again. Nobody asked.", "Wieder Turbo. Keiner hat gefragt.")),
-                        trap(Touch('e'), Fall('e'), say("Landing strip: still on loan.", "Landebahn: immer noch geliehen."), delay = 0.4f),
+                        trap(Touch('e'), Fall('e'), say("Landing strip: lease renewed. Not for you.", "Landebahn: Mietvertrag verlängert. Nicht für dich."), delay = 0.4f),
                     ),
                 ) {
                     put(9, 10, 'a'); put(11, 10, '#')
@@ -137,7 +137,7 @@ object World3PartF {
                 trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
                 trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
             ),
-            hint = T("Stand in the draft and wait for the ride. The world will turn by itself.", "Stell dich in den Luftstrom und warte auf die Fahrt. Die Welt dreht sich von allein."),
+            hint = T("Stand in the draft and wait for the ride. Up top, keep your head down.", "Stell dich in den Luftstrom und warte auf die Fahrt. Oben: Kopf einziehen."),
         ) {
             border(); floor()
             put(19, 1, 'v')

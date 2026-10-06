@@ -88,7 +88,7 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(PastX(4f), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back. The wind has no say there.", "Ein Blatt für den Rücken. Der Wind hat da nichts zu melden.")),
-                trap(Landed(8f, 14f), Saw(33f, 14.4f, -10f, 0f), say("Fan blade, fresh off the shelf.", "Lüfterblatt, frisch aus dem Regal.")),
+                trap(Landed(8f, 14f), Saw(33f, 14.4f, -10f, 0f), say("A blade rolls down the corridor. Free of charge.", "Ein Blatt rollt durch den Flur. Kostenlos.")),
                 trap(PastX(11f), FanSet('w', 7.6f), say("Breezy.", "Luftig.")),
                 trap(Pressed('1'), Play(Card.BACKDRAFT), FanSet('w', -8f), say("Tailwind, as requested.", "Rückenwind, wie bestellt.")),
                 trap(Pressed('1'), Power('g', false), say("The gale needs a moment to think it over.", "Der Sturm braucht einen Moment zum Nachdenken."), delay = 1.0f),
@@ -110,7 +110,7 @@ object World3PartE {
                         trap(PastX(10.5f), FanSet('w', 7f), say("Breezy again.", "Wieder luftig.")),
                         trap(PastX(13f), Saw(33f, 14.4f, -10f, 0f), say("And the one from the shelf. Regulars get two.", "Und das aus dem Regal. Stammgäste bekommen zwei.")),
                         trap(PastX(16f), FanSet('w', 5.6f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
-                        trap(PastX(19.5f), Saw(33f, 14.4f, -11f, 0f), say("Another one, fresh off the shelf.", "Noch eins, frisch aus dem Regal.")),
+                        trap(PastX(19.5f), Saw(33f, 14.4f, -11f, 0f), say("Blade number three. Do not count.", "Blatt Nummer drei. Nicht mitzählen.")),
                         trap(PastX(22f), FanSet('w', 6.8f), say("And it picks up again.", "Und er zieht wieder an.")),
                         trap(PastX(26.5f), Saw(33f, 14.4f, -12f, 0f), say("The last one. I promise. Roughly.", "Das letzte. Versprochen. Ungefähr.")),
                     ),
@@ -201,7 +201,7 @@ object World3PartE {
                 Fan('d', at = 13 to 0, dir = Dir.DOWN, reach = 15, speed = 2.2f, width = 4),
             ),
             traps = listOf(
-                trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Mind the ceiling. It minds you.", "Achtung, die Decke. Sie achtet auf dich."), delay = 0.3f),
+                trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Ceiling inspection: it passes. You might not.", "Deckenprüfung: Sie besteht. Du vielleicht nicht."), delay = 0.3f),
                 trap(Landed(11f, 12.9f), Fall('h'), say("And the next one, for good measure.", "Und die nächste, zur Sicherheit."), delay = 0.3f),
                 trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
                 trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),

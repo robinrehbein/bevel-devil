@@ -90,7 +90,7 @@ object World3PartC {
             intro = T("Chips get hot when they think. This one never stops.", "Chips werden heiß, wenn sie denken. Der hier hört nie auf."),
             start = listOf(Heat('c', rise = 2.1f, load = true), Heatsink('m', cools = "c"), Circuit('w'), Pad('1', at = 27 to 14, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(PastX(9f), Saw(33f, 14.4f, -7f, 0f), say("Fan blade, express. It comes with the chip.", "Lüfterblatt, Express. Gehört zum Chip."), delay = 0.25f),
+                trap(PastX(9f), Saw(33f, 14.4f, -7f, 0f), say("Blade express. It comes with the chip.", "Messer-Express. Gehört zum Chip."), delay = 0.25f),
                 trap(Pressed('1'), Play(Card.DEVIL_SAW), Saw(35.5f, 14.4f, -6f, 0f), Heat('c', rise = 1.6f, load = true), say("Pressed. The lock is open, the load is up, the blade is loose.", "Gedrückt. Das Schloss ist offen, die Last oben, das Messer los."), delay = 0.6f),
             ),
             hint = T("Cross the chip at once, it only gets hotter. On the way back cool it on the sink first, but the blade is on your heels.", "Geh sofort über den Chip, er wird nur heißer. Zurück erst am Kühlkörper kühlen, aber das Messer ist dir auf den Fersen."),
