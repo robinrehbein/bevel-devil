@@ -128,7 +128,7 @@ object World3PartF {
             spawn(2, 14); door(29, 14)
         },
 
-        // 44 — Display (a breather: one punchline)
+        // 44 — Display (a breather: one lure, one punchline, and the screen rotates back for whoever dawdles)
         Level(
             name = T("Display", "Anzeige"),
             intro = T("I mounted the monitor myself.", "Den Monitor habe ich selbst montiert."),
