@@ -555,6 +555,8 @@ class World2Test {
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
     @Test fun level36() { World2DesignTest.play(36) }
+    /** Access Log: running on along the lane meets the pendulum that hangs over it from the start. */
+    @Test fun level36RunningOnMeetsThePendulum() = b(36).right(3f).expect(WorldState.DEAD)
     @Test fun level37() { World2DesignTest.play(37) }
     /** Two-Factor Auth: without the first switch the wall holds, whatever you do on the lane. */
     @Test fun level37TheFirstWallHoldsWithoutTheSwitch() {
@@ -584,5 +586,10 @@ class World2Test {
     @Test fun level45() { World2DesignTest.play(45) }
     @Test fun level46() { World2DesignTest.play(46) }
     @Test fun level47() { World2DesignTest.play(47) }
+    /** Math Problem: the controls swap in the air, as you hop the cart. */
+    @Test fun level47TheControlsSwapInTheAir() {
+        val bot = b(47).rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).wait(0.1f)
+        assertTrue(bot.world.swapped)
+    }
     @Test fun level48() { World2DesignTest.play(48) }
 }
