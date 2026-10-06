@@ -107,9 +107,19 @@ object World2Rooms {
     fun l25(b: Bot) = b.rightTo(8.2f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
         .waitFor { it.group('e').oy > 2f }.waitFor { it.group('e').oy < 0.05f }.right(2f)
 
-    /** 25, round 2: the same nodes with short hops under the low cable tray; on the third node, step onto the last one as soon as it is back (the third sinks with it). */
-    fun l25r2(b: Bot) = b.rightTo(8.2f).rightJump(0.12f).landRight().rightJump(0.12f).landRight()
-        .waitFor { it.group('e').oy > 2f }.waitFor { it.group('e').oy < 0.05f }.rightTo(17.3f).rightJump(0.12f).landRight().right(2f)
+    /** 25, round 2: across the first node, onto the sinking second and straight on to the third; walk against its belt, let it carry you back and walk again until the last node is back, then run across it and hop off its end before it sinks. */
+    fun l25r2(b: Bot): Bot {
+        b.rightTo(8.2f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+        var down = false
+        var n = 0
+        while (b.world.state == WorldState.PLAYING && n++ < 40) {
+            val oy = b.world.group('e').oy
+            if (oy > 2f) down = true
+            if (down && oy < 0.05f) break
+            b.rightTo(17.0f).wait(0.2f).right(0.02f)
+        }
+        return b.rightTo(23.6f).rightJump(0.3f).landRight().right(1f)
+    }
 
     /** 26: hop the piece that drops on the top deck, off its left end onto the middle deck, right along it ahead of the queue (hop the LEDs under the hole), off the end onto the lane, hop the queue that comes head-on, left to the door. */
     fun l26(b: Bot) = b.leftTo(23.0f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.grounded && it.player.box.b > 9.5f }

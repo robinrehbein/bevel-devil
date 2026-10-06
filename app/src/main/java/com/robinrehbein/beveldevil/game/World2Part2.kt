@@ -50,7 +50,7 @@ object World2Part2 {
             traps = listOf(
                 trap(Zone(9.6f, 9f, 15f, 12.2f), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
                 trap(Zone(14f, 6.5f, 19f, 8.4f), Fall('d'), say("Shelf 2 is decoration. Do not stand on it.", "Regal 2 ist Deko. Nicht draufstellen."), delay = 0.4f),
-                trap(Zone(7f, 5f, 8.5f, 8.2f), Play(Card.CRUMBLE), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
+                trap(Zone(7f, 5f, 8.5f, 8.2f), Play(Card.HEADBUTT), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
                 trap(Touch('s'), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
                 trap(Zone(6.5f, 13.5f, 21f, 15f), Fall('e'), say("Last stop. The station is closed. Please jump.", "Endstation. Der Bahnhof ist gesperrt. Bitte springen.")),
             ),
@@ -329,19 +329,21 @@ object World2Part2 {
                 trap(Touch('e'), Move('e', 0f, 3f, 6f), say("Node 4: maintenance window. Starts now.", "Knoten 4: Wartungsfenster. Beginnt jetzt."), delay = 1.05f),
             ),
             hint = T("Do not stop on the first two nodes. On the third, wait for the floor to come back.", "Bleib auf den ersten zwei Knoten nicht stehen. Auf dem dritten: warte, bis der Boden zurück ist."),
+            // rematch: rebalanced against what worked: the first node holds now, the second sinks under you (hop straight on), and the third,
+            // where you waited, is a belt that runs back toward the pit: you cannot stand and wait on it. Walk against it, let it carry you back,
+            // walk again, until the floor in front of the door is back, and then over it at once: its maintenance window is shorter (hop off its end)
             rematch = listOf(
                 Round(
-                    T("Rebalanced. Node 4 moved one tile on.", "Neu verteilt. Knoten 4 ist ein Feld weitergerückt."),
-                    hint = T("There is a gap before the last node now, and the third node sinks soon after it is back: hop on at once.", "Vor dem letzten Knoten ist jetzt eine Lücke, und der dritte sinkt bald, nachdem er zurück ist: sofort rüberspringen."),
+                    T("Rebalanced. Your favourite node is busy.", "Neu verteilt. Dein Lieblingsknoten ist beschäftigt."),
+                    hint = T("The second node sinks, and the third runs back to the pit: keep walking against it until the floor ahead is back, then run and hop off its end.", "Der zweite Knoten sinkt, und der dritte läuft zur Grube: Lauf gegen ihn an, bis der Boden vorn zurück ist, dann renn und spring von seinem Ende."),
                     traps = listOf(
-                        trap(Touch('a'), Move('a', 0f, 3f, 2.4f), say("Node 1, as before. I am consistent.", "Knoten 1 wie gehabt. Ich bin konsequent.")),
-                        trap(Touch('b'), Play(Card.BACKDRAFT), Belt('b', -6f), say("Node 2, still sending it back.", "Knoten 2 schickt immer noch zurück.")),
-                        trap(Landed(14.5f, 18f), Move('e', 0f, 2.5f, 10f), say("Node 4 is busy. Node 3 is next.", "Knoten 4 ist besetzt. Knoten 3 ist der Nächste.")),
-                        trap(Landed(14.5f, 18f), Move('e', 0f, -2.5f, 5f), delay = 0.9f),
-                        trap(Touch('c'), Move('c', 0f, 3f, 3f), say("Node 3 is next. Told you.", "Knoten 3 ist der Nächste. Hab ich doch gesagt."), delay = 1.6f),
-                        trap(Touch('e'), Move('e', 0f, 3f, 6f), delay = 0.75f),
+                        trap(Touch('b'), Move('b', 0f, 3f, 2.4f), say("Node 2 is overloaded today.", "Knoten 2 ist heute überlastet.")),
+                        trap(Touch('c'), Play(Card.BACKDRAFT), Belt('c', -4.5f), say("Node 3: backpressure. Do not get comfortable.", "Knoten 3: Gegendruck. Mach es dir nicht bequem.")),
+                        trap(Landed(14.5f, 18f), Move('e', 0f, 2.5f, 10f), say("Node 4 is busy. Please keep moving.", "Knoten 4 ist besetzt. Bitte in Bewegung bleiben."), delay = 0.35f),
+                        trap(Landed(14.5f, 18f), Move('e', 0f, -2.5f, 8f), delay = 0.95f),
+                        trap(Zone(18.2f, 13f, 25f, 15.5f), Move('e', 0f, 3f, 4f), say("Node 4: maintenance window. A short one.", "Knoten 4: Wartungsfenster. Ein kurzes."), delay = 0.5f),
                     ),
-                ) { put(10, 15, 'b'); put(18, 15, '.') },
+                ),
             ),
         ) {
             border(); floor()

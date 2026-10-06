@@ -216,7 +216,7 @@ object World2Part3D {
                 trap(Touch('a'), Belt('b', -5f), say("admin: sudo required. Starting now.", "admin: sudo nötig. Ab sofort."), delay = 1.5f),
                 trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', 0f), say("root: maintenance window. One second.", "root: Wartungsfenster. Eine Sekunde."), delay = 1.0f),
                 trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', -14f), say("root: window closed. You were not invited.", "root: Fenster zu. Du warst nicht eingeladen."), delay = 2.0f),
-                trap(Zone(16.4f, 10f, 18f, 13.2f), Play(Card.SINKING), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
+                trap(Zone(16.4f, 10f, 18f, 13.2f), Play(Card.HEADBUTT), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
                 trap(Touch('p'), Belt('p', -6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
                 trap(Touch('p'), Move('p', 0f, 4f, 8f), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
             ),
