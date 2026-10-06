@@ -346,9 +346,9 @@ class World3Test {
 
     @Test
     fun metaTwistsAreFewAndHaveHardwareFlavour() {
-        // the monitor that turns (48) and the memory that rewinds (46); the fake endings were left out (a fake win takes 3.4 s of nothing, docs/LEVEL_DESIGN_V2.md H3)
+        // the monitor that turns (48), the memory that rewinds and the frame that fails its self-test (46); the fake endings were left out (a fake win takes 3.4 s of nothing, docs/LEVEL_DESIGN_V2.md H3)
         val kinds = World3.levels.flatMap { l -> actions(l).filter { meta(it) || it is Action.Undo }.map { it::class.simpleName!! } }.toSet()
-        assertEquals(setOf("Flip", "Undo"), kinds)
+        assertEquals(setOf("Flip", "Undo", "FrameCrack"), kinds)
         val levels = World3.levels.withIndex().filter { (_, l) -> actions(l).any { meta(it) || it is Action.Undo } }.map { it.index + 1 }
         assertEquals(listOf(46, 48), levels)
     }
