@@ -181,5 +181,30 @@ object World3PartA {
             fill(26..27, 13..14); fill(28..30, 11..14)
             spawn(22, 14); door(30, 10)
         },
+
+        // 7 — a long hall with a ceiling that comes down in pieces and two walls of copper that flicker. The first slab falls
+        // behind you (keep moving), the second lands in front of you (wait for it, climb it), the third comes down behind
+        // you again, and at each wall you wait for the dark on the side where no slab can reach you. Two steps up to the door.
+        Level(
+            name = T("Loose Contact", "Wackelkontakt"),
+            intro = T("It's not a bug, it's a flicker.", "Das ist kein Fehler, das ist ein Flimmern."),
+            start = listOf(Clock('Z', on = 1.2f, off = 1.2f, phase = 0.5f), Clock('Y', on = 1.2f, off = 1.2f, phase = 0.9f)),
+            traps = listOf(
+                trap(PastX(2.4f), Fall('a'), say("Loose ceiling. Mind the first one.", "Lose Decke. Pass auf die erste auf."), delay = 0.5f),
+                trap(PastX(5.6f), Play(Card.COLLAPSE), Fall('c'), say("Observed. Collapsed.", "Beobachtet. Kollabiert."), delay = 0.35f),
+                trap(PastX(12.8f), Fall('b'), say("Another one, just behind your heels.", "Noch eine, dicht hinter deinen Fersen."), delay = 0.5f),
+                trap(PastX(20.4f), Fall('d'), say("The wall flickers, the ceiling does not.", "Die Wand flackert, die Decke nicht."), delay = 0.9f),
+            ),
+            hint = T("Wait where nothing hangs above you.", "Warte dort, wo nichts über dir hängt."),
+        ) {
+            border(); floor()
+            fill(3..5, 1..9); fill(3..5, 10..11, 'a')
+            fill(9..12, 1..9); fill(9..12, 10..11, 'c')
+            fill(14..15, 1..9); fill(14..15, 10..11, 'b')
+            fill(21..22, 1..9); fill(21..22, 10..11, 'd')
+            wire(19, 'Z'); wire(26, 'Y')
+            fill(28..29, 13..14); fill(30..30, 11..14)
+            spawn(2, 14); door(30, 10)
+        },
     )
 }

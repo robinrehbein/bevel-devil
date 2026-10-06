@@ -2,6 +2,14 @@ package com.robinrehbein.beveldevil.game
 
 /** Bot solutions of the rebuilt block A of World 3 (levels 1-8): one per round, round 1 first. Registered in [World3DesignTest]. */
 object World3RoomsA {
+    /** The flickering wall [id] has just gone dark (the first 0.35 s of its dark half): time enough to cross it. */
+    private fun darkStart(w: World, id: Char): Boolean {
+        val c = w.circuits[id] ?: return false
+        val clock = c.clock ?: return false
+        val t = clock.timing.cycle(w.time - c.clockT0)
+        return t >= clock.on && t < clock.on + 0.35f
+    }
+
     /** The path saw (pendulum) hanging in column [x]. */
     private fun pend(w: World, x: Float): Float = w.saws.firstOrNull { it.path != null && Math.abs(it.x - x) < 0.1f }?.y ?: 99f
 
@@ -39,6 +47,11 @@ object World3RoomsA {
                 .rightTo(3.2f).rightJump(0.55f).landRight()
                 .rightTo(9.4f).rightJump(0.55f).landRight().rightTo(16.0f).rightJump(0.55f).landRight()
                 .rightTo(24.0f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
+        ),
+        7 to listOf<Solution>(
+            { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+                .rightTo(17.0f).waitFor { w -> darkStart(w, 'Z') }.rightTo(20.6f).rightTo(24.5f).waitFor { w -> darkStart(w, 'Y') }
+                .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
         ),
     )
 }
