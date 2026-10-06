@@ -236,21 +236,24 @@ object World3PartC {
             spawn(1, 5); door(29, 10)
         },
 
-        // 24 — cooling fins: hot plates as a staircase up to the door; they heat faster after the first landing, the top ledge is overclocked
+        // 24 — mirrored for once: you start on a tower at the right and the door is at the far left, on a ledge. Three sets of cooling fins
+        // (hot plates) lie across the floor; each flares as you come down to it, and each takes about a second to cool. Wait on the cold
+        // stone in front of it, then cross it quickly: it heats up again under your feet. The last set flares right before the ledge.
         Level(
             name = T("Cooling Fins", "Kühlrippen"),
             intro = T("Nice view from up there.", "Schöne Aussicht von da oben."),
-            start = listOf(Heat('h', rise = 0.8f)),
+            start = listOf(Heat('a', rise = 0.8f, cool = 1.3f), Heat('b', rise = 0.8f, cool = 1.3f), Heat('c', rise = 0.8f, cool = 1.3f)),
             traps = listOf(
-                trap(Landed(5f, 9f), Play(Card.THROTTLE), Heat('h', rise = 0.6f), say("Fins upgraded: now with extra heat.", "Rippen aufgerüstet: jetzt mit Extrawärme.")),
-                trap(Airborne(24f, 28f), HeatSpike('g', 0.7f), say("The summit is warm.", "Der Gipfel ist warm.")),
-                trap(Idle(1.3f), HeatSpike('h', 1f), say("Sitting on a plate. Bold.", "Auf einer Platte sitzen. Mutig.")),
+                trap(Zone(20.5f, 13f, 28f, 15.2f), HeatSpike('a', 1f), say("Fins upgraded: now with extra heat.", "Rippen aufgerüstet: jetzt mit Extrawärme.")),
+                trap(Zone(14.4f, 13f, 16.0f, 15.2f), HeatSpike('b', 1f), say("The second set was just plugged in.", "Der zweite Satz wurde gerade eingesteckt.")),
+                trap(Zone(8.4f, 13f, 9.9f, 15.2f), HeatSpike('c', 1f), say("Last set. It is warm. It was a surprise to me, too.", "Letzter Satz. Er ist warm. Mich hat es auch überrascht.")),
             ),
+            hint = T("Wait on the stone until the fins have cooled, then cross them quickly.", "Warte auf dem Stein, bis die Rippen abgekühlt sind, und lauf dann schnell drüber."),
         ) {
             border(); floor()
-            fill(5..8, 13..13, 'h'); fill(11..14, 11..11, 'h'); fill(17..20, 9..9, 'h'); fill(23..26, 7..7, 'h')
-            fill(28..30, 5..5, 'g')
-            spawn(); door(29, 4)
+            fill(28..30, 6..14); fill(1..2, 11..14); fill(3..3, 13..14)
+            fill(16..18, 15..15, 'a'); fill(10..12, 15..15, 'b'); fill(4..6, 15..15, 'c')
+            spawn(30, 5); door(1, 10)
         },
 
     )

@@ -8,6 +8,9 @@ object World3RoomsC {
     /** Group [id] has fallen and lies still, [low] tiles or more below where it hung. */
     private fun landed(w: World, id: Char, low: Float = 1.5f): Boolean = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > low }
 
+    /** Plate group [id] is cool enough to be crossed in a few steps. */
+    private fun cool(w: World, id: Char): Boolean = (w.heaters[id]?.heat ?: 0f) < 0.35f
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
             { rightTo(6.3f).waitCooled('g').rightTo(24.8f).landRight()
@@ -50,6 +53,10 @@ object World3RoomsC {
             { rightTo(5.2f).waitFor { it.player.grounded }.rightTo(6.8f).waitFor { landed(it, 'a', 1f) }.rightJump(0.55f).landRight()
                 .rightTo(19.4f).landRight().waitFor { landed(it, 'm', 1f) }.rightJump(0.55f).landRight()
                 .rightTo(24.0f).waitFor { landed(it, 'e', 1f) }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1.5f) },
+        ),
+        24 to listOf<Solution>(
+            { leftTo(27.0f).landLeft().waitFor { cool(it, 'a') }.leftTo(15.4f).waitFor { cool(it, 'b') }
+                .leftTo(9.4f).waitFor { cool(it, 'c') }.leftTo(6.0f).leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(0.5f) },
         ),
     )
 }
