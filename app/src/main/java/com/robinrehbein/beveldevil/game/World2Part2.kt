@@ -47,10 +47,11 @@ object World2Part2 {
             intro = T("Timetable: every ten seconds. Roughly.", "Fahrplan: alle zehn Sekunden. Ungefähr."),
             start = listOf(Belt('b', -9f)),
             traps = listOf(
-                trap(Zone(9.6f, 9f, 15f, 12.2f), Play(Card.HEADBUTT), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
-                trap(Zone(14f, 6.5f, 19f, 8.4f), Fall('d'), say("Shelf 2 is decoration. Do not stand on it.", "Regal 2 ist Deko. Nicht draufstellen."), delay = 0.55f),
-                trap(Touch('s'), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
-                trap(Zone(10f, 13.5f, 21f, 15f), Fall('e'), say("Last stop. The station is closed. Please jump.", "Endstation. Der Bahnhof ist gesperrt. Bitte springen.")),
+                trap(Zone(9.6f, 9f, 15f, 12.2f), Fall('c'), say("Packet from the upper bus. Mind your head.", "Paket vom oberen Bus. Kopf einziehen.")),
+                trap(Zone(14f, 6.5f, 19f, 8.4f), Fall('d'), say("Shelf 2 is decoration. Do not stand on it.", "Regal 2 ist Deko. Nicht draufstellen."), delay = 0.4f),
+                trap(Zone(7f, 5f, 8.5f, 8.2f), Fall('k'), say("Express packet. It does not stop for pedestrians.", "Expresspaket. Hält nicht für Fußgänger."), delay = 0.1f),
+                trap(Touch('s'), Play(Card.BACKDRAFT), Belt('b', 5f), say("Bus 1 reversed. Next stop: the door.", "Bus 1 fährt jetzt andersrum. Nächster Halt: die Tür.")),
+                trap(Zone(6.5f, 13.5f, 21f, 15f), Fall('e'), say("Last stop. The station is closed. Please jump.", "Endstation. Der Bahnhof ist gesperrt. Bitte springen.")),
             ),
             hint = T("The bus turns around somewhere. Not down here.", "Irgendwo dreht der Bus um. Nicht hier unten."),
         ) {
@@ -59,7 +60,7 @@ object World2Part2 {
             fill(7..20, 12..12); fill(8..14, 13..13, 'v'); fill(7..20, 15..15, 'b')
             fill(21..21, 1..12); fill(19..20, 10..11)
             fill(25..26, 15..17, 'e')
-            fill(3..18, 8..8); fill(3..4, 8..8, 's'); fill(11..13, 8..8, 'c'); fill(14..18, 8..8, 'd')
+            fill(3..18, 8..8); fill(3..4, 8..8, 's'); fill(11..13, 8..8, 'c'); fill(14..18, 8..8, 'd'); fill(5..6, 1..1, 'k')
             spawn(); door(); bits(17)
         },
 
@@ -119,7 +120,7 @@ object World2Part2 {
 
         // 19 — a trap room: the floor drops out ahead (a hop), the packets get reordered (left and right swap) while the stairs
         // go up to the right, and on the top floor, on the way back left to the door, the order is restored and a wall drives
-        // toward you: hop it
+        // toward you: hop it. Behind it the last parcel in front of the door is returned to sender, too: it slides at you (hop it late)
         Level(
             name = T("Delivery", "Zustellung"),
             intro = T("Packets arrive in order. Guaranteed.", "Pakete kommen der Reihe nach an. Garantiert."),
@@ -128,12 +129,13 @@ object World2Part2 {
                 trap(Landed(10.9f, 12.7f), Play(Card.TWISTED), Swap(true), say("Packet reordering! Left and right arrive swapped.", "Paket-Umsortierung! Links und rechts kommen vertauscht an.")),
                 trap(Landed(25f, 28f), Swap(false), say("In-order delivery restored. You're welcome.", "Reihenfolge wiederhergestellt. Gern geschehen.")),
                 trap(Landed(25f, 28f), Move('w', 9f, 0f, 5f), say("Return to sender. Express.", "Rücksendung an den Absender. Per Express."), delay = 0.2f),
+                trap(Zone(9.5f, 4f, 16.5f, 7.9f), Move('K', 2f, 0f, 5f), say("Parcel two: also returned. Sign here.", "Paket zwei: auch zurück. Hier unterschreiben.")),
             ),
             hint = T("Left is right. Until the top floor.", "Links ist rechts. Bis zum Obergeschoss."),
         ) {
             border(); floor()
             fill(8..10, 15..17, 'a')
-            fill(13..14, 13..14); fill(16..19, 13..14); fill(22..24, 11..14); fill(25..27, 9..14); fill(7..8, 6..7)
+            fill(13..14, 13..14); fill(16..19, 13..14); fill(22..24, 11..14); fill(25..27, 9..14); fill(7..8, 7..7, 'K')
             fill(2..21, 8..8); fill(11..12, 6..7, 'w')
             spawn(1); put(2, 7, 'D'); bits(19)
         },
@@ -142,21 +144,23 @@ object World2Part2 {
         // powers the stairs up to the ledge, but running straight on gets you nowhere: the first step is yours to hop, and landing on it
         // starts gate 2 on a rhythm over the next gap (wait for it); a twin gate over the gap after the third step. The ID scanner (a pad)
         // is where the stairs end, up on the ledge: it reopens gate 3 for a moment's notice, and the queue at the exit has other plans:
-        // wait up there until it has passed. The floor behind you and the stairs go dark as you climb (the ledge is the only way on)
+        // wait up there until it has passed. The floor behind you and the stairs go dark as you climb (the ledge is the only way on), and the
+        // first step times out too if you camp on it
         Level(
             name = T("Stateful Inspection", "Zustandsprüfung"),
             intro = T("Please have your ID ready.", "Bitte Ausweis bereithalten."),
             start = listOf(
                 Laser('K', 25 to 1, 25 to 14),
-                Circuit('x'), Circuit('w', on = false),
+                Circuit('x'), Circuit('w', on = false), Circuit('s'),
                 Pad('2', at = 2 to 14, circuits = "w"),
                 Pad('1', at = 21 to 2),
             ),
             traps = listOf(
                 trap(Pressed('2'), say("Second check started. The stairs are powered.", "Zweite Kontrolle gestartet. Die Treppe steht unter Strom.")),
-                trap(Landed(6f, 7.9f), Play(Card.SPIKE_SEED), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
+                trap(Landed(6f, 7.9f), Play(Card.THROTTLE), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
                     say("Gate 2 now runs on a rhythm.", "Tor 2 läuft jetzt im Takt.")),
                 trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
+                trap(Touch('s'), Circuit('s', on = false), say("This step times out, too. Do not camp.", "Diese Stufe läuft auch ab. Nicht campen."), delay = 1.7f),
                 trap(Landed(12f, 13.9f), Laser('N', 14 to 1, 14 to 14, on = 1.3f, off = 1.4f, phase = 0.4f), say("Gate 2 has a twin. Same rhythm, other hole.", "Tor 2 hat einen Zwilling. Gleicher Takt, anderes Loch.")),
                 trap(Landed(21.2f, 24.6f), Circuit('w', on = false), say("Stairs closed. The ledge is one-way.", "Treppe gesperrt. Der Sims ist eine Einbahnstraße.")),
                 trap(Pressed('1'), Power('K', false), Laser('K', 25 to 1, 25 to 14, on = 0.5f, off = 40f, delay = 0.1f),
@@ -199,7 +203,7 @@ object World2Part2 {
         ) {
             border(); floor()
             fill(2..14, 15..17, 'x')
-            fill(6..7, 13..13); fill(9..10, 11..11, 'w'); fill(12..13, 9..9, 'w'); fill(15..16, 7..7, 'w'); fill(18..19, 5..5, 'w'); fill(21..24, 3..3)
+            fill(6..7, 13..13, 's'); fill(9..10, 11..11, 'w'); fill(12..13, 9..9, 'w'); fill(15..16, 7..7, 'w'); fill(18..19, 5..5, 'w'); fill(21..24, 3..3)
             spawn(1); door(); bits(20)
         },
 
@@ -229,35 +233,35 @@ object World2Part2 {
         ) {
             border(); floor()
             fill(12..13, 9..14); fill(17..18, 9..14)
-            fill(1..19, 8..8); fill(2..9, 8..8, 'c'); fill(10..19, 8..8, 'd'); fill(22..30, 8..8)
+            fill(1..19, 8..8); fill(2..6, 8..8, 'c'); fill(7..19, 8..8, 'd'); fill(22..30, 8..8)
             put(2, 7, '^'); ceilingSpikes(1..21, 6)
             spawn(1); door(); bits(21)
         },
 
         // 22 — the bouncer, a trap room (U7 the saw, U1 the floor goes): you start up on the top floor and run right; the first bouncer rolls
-        // out of the far wall and walks toward you (hop him), and the carpet in front of the end drops out over a row of LEDs (hop that, too).
-        // At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door to
-        // walk you out (hop him, after the LEDs under the hole), and the floor in front of the door drops
+        // out of the far wall and walks toward you (hop him), and the carpet in front of the end drops out over the LEDs on the lane (hop that,
+        // too). At the end you drop down to the lane, and the door is on the far left behind the second bouncer, who rolls out of the back door
+        // to walk you out (hop the LEDs under the hole, then him). The first bouncer has turned round and follows you to the door: as you land
+        // behind the second one, he comes back along the lane (do not stop)
         Level(
             name = T("Bouncer", "Türsteher"),
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             traps = listOf(
                 trap(PastX(8.5f), Play(Card.DEVIL_SAW), Saw(33.5f, 6.4f, -4.5f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
                 trap(Zone(12.5f, 3f, 14.5f, 7.4f), Hide('c'), say("Guest list updated. The carpet was crossed off.", "Gästeliste aktualisiert. Der Teppich wurde gestrichen.")),
-                trap(Zone(26f, 12.5f, 31f, 15.5f), Saw(-1.5f, 14.4f, 4.5f, 0f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
-                trap(Zone(15f, 13f, 16f, 15.5f), Fall('p'), say("The floor is for guests, too.", "Der Boden ist auch nur für Gäste.")),
+                trap(Zone(1f, 12.5f, 31f, 15.5f), Saw(-1.5f, 14.4f, 6f, 0f), say("Bouncer: let me walk you out.", "Türsteher: Ich begleite dich raus.")),
+                trap(Landed(3.5f, 11f), Saw(32f, 14.4f, -9f, 0f), say("The first bouncer is back. He remembers faces.", "Der erste Türsteher ist zurück. Er merkt sich Gesichter.")),
             ),
             hint = T("The bouncer rolls toward you. Jump him.", "Der Türsteher rollt auf dich zu. Spring über ihn."),
         ) {
             border(); floor()
             fill(1..28, 7..7); fill(16..17, 7..7, 'c')
-            leds(20..20)
-            fill(4..5, 15..17, 'p')
+            leds(19..20)
             spawn(2, 6); put(2, 14, 'D'); bits(22)
         },
 
-        // 23 — the information superhighway, a trap room (U12 the transport goes wrong, floor-move and drop): lifts. A piece of the on-ramp is
-        // missing (it drops as you come near: hop it), and the on-ramp itself is a lift flush with the road; it carries whoever steps on it up,
+        // 23 — the information superhighway, a trap room (U12 the transport goes wrong, floor-move and belts): lifts. The merge lane of the on-ramp
+        // is a conveyor that speeds you up toward the on-ramp, and the on-ramp itself is a lift flush with the road; it carries whoever steps on it up,
         // past the deck (walk off to the right) and on into a ceiling of spikes. Along the deck a piece of the road is closed for repairs (hop it),
         // and the last lift, to the exit deck, is out of service as soon as it has arrived: it rises four tiles, and a moment later it drops away
         // under whoever stays on it (walk off to the left onto the exit deck, where the door is)
@@ -265,11 +269,11 @@ object World2Part2 {
             name = T("Information Superhighway", "Datenautobahn"),
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
             traps = listOf(
-                trap(PastX(2.6f), Play(Card.SINKING), Fall('g'), say("Merge lane closed. Merge anyway.", "Einfädelspur gesperrt. Bitte trotzdem einfädeln."), delay = 0.1f),
+                trap(PastX(2.6f), Belt('g', 10f), say("Merge lane: accelerate to highway speed.", "Einfädelspur: auf Autobahntempo beschleunigen."), delay = 0.1f),
                 trap(Touch('a'), Move('a', 0f, -13f, 3f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
                 trap(PastX(15f), Move('b', -3f, 0f, 14f), say("Roadworks ahead. Nobody told the road.", "Baustelle voraus. Der Straße hat's keiner gesagt.")),
                 trap(Touch('c'), Move('c', 0f, -4f, 12f), say("Express lift to the exit. Doors closing.", "Expresslift zur Ausfahrt. Türen schließen.")),
-                trap(Touch('c'), Fall('c'), say("Out of service. Effective immediately.", "Außer Betrieb. Ab sofort."), delay = 0.8f),
+                trap(Touch('c'), Play(Card.SINKING), Move('c', 0f, 14f, 9f), say("Out of service. Effective immediately.", "Außer Betrieb. Ab sofort."), delay = 0.8f),
             ),
             hint = T("Do not ride to the top. Get off where the deck is.", "Fahr nicht bis nach oben. Steig aus, wo das Deck ist."),
         ) {
@@ -284,120 +288,124 @@ object World2Part2 {
         },
 
         // 24 — the uplink, a trap room (U2 the ceiling comes down, with a saw from the side as the last surprise): the elevator is out of order and the
-        // uplink is in the basement, so you start up on the top deck and run right: stalactites hang over the deck and the ones ahead drop as you
-        // come near (wait for them to fall, then run). At the end you drop down to the lane and run back left under the underside of the deck, which
-        // comes down on whoever steps under it (keep running); on the last stretch before the door a saw rolls out of the back wall as you land (hop it, before the door)
+        // uplink is in the basement, so you start up on the top deck and run right. Stalactites hang over the deck and drop as you come near: stop
+        // and let them pass. But the spot where everybody stops to wait is under a second cluster, and that one drops on whoever waits there (stop
+        // short, or do not stop at all). At the end you drop down to the lane and run back left under the underside of the deck, which comes down
+        // on whoever steps under it (keep running); on the last stretch before the door a saw rolls out of the back wall as you land (hop it)
         Level(
             name = T("Uplink", "Uplink"),
             intro = T("The uplink is in the basement. So is the elevator.", "Der Uplink ist im Keller. Der Aufzug auch."),
-            legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN)),
+            legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN), 'W' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(PastX(16.8f), Play(Card.HEADBUTT), Move('V', 0f, 16f, 25f), say("Stalactites. This is a cave now.", "Stalaktiten. Das hier ist jetzt eine Höhle."), delay = 0.3f),
+                trap(PastX(3.0f), Play(Card.HEADBUTT), Move('V', 0f, 16f, 14f), say("Stalactites. Patience is a virtue.", "Stalaktiten. Geduld ist eine Tugend."), delay = 0.58f),
+                trap(Zone(6.2f, 3f, 8.8f, 6f), Move('W', 0f, 16f, 14f), say("Virtue is overrated.", "Tugend wird überschätzt."), delay = 0.75f),
                 trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 3.6f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
                 trap(Landed(26f, 31f), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
             ),
-            hint = T("Wait for the stalactites to fall. Then run, and do not stop under the deck.", "Warte, bis die Stalaktiten gefallen sind. Dann lauf, und bleib nicht unter dem Deck stehen."),
+            hint = T("Let the first stalactites pass, but do not wait right in front of them. Under the deck, keep running.", "Lass die ersten Stalaktiten vorbei, aber warte nicht direkt davor. Unter dem Deck: weiterlaufen."),
         ) {
             border(); floor()
             fill(0..26, 6..6)
-            fill(20..21, 1..2, 'V')
+            fill(9..10, 1..2, 'V'); fill(5..8, 1..1, 'W')
             fill(19..26, 7..8, 'r')
             spawn(1, 5); door(12, 14); bits(24)
         },
 
-        // 25 — the load balancer, a trap room (U1 the floor goes): over a spike pit three nodes, a conveyor that runs against you and crumbles once
-        // you are on it, a stone that crumbles, and a conveyor that runs against you, faster than you run (hop off it as you land). Then you
-        // climb the rack on the right (the first step crumbles too) and run back over the pit on the top floor, where the stone drops under
-        // whoever stands on it; the door is on the platform at the end.
-        // Rematch: rebalanced. The nodes sit two tiles further on (round 1's hops land in the pit), crumble faster, the first one is longer and
-        // runs slower against you, and up on the top floor the stone is a belt that runs the way you came
+        // 25 — the load balancer, a trap room (U1 the floor goes): one way over a spike pit, from node to node, and every node balances the
+        // load differently. The first sinks under you (do not stop on it), the second passes the load back (a belt that starts against you
+        // as you land: hop straight on), and the third is steady, but landing on it sends the load to the floor in front of the door, which
+        // sinks into the spikes and only comes back up a moment later (wait on the third node).
         Level(
             name = T("Load Balancer", "Lastverteiler"),
             intro = T("I distribute the load evenly. Onto you.", "Ich verteile die Last gleichmäßig. Auf dich."),
-            start = listOf(Belt('a', -6f), Belt('c', -6f)),
             traps = listOf(
-                trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Node 1 is overloaded.", "Knoten 1 ist überlastet."), delay = 1.1f),
-                trap(Touch('b'), Fall('b'), say("Node 2 passes the load on. Fast.", "Knoten 2 reicht die Last weiter. Schnell."), delay = 0.8f),
-                trap(Touch('p'), Fall('p'), say("The rack is a node, too.", "Das Rack ist auch ein Knoten."), delay = 0.9f),
-                trap(Touch('j'), Fall('j'), say("Rebalanced again. The load stays where it is. So do you.", "Schon wieder neu verteilt. Die Last bleibt, wo sie ist. Du auch."), delay = 0.5f),
+                trap(Touch('a'), Move('a', 0f, 3f, 2.4f), say("Node 1 is overloaded.", "Knoten 1 ist überlastet.")),
+                trap(Touch('b'), Play(Card.BACKDRAFT), Belt('b', -6f), say("Node 2 passes the load back.", "Knoten 2 reicht die Last zurück.")),
+                trap(Landed(14.5f, 18f), Move('e', 0f, 2.5f, 10f), say("Node 4 is busy. Please hold.", "Knoten 4 ist besetzt. Bitte warten.")),
+                trap(Landed(14.5f, 18f), Move('e', 0f, -2.5f, 5f), delay = 0.9f),
+                trap(Touch('e'), Move('e', 0f, 3f, 6f), say("Node 4: maintenance window. Starts now.", "Knoten 4: Wartungsfenster. Beginnt jetzt."), delay = 1.05f),
             ),
-            hint = T("Nodes crumble when you stand on them. Do not cross them at a walk.", "Knoten bröckeln, sobald du draufstehst. Geh nicht im Schritt drüber."),
+            hint = T("Do not stop on the first two nodes. On the third, wait for the floor to come back.", "Bleib auf den ersten zwei Knoten nicht stehen. Auf dem dritten: warte, bis der Boden zurück ist."),
             rematch = listOf(
                 Round(
-                    T("Rebalanced. Same nodes, other places.", "Neu verteilt. Gleiche Knoten, andere Plätze."),
-                    hint = T("The nodes moved two tiles on. The first one is longer. The stone up top is a belt now.", "Die Knoten sind zwei Felder weitergerückt. Der erste ist länger. Der Stein oben ist jetzt ein Band."),
-                    start = listOf(Belt('a', -5f), Belt('c', 3f), Belt('j', -4f)),
+                    T("Rebalanced. Node 4 moved one tile on.", "Neu verteilt. Knoten 4 ist ein Feld weitergerückt."),
+                    hint = T("There is a gap before the last node now, and the third node sinks soon after it is back: hop on at once.", "Vor dem letzten Knoten ist jetzt eine Lücke, und der dritte sinkt bald, nachdem er zurück ist: sofort rüberspringen."),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.COLLAPSE), Fall('a'), say("Node 1: overloaded, but longer.", "Knoten 1: überlastet, aber länger."), delay = 1.5f),
-                        trap(Touch('b'), Fall('b'), delay = 0.7f),
-                        trap(Touch('p'), Fall('p'), delay = 0.7f),
-                        trap(Touch('j'), Fall('j'), delay = 0.8f),
+                        trap(Touch('a'), Move('a', 0f, 3f, 2.4f), say("Node 1, as before. I am consistent.", "Knoten 1 wie gehabt. Ich bin konsequent.")),
+                        trap(Touch('b'), Play(Card.BACKDRAFT), Belt('b', -6f), say("Node 2, still sending it back.", "Knoten 2 schickt immer noch zurück.")),
+                        trap(Landed(14.5f, 18f), Move('e', 0f, 2.5f, 10f), say("Node 4 is busy. Node 3 is next.", "Knoten 4 ist besetzt. Knoten 3 ist der Nächste.")),
+                        trap(Landed(14.5f, 18f), Move('e', 0f, -2.5f, 5f), delay = 0.9f),
+                        trap(Touch('c'), Move('c', 0f, 3f, 3f), say("Node 3 is next. Told you.", "Knoten 3 ist der Nächste. Hab ich doch gesagt."), delay = 1.6f),
+                        trap(Touch('e'), Move('e', 0f, 3f, 6f), delay = 0.75f),
                     ),
-                ) { pit(5..22); fill(5..22, 17..17, '^'); fill(5..10, 15..15, 'a'); fill(13..16, 15..15, 'b'); fill(19..22, 15..15, 'c') },
+                ) { put(10, 15, 'b'); put(18, 15, '.') },
             ),
         ) {
             border(); floor()
-            pit(5..20); fill(5..20, 17..17, '^')
-            fill(5..8, 15..15, 'a'); fill(11..14, 15..15, 'b'); fill(17..20, 15..15, 'c')
-            fill(27..29, 13..13, 'p'); fill(30..30, 11..11); fill(22..27, 9..9)
-            fill(15..18, 9..9, 'j'); fill(9..12, 9..9)
-            spawn(1); door(10, 8); bits(25)
+            pit(5..24); fill(5..24, 17..17, '^')
+            fill(5..8, 15..15, 'a'); fill(11..13, 15..15, 'b'); fill(15..17, 15..15, 'c')
+            fill(18..24, 15..15, 'e')
+            spawn(1); door(29); bits(25)
         },
 
         // 26 — the queue, a trap room (U8 the stalker): you start on the top deck at the right and run left; the deck piece ahead drops as you
-        // come near (hop it) and at the left end you fall onto the middle deck, where you run right. As you land the queue starts: a block of
-        // spikes at the left end that follows you along the deck (keep moving, it is slower than you). At the right end you fall onto the lane
-        // and run left to the door, and a second queue starts at the right wall behind you and follows you; a low block on the lane to hop.
-        // Rematch: the queues are waiting in front of you. The first one hangs at the far right of the middle deck (its end is open now) and
-        // the second one stands on the lane next to the door; both come toward you, slowly, and have to be hopped (the one at the deck
-        // as you come up to it, then you fall to the lane; round 1's run walks into it)
+        // come near (hop it: under the hole the middle deck has LEDs, no shortcut) and at the left end you fall onto the middle deck, where you
+        // run right. As you land the queue starts: a block of spikes at the left end that follows you along the deck, nearly as fast as you
+        // run (do not stop, hop the LEDs under the hole on the run). At the right end you fall onto the lane, and the second queue is already
+        // there and comes at you head-on: hop it, then run left to the door.
+        // Rematch: number 42. The first queue waits at the counter in the middle of the middle deck and comes at you head-on (hop it, then the
+        // LEDs), and the second one starts behind you at the right wall of the lane and follows you to the door (hop the block on the run)
         Level(
             name = T("Ticket Number", "Wartenummer"),
             intro = T("Your number is 41. Now serving: 3. Please walk.", "Ihre Nummer ist 41. Aufgerufen wird: 3. Bitte gehen Sie."),
             traps = listOf(
-                trap(BeforeX(26f), Fall('f'), say("Number 40 was called. The floor was number 39.", "Nummer 40 wurde aufgerufen. Der Boden war Nummer 39."), delay = 0.15f),
-                trap(Zone(0f, 8f, 24f, 10.6f), Play(Card.STALKER), Chase('S', speed = 5f, left = 0f, right = 24f), say("The queue moves up. Onto you.", "Die Schlange rückt auf. Auf dich.")),
-                trap(Zone(23f, 12f, 31f, 15.6f), Chase('Q', speed = 5.5f, left = 28f, right = 0f), say("A second queue. Same service.", "Eine zweite Schlange. Gleicher Service.")),
+                trap(BeforeX(26f), Hide('f'), say("Number 40 was called. The floor was number 39.", "Nummer 40 wurde aufgerufen. Der Boden war Nummer 39."), delay = 0.15f),
+                trap(Zone(0f, 8f, 24f, 10.6f), Play(Card.STALKER), Chase('S', speed = 7.5f, left = 0f, right = 23f), say("The queue moves up. Onto you.", "Die Schlange rückt auf. Auf dich.")),
+                trap(Zone(23f, 12f, 31f, 15.6f), Chase('Q', speed = 5.5f, left = 0f, right = 20f), say("Queue two. It skipped the line.", "Schlange zwei. Sie hat sich vorgedrängelt.")),
             ),
-            hint = T("The queue is slower than you. Do not stand in line.", "Die Schlange ist langsamer als du. Stell dich nicht an."),
+            hint = T("Hop the hole on the top deck. Below, keep running: the queue is nearly as fast as you. The last one comes at you: hop it.", "Spring über das Loch oben. Unten: weiterlaufen, die Schlange ist fast so schnell wie du. Die letzte kommt dir entgegen: drüber."),
             rematch = listOf(
                 Round(
                     T("Number 42. Please come to counter 2. The queue is already there.", "Nummer 42. Bitte zu Schalter 2. Die Schlange ist schon da."),
-                    hint = T("The queues stand in front of you now and come toward you. Hop them.", "Die Schlangen stehen jetzt vor dir und kommen dir entgegen. Spring drüber."),
+                    hint = T("The first queue comes at you now: hop it, then the LEDs. The second one comes from behind.", "Die erste Schlange kommt dir jetzt entgegen: drüber, dann über die LEDs. Die zweite kommt von hinten."),
                     traps = listOf(
-                        trap(Zone(0f, 8f, 24f, 10.6f), Play(Card.STALKER), Chase('S', speed = 2.5f, left = 19f, right = 0f), say("The queue moves up. Toward you.", "Die Schlange rückt auf. Auf dich zu.")),
-                        trap(Zone(22f, 9.9f, 31f, 15.6f), Chase('Q', speed = 3.5f, left = 0f, right = 17f), say("The second queue was already waiting.", "Die zweite Schlange wartete schon.")),
+                        trap(BeforeX(26f), Hide('f'), say("Number 41 expired. So did the floor.", "Nummer 41 ist abgelaufen. Der Boden auch."), delay = 0.15f),
+                        trap(Zone(0f, 8f, 16f, 10.6f), Play(Card.STALKER), Chase('S', speed = 3.5f, left = 7f, right = 0f), say("Counter 2 opened. The queue saw you first.", "Schalter 2 ist offen. Die Schlange hat dich zuerst gesehen.")),
+                        trap(Zone(23f, 12f, 31f, 15.6f), Chase('Q', speed = 7.5f, left = 28f, right = 0f), say("The second queue was already waiting.", "Die zweite Schlange wartete schon.")),
                     ),
                 ) {
-                    fill(0..1, 9..9, '.'); fill(28..30, 10..10, '.'); put(29, 9, 'S')
-                    put(30, 14, '.'); put(14, 14, '.'); put(11, 14, 'Q'); door(7, 14)
+                    fill(0..1, 9..9, '.'); put(17, 9, 'S')
+                    put(8, 14, '.'); put(30, 14, 'Q'); put(15, 14, '#')
                 },
             ),
         ) {
             border(); floor()
-            fill(14..30, 5..5); fill(20..22, 5..5, 'f')
+            fill(14..30, 5..5); put(20, 5, 'f'); put(20, 9, '^')
             fill(0..24, 10..10); fill(28..30, 10..10)
-            fill(0..1, 9..9, 'S'); put(30, 14, 'Q'); put(14, 14, '#')
+            fill(0..1, 9..9, 'S'); put(8, 14, 'Q')
             spawn(29, 4); door(4, 14); bits(26)
         },
 
         // 27 — DDoS, a trap room (U2 the ceiling falls, on a belt that runs against you): the stairs to the exit are built from packets that
         // drop from the ceiling: one, two and three tiles high. The first falls on the spot you reach if you keep running; the next one
         // comes down when you step onto the one before. The belt carries you back while you wait, and the walkway on top is a belt, too.
+        // But the requests do not stop: the top step gets a fourth packet stacked on it a moment after you land (keep going), and on the
+        // walkway one more drops just where a runner would be (let the belt hold you back, then hop it).
         Level(
             name = T("DDoS", "DDoS"),
             intro = T("Light traffic today. Just you and the stairs.", "Heute wenig Verkehr. Nur du und die Treppe."),
             start = listOf(Belt('b', -3f), Belt('l', -4f)),
             traps = listOf(
-                trap(PastX(5.9f), Play(Card.HEADBUTT), Fall('c'), say("10,000 packets per second.", "10.000 Pakete pro Sekunde."), delay = 0.1f),
+                trap(PastX(5.9f), Play(Card.COLLAPSE), Fall('c'), say("10,000 packets per second.", "10.000 Pakete pro Sekunde."), delay = 0.1f),
                 trap(Touch('c'), Fall('d'), say("Request 10,001.", "Anfrage 10.001.")),
                 trap(Touch('d'), Fall('e'), say("Request 10,002. The stairs are a rumour.", "Anfrage 10.002. Die Treppe ist ein Gerücht.")),
+                trap(Touch('e'), Fall('g'), say("Request 10,003. Stacked on the last one.", "Anfrage 10.003. Auf die letzte gestapelt."), delay = 0.3f),
                 trap(PastX(19.5f), Fall('f'), say("And one more for the road.", "Und noch eins für unterwegs."), delay = 0.4f),
             ),
         ) {
             border(); floor()
             fill(3..24, 15..15, 'b')
-            fill(8..10, 1..1, 'c'); fill(11..13, 1..2, 'd'); fill(14..16, 1..3, 'e'); put(23, 1, 'f')
+            fill(8..10, 1..1, 'c'); fill(11..13, 1..2, 'd'); fill(14..16, 2..4, 'e'); fill(14..16, 1..1, 'g'); put(23, 1, 'f')
             fill(17..30, 12..12, 'l')
             spawn(1, 14); door(29, 11); bits(27)
         },
@@ -405,7 +413,8 @@ object World2Part2 {
         // 28 — a VPN tunnel under the firewall, a trap room (U13 the laser, R3 the portal): the firewall is a wall of light you cannot cross, the
         // tunnel is the only way past it. Walking into the tunnel re-points it (DNS changed): you come out right in front of the IPS, which starts a
         // gate as you appear (run on and you are in it), and a second one as you pass the first. At the end of the lane a second tunnel leads up to the
-        // walkway under the ceiling, where you run back to the door, and a third gate starts as you come out.
+        // walkway under the ceiling, where you run back to the door, and a third gate starts as you come out. Right in front of the door a tripwire
+        // lights up at ankle height as you get there: hop it into the door.
         Level(
             name = T("Split Tunnel", "Split Tunnel"),
             intro = T("The tunnel is the only shortcut. I swear.", "Der Tunnel ist die einzige Abkürzung. Ich schwöre."),
@@ -416,6 +425,7 @@ object World2Part2 {
                 trap(PastX(17.6f), Laser('N', 22 to 10, 22 to 14, on = 0.4f, off = 2.0f, delay = 0.3f), say("Rule 2. Same rhythm, other hole.", "Regel 2. Gleicher Takt, anderes Loch.")),
                 trap(PastX(22.6f), Laser('P', 26 to 10, 26 to 14, on = 0.4f, off = 2.0f, delay = 0.2f), say("Rule 3. I have a lot of rules.", "Regel 3. Ich habe viele Regeln.")),
                 trap(Zone(18f, 6f, 24f, 9f), Laser('O', 14 to 1, 14 to 8, on = 0.4f, off = 2.0f, delay = 0.9f), say("Rule 4. This one is a rule I made up just now.", "Regel 4. Diese Regel habe ich mir gerade ausgedacht.")),
+                trap(Zone(9.5f, 6f, 13.2f, 9.2f), Laser('T', 9 to 8, 13 to 8, delay = 0.3f), say("Rule 5: no loitering in front of the door.", "Regel 5: Kein Herumlungern vor der Tür.")),
             ),
         ) {
             border(); floor()
@@ -423,39 +433,41 @@ object World2Part2 {
             spawn(); door(8, 8); bits(28)
         },
 
-        // 29 — the race condition, a trap room (U7 the saw): the lane ends in three steps up to the door, and three threads fight for it. The first is
-        // a pendulum that is set off when you come within five tiles of it: it sits down on the floor for a moment and then swings up and down (stop in
-        // front of it and slip under it when it is up). The second is a saw that patrols the middle of the lane, back and forth (hop it). The third
-        // hangs in front of the stairs (stop, slip under it, up the steps to the door; the second step is an escalator that runs down).
-        // Rematch: a thread hunts you from behind, so there is no time to wait it out. The first pendulum is swinging already, and a big saw laps the middle
-        // of the lane, coming toward you first (no hopping that one); run on and stop only for what is down when you get there
+        // 29 — the race condition, a trap room (U7 the saw, U1 the floor): the lane ends in three steps up to the door, and the threads fight for
+        // it. The first is a pendulum that is set off when you come near: it sits on the floor for a moment and then swings up and down (stop
+        // in front of it and slip under it when it is up). The second is forked from below: a saw shoots up out of the slot in the lane as you
+        // run at it (stop, let it pass, hop the slot). The third pendulum hangs in front of the stairs, and the floor where everybody stops to
+        // wait for it is freed while you stand on it (wait further back, then go in one run).
+        // Rematch: a new scheduler. The first pendulum swings already, the slot forks twice (once right where round 1 waited), and the third
+        // pendulum's floor is freed the moment you step on it, so the waiting happens before the slot
         Level(
             name = T("Race Condition", "Wettlaufsituation"),
             intro = T("The winner gets a cookie. I have no cookies.", "Der Sieger bekommt einen Keks. Ich habe keine Kekse."),
-            start = listOf(Belt('b', -4f)),
             traps = listOf(
-                trap(PastX(4f), Play(Card.DEVIL_SAW), PathSaw(3f, 9f to 14f, 9f to 11.2f, delay = 1.15f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
-                trap(PastX(11f), PathSaw(5f, 18.5f to 14.4f, 13.5f to 14.4f), say("Thread 2 is waiting for thread 3.", "Thread 2 wartet auf Thread 3.")),
-                trap(PastX(18.5f), PathSaw(3f, 23.5f to 14f, 23.5f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
+                trap(PastX(4f), PathSaw(3f, 9f to 14f, 9f to 11.2f, delay = 0.8f, r = 1f), say("Thread 1 holds the lock. Thread 2 wants it.", "Thread 1 hält das Lock. Thread 2 will es.")),
+                trap(PastX(11.5f), Saw(12.4f, 19.5f, 0f, -11f, r = 0.8f), say("Thread 2 was forked from below. Right behind you.", "Thread 2 wurde von unten geforkt. Direkt hinter dir."), delay = 0.1f),
+                trap(PastX(17f), PathSaw(3f, 23.5f to 14f, 23.5f to 11.2f, delay = 0.6f, r = 1f), say("Thread 3. Nobody told me about thread 3.", "Thread 3. Von Thread 3 hat mir keiner was gesagt.")),
+                trap(Zone(20.3f, 12f, 22.6f, 15.5f), Play(Card.CRUMBLE), Fall('w'), say("Memory freed. You were standing on it.", "Speicher freigegeben. Du standest drauf."), delay = 0.5f),
             ),
-            hint = T("Do not run into the saw. Wait until it is up.", "Lauf nicht in die Säge. Warte, bis sie oben ist."),
+            hint = T("Wait for the saws, but not right in front of the last one: the floor there is freed.", "Warte auf die Sägen, aber nicht direkt vor der letzten: Der Boden dort wird freigegeben."),
             rematch = listOf(
                 Round(
                     T("Rerun. Same threads, new scheduler.", "Nochmal. Gleiche Threads, neuer Scheduler."),
                     start = emptyList(),
-                    legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
-                    hint = T("Something follows you now. Do not wait for the first saw: it swings already.", "Jetzt folgt dir etwas. Warte nicht auf die erste Säge: Sie schwingt schon."),
+                    hint = T("Where you waited for the last saw, a fork comes up now. Wait further back and go in one run.", "Wo du auf die letzte Säge gewartet hast, kommt jetzt ein Fork hoch. Warte weiter hinten und lauf in einem Zug."),
                     traps = listOf(
-                        trap(PastX(4.5f), Play(Card.STALKER), Chase('S', 1.8f, left = 0f, right = 29f), say("Scheduler: your time slice is over.", "Scheduler: Deine Zeitscheibe ist abgelaufen.")),
-                        trap(PastX(4f), PathSaw(3f, 9f to 12.2f, 9f to 14f, 9f to 6f, r = 1f), say("Thread 1 is the same as before. I am proud of it.", "Thread 1 ist wie vorher. Ich bin stolz auf ihn.")),
-                        trap(PastX(10f), PathSaw(10f, 19f to 14f, 14f to 14f, 14f to 6f, 19f to 6f, loop = true, r = 1.5f), say("Thread 2 has joined the race. It laps, and it comes your way first.", "Thread 2 ist ins Rennen eingestiegen. Er überrundet und kommt dir zuerst entgegen.")),
-                        trap(PastX(17.5f), PathSaw(3f, 23.5f to 12.2f, 23.5f to 14f, 23.5f to 6f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
+                        trap(PastX(4f), PathSaw(3f, 9f to 12.2f, 9f to 14f, 9f to 6f, r = 1f), say("Thread 1 swings already. I am proud of it.", "Thread 1 schwingt schon. Ich bin stolz auf ihn.")),
+                        trap(PastX(11.5f), Saw(12.4f, 19.5f, 0f, -11f, r = 0.8f), say("Thread 2 forks early.", "Thread 2 forkt früh."), delay = 0.1f),
+                        trap(PastX(14f), PathSaw(3f, 23.5f to 14f, 23.5f to 7f, delay = 1.3f, r = 1f), say("Thread 3 was always going to be here.", "Thread 3 war immer schon hier.")),
+                        trap(PastX(17.5f), Saw(18.8f, 19.5f, 0f, -11f, r = 0.8f), say("Fork bomb. The second child likes your waiting spot.", "Fork-Bombe. Das zweite Kind mag deinen Warteplatz."), delay = 0.3f),
+                        trap(Zone(20.3f, 12f, 22.6f, 15.5f), Play(Card.CRUMBLE), Fall('w'), say("Freed before you even asked.", "Freigegeben, bevor du gefragt hast."), delay = 0.35f),
                     ),
-                ) { fill(1..1, 13..14, 'S') },
+                ),
             ),
         ) {
             border(); floor()
-            fill(26..27, 13..14); fill(28..29, 11..14); fill(30..30, 9..14); fill(28..29, 11..11, 'b')
+            fill(20..22, 15..17, 'w')
+            fill(26..27, 13..14); fill(28..29, 11..14); fill(30..30, 9..14)
             spawn(); door(30, 8); bits(29)
         },
 
@@ -519,40 +531,46 @@ object World2Part2 {
             fill(1..26, 9..9)
             fill(10..25, 9..9, '^')
             fill(11..13, 8..8, 's'); fill(16..18, 8..8, 't'); fill(21..23, 8..8, 'u')
-            spawn(4, 8); door(3, 14); bits(31)
+            spawn(4, 8); door(14, 14); bits(31)
         },
 
         // 32 — the act finale, a puzzle room (R4 the switch, R3 the portals, R8 the timing; U12 the transport goes wrong, with U13 given up because the one
         // laser level is 28): the lane is split by two firewalls and the door is behind the second one. The first firewall is crossed by a tunnel, and
-        // the belt behind it turns around as you step on it (hop it, or you are carried into the spikes). The tunnel up to the deck is the only
-        // way on: up there you walk back left against a belt that turns up as you come near, to the switch at the far end, which powers the tunnel
-        // under the second firewall. Then back down to the lane, the same way again, and through the second tunnel; the spikes in front of the door
-        // grow as you come out
+        // the tunnel goes down for maintenance as you hop the LED in front of it (keep pushing against the belt until it is back), and the belt
+        // behind it turns around as you step on it (hop it, or you are carried into the spikes). The tunnel up to the deck is the only way on:
+        // up there you walk back left, and the deck
+        // belt turns into an express lane as you come near the switch (jump the LED it throws you at), onto the switch at the far end, which
+        // powers the tunnel under the second firewall. Then back down to the lane, the same way again, and through the second tunnel, which
+        // reboots as you come out of the first one (wait for it)
         Level(
             name = T("Core Switch", "Core-Switch"),
             intro = T("Finally, the data-center basement. This is where I live.", "Endlich der Rechenzentrumskeller. Hier wohne ich."),
             legend = mapOf('A' to hidden),
             start = listOf(
-                Belt('a', -6.5f), Belt('b', 3f), Belt('c', 5f),
+                Belt('a', -6.5f), Belt('b', 3f),
                 Portal('1', 13 to 14, 17 to 14, twoWay = false),
-                Portal('2', 21 to 14, 26 to 14, twoWay = false), Power('2', false),
+                Portal('2', 22 to 14, 26 to 14, twoWay = false), Power('2', false),
                 Portal('3', 23 to 14, 28 to 8, twoWay = false), Power('3', false),
                 Pad('1', at = 4 to 8),
             ),
             traps = listOf(
-                trap(Zone(4f, 12f, 6f, 15.5f), Power('3', true), say("Tunnel 3 is enabled for you. For the moment.", "Tunnel 3 ist für dich freigeschaltet. Vorerst.")),
+                trap(Zone(5.5f, 12f, 7f, 15.5f), Power('3', true), say("Tunnel 3 is enabled for you. For the moment.", "Tunnel 3 ist für dich freigeschaltet. Vorerst.")),
+                trap(Airborne(7.6f, 10.5f), Power('1', false), say("Tunnel 1: scheduled maintenance. Right now.", "Tunnel 1: geplante Wartung. Genau jetzt.")),
+                trap(Airborne(7.6f, 10.5f), Power('1', true), delay = 1.2f),
                 trap(PastX(18.5f), Play(Card.GRAND_FINALE), Belt('b', -9f), say("Spanning tree recalculated. Your belt now runs the other way.", "Spanning Tree neu berechnet. Dein Band läuft jetzt andersrum.")),
-                trap(Zone(15f, 6f, 18f, 9f), Belt('c', 10f), say("Priority traffic. You are not priority.", "Priorisierter Verkehr. Du nicht.")),
+                trap(Zone(19.15f, 14.45f, 19.95f, 15.5f), Power('2', false), say("Tunnel 2: rebooting. Hold the line.", "Tunnel 2: Neustart. Bitte warten.")),
+                trap(Zone(19.15f, 14.45f, 19.95f, 15.5f), Power('2', true), delay = 0.7f),
+                trap(Zone(11f, 6f, 13.5f, 9f), Belt('c', -3f), say("Priority traffic. Express lane to the switch, no stopping.", "Priorisierter Verkehr. Expressspur zum Schalter, kein Halt.")),
                 trap(Pressed('1'), Power('2', true), Belt('b', 3f), say("Switch thrown. Tunnel 2 is up and the belt is back. Probably.", "Schalter umgelegt. Tunnel 2 ist oben und das Band wieder da. Wahrscheinlich.")),
                 trap(Zone(26.5f, 6f, 31f, 9.3f), Show('A'), say("Broadcast storm.", "Broadcast-Sturm.")),
-                trap(Landed(0f, 2.9f), Reroute('1', 19 to 14), say("DNS changed. Tunnel 1 comes out further on now.", "DNS geändert. Tunnel 1 kommt jetzt weiter hinten raus.")),
+                trap(Zone(0f, 9.6f, 3f, 13.5f), Reroute('1', 19 to 14), say("DNS changed. Tunnel 1 comes out further on now.", "DNS geändert. Tunnel 1 kommt jetzt weiter hinten raus."), delay = 1.2f),
             ),
         ) {
             border(); floor()
             fill(3..30, 9..9)
             fill(14..15, 10..14); fill(24..25, 10..14)
             fill(3..12, 15..15, 'a'); fill(17..20, 15..15, 'b'); fill(8..21, 9..9, 'c')
-            put(8, 14, '^'); put(16, 14, '^')
+            put(9, 14, '^'); put(16, 14, '^'); put(7, 8, '^')
             put(23, 8, 'A'); put(24, 8, 'A')
             spawn(1); door(29)
         },

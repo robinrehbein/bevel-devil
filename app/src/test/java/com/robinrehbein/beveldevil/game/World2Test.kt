@@ -183,7 +183,7 @@ class World2Test {
         // 31: running on falls into the trench of spikes before the first stone is up
         b(31).right(3f).expect(WorldState.DEAD)
         // 32: running on along the belt runs into the LED
-        b(32).right(3f).expect(WorldState.DEAD)
+        b(32).right(5f).expect(WorldState.DEAD)
     }
 
     @Test
@@ -365,12 +365,25 @@ class World2Test {
     @Test fun level24() = World2Rooms.l24(b(24)).expect(WorldState.WON)
     @Test fun level25() { World2DesignTest.play(25) }
     @Test fun level25WalkingAcrossTheNodesIsFatal() = b(25).right(4f).expect(WorldState.DEAD)
+    @Test fun level25WaitingOnTheFirstNodeIsFatal() = b(25).rightTo(6.5f).wait(2f).expect(WorldState.DEAD)
+    @Test fun level25HoppingOnFromTheThirdNodeAtOnceLandsInTheSpikes() =
+        b(25).rightTo(8.2f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
+    @Test fun level25DawdlingOnTheLastNodeIsFatal() = b(25).rightTo(8.2f).rightJump(0.35f).landRight().rightJump(0.35f).landRight()
+        .waitFor { it.group('e').oy > 2f }.waitFor { it.group('e').oy < 0.05f }.rightTo(20f).wait(2f).expect(WorldState.DEAD)
     @Test fun level26() { World2DesignTest.play(26) }
-    @Test fun level26TheQueueFollowsAndTheNodeIsAnObstacle() = b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.box.cx > 19.6f }.right(4f).expect(WorldState.DEAD)
+    @Test fun level26TheHoleIsNoShortcut() = b(26).left(2f).expect(WorldState.DEAD)
+    @Test fun level26TheQueueCatchesWhoStops() = b(26).leftTo(23.0f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.grounded && it.player.box.b > 9.5f }
+        .wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level26TheLastQueueComesHeadOn() = b(26).leftTo(23.0f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.rightUntil { it.player.grounded && it.player.box.b > 9.5f }
+        .rightTo(18.0f).rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.left(3f).expect(WorldState.DEAD)
     @Test fun level27() { World2DesignTest.play(27) }
     @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
     @Test fun level28() { World2DesignTest.play(28) }
     @Test fun level29() { World2DesignTest.play(29) }
+    @Test fun level29StoppingAfterTheFirstPendulumMeetsTheForkFromBelow() =
+        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(12.0f).wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level29WaitingRightInFrontOfTheLastPendulumFreesTheFloor() =
+        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(21f).wait(1.5f).expect(WorldState.DEAD)
     @Test fun level30() { World2DesignTest.play(30) }
     @Test fun level30TheLedgeHoleSwallowsWhoRunsOn() = b(30).rightUntil { it.player.box.b < 9.5f }.right(3f).expect(WorldState.DEAD)
     @Test fun level30TheBreachMovesTheDoorIntoTheSecondRoom() {
@@ -484,25 +497,28 @@ class World2Test {
         val bot = World2Rooms.l21ToShelf(b(21)).rightUntil { it.player.box.b > 8.5f }.waitFor { it.player.grounded }.rightTo(25.9f).wait(0.3f)
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
     }
-
+    // 22: the first bouncer rolls at you on the top floor, the carpet drops out over LEDs; the second bouncer rolls out of the back door, and the first one comes back behind you
     // 22: the first bouncer rolls at you on the top floor, the carpet drops out over LEDs; the second bouncer rolls out of the back door, and the floor in front of the door drops
     @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).hopR(15.0f).right(4f).expect(WorldState.DEAD)
     @Test fun l22StandingStillWhereTheFirstBouncerComesFromIsFatal() = b(22).rightTo(10f).wait(6f).expect(WorldState.DEAD)
     @Test fun l22RunningOverTheCarpetThatDropsLandsOnTheLeds() = b(22).rightTo(14.5f).right(3f).expect(WorldState.DEAD)
     @Test fun l22StandingStillWhereTheSecondBouncerComesFromIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
-    @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.6f).left(4f).expect(WorldState.DEAD)
+    @Test fun l22RunningStraightIntoTheSecondBouncerIsFatal() = World2Rooms.l22ToLane(b(22)).hopL(22.3f).left(4f).expect(WorldState.DEAD)
+    @Test fun l22StoppingBehindTheSecondBouncerMeetsTheFirstAgain() = World2Rooms.l22ToLane(b(22)).hopL(22.3f, 0.5f).leftUntil { World2Rooms.sawAheadLeft(it, 4.0f) }
+        .leftJump(0.5f).landLeft().wait(3f).expect(WorldState.DEAD)
 
     // 23: the on-ramp lift carries you up into the spiked ceiling unless you walk off at the deck, a piece of the deck drops, the exit lift drops away
-    @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(8.6f).wait(3f).expect(WorldState.DEAD)
-    @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(4f).expect(WorldState.DEAD)
+    @Test fun l23StandingOnTheOnRampLiftEndsInTheCeiling() = b(23).rightTo(10.4f).wait(5f).expect(WorldState.DEAD)
+    @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(6f).expect(WorldState.DEAD)
     @Test fun l23StandingOnTheExitLiftIsFatal() = b(23).rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27.2f).wait(2.5f).expect(WorldState.DEAD)
 
-    // 24: stalactites fall where you run, the deck comes down on the lane, the carpet in front of the door is nothing
+    // 24: stalactites fall where you run, the second cluster falls on whoever waits right in front of the first, the deck comes down on the lane
+    private fun l24Top(b: Bot) = b.rightTo(4.6f).waitFor { it.group('V').oy > 5.5f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
     @Test fun l24RunningUnderTheStalactitesIsFatal() = b(24).right(3f).expect(WorldState.DEAD)
-    @Test fun l24StandingUnderTheDeckIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
-        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(3f).expect(WorldState.DEAD)
-    @Test fun l24RunningStraightIntoTheSawFromTheBackWallIsFatal() = b(24).rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }
-        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.left(5f).expect(WorldState.DEAD)
+    @Test fun l24WaitingRightInFrontOfTheStalactitesIsFatal() = b(24).rightTo(7.4f).wait(2f).expect(WorldState.DEAD)
+    @Test fun l24WaitingShortOfTheSpotIsSafe() = b(24).rightTo(4.6f).wait(2f).expect(WorldState.PLAYING)
+    @Test fun l24StandingUnderTheDeckIsFatal() = l24Top(b(24)).leftTo(22f).wait(3f).expect(WorldState.DEAD)
+    @Test fun l24RunningStraightIntoTheSawFromTheBackWallIsFatal() = l24Top(b(24)).left(5f).expect(WorldState.DEAD)
 
     // ---------- act 2, levels 17-24: what the reviews asked for ----------
 
