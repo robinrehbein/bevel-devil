@@ -37,5 +37,10 @@ object World3RoomsE {
             { rightUntil { it.player.box.b < 6.3f }.rightTo(8.3f).rightJump(0.1f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.rightUntil { it.player.box.cx > 29.5f } },
         ),
+        40 to listOf<Solution>(
+            { rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
+                .waitFor { it.fans[0].wind > 4.5f }.rightUntil { it.player.box.cx > 23.2f }
+                .rightUntil { it.player.grounded && it.player.box.cx > 23.4f }.rightTo(27.0f).rightJump(0.1f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+        ),
     )
 }

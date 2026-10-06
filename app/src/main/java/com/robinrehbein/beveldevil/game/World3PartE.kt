@@ -22,7 +22,7 @@ object World3PartE {
                 Fan('g', at = 25 to 9, dir = Dir.UP, reach = 7, speed = 9f, width = 4),
             ),
             traps = listOf(
-                trap(Landed(12.2f, 15.9f), Play(Card.SINKING), Fall('b'), say("Gate change: your plank just left.", "Gate geändert: Deine Planke ist schon weg."), delay = 0.1f),
+                trap(Landed(12.2f, 15.9f), Play(Card.CRUMBLE), Fall('b'), say("Gate change: your plank just left.", "Gate geändert: Deine Planke ist schon weg."), delay = 0.1f),
                 trap(Landed(20f, 22.9f), Fall('c'), say("Seats are not reserved.", "Sitzplätze sind nicht reserviert."), delay = 0.4f),
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Brief pause. Please hold your altitude.", "Kurze Pause. Bitte Höhe halten.")),
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.7f),
@@ -170,23 +170,29 @@ object World3PartE {
             spawn(1, 14); door(29, 14)
         },
 
-        // 40 — the updraft over the spikes reverses while you float: settle on the stone, it comes back; the landing is warm
+        // 40 — Air Castle (trap room, U12): scratch v6
         Level(
             name = T("Air Castle", "Luftschloss"),
             intro = T("Wind is free. Take as much as you like.", "Wind ist kostenlos. Nimm, so viel du willst."),
-            start = listOf(Fan('f', at = 9 to 17, dir = Dir.UP, reach = 7, speed = 8f, width = 16)),
+            legend = mapOf('t' to Glyph(spike = true, hidden = true)),
+            start = listOf(
+                Fan('f', at = 9 to 17, dir = Dir.UP, reach = 5, speed = 9f, width = 14),
+                Fan('g', at = 22 to 9, dir = Dir.LEFT, reach = 7, speed = 7f, width = 6), Power('g', false),
+            ),
             traps = listOf(
-                trap(PastX(11.3f), Play(Card.BACKDRAFT), FanSet('f', -9f), say("Reverse thrust! (The stone is your friend.)", "Schubumkehr! (Der Stein ist dein Freund.)")),
-                trap(Touch('s'), FanSet('f', 8f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest.")),
-                trap(Landed(25f, 31f), HeatSpike('g', 0.7f), say("Solid ground. Warm solid ground.", "Fester Boden. Warmer fester Boden.")),
+                trap(PastX(10f), Play(Card.THROTTLE), FanSet('f', -4f), say("Reverse thrust! The keep is your friend.", "Schubumkehr! Der Bergfried ist dein Freund.")),
+                trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.6f),
+                trap(PastX(17f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
+                trap(Landed(23f, 27f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
             ),
         ) {
-            border(); floor(); pit(9..24)
-            fill(9..24, 17..17); fill(9..24, 16..16, '^')
-            fill(11..13, 15..16, 's')
-            fill(27..28, 15..15, 'g')
-            spawn(); door()
+            border(); floor(); pit(9..22)
+            fill(9..22, 17..17); fill(9..22, 16..16, '^')
+            fill(14..17, 13..15, 's')
+            fill(22..22, 1..9)
+            fill(23..30, 13..14)
+            put(29, 12, 't')
+            spawn(1, 14); door(30, 12)
         },
-
     )
 }
