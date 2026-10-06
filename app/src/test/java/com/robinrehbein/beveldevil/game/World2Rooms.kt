@@ -156,16 +156,14 @@ object World2Rooms {
         .waitFor { pendulumCalm(it, 23.5f, 0.85f, 1.35f, 10.8f) }.rightTo(22.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
     /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
-    fun l30(b: Bot) = b.rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
+    fun l30(b: Bot) = b.rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(16.9f).rightUntil(4f) { it.cracks.isNotEmpty() }
         .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.waitFor { it.player.grounded }.rightJump(0.35f).landRight().right(2f)
 
     /** Blinking group [id] is solid during the whole stretch from [from] to [to] seconds ahead. */
     fun stoneUp(w: World, id: Char, from: Float, to: Float): Boolean {
         val g = w.group(id)
-        g.blink?.let { b -> return (0..6).all { k -> b.solidAt(w.time - g.blinkT0 + from + (to - from) * k / 6f) } }
-        val c = w.circuits[id] ?: return false
-        val clock = c.clock ?: return false
-        return (0..6).all { k -> clock.timing.solidAt(w.time - c.clockT0 + from + (to - from) * k / 6f) }
+        val b = g.blink ?: return false
+        return (0..6).all { k -> b.solidAt(w.time - g.blinkT0 + from + (to - from) * k / 6f) }
     }
 
     /** 31: wait on the deck for the first stone, hop over the three stones as each one is up, off the end of the deck, and back left along the lane to the door. */
@@ -185,12 +183,12 @@ object World2Rooms {
 
     /** 33: along the lane (hop the hole, hop it again), up the two steps and left onto the deck, stop when the block drops, climb it and hop the spikes to the door. */
     fun l33(b: Bot) = b.hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(23.2f, 0.5f)
-        .leftUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
-        .hopL(15.6f, 0.5f).hopL(8.2f, 0.5f).left(1.5f)
+        .waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopL(17.4f, 0.5f).leftTo(13.4f).left(1f)
 
     /** 33, round 2: hop the LEDs where round 1 hopped the hole, hop the hole that opens under the echo, up the steps and off the top one before it drops, along the deck without stopping (the block drops late), hop the spikes. */
     fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.6f, 0.5f)
-        .hopL(8.2f, 0.5f).left(1.5f)
+        .leftTo(13.4f).left(1f)
 
     /** 34: along the lane until the gravity turns over, up onto the ceiling and back left along it, into the link that comes up, off the ledge, hop the LEDs and run to the door. */
     fun l34(b: Bot) = b.rightTo(14f).rightUntil { it.player.box.cy < 3f }.waitFor { it.player.grounded }.leftTo(14.5f).leftJump(0.5f).landLeft()
@@ -204,13 +202,13 @@ object World2Rooms {
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(17.8f, 0.5f).right(3.5f)
 
     /** 35: left along the lane (hop the two holes), up the two steps, onto the deck and right through the duct against its belt, hop along the second belt to the door. */
-    fun l35(b: Bot) = b.hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+    fun l35(b: Bot) = b.hopL(18.4f, 0.35f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
         .rightUntil { it.player.box.cx > 23f }.hopR(24.4f, 0.5f).hopR(26.0f, 0.5f).right(2f)
 
     /** 36: slip under the pendulum at the start when it stays up a while (the replay puts you back under it), along the lane (hop the login that rolls out of the stairs), up the three steps, hop the saw that patrols the roof and run to the door. */
-    fun l36(b: Bot) = b.rightTo(5.0f).waitFor { pendulumCalm(it, 7.5f, 0.05f, 1.5f, 12.6f) }.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.35f).landRight()
+    fun l36(b: Bot) = b.rightTo(3.6f).waitFor { it.player.grounded && it.player.box.b > 14.5f }.waitFor { pendulumCalm(it, 7.5f, 0.05f, 1.5f, 12.6f) }.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.35f).landRight()
         .rightUntil { it.player.box.cx > 14.3f }.rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-        .rightJump(0.5f).landRight().rightUntil { sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().right(2f)
+        .rightJump(0.5f).landRight().rightUntil { sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().right(2.5f)
 
     /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */
     fun sawAheadRight(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
@@ -227,10 +225,10 @@ object World2Rooms {
 
     /** 39: along the deck (stop for the flash, hop the trip wire), off its end, left along the lane (stop for the flash), turn the stuck firewall off and on again, to the door. */
     fun l39ToFirewall(b: Bot) = b.rightUntil { it.player.box.cx > 7.8f }.waitFor(cond = clear('A')).hopR(15.0f, 0.5f)
-        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { it.player.box.cx < 18.2f }.waitFor(cond = clear('C'))
-        .leftTo(13.5f)
+        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { it.player.box.cx < 19.6f }.waitFor(cond = clear('C'))
+        .leftTo(15.5f)
 
-    fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(7.5f).left(1f)
+    fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(12.6f).left(1f)
 
     /** 40: left along the lane until the paddle is close, hop it (ping), stop at the net and hop the paddle as it comes back (pong), stop short of the second net, hop the paddle once more and run to the door. */
     fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 2.2f) }.leftJump(0.5f).landLeft().leftTo(7.6f)

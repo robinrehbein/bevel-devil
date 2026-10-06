@@ -273,11 +273,11 @@ class World2Test {
         // first attempt: run right until the pendulum gets you; the log keeps the run
         val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
         // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
-        val second = first.retry().right(0.28f).wait(2.5f)
+        val second = first.retry().right(0.15f).wait(2.5f)
         second.expect(WorldState.DEAD)
         assertEquals(null, second.world.lastCard) // the replay plays no card: the log does it, not a trap
         // without a previous attempt nothing replays: standing there for as long is fine
-        b(36).right(0.28f).wait(2.5f).expect(WorldState.PLAYING)
+        b(36).right(0.15f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -558,22 +558,23 @@ class World2Test {
     @Test fun level33RunningOnAlongTheLaneFindsTheHole() = b(33).right(3f).expect(WorldState.DEAD)
     /** sudo !!: stopping where the block falls is right, but running on under it is the end. */
     @Test fun level33RunningOnUnderTheDeckBlockIsFatal() = b(33).hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-        .hopL(23.2f, 0.5f).left(3f).expect(WorldState.DEAD)
+        .hopL(23.2f, 0.5f).left(1f).expect(WorldState.DEAD)
     @Test fun level34() { World2DesignTest.play(34) }
-    /** Reverse Proxy: the wall of links at the right end of the ceiling is the loopback, it hands you back at the start of the ceiling. */
-    @Test fun level34TheObviousLinksLoopYouBack() {
-        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.rightUntil { it.player.box.cx > 24.5f }.wait(0.3f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 17f)
+    /** Reverse Proxy: the obvious way along the ceiling (right) times out: the gravity comes back and drops you onto the LEDs. */
+    @Test fun level34TheObviousWayAlongTheCeilingDropsYouOntoTheLeds() {
+        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.right(3f)
+        bot.expect(WorldState.DEAD)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 13f)
     }
     /** Reverse Proxy: the dark link in the top left is dead until you pass the middle of the ceiling. */
     @Test fun level34TheDarkLinkIsDeadAtFirst() = assertFalse(b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.world.links.first { it.id == '3' }.on)
     @Test fun level35() { World2DesignTest.play(35) }
     /** Pipeline: standing still on the belt in the duct is carried out of it, and the floor behind you has opened: you end up on the lane again. */
     @Test fun level35StandingInTheDuctIsCarriedOutAndDropsToTheLane() {
-        val bot = b(35).hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+        val bot = b(35).hopL(18.4f, 0.35f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
             .rightUntil { it.player.box.cx > 15f }.wait(3f)
-        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 12f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 10f)
     }
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)

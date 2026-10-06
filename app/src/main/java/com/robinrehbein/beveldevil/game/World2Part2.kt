@@ -6,7 +6,6 @@ import com.robinrehbein.beveldevil.game.Action.Belt
 import com.robinrehbein.beveldevil.game.Action.Blink
 import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
-import com.robinrehbein.beveldevil.game.Action.Clock
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.PathSaw
@@ -160,7 +159,7 @@ object World2Part2 {
             ),
             traps = listOf(
                 trap(Pressed('2'), say("Second check started. The stairs are powered.", "Zweite Kontrolle gestartet. Die Treppe steht unter Strom.")),
-                trap(Landed(6f, 7.9f), Play(Card.THROTTLE), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
+                trap(Landed(6f, 7.9f), Play(Card.SPIKE_SEED), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
                     say("Gate 2 now runs on a rhythm.", "Tor 2 läuft jetzt im Takt.")),
                 trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
                 trap(Touch('s'), Circuit('s', on = false), say("This step times out, too. Do not camp.", "Diese Stufe läuft auch ab. Nicht campen."), delay = 1.7f),
@@ -493,10 +492,11 @@ object World2Part2 {
                 Portal('c', roomX(1, 5) to 14, roomX(1, 26) to 13, twoWay = false),
             ),
             traps = listOf(
-                trap(PastX(16f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
+                trap(PastX(14.5f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
                 trap(Trigger.AtDoor, Play(Card.ANNEX), Action.Extend(into = 1, top = 6, bottom = 8, door = roomX(1, 30f).toInt() to 14)),
                 trap(Zone(roomX(1, 6f), 1f, roomX(1, 9.5f), 9f), Reroute('b', roomX(1, 20) to 16), say("Hop 2 of 3: the obvious route was deprecated. It goes to /dev/null now.", "Hop 2 von 3: Die offensichtliche Route wurde abgekündigt. Sie führt jetzt nach /dev/null.")),
-                trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes. Right where the link drops you.", "Hop 3 von 3: Spikes. Genau da, wo der Link dich absetzt."), delay = 0.6f),
+                trap(Zone(roomX(1, 6f), 1f, roomX(1, 9.5f), 9f), Reroute('c', roomX(1, 20) to 16), say("TTL 0. The backup route is gone, too.", "TTL 0. Die Ersatzroute ist auch weg."), delay = 2.5f),
+                trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes. Right where the link drops you.", "Hop 3 von 3: Spikes. Genau da, wo der Link dich absetzt."), delay = 0.4f),
             ),
         ) {
             border(); floor()
@@ -523,10 +523,10 @@ object World2Part2 {
             intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),
             legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT), 'X' to Glyph(spike = true, dir = Dir.LEFT)),
             traps = listOf(
-                trap(PastX(5.5f), Move('W', 13f, 0f, 3.2f), say("Detention. Sit down. Stay seated.", "Nachsitzen. Setzen. Sitzen bleiben.")),
-                trap(PastX(5f), Play(Card.SHORT_CIRCUIT), Clock('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat runs on the school bell.", "Bitte nehmen Sie Platz. Der Platz hängt an der Schulklingel.")),
-                trap(Zone(11f, 6f, 14f, 8.5f), Clock('t', 1.6f, 1.2f, phase = -0.9f)),
-                trap(Zone(16f, 6f, 19f, 8.5f), Clock('u', 1.6f, 1.2f, phase = -0.9f)),
+                trap(PastX(5.5f), Play(Card.SINKING), Move('W', 13f, 0f, 3.2f), say("Detention. Sit down. Stay seated.", "Nachsitzen. Setzen. Sitzen bleiben.")),
+                trap(PastX(5f), Blink('s', 1.6f, 1.2f, phase = -1.2f), say("Please take a seat. The seat is leaving.", "Bitte nehmen Sie Platz. Der Platz geht gerade.")),
+                trap(Zone(11f, 6f, 14f, 8.5f), Blink('t', 1.6f, 1.2f, phase = -0.9f)),
+                trap(Zone(16f, 6f, 19f, 8.5f), Blink('u', 1.6f, 1.2f, phase = -0.9f)),
                 trap(Zone(26f, 12f, 31f, 15.5f), Move('X', -25f, 0f, 7f), say("The second class has to go home, too.", "Die zweite Klasse muss auch nach Hause.")),
                 trap(Zone(19f, 12f, 21f, 15.5f), Move('X', -25f, 0f, 9.5f), say("Oh, and they are in a hurry.", "Ach so, und sie haben es eilig.")),
             ),
