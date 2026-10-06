@@ -180,11 +180,13 @@ object World2Rooms {
         .hopL(8.2f, 0.5f).left(1.5f)
 
     /** 34: along the lane until the gravity turns over, up onto the ceiling and back left along it, into the link that comes up, off the ledge, hop the LEDs and run to the door. */
-    fun l34(b: Bot) = b.rightTo(14f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cy > 8f }
+    fun l34(b: Bot) = b.rightTo(14f).rightUntil { it.player.box.cy < 3f }.waitFor { it.player.grounded }.leftTo(14.5f).leftJump(0.5f).landLeft()
+        .leftUntil { it.player.box.cy > 8f }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(15.4f, 0.5f).right(3f)
 
     /** 34, round 2: hop the LEDs, on along the lane to the far end where the gravity turns over, left along the ceiling, wait for the stale link to be renewed and step in; drop off the ledge, hop the LEDs again and run to the door. */
-    fun l34r2(b: Bot) = b.hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { it.player.box.cx < 18.2f }
+    fun l34r2(b: Bot) = b.hopR(17.8f, 0.5f).rightTo(24f).rightUntil { it.player.box.cy < 3f }.waitFor { it.player.grounded }.leftTo(26.6f).leftJump(0.5f).landLeft()
+        .leftUntil { it.player.box.cx < 18.2f }
         .waitFor { w -> w.links.first { it.id == '3' }.to == 10 to 10 }.leftUntil { it.player.box.cy > 8f }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(17.8f, 0.5f).right(3.5f)
 

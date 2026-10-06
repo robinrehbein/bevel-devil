@@ -123,15 +123,17 @@ object World2Part3D {
 
         // 43 — workshop (a trap room: U16 percussive maintenance, shake the phone). The lane ends in a wall, and the only way on is the cable port at
         // the foot of it, which comes out above a bed of LEDs. A beam flashes across the lane as you come near (wait until it is dark). Shake the phone and
-        // the loose cable re-seats: the port now comes out on the deck over the start, and the deck is a corridor of flashing beams on the way to the door
+        // the loose cable re-seats: the port now comes out on the deck over the start (a test beam flashes there a moment later: move on), and the
+        // deck is a corridor of flashing beams on the way to the door
         Level(
             name = T("Workshop", "Werkstatt"),
             intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
             start = listOf(Portal('1', 10 to 14, 17 to 13, twoWay = false)),
             traps = listOf(
-                trap(PastX(4f), Play(Card.SPIKE_SEED), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
+                trap(PastX(4f), Play(Card.THROTTLE), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
                 trap(Shaken, Reroute('1', 3 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
                 trap(Zone(6f, 7f, 9f, 10.6f), Laser('B', 14 to 1, 14 to 9, on = 0.9f, off = 60f, delay = 0.5f), say("Now it is screwed on properly. Mostly.", "Jetzt ist es ordentlich festgeschraubt. Größtenteils.")),
+                trap(Zone(6f, 7f, 9f, 10.6f), Laser('D', 6 to 1, 6 to 9, on = 1f, off = 60f, delay = 1.2f), say("And a test beam where the cable came out. Safety first.", "Und ein Prüfstrahl, wo das Kabel rauskam. Sicherheit geht vor.")),
                 trap(Zone(18f, 7f, 22f, 10.6f), Laser('C', 27 to 1, 27 to 14, on = 0.9f, off = 60f, delay = 0.5f), say("One more screw. Stand clear.", "Noch eine Schraube. Bitte zurücktreten.")),
             ),
             hint = T("It has a loose cable. Have you tried hitting it?", "Da sitzt ein Kabel locker. Schon mal draufgehauen?"),
@@ -150,8 +152,8 @@ object World2Part3D {
             name = T("Rebase", "Rebase"),
             intro = T("<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature", "<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature"),
             traps = listOf(
-                trap(PastX(8.5f), Play(Card.HEADBUTT), Fall('c'), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen."), delay = 0.35f),
-                trap(PastX(19f), Undo(2f), Fall('e'), say("git reset --hard HEAD~1. Conflict resolved. Mostly.", "git reset --hard HEAD~1. Konflikt gelöst. Größtenteils."), delay = 0.1f),
+                trap(PastX(8.5f), Fall('c'), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen."), delay = 0.35f),
+                trap(PastX(19f), Play(Card.UNDO), Undo(2f), Fall('e'), say("git reset --hard HEAD~1. Conflict resolved. Mostly.", "git reset --hard HEAD~1. Konflikt gelöst. Größtenteils."), delay = 0.1f),
                 trap(PastX(21f), Fall('d'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig."), delay = 0.22f),
             ),
             rematch = listOf(
@@ -256,7 +258,7 @@ object World2Part3D {
             traps = listOf(
                 trap(PastX(3f), Saw(22.5f, 14.4f, -7f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
                 trap(Airborne(7.5f, 16f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
-                trap(PastX(13f), PathSaw(4f, 18.5f to 11f, 18.5f to 14f, 18.5f to 5f, r = 1f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
+                trap(PastX(13.7f), PathSaw(5.5f, 18.5f to 11f, 18.5f to 14f, 18.5f to 5f, r = 1f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
                 trap(Landed(21.9f, 23.1f), Swap(false), say("-128 + 1 = -127. Left is left again. I am as surprised as you.", "-128 + 1 = -127. Links ist wieder links. Ich bin genauso überrascht wie du.")),
             ),
         ) {
@@ -284,9 +286,9 @@ object World2Part3D {
                 trap(Landed(26.5f, 29.8f), Swap(true), say("chown -R mephi /controls", "chown -R mephi /steuerung")),
                 trap(AtDoor, Play(Card.GRAND_FINALE),
                     Extend(into = 1, top = 7, bottom = 9, door = roomX(1, 28) to 14, line = T("shutdown -h now. Who said the room ends here?", "shutdown -h now. Wer sagt, dass der Raum hier endet?"))),
-                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Saw(roomX(1, 32f), 14.4f, -8f, 0f), say("Last cron job: unplug the customer.", "Letzter Cronjob: Den Kunden abstecken.")),
-                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Laser('K', roomX(1, 27) to 1, roomX(1, 27) to 14, on = 2.4f, off = 60f, delay = 0.1f), say("Firewall rule 2: and nobody gets in.", "Firewall-Regel 2: Und keiner kommt rein.")),
-                trap(PastX(roomX(1, 25.5f)), DoorTo(roomX(1, 29), 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
+                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Saw(roomX(1, 32f), 14.4f, -12f, 0f), say("Last cron job: unplug the customer.", "Letzter Cronjob: Den Kunden abstecken.")),
+                trap(Landed(roomX(1, 9f), roomX(1, 16f)), Laser('K', roomX(1, 27) to 1, roomX(1, 27) to 14, on = 2.15f, off = 60f, delay = 0.1f), say("Firewall rule 2: and nobody gets in.", "Firewall-Regel 2: Und keiner kommt rein.")),
+                trap(PastX(roomX(1, 24.5f)), DoorTo(roomX(1, 29), 16, speed = 20f), say("Layer 3: hardware. I'm moving out. Follow me if you dare.", "Schicht 3: Hardware. Ich ziehe aus. Komm nach, wenn du dich traust.")),
             ),
         ) {
             border(); floor()

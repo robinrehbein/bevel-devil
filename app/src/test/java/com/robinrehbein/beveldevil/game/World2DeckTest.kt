@@ -181,7 +181,7 @@ class World2DeckTest {
     @Test fun l34r2() { World2DesignTest.play(34, round = 2) }
     @Test fun l34r2TheRoundOneRunHitsTheLeds() = World2Rooms.l34(b(34, 2)).expect(WorldState.DEAD)
     @Test fun l34r2TheStaleLinkIsTheLoopback() {
-        val bot = b(34, 2).hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { w -> w.links.first { it.id == '3' }.hopTime > 0f }.wait(0.05f)
+        val bot = b(34, 2).hopR(17.8f, 0.5f).rightTo(24f).rightUntil { it.player.box.cy < 3f }.waitFor { it.player.grounded }.leftTo(26.6f).leftJump(0.5f).landLeft().leftUntil { w -> w.links.first { it.id == '3' }.hopTime > 0f }.wait(0.05f)
         bot.expect(WorldState.PLAYING)
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx > 20f)
     }
