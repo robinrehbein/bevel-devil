@@ -615,8 +615,8 @@ class ScreenshotTest {
             "21" to at(21), "21-closet" to at(21) { rooms.l21ToCloset(this).wait(0.5f) }, "21-top" to at(21) { rooms.l21ToShelf(this).wait(1.2f) },
             "22" to at(22), "22-bouncer" to at(22) { rooms.l22ToLane(this).wait(1.2f) },
             "23" to at(23), "23-lift" to at(23) { rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27f).wait(0.7f) },
-            "24" to at(24), "24-stalactites" to at(24) { rightTo(10.6f).wait(0.2f) },
-            "24-deck" to at(24) { rightTo(16.9f).waitFor { it.group('V').oy > 6f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22f).wait(0.8f) },
+            "24" to at(24), "24-gap" to at(24) { rightTo(6.6f).wait(0.4f) },
+            "24-rack" to at(24) { rightTo(7.4f).waitFor { it.group('a').ox > 2.9f }.hopR(8.4f, 0.5f).rightTo(16.8f).wait(0.5f) },
         )
         val dir = File("build/screenshots").apply { mkdirs() }
         for ((name, w) in scenes) {
@@ -658,6 +658,23 @@ class ScreenshotTest {
             val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
             val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
             File(dir, "150-w2-level-${i + 1}.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+    }
+
+    /** Every level of World 3 as the player first sees it (round 1, start state), for the rollout contact sheets. */
+    @Test
+    fun worldThreeAllLevels() {
+        val layout = Layout().apply { update(2400, 1080, 2.75f) }
+        val dir = File("build/screenshots").apply { mkdirs() }
+        for ((i, level) in com.robinrehbein.beveldevil.game.World3.levels.withIndex()) {
+            val w = Bot(level, 0).wait(0.5f).world
+            val px = Pixels(RuntimeEnvironment.getApplication())
+            px.resize(layout.lw, layout.lh)
+            val theme = if (i + 1 >= Themes.BLUE_FROM) Themes.PCB_BLUE else Themes.PCB_GREEN
+            WorldPainter(px).draw(w, w.time, 0f, emptyList(), layout, theme)
+            val field = Bitmap.createBitmap(px.lo, layout.fx, layout.fy, PW, PH)
+            val big = Bitmap.createScaledBitmap(field, PW * 3, PH * 3, false)
+            File(dir, "150-w3-level-${i + 1}.png").outputStream().use { big.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 

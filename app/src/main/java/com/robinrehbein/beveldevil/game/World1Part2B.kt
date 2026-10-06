@@ -13,7 +13,7 @@ object World1Part2B {
     private val hiddenCeilingSpike = Glyph(spike = true, dir = Dir.DOWN, hidden = true)
 
     val levels: List<Level> = listOf(
-        // 17 — budget cuts: a gap opens in the floor ahead of you, the landing is cut under whoever lands on it, the way up is
+        // 17 — budget cuts: a gap opens in the floor ahead of you (and the ceiling over whoever stops to look at it is cut too), the landing is cut under whoever lands on it, the way up is
         // platforms over the pit, the second one gives way, and so does the first piece of the upper floor on the way back. Rematch:
         // the floor holds, but whoever hops in the first stretch brings it down; the cuts have moved on to the walkers' road
         // MECHANIC: Fall (floor cuts)
@@ -21,7 +21,7 @@ object World1Part2B {
             name = T("Night Shift", "Nachtschicht"),
             intro = T("Management is saving money now. On everything.", "Die Hausverwaltung spart neuerdings. An allem."),
             traps = listOf(
-                trap(PastX(4f), Play(Card.CRUMBLE), Fall('a'), Say(T("Budget cut: floor, tiles 7 to 9.", "Kürzung: Boden, Kacheln 7 bis 9."))),
+                trap(PastX(4f), Play(Card.CRUMBLE), Fall('a'), Move('c', 0f, 6f, 14f), Say(T("Budget cut: floor, tiles 7 to 9.", "Kürzung: Boden, Kacheln 7 bis 9."))),
                 trap(Landed(10f, 13f), Fall('b'), Say(T("Landing fee: cancelled.", "Landegebühr: gestrichen.")), delay = 0.5f),
                 trap(Touch('q'), Fall('q'), Say(T("Overtime is not paid. Neither is this step.", "Überstunden werden nicht bezahlt. Diese Stufe auch nicht.")), delay = 0.45f),
                 trap(Touch('w'), Fall('w'), Say(T("Upper management cuts last.", "Die Chefetage kürzt zuletzt.")), delay = 0.4f),
@@ -40,7 +40,7 @@ object World1Part2B {
             ),
         ) {
             border(); floor(); pit(16..30)
-            fill(7..9, 15..17, 'a'); fill(10..12, 15..17, 'b')
+            fill(7..9, 15..17, 'a'); fill(10..12, 15..17, 'b'); fill(3..5, 8..8, 'c')
             fill(18..20, 13..13, 'p'); fill(23..24, 11..11, 'q'); fill(25..29, 9..14)
             fill(21..22, 7..7, 'w'); fill(2..20, 7..7)
             put(2, 14, 'P'); put(2, 6, 'D')
@@ -68,6 +68,7 @@ object World1Part2B {
                         trap(Landed(27.5f, 31f), Play(Card.TWISTED), Swap(true), Say(T("Daylight saving: left is right.", "Zeitumstellung: links ist rechts."))),
                         trap(Landed(27.5f, 31f), Saw(33f, 14.4f, -17f, 0f, 0.62f), Say(T("Quarter past. From the other side.", "Viertel nach. Von der anderen Seite.")), delay = 0.5f),
                         trap(Zone(14.5f, 12f, 17f, 15.5f), Saw(-1.5f, 14.4f, 8f, 0f, 0.62f), Say(T("Half past. The clock is stuck.", "Halb. Die Uhr hängt."))),
+                        trap(Zone(3.6f, 14f, 6.5f, 15.5f), Swap(false), Say(T("Midnight. The clock resets. So do your keys.", "Mitternacht. Die Uhr springt zurück. Deine Tasten auch."))),
                     ),
                 ),
             ),
@@ -86,7 +87,7 @@ object World1Part2B {
             intro = T("Have a seat for a second. I'll fetch the door.", "Setz dich kurz. Ich hole die Tür."),
             start = listOf(Circuit('w'), Pad('1', at = 26 to 12, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
-                trap(PastX(6.5f), Fall('a'), Say(T("Please mind the gap. I dug it myself.", "Bitte Abstand halten. Ich habe ihn selbst gegraben."))),
+                trap(PastX(7.6f), Fall('a'), Say(T("Please mind the gap. I dug it myself.", "Bitte Abstand halten. Ich habe ihn selbst gegraben."))),
                 trap(PastX(12.5f), Fall('b'), Say(T("Another gap. Waiting rooms have a lot of those.", "Noch eine Lücke. Wartezimmer haben viele davon."))),
                 trap(Pressed('1'), Play(Card.HEADBUTT), Move('x', 0f, 10f, 18f), Say(T("Next, please! ... Not you.", "Der Nächste, bitte! ... Nicht du.")), delay = 0.35f),
                 trap(Zone(21.6f, 1f, 23.4f, 11f), Move('y', 0f, 8f, 18f), Say(T("Please wait to be called.", "Bitte warten, bis Sie aufgerufen werden."))),
@@ -132,22 +133,24 @@ object World1Part2B {
             put(2, 14, 'P'); put(5, 8, 'D')
         },
 
-        // 21 — the door is high up on the left and there is no way up. A strip of the floor sinks as you come, spikes grow after the hop;
-        // on the far bank sits the one slab that is different: step on it and slabs of concrete come down from the ceiling and
-        // build the stairs, while the slab you stand on sinks into the floor. Rematch: concrete only sets while you stand still
+        // 21 — the door is high up at the end of the left platform and there is no way up. A strip of the floor sinks as you come,
+        // spikes grow after the hop; on the far bank sits the one slab that is different: step on it and slabs of concrete come down
+        // from the ceiling and build the stairs, and the last bucket comes down on whoever is still standing on the slab. Rematch:
+        // concrete only sets while you stand still, and whoever pushes on meets rebar
         // MECHANIC: Move (the room rebuilds itself)
         Level(
             name = T("Foundation", "Fundament"),
             intro = T("Concrete. Two inches. Fully inspected.", "Beton. Fünf Zentimeter. Alles geprüft."),
-            legend = mapOf('A' to Glyph(spike = true, hidden = true)),
+            legend = mapOf('A' to Glyph(spike = true, hidden = true), 'B' to Glyph(spike = true, hidden = true)),
             traps = listOf(
                 trap(PastX(5.5f), Move('f', 0f, 4f, 12f), Say(T("Floor strip 9 to 11: collected for recycling.", "Bodenstreifen 9 bis 11: wird recycelt."))),
                 trap(Airborne(15f, 18.5f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Rebar. Included in the price.", "Bewehrung. Im Preis inbegriffen."))),
-                trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('s', 0f, 12f, 22f), Move('t', 0f, 10f, 22f), Move('u', 0f, 8f, 22f), Move('k', 0f, 1.6f, 4f),
+                trap(Zone(27.2f, 13.2f, 31f, 14.0f), Move('s', 0f, 12f, 22f), Move('t', 0f, 10f, 22f), Move('u', 0f, 8f, 22f),
                     Say(T("Pour the stairs. Mind your head.", "Treppe gießen. Kopf einziehen."))),
-                trap(Touch('s'), Move('s', 0f, 12f, 12f), Say(T("The first step has set. Elsewhere.", "Die erste Stufe ist abgebunden. Woanders.")), delay = 0.8f),
-                trap(Touch('t'), Move('t', 0f, 12f, 12f), Say(T("Second step: also on its way out.", "Zweite Stufe: ebenfalls auf dem Weg nach draußen.")), delay = 0.8f),
-                trap(Touch('u'), Move('u', 0f, 12f, 12f), delay = 0.8f),
+                trap(Zone(27.2f, 13.2f, 31f, 14.0f), Move('x', 0f, 11f, 16f), Say(T("Last bucket. Whoever waits gets it.", "Letzter Eimer. Wer wartet, kriegt ihn ab.")), delay = 0.9f),
+                trap(Touch('s'), Move('s', 0f, 12f, 12f), Say(T("The first step has set. Elsewhere.", "Die erste Stufe ist abgebunden. Woanders.")), delay = 1.0f),
+                trap(Touch('t'), Move('t', 0f, 12f, 12f), Say(T("Second step: also on its way out.", "Zweite Stufe: ebenfalls auf dem Weg nach draußen.")), delay = 1.0f),
+                trap(Touch('u'), Move('u', 0f, 12f, 12f), delay = 1.0f),
             ),
             rematch = listOf(
                 Round(
@@ -157,27 +160,29 @@ object World1Part2B {
                         trap(Touch('f'), Move('f', 0f, 4f, 12f), Say(T("Walk, don't hop. The strip is still on its break.", "Gehen, nicht hüpfen. Der Streifen hat noch Pause.")), delay = 0.5f),
                         trap(Touch('b'), Bluff(Card.SPIKE_SEED), Move('b', 0f, 4f, 12f), Say(T("Rebar? ... Never mind. The plank is the problem.", "Bewehrung? ... Egal. Das Brett ist das Problem.")), delay = 0.5f),
                         trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('s', 0f, 12f, 26f), Move('t', 0f, 10f, 26f), Move('u', 0f, 8f, 26f),
-                            Say(T("Stand still. Let it cure. Then leave.", "Stillhalten. Abbinden lassen. Dann gehen.")), delay = 0.8f),
+                            Say(T("Stand still. Let it cure. Then leave.", "Stillhalten. Abbinden lassen. Dann gehen.")), delay = 0.65f),
+                        trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Show('B'), Say(T("Rebar for whoever pushes on.", "Bewehrung für alle, die drängeln."))),
                         trap(Zone(27.2f, 13.2f, 29.8f, 14.0f), Move('k', 0f, 1.6f, 4f), delay = 2.1f),
                         trap(Touch('s'), Move('s', 0f, 12f, 12f), delay = 0.8f),
                         trap(Touch('t'), Move('t', 0f, 12f, 12f), delay = 0.8f),
                         trap(Touch('u'), Move('u', 0f, 12f, 12f), delay = 0.8f),
                     ),
-                ) { fill(12..14, 15..17, 'g'); fill(15..16, 15..17, 'b') },
+                ) { fill(12..14, 15..17, 'g'); fill(15..16, 15..17, 'b'); put(22, 14, '.'); put(23, 14, '.'); put(30, 14, 'B') },
             ),
         ) {
             border(); floor(); pit(9..11)
             fill(9..11, 15..15, 'f')
             pit(15..16)
             put(22, 14, 'A'); put(23, 14, 'A')
-            fill(27..29, 14..14, 'k')
-            fill(18..23, 1..1, 's'); fill(14..17, 1..1, 't'); fill(10..13, 1..1, 'u')
-            fill(1..9, 9..9)
-            put(2, 14, 'P'); put(3, 8, 'D')
+            fill(27..30, 14..14, 'k'); fill(27..30, 1..2, 'x')
+            fill(20..26, 1..1, 's'); fill(16..19, 1..1, 't'); fill(12..15, 1..1, 'u')
+            fill(1..11, 9..9)
+            put(2, 14, 'P'); put(11, 8, 'D')
         },
 
-        // 22 — the airlock: along the upper floor through a pulsing beam to the pad, which cuts the lock on the ground floor; the
-        // cycle fails and Mephi rewinds you a moment, then you drop to the ground floor and the next beam pulses on the way to the door
+        // 22 — the airlock: along the upper floor through a pulsing beam, past a scanner that flashes on whoever lingers, to the pad,
+        // which cuts the lock on the ground floor; the cycle fails and Mephi rewinds you a moment, then you drop to the ground floor and
+        // the next beam pulses on the way back to the door in the middle of the room
         // MECHANIC: laser gate (R1 switch + door cage)
         Level(
             name = T("Airlock", "Schleuse"),
@@ -185,13 +190,14 @@ object World1Part2B {
             start = listOf(Circuit('w'), Pad('1', at = 25 to 7, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
                 trap(PastX(6f), Laser('A', 12 to 1, 12 to 7, on = 0.9f, off = 1.5f, delay = 0.2f), Say(T("Outer door: pulsing. Please wait for the green.", "Außentür: pulsiert. Bitte auf Grün warten."))),
+                trap(Zone(15.1f, 4f, 16.5f, 8.5f), Laser('C', 15 to 1, 15 to 7, on = 0.5f, off = 60f, delay = 0.45f), Say(T("Body scan. Hold still. Or don't.", "Körperscan. Stillhalten. Oder lieber nicht."))),
                 trap(Pressed('1'), Play(Card.UNDO), Undo(1.1f), Say(T("Pressure test failed. Rewinding the last bit.", "Drucktest fehlgeschlagen. Das letzte Stück wird zurückgespult."))),
-                trap(Zone(22f, 12f, 25f, 15.5f), Laser('B', 18 to 9, 18 to 14, on = 0.6f, off = 1.5f, delay = 0.1f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend."))),
+                trap(Landed(26f, 31f), Laser('B', 21 to 9, 21 to 14, on = 0.6f, off = 1.5f, delay = 0.6f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend."))),
             ),
         ) {
             border(); floor(); fill(1..26, 8..8)
-            fill(5..6, 9..14, 'w')
-            put(2, 7, 'P'); put(3, 14, 'D')
+            fill(15..16, 9..14, 'w')
+            put(2, 7, 'P'); put(12, 14, 'D')
         },
 
         // 23 — a sawmill on three floors: a saw bobs through the top plank, the knot in the plank above the start is a hidden block
@@ -205,7 +211,7 @@ object World1Part2B {
             traps = listOf(
                 trap(PastX(3.5f), PathSaw(6f, 8f to 4.4f, 8f to 0.7f, delay = 0.5f), Say(T("Measure twice. Cut once. Mind the first cut.", "Zweimal messen. Einmal sägen. Vorsicht beim ersten Schnitt."))),
                 trap(Touch('b'), Play(Card.GHOST_BLOCK), Saw(-1.5f, 4.4f, 9f, 0f, 0.62f), Say(T("A knot! Nobody told you? Mind your head.", "Ein Ast! Hat dir keiner gesagt? Kopf einziehen."))),
-                trap(Landed(14f, 31f), Saw(5.5f, 9.4f, 6f, 0f, 0.62f), Say(T("Sawdust everywhere. Mostly on you.", "Sägemehl überall. Vor allem auf dir."))),
+                trap(Landed(14f, 31f), Saw(5.5f, 9.4f, 6f, 0f, 0.62f), Say(T("Sawdust everywhere. Mostly on you.", "Sägemehl überall. Vor allem auf dir.")), delay = 0.1f),
                 trap(Zone(5.2f, 12f, 7f, 15.5f), PathSaw(6f, 9f to 14.4f, 9f to 7.4f, delay = 0.3f), Say(T("The foreman cuts in at the end of the shift.", "Der Vorarbeiter sägt mit, kurz vor Feierabend."))),
                 trap(Zone(12.5f, 12f, 14.5f, 15.5f), PathSaw(6f, 17f to 14.4f, 17f to 7.4f, delay = 0.45f), Say(T("And a piece for the road.", "Und ein Stück für den Heimweg."))),
             ),
@@ -216,8 +222,9 @@ object World1Part2B {
             put(2, 4, 'P'); put(24, 14, 'D')
         },
 
-        // 24 — merge conflict: HEAD walks after you along the ground floor, the stairs lead up and back along the top floor, and
-        // there the other branch comes the other way and has to be jumped; the door is behind it. Rematch: no stairs, a lift that
+        // 24 — merge conflict: HEAD walks after you along the ground floor, the stairs lead up (the stash over the top step pops onto
+        // whoever stays) and back along the top floor, and there the other branch comes the other way and has to be jumped; the door
+        // is in the middle of the top floor. Rematch: no stairs, a lift that
         // goes too far, and two branches in a row
         // MECHANIC: Chase (two branches)
         Level(
@@ -227,7 +234,8 @@ object World1Part2B {
             traps = listOf(
                 trap(PastX(6f), Fall('a'), Say(T("Conflict in floor.txt. Resolving by deleting.", "Konflikt in boden.txt. Wird durch Löschen gelöst."))),
                 trap(PastX(7.5f), Play(Card.STALKER), Chase('h', 6f, left = 0f, right = 26f), Say(T("HEAD is right behind you. Rebase onto me.", "HEAD ist direkt hinter dir. Rebase auf mich."))),
-                trap(PastX(15f), Fall('b'), Say(T("Another conflict. Same resolution.", "Noch ein Konflikt. Gleiche Lösung."))),
+                trap(PastX(17f), Move('b', 0f, 4f, 12f), Say(T("Another conflict. This one from upstream.", "Noch ein Konflikt. Diesmal von oben."))),
+                trap(Zone(28f, 10f, 31f, 11.2f), Move('q', 0f, 7f, 14f), Say(T("Stash pop. On your head.", "Stash pop. Auf deinen Kopf.")), delay = 0.45f),
                 trap(Zone(20f, 6f, 25f, 9f), Chase('F', 2.5f, left = 0f, right = 16f), Say(T(">>>>>>> feature/squash-bevel", ">>>>>>> feature/bevel-plattmachen"))),
             ),
             rematch = listOf(
@@ -236,19 +244,19 @@ object World1Part2B {
                     traps = listOf(
                         trap(PastX(6f), Fall('a'), Say(T("Conflict in floor.txt. Again. Merging it away.", "Konflikt in boden.txt. Schon wieder. Wegmergen."))),
                         trap(PastX(7.5f), Play(Card.GRAND_FINALE), Chase('h', 6f, left = 0f, right = 26f), Say(T("Every branch at once. Squash everything.", "Alle Branches auf einmal. Alles zusammendrücken."))),
-                        trap(PastX(15f), Fall('b')),
+                        trap(PastX(17f), Move('b', 0f, 4f, 12f)),
                         trap(Landed(27f, 31f), Move('l', 0f, -12f, 5f), Say(T("Cherry-pick: straight to the top.", "Cherry-pick: direkt nach oben.")), delay = 0.15f),
                         trap(Zone(20f, 6f, 25f, 9f), Chase('F', 2.5f, left = 0f, right = 16f), Chase('G', 2.5f, left = 0f, right = 16f), Say(T("Two branches. One door.", "Zwei Branches. Eine Tür."))),
                     ),
-                ) { fill(26..27, 13..14, '.'); fill(28..30, 11..14, '.'); fill(27..30, 14..14, 'l'); fill(27..30, 1..1, 'C'); put(8, 8, '.'); put(7, 8, 'F'); put(13, 8, 'G') },
+                ) { fill(28..30, 1..3, '.'); fill(26..27, 13..14, '.'); fill(28..30, 11..14, '.'); fill(27..30, 14..14, 'l'); fill(27..30, 1..1, 'C'); put(8, 8, '.'); put(7, 8, 'F'); put(18, 8, 'G') },
             ),
         ) {
-            border(); floor(); pit(9..10); pit(19..20)
-            fill(9..10, 15..17, 'a'); fill(19..20, 15..17, 'b')
+            border(); floor(); pit(9..10)
+            fill(9..10, 15..17, 'a'); fill(19..20, 10..10, 'b')
             fill(1..2, 12..14, 'h')
             fill(26..27, 13..14); fill(28..30, 11..14)
-            fill(4..25, 9..9); fill(8..8, 8..8, 'F')
-            put(4, 14, 'P'); put(5, 8, 'D')
+            fill(4..25, 9..9); fill(8..8, 8..8, 'F'); fill(28..30, 1..3, 'q')
+            put(4, 14, 'P'); put(14, 8, 'D')
         },
 
     )

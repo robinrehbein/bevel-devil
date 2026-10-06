@@ -41,9 +41,9 @@ object World1RoomsE {
             { leftTo(12.4f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(5.9f).jump(0.4f)
                 .rightTo(14.0f).waitFor { it.group('g').oy <= -1.2f }.rightTo(17.0f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(22.2f).jump(0.4f).waitFor { it.player.grounded }
                 .rightTo(23.2f).waitFor { it.group('h').oy <= -1.2f }.rightTo(25.0f).right(2f) },
-            { rightTo(19.6f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(26.1f).jump(0.4f)
-                .leftTo(18.0f).waitFor { it.group('g').oy <= -1.2f }.leftTo(15.0f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(10.8f).leftJump(0.45f).landLeft()
-                .waitFor { it.group('h').oy <= -1.2f }.leftTo(7.0f).left(2f) },
+            { leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(4.2f).rightTo(4.6f).rightJump(0.4f).landRight()
+                .rightTo(14.0f).waitFor { it.group('g').oy <= -1.2f }.rightTo(17.0f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(20.6f).rightTo(21.4f).rightJump(0.4f).landRight()
+                .rightTo(23.2f).waitFor { it.group('h').oy <= -1.2f }.rightTo(25.0f).right(2f) },
         ),
         46 to listOf<Solution>(
             { rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.darkFor('A') > 1.1f }
@@ -55,7 +55,7 @@ object World1RoomsE {
         // 45: hop the two pieces that are deleted ahead on the top floor, run off its left end and drop down the shaft, run back along the
         // ground and hop the two pieces that are deleted there
         45 to listOf<Solution>(
-            { hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().rightTo(10.6f).rightJump(0.5f).landRight().rightTo(18.6f).rightJump(0.5f).landRight().right(3f) },
+            { hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().rightTo(10.3f).rightJump(0.5f).landRight().rightTo(19f) },
         ),
         44 to listOf<Solution>(
             { rightTo(8.2f).waitFor { it.solidLeft('q') > 1.0f }
@@ -68,7 +68,7 @@ object World1RoomsE {
         ),
         41 to listOf<Solution>(
             { leftTo(11.0f).waitFor { it.group('S').oy >= 12f }.leftTo(5.6f).jump(0.45f)
-                .waitFor { it.group('T').oy >= 12f }.rightTo(20.0f).waitFor { it.group('U').oy >= 12f }
+                .waitFor { it.group('T').oy >= 12f }.rightTo(21.0f).waitFor { it.group('U').oy >= 12f }
                 .rightTo(26.0f).rightJump(0.5f).landRight().right(2f) },
         ),
         42 to listOf<Solution>(
@@ -77,7 +77,7 @@ object World1RoomsE {
                 .hopR(11.0f, 0.5f).hopR(17.0f, 0.5f).hopR(22.4f, 0.35f).right(3f) },
             { hopR(8.0f, 0.5f).hopR(14.6f, 0.35f).rightUntil { it.player.box.b > 7f }.waitFor { it.player.grounded }
                 .hopL(21.6f, 0.35f).leftUntil { it.player.box.b > 12f }.waitFor { it.player.grounded }
-                .rightTo(9.0f).rightJump(0.45f).landRight().rightTo(15.4f).waitFor { it.solidLeft('q') > 1.0f }
+                .rightTo(9.0f).waitFor { it.solidLeft('p') > 1.0f }.rightJump(0.45f).landRight().rightTo(15.4f).waitFor { it.solidLeft('q') > 1.0f }
                 .rightJump(0.45f).landRight().waitFor { it.solidLeft('r') > 1.0f }
                 .rightTo(21.0f).rightJump(0.45f).landRight().right(3f) },
         ),

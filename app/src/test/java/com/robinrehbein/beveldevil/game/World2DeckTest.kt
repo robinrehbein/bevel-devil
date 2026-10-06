@@ -121,6 +121,7 @@ class World2DeckTest {
 
     @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
     @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
+    @Test fun l01r2WalkingOntoTheSecondStretchDropsYou() = b(1, 2).right(3f).expect(WorldState.DEAD)
     @Test fun l04r2() { World2DesignTest.play(4, round = 2) }
     @Test fun l07r2() { World2DesignTest.play(7, round = 2) }
     /** Sky Blue, round 2: the ceiling stalks you over the plateau; waiting under it, where round 1 waited, is the end. */
@@ -156,14 +157,17 @@ class World2DeckTest {
     @Test fun l20r2HoldingRightIsNotKilledByTheFirstStep() = b(20, 2).right(1.0f).expect(WorldState.PLAYING)
     /** Load Balancer, round 2: the nodes sit two tiles further on, crumble faster, and the stone up top is a belt. */
     @Test fun l25r2() { World2DesignTest.play(25, round = 2) }
-    @Test fun l25r2TheRoundOneHopsLandInThePit() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
+    @Test fun l25r2TheRoundOneRunFails() = World2Rooms.l25(b(25, 2)).expect(WorldState.DEAD)
+    @Test fun l25r2WalkingOffTheThirdNodeFindsTheNewGap() = b(25, 2).rightTo(8.2f).rightJump(0.12f).landRight().rightJump(0.12f).landRight()
+        .waitFor { it.group('e').oy > 2f }.waitFor { it.group('e').oy < 0.05f }.right(2f).expect(WorldState.DEAD)
+    @Test fun l25r2WaitingOnTheThirdNodeIsTooLong() = b(25, 2).rightTo(8.2f).rightJump(0.12f).landRight().rightJump(0.12f).landRight().wait(3f).expect(WorldState.DEAD)
     /** Ticket Number, round 2: both queues come toward you now; hop each of them. */
     @Test fun l26r2() { World2DesignTest.play(26, round = 2) }
     @Test fun l26r2TheRoundOneRunMeetsTheQueueHeadOn() = World2Rooms.l26(b(26, 2)).expect(WorldState.DEAD)
     @Test fun l26r2WalkingIntoTheFirstQueueIsFatal() = b(26, 2).leftUntil { it.player.box.b > 8f }.right(4f).expect(WorldState.DEAD)
     /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
     @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
-    @Test fun l29r2TheRoundOneRunMeetsTheLappingSaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
+    @Test fun l29r2TheRoundOneWaitingSpotForksASaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
     @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(3f).expect(WorldState.DEAD)
 
     // ---------- Act 3: Root ----------
@@ -177,7 +181,7 @@ class World2DeckTest {
     @Test fun l34r2() { World2DesignTest.play(34, round = 2) }
     @Test fun l34r2TheRoundOneRunHitsTheLeds() = World2Rooms.l34(b(34, 2)).expect(WorldState.DEAD)
     @Test fun l34r2TheStaleLinkIsTheLoopback() {
-        val bot = b(34, 2).hopR(17.8f, 0.5f).rightTo(25f).rightUntil { it.player.box.cy < 3f }.leftUntil { w -> w.links.first { it.id == '3' }.hopTime > 0f }.wait(0.05f)
+        val bot = b(34, 2).hopR(17.8f, 0.5f).rightTo(24f).rightUntil { it.player.box.cy < 3f }.waitFor { it.player.grounded }.leftTo(26.6f).leftJump(0.5f).landLeft().leftUntil { w -> w.links.first { it.id == '3' }.hopTime > 0f }.wait(0.05f)
         bot.expect(WorldState.PLAYING)
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx > 20f)
     }

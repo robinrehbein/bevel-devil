@@ -13,10 +13,14 @@ import org.junit.Test
 object KitLock {
     const val MESSAGE = "kit is locked; only the orchestrator may change it"
 
-    /** SHA-256 of the file content, by file name under app/src/test/java/com/robinrehbein/beveldevil/game/. */
+    /**
+     * SHA-256 of the file content, by file name under app/src/test/java/com/robinrehbein/beveldevil/game/. PendingRounds.kt
+     * is deliberately not here: it may only shrink (docs/LEVEL_DESIGN_V2.md §9a), and deleting a line needs no new hash.
+     */
     val HASHES = mapOf(
-        "DesignRules.kt" to "b4eca359e96d410a87d7a2c45a92ef764ebd8c7a490ef363bcb7f389052fc16d",
-        "DesignTestBase.kt" to "7dfe3d7a91eb2d48b59183e11667ad3647cd14b3d96a52d48f6ccae77957118d",
+        "DesignRules.kt" to "482a9823a3d9732c58229b1f7cfc92ba4a722041832dbfe9764989f1982ef110",
+        "DesignTestBase.kt" to "644589b222668beae2727fa5b812996a29a7276f2b642cb00377c4e715b96b6a",
+        "NaiveProbes.kt" to "0bb188aa7701341c1af56be12933d1f5e373469ac7721b905104d50fc204ff72",
     )
 
     private const val DIR = "src/test/java/com/robinrehbein/beveldevil/game"

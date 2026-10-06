@@ -59,7 +59,7 @@ class World3DesignTest : DesignTestBase() {
             32 to d("R11+R1", "U17+U2+U18"),
             // Act 3 "Lüfter"
             33 to d("R10", "U1"),
-            34 to d("R5", "U12"),
+            34 to d("–", "U12", breather = true),
             35 to d("R4", "U7"),
             36 to d("–", "U6"),
             37 to d("–", "U3"),
@@ -77,10 +77,10 @@ class World3DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = (1..32).toSet()
+        val REBUILT: Set<Int> = (1..48).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
-        val SOLUTIONS: Map<Int, List<Solution>> = World3RoomsA.solutions + World3RoomsB.solutions + World3RoomsC.solutions + World3RoomsD.solutions
+        val SOLUTIONS: Map<Int, List<Solution>> = World3RoomsA.solutions + World3RoomsB.solutions + World3RoomsC.solutions + World3RoomsD.solutions + World3RoomsE.solutions + World3RoomsF.solutions
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World3Test]). */
         fun play(n: Int, round: Int = 1) =

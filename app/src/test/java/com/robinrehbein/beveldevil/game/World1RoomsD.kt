@@ -16,7 +16,7 @@ object World1RoomsD {
         // 33: hop the strip, hop the oncoming saw, through the breach, board the ferry and hop off it at once; rematch: the rope, the strips, the ferry
         33 to listOf<Solution>(
             { hopR(9.0f, 0.4f).rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
-                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 10.4f)).rightJump(0.4f).landRight()
+                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightTo(roomX(1, 9.9f)).rightJump(0.4f).landRight()
                 .rightJump(0.35f).landRight().right(3f) },
             { rightTo(14.0f).waitFor { it.ropeUp(17f, 1.1f) }.hopR(23.8f, 0.4f).rightUntil(4f) { it.cracks.any { c -> c.fell } }.hopR(roomX(1, 4.6f), 0.4f).rightTo(roomX(1, 10.4f)).rightJump(0.4f).landRight()
                 .rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(3f) },
@@ -45,7 +45,7 @@ object World1RoomsD {
         40 to listOf<Solution>(
             { rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
                 .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
-                .hopSL(13.6f, 0.4f).rightKeyLeftTo(3.2f).right(1f) },
+                .hopSL(18.6f, 0.4f).rightKeyLeftTo(12.6f).right(1f) },
         ),
         // 39: let the ceiling tile land and hop it, up the stairs to the upper floor, hop the piece that gives way, board the shelf, tilt and ride it
         // across, jump off its end over the bank that gives way onto the ledge with the door
@@ -60,7 +60,7 @@ object World1RoomsD {
         38 to listOf<Solution>(
             { leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().waitFor { it.viewTurn() >= 0.5f }
                 .hopSL(9.6f, 0.5f).rightKeyLeftTo(7.0f).rightJump(0.5f).landRight()
-                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(4f) },
+                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(3f) },
         ),
         // 37: run ahead of the deleted floor, hop up the first step (it is deleted behind you) onto the second, back along the upper floor;
         // rematch: hop the stones over the pits that were opened ahead, without staying on any

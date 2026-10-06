@@ -36,40 +36,39 @@ object World1Part2 {
 
     val levels: List<Level> = World1Part2B.levels + listOf(
         // 25 — rush hour: the door waits on the far platform behind a bridge of stones over the void. Step on it and it starts to blink;
-        // reach for the door and it leaves for the middle of the first platform; come back over the bridge and it leaves again, for the
-        // far end behind a second bridge. The way back is the bridge, now with its rhythm
-        // MECHANIC: Blink (two bridges) + the one fleeing door of the act
+        // reach for the door and it leaves for the middle of the first platform; come back over the bridge for it and it leaves again,
+        // back to the far end it came from: rush hour, the train left from the other platform. Over the bridge once more, in its rhythm
+        // MECHANIC: Blink (the bridge) + the one fleeing door of the act
         Level(
             name = T("Rush Hour", "Stoßzeit"),
             intro = T("Hurry! The door closes soon.", "Schnell, schnell! Die Tür schließt gleich."),
             hint = T("The door is not where it was. The bridge is on a timetable.", "Die Tür ist nicht mehr da. Die Brücke hat einen Fahrplan."),
             traps = listOf(
-                trap(Touch('a'), Blink('a', on = 1.2f, off = 1.0f), Blink('b', on = 1.2f, off = 1.0f), Say(T("The bridge runs on the hour. The hour is short.", "Die Brücke fährt zur vollen Stunde. Die Stunde ist kurz."))),
-                trap(Touch('c'), Blink('c', on = 1.6f, off = 1.2f), Blink('d', on = 1.6f, off = 1.2f), Say(T("Second bridge, same timetable. Delays included.", "Zweite Brücke, gleicher Fahrplan. Verspätungen inklusive."))),
+                trap(Touch('a'), Blink('a', on = 1.8f, off = 0.8f), Blink('b', on = 1.8f, off = 0.8f), Say(T("The bridge runs on the hour. The hour is short.", "Die Brücke fährt zur vollen Stunde. Die Stunde ist kurz."))),
             ) + flee(PastX(26.2f), 29, 7, listOf(Play(Card.SHY_DOOR), Say(T("This door is out of service. Next stop: back there.", "Diese Tür ist außer Betrieb. Nächster Halt: da hinten."))),
                 DoorTo(29, 3, speed = 14f), DoorTo(15, 3, speed = 14f), DoorTo(15, 7, speed = 14f)) +
-                flee(Landed(25f, 27f), 15, 7, listOf(Say(T("Oh, you came back? I'll move on.", "Du kommst zurück? Dann ziehe ich weiter."))),
-                    DoorTo(15, 3, speed = 14f), DoorTo(2, 3, speed = 14f), DoorTo(2, 7, speed = 14f)),
+                flee(Landed(18.5f, 22.9f), 15, 7, listOf(Say(T("Oh, you came back? I'm off to where I was.", "Du kommst zurück? Ich fahre dahin, wo ich war."))),
+                    DoorTo(15, 3, speed = 16f), DoorTo(29, 3, speed = 16f), DoorTo(29, 7, speed = 16f)),
         ) {
             border()
-            fill(1..4, 8..8); fill(9..22, 8..8); fill(27..30, 8..8)
-            fill(7..8, 9..9, 'c'); fill(5..6, 9..9, 'd')
+            fill(9..22, 8..8); fill(27..30, 8..8)
             fill(23..24, 9..9, 'a'); fill(25..26, 9..9, 'b')
             put(10, 7, 'P'); put(29, 7, 'D')
         },
 
-        // 26 — skyscraper: two flights of stairs and a roof run back along the top, and the crane follows you up, hanging over your
-        // head. It doesn't mind a runner, it minds a stand-still (it drops its load), and under it you cannot jump. Rivets pop up on
-        // the second floor and a guard slides at you on the roof: you have to outrun the crane before you can jump him
+        // 26 — skyscraper: two flights of stairs and a roof run back along the top to the door in its middle, and the crane follows you
+        // up, hanging over your head. It doesn't mind a runner, it minds a stand-still (it drops its load), and under it you cannot
+        // jump. A panel of the second floor sinks into the shaft where you land, and a guard slides at you on the roof: you have to
+        // outrun the crane before you can jump him
         // MECHANIC: Chase (the crane overhead, the guards on the floors)
         Level(
             name = T("Skyscraper", "Hochhaus"),
             intro = T("Top floor. The air is better up there.", "Oberste Etage. Da oben ist die Luft besser."),
             hint = T("The crane hates standing still. Don't jump under it: outrun it first.", "Der Kran hasst Stillstand. Spring nicht unter ihm: lauf ihm erst davon."),
-            legend = mapOf('S' to ceilingSpike, 'A' to hiddenSpike),
+            legend = mapOf('S' to ceilingSpike),
             traps = listOf(
-                trap(PastX(4f), Play(Card.STALKER), Chase('S', 5.5f, left = 9f, right = 26f), Say(T("The crane operator likes you. He follows you home.", "Der Kranführer mag dich. Er begleitet dich bis nach oben."))),
-                trap(Landed(16f, 19.5f), Show('A'), Say(T("Rivets grow on the second floor.", "Im zweiten Stock wachsen Nieten."))),
+                trap(PastX(4f), Chase('S', 5.5f, left = 9f, right = 26f), Say(T("The crane operator likes you. He follows you home.", "Der Kranführer mag dich. Er begleitet dich bis nach oben."))),
+                trap(Landed(16f, 19.5f), Play(Card.SINKING), Move('p', 0f, 10f, 9f), Say(T("Second floor: show flat. The floor is a sample.", "Zweiter Stock: Musterwohnung. Der Boden ist ein Muster.")), delay = 0.3f),
                 trap(Zone(21f, 3f, 26.5f, 5.6f), Chase('T', 3.2f, left = 0f, right = 12f), Say(T("Night watch on the roof. Very thorough.", "Nachtwache auf dem Dach. Sehr gründlich."))),
                 trap(Idle(0.6f), Move('S', 0f, 11f, 30f), Say(T("I said keep moving. It's a crane, not a bench.", "Ich sagte: in Bewegung bleiben. Das ist ein Kran, keine Bank."))),
             ),
@@ -78,9 +77,9 @@ object World1Part2 {
             fill(4..9, 13..14); fill(10..15, 11..14); fill(16..30, 9..14); fill(27..30, 7..8)
             fill(2..26, 5..5)
             fill(9..11, 1..2, 'S')
-            put(20, 8, 'A')
+            fill(20..21, 9..17, 'p')
             fill(14..15, 4..4, 'T')
-            put(2, 14, 'P'); put(2, 4, 'D')
+            put(2, 14, 'P'); put(12, 4, 'D')
         },
 
         // 27 — the answer: 0b101010. A cosmic ray flips bits in the floor: the floor ahead goes 111111 -> 101010, and when you land on the
@@ -92,7 +91,7 @@ object World1Part2 {
             hint = T("Ones become zeroes and zeroes become ones. Keep walking.", "Einsen werden zu Nullen und Nullen zu Einsen. Geh einfach weiter."),
             traps = listOf(
                 trap(PastX(4.5f), Shake(0.5f)),
-                trap(PastX(4.5f), Play(Card.COLLAPSE), Hide('b'), Hide('d'), Hide('f'), Say(T("Bit flip! Cosmic ray. Not my fault.", "Bit gekippt! Kosmische Strahlung. Nicht meine Schuld.")), delay = 0.3f),
+                trap(PastX(4.5f), Play(Card.CRUMBLE), Hide('b'), Hide('d'), Hide('f'), Say(T("Bit flip! Cosmic ray. Not my fault.", "Bit gekippt! Kosmische Strahlung. Nicht meine Schuld.")), delay = 0.3f),
                 trap(Landed(11f, 13.99f), Hide('e'), Show('b'), Show('d'), Show('f'), Shake(0.5f), Say(T("And back. Zero is one now.", "Und zurück. Null ist jetzt eins."))),
                 trap(Landed(11f, 13.99f), Hide('c'), delay = 0.6f),
                 trap(Landed(20f, 22.99f), Hide('f'), Say(T("Six times nine, in base 13.", "Sechs mal neun, zur Basis 13.")), delay = 0.45f),
@@ -119,27 +118,27 @@ object World1Part2 {
                 trap(PastX(2f), Play(Card.DEVIL_SAW), PathSaw(5.5f, 11f to 14.4f, 5f to 14.4f, 5f to 10.8f, 11f to 10.8f, loop = true), Say(T("Pommel horse. The saw does the laps.", "Pauschenpferd. Die Säge dreht die Runden."))),
                 trap(PastX(12f), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 0.9f), Say(T("Jump rope. You skip, the saw does not.", "Seilspringen. Du hüpfst, die Säge nicht."))),
                 trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f), Say(T("Wall bars. Somebody is right behind you.", "Sprossenwand. Hinter dir steht schon einer."))),
-                trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 6f to 8.4f), Say(T("Cool-down lap. The saw cools down too. Eventually.", "Auslaufen. Die Säge läuft sich auch aus. Irgendwann."))),
+                trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 6f to 8.4f, 16f to 8.4f), Say(T("Cool-down lap. The saw cools down too. Eventually.", "Auslaufen. Die Säge läuft sich auch aus. Irgendwann."))),
             ),
             rematch = listOf(
                 Round(
                     T("Rematch. Evening class: the horse is hot now.", "Revanche. Abendkurs: Das Pferd ist jetzt heiß."),
                     hint = T("Let the saw pass before you mount. The jump rope is a motion sensor now: wait until the beam is dark. Mind the gap in the balcony.", "Lass die Säge vorbei, bevor du aufsteigst. Das Seil ist jetzt ein Bewegungsmelder: Warte, bis der Strahl dunkel ist. Achtung, Lücke im Balkon."),
                     traps = listOf(
-                        trap(PastX(3.2f), Play(Card.GRAND_FINALE), PathSaw(5.5f, 5f to 11.9f, 11f to 11.9f, 11f to 14.4f, 5f to 14.4f, loop = true), Say(T("Evening class. Same horse, sharper lap.", "Abendkurs. Gleiches Pferd, schärfere Runde."))),
+                        trap(PastX(3.2f), Play(Card.DEVIL_SAW), PathSaw(5.5f, 5f to 11.9f, 11f to 11.9f, 11f to 14.4f, 5f to 14.4f, loop = true), Say(T("Evening class. Same horse, sharper lap.", "Abendkurs. Gleiches Pferd, schärfere Runde."))),
                         trap(PastX(12f), Laser('A', 17 to 10, 17 to 14, on = 0.9f, off = 1.6f, delay = 0.2f), Say(T("Motion sensor installed. Please do not exercise.", "Bewegungsmelder installiert. Bitte nicht bewegen."))),
                         trap(Landed(22f, 25.9f), Saw(-1.5f, 12.4f, 14f, 0f, 0.62f)),
                         trap(Zone(17f, 6f, 25.9f, 9f), PathSaw(8f, 16f to 8.4f, 22f to 8.4f), PathSaw(8f, 3f to 8.4f, 7f to 8.4f),
                             Say(T("Two saws on the balcony. And a gap. Enjoy.", "Zwei Sägen auf dem Balkon. Und eine Lücke. Viel Spaß."))),
                     ),
-                ) { fill(12..13, 9..9, '.') },
+                ) { fill(14..15, 9..9, '.') },
             ),
         ) {
             border(); floor()
             fill(7..9, 13..14)
             fill(22..25, 13..14); fill(26..30, 11..14)
             fill(2..25, 9..9)
-            put(1, 14, 'P'); put(2, 8, 'D')
+            put(1, 14, 'P'); put(12, 8, 'D')
         },
 
         // 29 — hike: a treadmill takes you the wrong way through the mountain, a rock follows you along the tunnel, the belt speeds up twice
@@ -152,7 +151,7 @@ object World1Part2 {
             legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(Belt('b', -4.5f)),
             traps = listOf(
-                trap(PastX(7f), Play(Card.SINKING), Move('W', 28f, 0f, 1.5f), Say(T("A rock follows you. Not a big one. Yet.", "Ein Fels folgt dir. Kein großer. Noch nicht."))),
+                trap(PastX(7f), Play(Card.COLLAPSE), Move('W', 28f, 0f, 1.5f), Say(T("A rock follows you. Not a big one. Yet.", "Ein Fels folgt dir. Kein großer. Noch nicht."))),
                 trap(PastX(10.5f), Belt('b', -5.6f), Say(T("Treadmill, level two. Don't mind the incline.", "Laufband, Stufe zwei. Die Steigung ignorierst du einfach."))),
                 trap(PastX(15.5f), Belt('b', -6.0f), Say(T("Level three. The mountain is slightly steeper here.", "Stufe drei. Der Berg ist hier etwas steiler."))),
                 trap(PastX(18.8f), Move('p', 1f, 0f, 6f), Say(T("The first stone leaves. It has a train to catch.", "Der erste Stein verabschiedet sich. Er hat einen Zug."))),
@@ -176,17 +175,18 @@ object World1Part2 {
             intro = T("I'm about to play something. Go on ahead.", "Ich spiele gleich was. Geh ruhig schon vor."),
             hint = T("Let every stack land before you climb it. On the last step the keys swap.", "Lass jeden Stapel erst landen, bevor du hochkletterst. Auf der letzten Stufe tauschen die Tasten."),
             traps = listOf(
-                trap(PastX(8f), Play(Card.HEADBUTT), Fall('a'), Say(T("Next piece: staircase.", "Nächster Stein: Treppe."))),
+                trap(PastX(8f), Fall('a'), Say(T("Next piece: staircase.", "Nächster Stein: Treppe."))),
+                trap(PastX(8f), Fall('g'), Say(T("Next piece: you. Keep stacking.", "Nächster Stein: du. Weiterstapeln.")), delay = 1.3f),
                 trap(Landed(11f, 15f), Fall('b'), Say(T("That doesn't fit. Dropping it anyway.", "Das passt nicht. Ich lasse ihn trotzdem fallen."))),
                 trap(Landed(11f, 15f), Fall('c'), delay = 0.4f),
                 trap(Landed(15f, 19f), Fall('d'), Say(T("Level up. Gravity doubled.", "Level up. Schwerkraft verdoppelt."))),
                 trap(Landed(15f, 19f), Fall('e'), delay = 0.4f),
                 trap(Landed(15f, 19f), Fall('f'), delay = 0.8f),
-                trap(Landed(19f, 23f), Swap(true), Say(T("Player two joins. Player one's keys are now player two's.", "Spieler zwei steigt ein. Die Tasten von Spieler eins gehören jetzt ihm."))),
+                trap(Landed(19f, 23f), Play(Card.TWISTED), Swap(true), Say(T("Player two joins. Player one's keys are now player two's.", "Spieler zwei steigt ein. Die Tasten von Spieler eins gehören jetzt ihm."))),
             ),
         ) {
             border(); floor()
-            fill(11..14, 1..2, 'a')
+            fill(11..14, 1..2, 'a'); fill(7..9, 1..2, 'g')
             fill(15..18, 3..4, 'b'); fill(15..18, 1..2, 'c')
             fill(19..22, 5..6, 'd'); fill(19..22, 3..4, 'e'); fill(19..22, 1..2, 'f')
             fill(24..30, 8..14)
@@ -195,26 +195,27 @@ object World1Part2 {
 
         // 31 — meadow, and the door is on the left: the short way is the river, the island in the middle looks like a picnic spot, and the
         // moment you head for the bank mowers start to bob up and down in the water. The way is the long one, up the stairs and along the
-        // upper meadow, where a mower swings across the first gap, the middle stretch crumbles under you and a second swing waits at the last gap
+        // upper meadow, where a mower swings across the first gap, a beehive drops on whoever stops on the middle stretch, and a second
+        // swing waits at the last gap
         // MECHANIC: PathSaw (the mowers in the river, the swings on the upper meadow)
         Level(
             name = T("Meadow", "Wiesengrund"),
             intro = T("Sunny day. Birds singing. Nothing with teeth.", "Sonniger Tag. Vögel zwitschern. Nichts mit Zähnen."),
             hint = T("The river is for mowers. Take the stairs, and keep moving on the upper meadow.", "Der Fluss gehört den Mähern. Nimm die Treppe, und bleib oben in Bewegung."),
             traps = listOf(
-                trap(BeforeX(24.6f), Play(Card.DEVIL_SAW), PathSaw(7f, 20f to 17.4f, 20f to 12.6f), PathSaw(7f, 12f to 17.4f, 12f to 12.6f, delay = 0.5f),
+                trap(BeforeX(24.6f), PathSaw(7f, 20f to 17.4f, 20f to 12.6f), PathSaw(7f, 12f to 17.4f, 12f to 12.6f, delay = 0.5f),
                     Say(T("Sunbathers, please leave the water. The mowers are in.", "Sonnenanbeter bitte das Wasser verlassen. Die Mäher sind drin."))),
-                trap(Touch('i'), Fall('i'), Say(T("Picnic is over. The blanket too.", "Das Picknick ist vorbei. Die Decke auch.")), delay = 0.9f),
-                trap(Touch('k'), Fall('k'), Say(T("The far bank is a lawn on loan.", "Das andere Ufer ist ein Rasen auf Pump.")), delay = 0.6f),
+                trap(Touch('i'), Move('i', 0f, 6f, 14f), Say(T("Picnic is over. The blanket too.", "Das Picknick ist vorbei. Die Decke auch.")), delay = 0.9f),
+                trap(Touch('k'), Move('k', 0f, 6f, 14f), Say(T("The far bank is a lawn on loan.", "Das andere Ufer ist ein Rasen auf Pump.")), delay = 0.6f),
                 trap(BeforeX(22f), PathSaw(8f, 16.5f to 8.8f, 16.5f to 2.0f, delay = 0.2f), Say(T("Swing set. Please take turns.", "Schaukel. Bitte der Reihe nach."))),
-                trap(Touch('u'), Fall('u'), Say(T("The upper meadow is a bit loose.", "Die obere Wiese ist etwas locker.")), delay = 0.35f),
+                trap(Landed(12.5f, 16.5f), Play(Card.HEADBUTT), Move('h', 0f, 4f, 14f), Say(T("A beehive. Organic, local, falling.", "Ein Bienenstock. Bio, regional, fallend."))),
                 trap(BeforeX(11.5f), PathSaw(12f, 6f to 12.5f, 6f to 2.0f), Say(T("Second swing. Same rules.", "Zweite Schaukel. Gleiche Regeln."))),
             ),
         ) {
             border(); floor(); pit(1..22)
             fill(16..18, 15..15, 'i')
             fill(27..28, 13..14); fill(25..26, 11..14); fill(23..24, 9..14); fill(21..22, 7..14)
-            fill(17..20, 7..7); fill(13..15, 7..7, 'u'); fill(1..10, 7..7); fill(6..7, 15..17, 'k')
+            fill(17..20, 7..7); fill(13..15, 7..7, 'u'); fill(1..10, 7..7); fill(6..7, 15..17, 'k'); fill(14..15, 1..2, 'h')
             put(30, 14, 'P'); put(2, 6, 'D')
         },
 
@@ -235,7 +236,7 @@ object World1Part2 {
                 trap(Touch('f'), Fall('f'), Say(T("You stood on it. That's a regression.", "Du standest drauf. Das ist ein Rückschritt.")), delay = 1.2f),
                 trap(Pressed('1'), Saw(31.5f, 14.4f, -5.5f, 0f, 0.62f), Say(T("Switch accepted. Known issue: the saw.", "Schalter angenommen. Bekanntes Problem: die Säge."))),
                 trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14)),
-                trap(Touch('g'), Fall('g'), Say(T("Stable build. Not.", "Stabiler Build. Nicht.")), delay = 1.7f),
+                trap(Touch('g'), Fall('g'), Say(T("Stable build. Not.", "Stabiler Build. Nicht.")), delay = 1.3f),
                 trap(Touch('e'), Fall('e'), Say(T("Hotfix: the floor.", "Hotfix: der Boden.")), delay = 1.0f),
                 trap(PastX(roomX(1, 14.5f)), Saw(roomX(1, 31.5f), 14.4f, -5f, 0f, 0.62f), Say(T("Second room, second build. Same bugs.", "Zweiter Raum, zweiter Build. Dieselben Fehler."))),
             ),
