@@ -126,16 +126,18 @@ object World3PartE {
             spawn(30, 14); door(1, 14)
         },
 
-        // 36 — Air Cushion (trap room, U6)
+        // 36 — Air Cushion (trap room, U6): sink down the draft past bars that slide out of alternating walls, hop the pin along the floor,
+        // and do not wait for it on the stretch of floor that is only on loan: it sinks under whoever stands on it.
         Level(
             name = T("Air Cushion", "Luftkissen"),
             intro = T("Soft landing guaranteed.", "Weiche Landung garantiert."),
             start = listOf(Fan('d', at = 8 to 0, dir = Dir.DOWN, reach = 15, speed = 3f, width = 6)),
             traps = listOf(
-                trap(Zone(8f, 3f, 14f, 5.5f), Play(Card.COLLAPSE), Move('A', 3.5f, 0f, 5f), say("The walls have teeth. They are shy.", "Die Wände haben Zähne. Sie sind schüchtern.")),
+                trap(Zone(8f, 3f, 14f, 5.5f), Move('A', 3.5f, 0f, 5f), say("The walls have teeth. They are shy.", "Die Wände haben Zähne. Sie sind schüchtern.")),
                 trap(Zone(8f, 7f, 14f, 8.5f), Move('B', -4f, 0f, 5f), say("Other side now. Mind the draft.", "Jetzt die andere Seite. Vorsicht, Zugluft.")),
                 trap(Zone(8f, 11.9f, 14f, 12.6f), Move('E', 2.5f, 0f, 5f), say("And back to the first side. Teeth come in rows.", "Und zurück zur ersten Seite. Zähne kommen in Reihen.")),
-                trap(Landed(8f, 16f), Move('C', -9f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
+                trap(Landed(8f, 16f), Move('C', -14f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
+                trap(Touch('k'), Play(Card.COLLAPSE), Move('k', 0f, 6f, 3f), say("This bit of floor is on loan. No waiting for pins on it.", "Dieses Stück Boden ist geliehen. Hier wartet keiner auf Stifte."), delay = 0.2f),
             ),
             hint = T("The bars come from alternating sides. Keep moving across the shaft as you sink, and hop the last one along the floor.", "Die Balken kommen abwechselnd von beiden Seiten. Wechsle im Schacht die Seite, während du sinkst, und hüpf unten über den letzten."),
         ) {
@@ -145,6 +147,7 @@ object World3PartE {
             fill(5..7, 7..7, 'A')
             fill(14..17, 10..10, 'B'); fill(5..7, 13..13, 'E')
             put(30, 14, 'C')
+            pit(20..22); fill(20..22, 15..15, 'k')
             spawn(1, 3); door(29, 14)
         },
 
@@ -158,10 +161,10 @@ object World3PartE {
                 Fan('u', at = 22 to 17, dir = Dir.UP, reach = 12, speed = 4f, width = 5), Power('u', false),
             ),
             traps = listOf(
-                trap(PastX(5f), Play(Card.SINKING), Move('W', 24f, 0f, 3.2f), say("Break time is over. Everyone out.", "Pause vorbei. Alle raus.")),
+                trap(PastX(5f), Move('W', 24f, 0f, 3.2f), say("Break time is over. Everyone out.", "Pause vorbei. Alle raus.")),
                 trap(PastX(9f), FanSet('w', 4.8f), say("Coffee break: the draft takes five.", "Kaffeepause: Der Zug macht fünf Minuten.")),
                 trap(PastX(19f), Power('u', true), say("The lift only runs for passengers.", "Der Aufzug fährt nur für Fahrgäste.")),
-                trap(Landed(19f, 21.9f), Move('f', 0f, 3f, 6f), say("Do not linger at the lift. The floor has a schedule too.", "Nicht am Aufzug trödeln. Der Boden hat auch einen Fahrplan."), delay = 0.45f),
+                trap(Landed(19f, 21.9f), Play(Card.SINKING), Move('f', 0f, 3f, 6f), say("Do not linger at the lift. The floor has a schedule too.", "Nicht am Aufzug trödeln. Der Boden hat auch einen Fahrplan."), delay = 0.45f),
             ),
             hint = T("The headwind rests in rhythm. Sprint while it rests, and do not stop at the lift.", "Der Gegenwind ruht im Takt. Sprinte, solange er ruht, und trödle nicht am Aufzug."),
         ) {
