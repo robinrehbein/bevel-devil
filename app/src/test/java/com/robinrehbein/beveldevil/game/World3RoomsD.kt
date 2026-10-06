@@ -31,7 +31,7 @@ object World3RoomsD {
                 .leftTo(27.8f).leftJump(0.5f).landLeft()
                 .leftTo(24.0f).leftJump(0.5f).landLeft().waitCooled('d', 0.05f)
                 .leftUntil { it.player.grounded && it.player.box.b > 10.5f }
-                .leftTo(16.6f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(0.8f) },
+                .leftTo(16.6f).leftJump(0.5f).landLeft().left(0.5f) },
         ),
         30 to listOf<Solution>(
             // climb on (the second step sinks), hop the pin on the shelf, let the test pattern sink (the pin behind is slow), walk to the door

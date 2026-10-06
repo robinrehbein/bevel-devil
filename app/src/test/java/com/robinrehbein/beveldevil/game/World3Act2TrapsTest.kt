@@ -16,8 +16,10 @@ class World3Act2TrapsTest {
     fun actTwoAveragesAlmostThreeTrapsPerLevel() {
         val traps = World3Part2.levels.sumOf { it.traps.size }
         assertTrue("only $traps traps in act two", traps >= 46)
-        // a level may have more trap entries than moments: a door that flees in several hops is one moment of three entries (level 20)
-        assertTrue(World3Part2.levels.all { it.traps.size in 2..7 })
+        // a level may have more trap entries than moments: a door that flees in several hops is one moment of three entries (level 20);
+        // the act finale (32) runs three rooms and may have a couple more
+        assertTrue(World3Part2.levels.dropLast(1).all { it.traps.size in 2..7 })
+        assertTrue(World3Part2.levels.last().traps.size in 2..9)
     }
 
     // 18, 20, 21 and 22 are the rebuilt block C: what each one does to the player who plays it the obvious way

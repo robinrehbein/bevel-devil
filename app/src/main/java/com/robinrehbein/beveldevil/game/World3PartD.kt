@@ -254,7 +254,7 @@ object World3PartD {
         // on whoever is still there a moment later (stand just long enough to cool, then cross; running over the sink is not enough). A second crane hangs
         // over the first tile of the chip and falls on whoever stops there. Out of the chip lane, on to a step: a crane comes down on it a moment after you
         // land (keep going), back left onto a shelf, up onto a block that is the second heatsink (a second chip, a second crane that falls on whoever
-        // stays), over the chip on the shelf and up two steps to the door.
+        // stays), over the chip on the shelf and up one step to the door (in the middle of the room, not above the start).
         Level(
             name = T("Pit Stop", "Boxenstopp"),
             intro = T("Grab a heatsink. They're all trustworthy.", "Nimm ruhig einen Kühlkörper. Alle vertrauenswürdig."),
@@ -266,7 +266,7 @@ object World3PartD {
                 trap(Touch('k'), Play(Card.STALKER), Chase('s', 6f, left = 4f, right = 16f), HeatSpike('c', 1f), say("The crane is a stalker. Not a very good one.", "Der Kran ist ein Verfolger. Kein besonders guter.")),
                 trap(Touch('k'), Move('s', 0f, 12.6f, 22f), delay = 0.9f),
                 trap(Zone(12.6f, 13f, 13.6f, 15.2f), Move('y', 0f, 12.6f, 30f), say("Pit lane rule one: do not stand in the pit lane.", "Boxengassen-Regel eins: nicht in der Boxengasse stehen.")),
-                trap(Landed(26f, 31f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 0.9f),
+                trap(Landed(26f, 31f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 0.5f),
                 trap(Touch('l'), Move('t', 0f, 7f, 22f), say("Second heatsink. Second crane. Same warranty.", "Zweiter Kühlkörper. Zweiter Kran. Gleiche Garantie."), delay = 0.8f),
             ),
             hint = T("The heatsink cools the chip only while you stand on it. Stay just long enough: the crane follows you.", "Der Kühlkörper kühlt den Chip nur, solange du draufstehst. Bleib nur kurz: Der Kran folgt dir."),
@@ -277,7 +277,7 @@ object World3PartD {
             fill(14..15, 9..10); fill(10..13, 7..8)
             fill(27..30, 13..14)
             fill(9..11, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u'); fill(12..13, 1..1, 'y')
-            spawn(1, 14); door(10, 6)
+            spawn(1, 14); door(14, 8)
         },
 
         // 32 — act finale (R11 cool the chip, R1 a pad; U17 heat, U2 the ceiling, U18 the room goes on, twice). Room one: a live wall of copper stands where the plateau
@@ -291,16 +291,18 @@ object World3PartD {
             intro = T("Act two finale. Everything is hot. Including me.", "Finale, Akt zwei. Alles ist heiß. Ich auch."),
             rooms = 3,
             start = listOf(
-                Circuit('W'), Pad('1', at = 13 to 11, circuits = "W"),
-                Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f),
+                Circuit('W'), Pad('1', at = 10 to 11, circuits = "W"),
+                Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f), Heat('h', rise = 1.3f, cool = 6f),
             ),
             traps = listOf(
                 trap(Pressed('1'), Heat('c', rise = 2f, load = true), say("Wall cut. Core on. Everything is fine. Run.", "Wand aus. Kern an. Alles in Ordnung. Lauf.")),
                 trap(Zone(17.2f, 13f, 18.2f, 15.2f), Fall('r'), say("Insulation: on the house. Mind your head.", "Dämmung: aufs Haus. Kopf einziehen."), delay = 0.1f),
                 trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 29) to 14)),
                 trap(Zone(roomX(1, 4.4f), 13f, roomX(1, 5.6f), 15.2f), Fall('q'), say("The plates are warm. The ceiling noticed.", "Die Platten sind warm. Die Decke hat es gemerkt."), delay = 0.75f),
+                trap(Zone(roomX(1, 20.3f), 13f, roomX(1, 22.5f), 15.2f), HeatSpike('h', 0.5f), say("Behind the slab the floor is warm too. Keep moving.", "Hinter der Platte ist der Boden auch warm. In Bewegung bleiben.")),
                 trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Did you think the reactor was one room?", "Dachtest du, der Reaktor ist ein Raum?"))),
                 trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
+                trap(PastX(roomX(2, 21.5f)), Fall('z'), say("The control rods drop. Behind you, if you are quick.", "Die Steuerstäbe fallen. Hinter dir, wenn du schnell bist."), delay = 0.15f),
                 trap(PastX(roomX(2, 25f)), say("The exit. Finally. It is warm, too.", "Der Ausgang. Endlich. Auch der ist warm.")),
             ),
             hint = T("The pad on the plateau cuts the wall and starts the chip: run across right after it. Beyond each door there is more room.", "Der Knopf auf dem Plateau schaltet die Wand ab und startet den Chip: lauf gleich danach drüber. Hinter jeder Tür ist noch Platz."),
@@ -309,7 +311,7 @@ object World3PartD {
                     T("Emergency shutdown. The roof is the hot part now.", "Notabschaltung. Das Dach ist jetzt der heiße Teil."),
                     hint = T("The roof is the chip now. Go underneath, cool down on the heatsink and press the pad. Do not wait where the ceiling falls.", "Das Dach ist jetzt der Chip. Geh darunter durch, kühl dich auf dem Kühlkörper ab und drück den Knopf. Warte nicht, wo die Decke fällt."),
                     start = listOf(
-                        Circuit('W'), Pad('1', at = 11 to 14, circuits = "W"),
+                        Circuit('W'), Pad('1', at = 6 to 14, circuits = "W"),
                         Heat('c', rise = 1.6f, load = true), Heatsink('k', cools = "c"), Heat('p', rise = 1.1f, load = true),
                         Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f), Heat('e', rise = 0.8f, cool = 6f),
                     ),
@@ -340,10 +342,10 @@ object World3PartD {
                 spawn(1, 14); door(29, 14)
             }
             room(1) {
-                fill(5..9, 15..15, 'g'); fill(14..17, 1..1, 'q')
+                fill(5..9, 15..15, 'g'); fill(14..17, 1..1, 'q'); fill(20..23, 15..15, 'h')
             }
             room(2) {
-                fill(10..12, 15..15, 'f')
+                fill(10..12, 15..15, 'f'); fill(22..24, 1..1, 'z')
             }
         },
 
