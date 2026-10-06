@@ -5,6 +5,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import com.robinrehbein.beveldevil.game.World1RoomsD.pieceLanded
+import com.robinrehbein.beveldevil.game.World1RoomsD.ropeUp
+import com.robinrehbein.beveldevil.game.World1RoomsE.ropeUp as ropeUpE
 
 /** One scripted solution per level of World 1 (48 levels, three acts of 16), played with the real physics. */
 class World1Test {
@@ -114,7 +116,7 @@ class World1Test {
             a is Action.FakeWin || a is Action.PauseTrap || a is Action.FrameCrack || a is Action.Flip || a is Action.Roll || a is Action.Ghost
         }
         assertTrue((World1Part1.levels + World1Part2.levels).none { l -> actions(l).any(meta) })
-        assertEquals(setOf("PauseTrap", "FrameCrack", "Flip", "Ghost"),
+        assertEquals(setOf("PauseTrap", "FrameCrack", "Flip"),
             World1Part3.levels.flatMap { l -> actions(l).filter(meta).map { it::class.simpleName!! } }.toSet())
     }
 
@@ -217,10 +219,17 @@ class World1Test {
     /** 12: walking home with swapped keys but without hopping meets the pit. */
     @Test fun level12WalkingIntoThePitDies() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().rightKeyLeftTo(11.5f).wait(1f).expect(WorldState.DEAD)
 
-    /** 13: the spikes in the ceiling are a bluff, the plain ceiling is not. */
-    @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)
-    @Test fun level13StandingUnderThePlainCeilingIsFatal() = b(13).rightTo(13.5f).wait(1f).expect(WorldState.DEAD)
-    @Test fun level13TheLoweringCeilingCatchesWhoeverStops() = b(13).rightTo(21.5f).wait(2f).expect(WorldState.DEAD)
+    /** 12: the keys come back on the landing behind the last spike, so the old swapped habit now walks back into the spike. */
+    @Test fun level12TheKeysComeBackOnTheLandingBehindTheLastSpike() {
+        val home = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).wait(0.1f)
+        assertFalse("the keys are straight again", home.world.swapped)
+        home.right(1.2f).expect(WorldState.DEAD)   // the old key walks back into the spike
+    }
+
+    /** 13: up on the floor the ceiling drops on whoever stops under it; down on the ground the spikes in the ceiling are a bluff, the plain ceiling is not. */
+    @Test fun level13StandingUnderTheCeilingOnTheUpperFloorIsFatal() = b(13).leftTo(22.8f).wait(1f).expect(WorldState.DEAD)
+    @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).leftTo(3.5f).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)
+    @Test fun level13StandingUnderThePlainCeilingIsFatal() = b(13).leftTo(3.5f).rightTo(13.5f).wait(1f).expect(WorldState.DEAD)
 
     /** 14: both lifts go too far, and the floor the first one leaves behind goes with it. */
     @Test fun level14TheFirstLiftCarriesYouIntoTheSpikes() = b(14).right(0.3f).wait(4f).expect(WorldState.DEAD)
@@ -371,9 +380,17 @@ class World1Test {
     @Test fun level35TheDoorFlees() = b(35).right(8f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
     @Test fun level35TheDoorComesBackDown() = b(35).also(World1DesignTest.SOLUTIONS.getValue(35)[0]).also { assertTrue(it.world.door.box.y > 12f) }.expect(WorldState.WON)
 
-    /** 36: pieces of the frame come down where you run. */
-    @Test fun level36RunningStraightOnMeetsTheFallingFrame() = b(36).right(3f).expect(WorldState.DEAD)
-    @Test fun level36HoppingOverTheFirstPieceLandsOnSpikes() = b(36).rightTo(6.5f).waitFor { it.pieceLanded(0, 5f) }.rightTo(7.9f).rightJump(0.5f).landRight().wait(0.5f).expect(WorldState.DEAD)
+    /** 36: the rope stops the runner, and so does the first piece of the frame when you run on under it instead of waiting for it. */
+    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+        .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight()
+    @Test fun level36RunningStraightOnMeetsTheRope() = b(36).right(3f).expect(WorldState.DEAD)
+    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun level36TheFirstPieceIsTheStepUpToTheLedge() {
+        val up = climbed36()
+        up.expect(WorldState.PLAYING)
+        assertTrue("up on the ledge, y=${up.world.player.box.b}", up.world.player.box.b < 12.5f)
+    }
+    @Test fun level36TheSecondPieceCrushesWhoRunsOnTheLedge() = climbed36().right(2f).expect(WorldState.DEAD)
 
     /** 37: standing still on the deleted floor is the end of you, and the step you leave is gone. */
     @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(9f).wait(4f).expect(WorldState.DEAD)
@@ -383,26 +400,52 @@ class World1Test {
     }
 
     /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen. */
-    @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).right(3f).expect(WorldState.DEAD)
+    @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).left(3f).expect(WorldState.DEAD)
     @Test fun level38TheOldKeyDoesNotGetYouUpTheStairs() {
-        val run = b(38).rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(3f)
-        assertTrue(run.world.player.box.cx < 24f)
+        val run = b(38).leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().left(3f)
+        assertTrue(run.world.player.box.cx > 8f)
     }
 
-    /** 39: the shelf only moves with the tilt of the phone. Without it, running on drops into the pit. */
-    @Test fun level39WithoutTiltTheShelfStaysPut() = b(39).rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightTo(10.6f).wait(2f)
-        .also { assertEquals(0f, it.world.group('a').ox, 0.01f) }.expect(WorldState.PLAYING)
+    /** 39: the shelf only moves with the tilt of the phone; the floor sample at the platform's edge is gone for a moment; the far bank gives way. */
+    private fun upTheStairs39() = b(39).rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightJump(0.45f).landRight()
+        .rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+    private fun onTheShelf39() = upTheStairs39().rightUntil { it.player.box.cx > 17.0f }.waitFor { it.group('h').visible }.rightUntil { it.player.box.cx > 23.0f }
+    @Test fun level39WithoutTiltTheShelfStaysPut() = onTheShelf39().wait(3f).also { assertEquals(0f, it.world.group('a').ox, 0.01f) }.expect(WorldState.PLAYING)
     @Test fun level39RunningUnderTheTileIsFatal() = b(39).right(3f).expect(WorldState.DEAD)
+    @Test fun level39RunningOnOverTheFloorSampleIsFatal() = upTheStairs39().rightUntil { it.player.box.cx > 17.0f }.right(3f).expect(WorldState.DEAD)
+    @Test fun level39TheFarBankGivesWayAsYouRideIn() = onTheShelf39().tilt(1f).waitFor { it.group('a').ox >= 2.9f }.rightUntil { it.player.box.cx > 25.5f }.right(2f).expect(WorldState.DEAD)
 
     /** 40: after the panic the keys are swapped, so holding right runs back to the start. */
     @Test fun level40HoldingRightRunsBack() = b(40).right(5f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 5f) }.expect(WorldState.PLAYING)
     @Test fun level40TheMemoryTestBeamStopsTheRunner() = b(40).rightUntil { it.swapped }.leftKeyRightTo(25f).expect(WorldState.DEAD)
+    /** 40: the keys come back at the end of the shelf and swap again on the ground floor: the old reflex runs into the pit. */
+    @Test fun level40TheKeysSwapAgainOnTheGroundFloor() {
+        val run = b(40).rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
+            .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+        assertTrue(run.world.swapped)
+        run.leftTo(8f).expect(WorldState.PLAYING)
+        assertTrue("the old key now runs away from the door, x=${run.world.player.box.cx}", run.world.player.box.cx > 18f)
+    }
+    @Test fun level40ThePitOnTheGroundIsReal() = b(40).rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }
+        .leftKeyRightTo(21.0f).leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+        .rightKeyLeftTo(3.2f).expect(WorldState.DEAD)
     // ---------- Act 3, levels 41-48 (block E): rebuilt, their clean run is the registered solution (World1RoomsE); the rematches of 42, 46, 47 and 48 are in World1DeckTest ----------
     @Test fun level41() = World1DesignTest.play(41)
     @Test fun level42() = World1DesignTest.play(42)
     @Test fun level43() = World1DesignTest.play(43)
+
+    /** 43: the wall behind the pad, then the lift: waiting at its foot is being run over, staying on it is riding into the spikes. */
+    private fun toTheLift43() = b(43).rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f)
+        .waitFor { it.ropeUpE(18f, 0.2f, 0.3f) }
+    @Test fun level43WaitingAtTheFootOfTheLiftIsBeingRunOver() = toTheLift43().rightTo(23.5f).wait(3f).expect(WorldState.DEAD)
+    @Test fun level43StayingOnTheLiftRidesIntoTheSpikes() = toTheLift43().rightTo(25.5f).wait(4f).expect(WorldState.DEAD)
     @Test fun level44() = World1DesignTest.play(44)
     @Test fun level45() = World1DesignTest.play(45)
+
+    /** 45: the top floor is deleted ahead of you, and the shelf under it is all spikes; on the ground the next pieces go the same way. */
+    @Test fun level45RunningStraightOnFallsOntoTheSpikeShelf() = b(45).left(2.5f).expect(WorldState.DEAD)
+    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
+    @Test fun level45StartingByRunningRightGoesNowhere() = b(45).right(4f).also { assertTrue(it.world.player.box.cx > 29f) }.expect(WorldState.PLAYING)
     @Test fun level46() = World1DesignTest.play(46)
     @Test fun level47() = World1DesignTest.play(47)
     @Test fun level48() = World1DesignTest.play(48)

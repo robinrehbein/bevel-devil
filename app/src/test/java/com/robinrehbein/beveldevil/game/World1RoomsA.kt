@@ -13,12 +13,13 @@ object World1RoomsA {
                 .rightTo(26.2f).rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightTo(30.5f)
                 .leftJump(0.35f).landLeft().leftTo(1.5f) },
         ),
-        // 8: hop the spike, let the room turn over, along the ceiling past the stalactites to the door above the start; rematch: jump near the wall
+        // 8: hop the spike, let the room turn over, along the ceiling past the stalactites to the door above the start; rematch: the room is mirrored,
+        // hop the spike running left, jump near the left wall, along the ceiling to the right
         8 to listOf<Solution>(
             { hopR(19.5f, 0.5f).rightTo(25.5f).landRight().leftTo(17.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
                 .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
-            { hopR(19.5f, 0.5f).rightTo(27.3f).rightJump(0.5f).landRight().leftTo(13.1f).leftJump(0.5f).landLeft().leftTo(1.5f)
-                .rightUntil { it.player.grounded && it.gravity < 0f }.rightTo(2.8f) },
+            { hopL(23.5f, 0.5f).leftTo(4.7f).leftJump(0.5f).landLeft().rightTo(18.9f).rightJump(0.5f).landRight().rightTo(30.5f)
+                .leftUntil { it.player.grounded && it.gravity < 0f }.leftTo(29.2f) },
         ),
         // 9: across the deck past the pothole with swapped keys, onto the switch, home along the floor
         9 to listOf<Solution>(
@@ -38,13 +39,12 @@ object World1RoomsA {
         ),
         // 12: hop the spike, then walk home with swapped keys; rematch: swapped from the first steps
         12 to listOf<Solution>(
-            { leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
+            { leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).left(1.2f) },
             { leftUntil { it.swapped }.hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
         ),
-        // 13: straight through under the ceiling bits, stairs, back along the upper floor
+        // 13: along the upper floor under the dropping ceiling, off its end, back along the ground floor to the door
         13 to listOf<Solution>(
-            { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
-                .leftJump(0.5f).landLeft().leftTo(1.5f) },
+            { leftTo(3.5f).rightTo(28.0f).right(1.5f) },
         ),
         // 14: ride the first lift to the upper floor and step off, hop the saw, ride the second lift down and step off
         14 to listOf<Solution>(

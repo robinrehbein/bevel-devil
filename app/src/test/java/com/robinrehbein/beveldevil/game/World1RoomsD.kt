@@ -33,34 +33,34 @@ object World1RoomsD {
             { rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
                 .left(3f) },
         ),
-        // 36: let the first piece land, climb on it and hop off its far end over the spikes, up the stairs, back along the upper floor,
-        // let the second piece land and hop it
+        // 36: let the rope go up and hop it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
+        // hop it; the curator puts you back a second, so hop it again
         36 to listOf<Solution>(
-            { rightTo(6.5f).waitFor { it.pieceLanded(0, 5f) }.rightTo(7.2f).rightJump(0.3f).landRight().rightTo(10.6f).rightJump(0.5f).landRight()
-                .rightTo(19.3f).rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
-                .leftTo(25.8f).leftJump(0.5f).landLeft().waitFor { it.pieceLanded(1, 8f) }.leftTo(20.8f).leftJump(0.4f).landLeft()
-                .leftTo(13.4f).leftJump(0.4f).landLeft().left(4f) },
+            { rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+                .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight().waitFor { it.pieceLanded(1, 11f) }
+                .hopR(24.6f, 0.4f).rightUntil(2f) { it.player.box.cx < 24f }.hopR(24.6f, 0.4f).rightTo(29.6f) },
         ),
-        // 40: the keys swap at the first steps: wait for the first beam to go dark, cross, up the stairs (the keys come back on the last
-        // step), back along the upper floor once the second beam is dark
+        // 40: the keys swap at the first steps: wait for the beam to go dark, cross, the keys come back at the end of the shelf, drop down the
+        // shaft, run back along the ground floor; the keys swap again halfway (reboot) and the pit is hopped with them
         40 to listOf<Solution>(
-            { rightUntil { it.swapped }.leftKeyRightTo(13.6f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
-                .leftJump(0.5f).landLeft().leftKeyRightTo(26.0f).leftJump(0.5f).landLeft().leftTo(29.9f).leftJump(0.5f).landLeft()
-                .leftTo(17.4f).waitFor { w -> !w.beams.any { it.laser.id == 'B' && it.lit } }.left(5f) },
+            { rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
+                .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
+                .hopSL(13.6f, 0.4f).rightKeyLeftTo(3.2f).right(1f) },
         ),
-        // 39: let the ceiling tile land and hop it, board the shelf, tilt and ride it across, jump off its end onto the stairs, up, back along
-        // the upper floor, let the second tile land and hop it
+        // 39: let the ceiling tile land and hop it, up the stairs to the upper floor, hop the piece that gives way, board the shelf, tilt and ride it
+        // across, jump off its end over the bank that gives way onto the ledge with the door
         39 to listOf<Solution>(
-            { rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightTo(10.6f).tilt(1f)
-                .waitFor { it.group('a').ox >= 6.9f }.rightTo(19.2f).rightJump(0.5f).landRight().rightTo(26.0f).rightJump(0.5f).landRight()
-                .leftTo(29.9f).leftJump(0.5f).landLeft().left(6f) },
+            { rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+                .rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+                .rightUntil { it.player.box.cx > 17.0f }.waitFor { it.group('h').visible }.rightUntil { it.player.box.cx > 23.0f }
+                .tilt(1f).waitFor { it.group('a').ox >= 2.9f }.rightUntil { it.player.box.cx > 26.0f }.rightJump(0.5f).landRight().right(3f) },
         ),
         // 38: hop the oncoming saw, let the picture turn, flee the second saw to the stairs with the mirrored keys, climb, the picture is
         // back: leave step 2 to the upper floor, let the rope go up, hop home
         38 to listOf<Solution>(
-            { rightUntilSaw(4.5f).rightJump(0.5f).landRight().waitFor { it.viewTurn() >= 0.5f }
-                .hopS(22.4f, 0.5f).leftKeyRightTo(25.0f).leftJump(0.5f).landLeft()
-                .waitFor { it.viewTurn() < 0.5f }.leftTo(29.9f).leftJump(0.5f).landLeft().waitFor { it.ropeUp(14f, 0.35f) }.left(4f) },
+            { leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().waitFor { it.viewTurn() >= 0.5f }
+                .hopSL(9.6f, 0.5f).rightKeyLeftTo(7.0f).rightJump(0.5f).landRight()
+                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(4f) },
         ),
         // 37: run ahead of the deleted floor, hop up the first step (it is deleted behind you) onto the second, back along the upper floor;
         // rematch: hop the stones over the pits that were opened ahead, without staying on any

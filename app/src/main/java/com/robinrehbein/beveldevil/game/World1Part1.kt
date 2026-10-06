@@ -220,17 +220,19 @@ object World1Part1 {
                 trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Ah, the door. Let me get that for you.", "Ah, die Tür. Lass mich dir helfen."))),
                 trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Kidding.", "War nur ein Scherz."))),
             ),
-            // rematch: walking in turns nothing over any more, only a jump does; the stalactites moved
+            // rematch: Mephi mirrored the room: you start on the right and the door hangs over the start; walking in turns nothing over
+            // any more, only a jump near the left end does, and the way back along the ceiling leads to the right
             rematch = listOf(
                 Round(
-                    T("Rematch. Gravity is opt-in now.", "Revanche. Schwerkraft nur noch auf Antrag."),
+                    T("Rematch. I mirrored the room. Gravity is opt-in now.", "Revanche. Ich habe den Raum gespiegelt. Schwerkraft nur noch auf Antrag."),
+                    hint = T("The room is mirrored: you start on the right, and the door hangs over the start. Gravity only turns when you jump at the left end.", "Der Raum ist gespiegelt: Du startest rechts, und die T\u00fcr h\u00e4ngt \u00fcber dem Start. Die Schwerkraft dreht sich nur, wenn du am linken Ende springst."),
                     traps = listOf(
-                        trap(Airborne(27f, 31f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur für Springer."))),
-                        trap(Zone(13.5f, 0.5f, 16.5f, 2.6f), Show('S')),
-                        trap(Zone(6f, 0.5f, 8f, 2.6f), Gravity(false), Say(T("Here you go. The door. Again.", "Bitte sehr. Die Tür. Schon wieder."))),
-                        trap(Zone(0f, 4f, 6f, 11f), Gravity(true), Say(T("Still kidding.", "Immer noch ein Scherz."))),
+                        trap(Airborne(1f, 5f), Play(Card.UPSIDE_DOWN), Gravity(true), Say(T("Jumpers only.", "Nur f\u00fcr Springer."))),
+                        trap(Zone(15.5f, 0.5f, 18.5f, 2.6f), Show('S')),
+                        trap(Zone(23f, 0.5f, 25f, 2.6f), Gravity(false), Say(T("Here you go. The door. Again.", "Bitte sehr. Die T\u00fcr. Schon wieder."))),
+                        trap(Zone(25f, 4f, 31f, 11f), Gravity(true), Say(T("Still kidding.", "Immer noch ein Scherz."))),
                     ),
-                ) { put(14, 1, '.'); put(10, 1, 'S') },
+                ) { put(2, 14, '.'); put(2, 1, '.'); put(29, 14, 'P'); put(29, 1, 'D'); put(14, 1, '.'); put(21, 1, 'S') },
             ),
         ) {
             border(); floor()
@@ -311,6 +313,7 @@ object World1Part1 {
             traps = listOf(
                 trap(Landed(15f, 23.8f), Play(Card.TWISTED), Swap(true), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
                 trap(BeforeX(13.5f), Say(T("That pit is real. Unlike my promises.", "Das Loch ist echt. Anders als meine Versprechen."))),
+                trap(Landed(2.5f, 7.5f), Swap(false), Say(T("Keys back. Old habits die hard.", "Tasten zur\u00fcck. Alte Gewohnheiten sterben langsam."))),
             ),
             // rematch: the keys are swapped from the first steps, and the spike you hop with them grows where you land
             rematch = listOf(
@@ -328,25 +331,27 @@ object World1Part1 {
             put(29, 14, 'P'); put(2, 14, 'D')
         },
 
-        // 13 — spikes hang in the ceiling and the room shakes at them: a bluff. The plain bits of the ceiling are the real ones:
-        // one drops as you pass, one comes down on the lane, one on the upper floor on the way back
+        // 13 — the room is upside down compared with the others: you start on the upper floor on the right and run left, and the ceiling
+        // up there drops pieces as you pass under them (one on whoever stops, one more further on); off the end of the upper floor you drop
+        // down to the ground floor and run back to the right, to the door in the bottom right corner. Down there spikes hang in the
+        // ceiling and the room shakes at them: a bluff. The plain bits of the ceiling are the real ones: one drops as you pass
         Level(
             name = T("Wednesday", "Mittwoch"),
             intro = T("It's Wednesday. I'm grumpy. That's all.", "Es ist Mittwoch. Ich habe schlechte Laune. Mehr nicht."),
             hint = T("Don't look at the spikes. Look at the plain ceiling.", "Schau nicht auf die Stacheln. Schau auf die glatte Decke."),
             legend = mapOf('S' to ceilingSpike),
             traps = listOf(
-                trap(PastX(5f), Shake(0.6f), Say(T("Ooh, spikes up there. Scary, huh?", "Ooh, Stacheln da oben. Gruselig, was?"))),
+                trap(Zone(21.6f, 4f, 24f, 9.5f), Fall('d'), Say(T("Wednesday is not over yet.", "Der Mittwoch ist noch nicht vorbei."))),
+                trap(Zone(8.6f, 4f, 11f, 9.5f), Fall('e'), Say(T("Hard hat day. Sorry, no hats.", "Helmpflicht heute. Leider keine Helme."))),
+                trap(Zone(5.5f, 12f, 8f, 15.5f), Shake(0.6f), Say(T("Ooh, spikes up there. Scary, huh?", "Ooh, Stacheln da oben. Gruselig, was?"))),
                 trap(Zone(13f, 12f, 14f, 15f), Play(Card.HEADBUTT), Fall('c'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte."))),
-                trap(Zone(21f, 12f, 22f, 15f), Move('m', 0f, 3.5f, 5f), Say(T("The ceiling is low on Wednesdays.", "Mittwochs hängt die Decke tief."))),
-                trap(Zone(22f, 5f, 23f, 9.5f), Fall('d'), Say(T("Wednesday is not over yet.", "Der Mittwoch ist noch nicht vorbei."))),
             ),
         ) {
             border(); floor()
-            fill(27..28, 13..14); fill(29..30, 11..14)
-            fill(1..28, 9..9)
-            fill(7..8, 10..10, 'S'); fill(12..13, 10..10, 'c'); fill(19..22, 10..10, 'm'); fill(22..23, 1..2, 'd')
-            put(2, 14, 'P'); put(2, 8, 'D')
+            fill(5..30, 9..9)
+            fill(7..8, 10..10, 'S'); fill(12..13, 10..10, 'c')
+            fill(22..23, 1..2, 'd'); fill(9..10, 1..2, 'e')
+            put(29, 8, 'P'); put(29, 14, 'D')
         },
 
         // 14 — the door is right behind a wall, so take the lifts: the first one rises to the upper floor and carries on into the

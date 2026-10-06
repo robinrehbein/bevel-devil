@@ -28,14 +28,15 @@ object World1Part2B {
             ),
             rematch = listOf(
                 Round(
-                    T("Rematch. The cuts have been restructured.", "Revanche. Die Kürzungen wurden umstrukturiert."),
+                    T("Rematch. The cuts have been restructured.", "Revanche. Die K\u00fcrzungen wurden umstrukturiert."),
                     traps = listOf(
-                        trap(Airborne(3f, 8.5f), Play(Card.SINKING), Fall('a'), Fall('b'), Say(T("Hopping is a cost centre. Cut.", "Hüpfen ist eine Kostenstelle. Gestrichen."))),
-                        trap(PastX(7f), Fall('c'), Say(T("Cuts go where you are going.", "Gekürzt wird dort, wo du hinwillst."))),
-                        trap(Touch('p'), Fall('p'), Say(T("This one is on probation.", "Diese hier ist in der Probezeit.")), delay = 0.45f),
-                        trap(Touch('w'), Fall('w'), Say(T("Upper management cuts last.", "Die Chefetage kürzt zuletzt.")), delay = 0.4f),
+                        trap(Airborne(3f, 8.5f), Play(Card.SINKING), Fall('a'), Fall('b'), Say(T("Hopping is a cost centre. Cut.", "H\u00fcpfen ist eine Kostenstelle. Gestrichen."))),
+                        trap(Zone(13f, 12f, 14f, 15.5f), Move('k', 0f, 4.6f, 20f), Say(T("Cuts go where you are going.", "Gek\u00fcrzt wird dort, wo du hinwillst."))),
+                        trap(Touch('p'), Move('p', -3f, 0f, 12f), Say(T("This one is on probation.", "Diese hier ist in der Probezeit.")), delay = 0.2f),
+                        trap(Touch('x'), Fall('x'), Say(T("The ladder to management is short.", "Die Karriereleiter ist kurz.")), delay = 0.4f),
+                        trap(Touch('w'), Fall('w'), Say(T("Upper management cuts last.", "Die Chefetage k\u00fcrzt zuletzt.")), delay = 0.4f),
                     ),
-                ) { fill(11..12, 15..17, 'c') },
+                ) { fill(11..13, 8..9, 'k'); fill(16..17, 7..7, 'x') },
             ),
         ) {
             border(); floor(); pit(16..30)

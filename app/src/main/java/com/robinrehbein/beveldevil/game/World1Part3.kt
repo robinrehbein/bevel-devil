@@ -8,7 +8,6 @@ import com.robinrehbein.beveldevil.game.Action.FakeWin
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.Flip
 import com.robinrehbein.beveldevil.game.Action.FrameCrack
-import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Hide
 import com.robinrehbein.beveldevil.game.Action.Laser
@@ -128,26 +127,25 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 36 — gallery: a piece of the golden frame (a bit of the upper floor) breaks off over your head and lands on the path ahead; hopping
-        // over it sprouts spikes behind it, so you have to stand on it first. Upstairs, on the way back along the upper floor, the next
-        // piece of the frame comes down where you hurry, and the hole the first one left is waiting
-        // TWIST: FrameCrack
+        // 36 — gallery: a jump rope swings across the hall, and then the golden frame comes apart: a piece of the ceiling cracks off as you
+        // near the high ledge where the door is, and whoever runs on is under it when it lands. The piece is the step you need up to the
+        // ledge (wait for it to land, then climb on). Up on the ledge the next piece comes down in front of the door, and the curator
+        // hits Ctrl+Z on whoever has just crossed it
+        // TWIST: FrameCrack (meta); the rope is the second family, the undo is meta too
         Level(
             name = T("Gallery", "Galerie"),
             intro = T("All real gold. Almost. Don't touch.", "Alles echtes Gold. Fast. Nicht anfassen."),
-            hint = T("The frame drops pieces where you run. Let them land, then climb on. Spikes grow behind the first piece.", "Der Rahmen lässt Stücke fallen, wo du rennst. Lass sie landen, dann steig drauf. Hinter dem ersten wachsen Stacheln."),
-            legend = mapOf('A' to hiddenSpike),
+            hint = T("The frame drops pieces where you run. Let them land, then climb on. Mind the rope, and the curator.", "Der Rahmen lässt Stücke fallen, wo du rennst. Lass sie landen, dann steig drauf. Achte auf das Seil und auf die Kuratorin."),
             traps = listOf(
-                trap(PastX(3.1f), FrameCrack(9, 9, 11, 9, warn = 0.5f), Say(T("Crack.", "Knack."))),
-                trap(Airborne(12.2f, 14.4f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Hand-painted. The spikes, too.", "Handgemalt. Die Stacheln auch."))),
-                trap(Zone(21f, 7f, 23f, 9.5f), FrameCrack(16, 0, 18, 0, warn = 0.4f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
+                trap(PastX(3f), PathSaw(7f, 7f to 14.4f, 7f to 10.6f, delay = 0.6f), Say(T("Jump rope. The exhibit is interactive.", "Seilspringen. Das Exponat ist interaktiv."))),
+                trap(PastX(8.5f), FrameCrack(14, 0, 16, 0, warn = 0.5f), Say(T("Crack.", "Knack."))),
+                trap(Landed(17f, 23f), FrameCrack(26, 0, 28, 0, warn = 0.55f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
+                trap(PastX(28.4f), Play(Card.UNDO), Undo(1.0f), Say(T("The curator pressed Ctrl+Z. On you.", "Die Kuratorin hat Strg+Z gedrückt. Bei dir."))),
             ),
         ) {
             border(); floor()
-            fill(21..23, 13..14); fill(24..30, 11..14)
-            fill(2..23, 9..9)
-            put(12, 14, 'A'); put(13, 14, 'A')
-            put(3, 14, 'P'); put(6, 8, 'D')
+            fill(17..30, 12..14)
+            put(2, 14, 'P'); put(29, 11, 'D')
         },
 
         // 37 — force push: as you pass the first marks the floor behind you is deleted, tile pair by tile pair, chasing you to the stairs;
@@ -193,69 +191,71 @@ object World1Part3 {
             put(1, 14, 'P'); put(2, 8, 'D')
         },
 
-        // 38 — clear view: a saw rolls in on the ground and must be hopped; as you land by the stairs the picture turns upside down and a
-        // second saw rolls in from behind: left and right follow the screen now, so you flee to the right with the left key and climb the
-        // stairs mirrored. Upstairs the picture is back, and a rope saw swings across the way home
+        // 38 — clear view: you start on the right and the way home runs left, so the stairs are on the far left. A saw rolls in on the ground
+        // from the left and must be hopped; as you land by the stairs the picture turns upside down and a second saw rolls in from behind:
+        // left and right follow the screen now, so you flee to the left with the right key and climb the stairs mirrored. Upstairs the
+        // picture is back, and a rope saw swings across the way to the door on the right
         // TWIST: Flip
         Level(
             name = T("Clear View", "Durchblick"),
-            intro = T("Nice picture today. Sharper than ever.", "Schönes Bild heute. Schärfer als je zuvor."),
-            hint = T("When the picture turns over, left and right follow the screen: run from the saw with the key that points to the stairs on screen.", "Wenn das Bild kippt, folgen links und rechts dem Bildschirm: Lauf vor der Säge mit der Taste, die auf dem Bildschirm zur Treppe zeigt."),
+            intro = T("Nice picture today. Sharper than ever.", "Sch\u00f6nes Bild heute. Sch\u00e4rfer als je zuvor."),
+            hint = T("When the picture turns over, left and right follow the screen: run from the saw with the key that points to the stairs on screen.", "Wenn das Bild kippt, folgen links und rechts dem Bildschirm: Lauf vor der S\u00e4ge mit der Taste, die auf dem Bildschirm zur Treppe zeigt."),
             traps = listOf(
-                trap(PastX(3.5f), Saw(31.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Sharper than ever.", "Gegenverkehr. Schärfer als je zuvor."))),
-                trap(Landed(12f, 23.6f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
-                trap(Landed(12f, 23.6f), Saw(-1.5f, 14.4f, 6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die Säge mag lieber die Originalausrichtung."))),
-                trap(Zone(24.5f, 7f, 26f, 9.5f), PathSaw(7f, 14f to 8.4f, 14f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen für Erwachsene."))),
+                trap(BeforeX(27.5f), Saw(0.5f, 14.4f, 6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Sharper than ever.", "Gegenverkehr. Sch\u00e4rfer als je zuvor."))),
+                trap(Landed(8.4f, 20f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
+                trap(Landed(8.4f, 20f), Saw(33.5f, 14.4f, -6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die S\u00e4ge mag lieber die Originalausrichtung."))),
+                trap(Zone(6f, 7f, 7.5f, 9.5f), PathSaw(7f, 18f to 8.4f, 18f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen f\u00fcr Erwachsene."))),
             ),
         ) {
             border(); floor()
-            fill(24..26, 13..14); fill(28..30, 11..14)
-            fill(2..26, 9..9)
-            put(2, 14, 'P'); put(6, 8, 'D')
+            fill(5..7, 13..14); fill(1..3, 11..14)
+            fill(5..29, 9..9)
+            put(29, 14, 'P'); put(25, 8, 'D')
         },
 
-        // 39 — hardware store: a ceiling tile drops in aisle 6; the pit is too wide to jump, and the only way across is the shelf at its edge,
-        // which slides with the tilt of your phone (a ferry): the far bank gives way as you pass, so jump off the ferry's end onto the
-        // stairs. Upstairs, on the way back, the next ceiling tile comes down where you hurry
+        // 39 — hardware store: a ceiling tile drops in aisle 6 and is hopped, then the stairs go up three floors to the platform, where
+        // the floor sample at its edge is gone for a moment (wait for it); beyond it the pit is too wide to jump, and the only way across
+        // is the shelf at its edge, which slides with the tilt of your phone (a ferry): the far bank gives way as you ride in, so jump
+        // off the ferry's end onto the high ledge with the door, up on the right
         // MOTION: Tilt (one of the two phone-motion levels of the act)
         Level(
             name = T("Hardware Store", "Baumarkt"),
             intro = T("I built something wide. No instructions.", "Ich habe was Breites gebaut. Ohne Anleitung."),
-            hint = T("The shelf at the edge of the pit slides when you tilt the phone. Hold it tilted, and jump off the shelf's end.", "Das Regal am Rand des Lochs gleitet, wenn du das Handy kippst. Halte es schräg und spring am Ende vom Regal ab."),
-            start = listOf(Tilt('a', left = 0f, right = 7f, speed = 8f)),
+            hint = T("The shelf at the edge of the pit slides when you tilt the phone. Hold it tilted, and jump off the shelf's end.", "Das Regal am Rand des Lochs gleitet, wenn du das Handy kippst. Halte es schr\u00e4g und spring am Ende vom Regal ab."),
+            start = listOf(Tilt('a', left = 0f, right = 3f, speed = 3.4f)),
             traps = listOf(
                 trap(PastX(3f), Play(Card.HEADBUTT), Move('s', 0f, 13f, 24f), Shake(0.4f), Say(T("Aisle 6: ceiling tiles. Falling prices.", "Gang 6: Deckenplatten. Fallende Preise."))),
-                trap(PastX(17f), Fall('g'), Say(T("The far bank is a display model.", "Das andere Ufer ist ein Ausstellungsstück."))),
-                trap(Zone(24.5f, 7f, 26f, 9.5f), Move('t', 0f, 7f, 18f), Shake(0.5f), Say(T("Ceiling tiles upstairs, too. Mind your head.", "Deckenplatten gibt's oben auch. Kopf einziehen.")), delay = 0.45f),
+                trap(Landed(16f, 20f), Blink('h', on = 1.2f, off = 1.1f, phase = 1.2f), Say(T("Floor sample. Not for sale. Back in a minute.", "Bodenmuster. Unverk\u00e4uflich. Gleich wieder da."))),
+                trap(PastX(25f), Move('g', 0f, 14f, 40f), Say(T("The far bank is a display model.", "Das andere Ufer ist ein Ausstellungsst\u00fcck."))),
             ),
         ) {
-            border(); floor(); pit(10..19)
-            fill(10..12, 15..15, 'a'); fill(20..21, 15..17, 'g')
-            fill(6..8, 1..1, 's'); fill(24..26, 1..1, 't')
-            fill(22..26, 13..14); fill(28..30, 11..14)
-            fill(10..26, 9..9)
-            put(1, 14, 'P'); put(10, 8, 'D')
+            border(); floor(); pit(16..30)
+            fill(6..8, 1..1, 's')
+            fill(10..11, 13..14); fill(12..13, 11..14); fill(14..15, 9..14)
+            fill(16..19, 7..8); fill(20..21, 7..7, 'h'); fill(22..24, 7..7, 'a'); fill(28..28, 7..7, 'g'); fill(29..30, 5..14)
+            put(2, 14, 'P'); put(30, 4, 'D')
         },
 
-        // 40 — boot sequence: at the first steps the keys swap (kernel panic: left is right), and the memory test sweeps a beam across the
-        // corridor; up the stairs the keys come back ("restored. Probably."), and upstairs the second test beam waits at the same spot
-        // as the keys do not matter any more
-        // TWIST: Swap (the one swapped-controls level of the act)
+        // 40 — boot sequence: spawn on a shelf over the void, the door far below on the ground at the other end. At the first steps the
+        // keys swap (kernel panic: left is right) and the memory test sweeps a beam across the shelf; at the end of the shelf the keys come
+        // back ("restored. Probably."), you drop down the shaft and run back along the ground floor to the door, where the keys swap
+        // once more halfway, with a pit in the way that has to be hopped with the new hands
+        // TWIST: Swap (the one swapped-controls level of the act), Laser (the one beam)
         Level(
             name = T("Boot Sequence", "Systemstart"),
             intro = T("Everything is fine. Really.", "Alles in Ordnung. Wirklich."),
-            hint = T("After the panic left is right. Wait for the beam to go dark, then cross. When the keys come back, they are back.", "Nach der Panik ist links rechts. Warte, bis der Strahl dunkel ist, dann geh durch. Wenn die Tasten zurückkommen, sind sie zurück."),
+            hint = T("After the panic left is right. Wait for the beam to go dark. The way home is down the shaft and back: the keys change twice more.", "Nach der Panik ist links rechts. Warte, bis der Strahl dunkel ist. Der Heimweg führt den Schacht hinunter und zurück: Die Tasten wechseln noch zweimal."),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.TWISTED), Swap(true), Shake(1.2f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
-                trap(PastX(9f), Laser('A', 16 to 10, 16 to 14, on = 0.9f, off = 1.6f, delay = 0.2f), Say(T("Memory test. Please do not cross the beam.", "Speichertest. Bitte den Strahl nicht kreuzen."))),
-                trap(Landed(28f, 31f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
-                trap(Zone(24.5f, 7f, 26f, 9.5f), Laser('B', 14 to 3, 14 to 8, on = 0.9f, off = 1.6f, delay = 0.8f), Say(T("Second test, upstairs. Same beam, less patience.", "Zweiter Test, oben. Gleicher Strahl, weniger Geduld."))),
+                trap(PastX(8f), Laser('A', 14 to 3, 14 to 8, on = 1.4f, off = 1.6f, delay = 0.2f), Say(T("Memory test. Please do not cross the beam.", "Speichertest. Bitte den Strahl nicht kreuzen."))),
+                trap(Zone(23f, 7f, 26.5f, 9.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
+                trap(Zone(17.5f, 12f, 19.5f, 15.5f), Swap(true), Say(T("Rebooting. Left is right again. Obviously.", "Neustart. Links ist wieder rechts. Offensichtlich."))),
             ),
         ) {
             border(); floor()
-            fill(24..27, 13..14); fill(28..30, 11..14)
-            fill(2..26, 9..9)
-            put(2, 14, 'P'); put(6, 8, 'D')
+            fill(1..29, 9..9)
+            pit(11..12)
+            put(2, 8, 'P'); put(3, 14, 'D')
         },
 
         // 41 — TV night: the door is straight ahead behind a wall that is too high, so the way is the other way round. Left of the
@@ -329,29 +329,29 @@ object World1Part3 {
 
         // 43 — git blame: a rope saw on the way, then the wall: it is open only while somebody stands on the pad next to it, and the
         // pad is where blame comes from: a saw rolls in from behind the moment you step on it, and another swings behind the wall.
-        // Dash through the open wall between the two (it waits while you are inside), hop the saw that comes from the front on the
-        // way to the stairs, and back along the upper floor with the last one at your heels. Your last attempt comes back as a
-        // ghost on top of that (it needs a first attempt, so it is flavour for the first clean run).
-        // R2: hold pad, U16: ghost; the one lethal family is the saw
+        // Dash through the open wall (it waits while you are inside), and where the ground ends a lift takes you up to the ledge with the
+        // door: it starts as you step on it, and a saw from the front rolls in under it at the same moment, so whoever waits at the foot
+        // of the lift is run over; and the lift goes on too far, into the spikes in the ceiling, for whoever stays on it.
+        // R2: hold pad, U7: the saws; the lift is the second family (the ghost of the old level is gone: it has nothing to replay in a
+        // clean run, so it was decoration)
         Level(
             name = T("git blame", "git blame"),
-            intro = T("I keep a log. Of everything you do.", "Ich führe Buch. Über alles, was du tust."),
-            hint = T("The wall is open only while you stand on the pad, and the pad is what sets the saws rolling. Look through the wall, then dash.", "Die Wand ist nur offen, solange du auf dem Schalter stehst, und der Schalter setzt die Sägen in Gang. Schau durch die Wand, dann renn."),
-            start = listOf(Circuit('w'), Pad('1', at = 13 to 14, circuits = "w", mode = PadMode.HOLD)),
+            intro = T("I keep a log. Of everything you do.", "Ich f\u00fchre Buch. \u00dcber alles, was du tust."),
+            hint = T("The wall is open only while you stand on the pad, and the pad is what sets the saws rolling. Look through the wall, then dash. Take the lift before the saw takes you.", "Die Wand ist nur offen, solange du auf dem Schalter stehst, und der Schalter setzt die S\u00e4gen in Gang. Schau durch die Wand, dann renn. Nimm den Aufzug, bevor dich die S\u00e4ge nimmt."),
+            start = listOf(Circuit('w'), Pad('1', at = 10 to 14, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
-                trap(After(0f), Ghost(1f)),
-                trap(PastX(3.5f), Play(Card.DEVIL_SAW), PathSaw(7f, 8f to 14.4f, 8f to 10.6f, delay = 0.9f), Say(T("git blame: the rope was you.", "git blame: Das Seil warst du."))),
-                trap(Pressed('1'), Saw(-1.5f, 14.4f, 5.5f, 0f, 0.62f), PathSaw(7f, 19f to 14.4f, 19f to 10.6f, delay = 0.2f),
+                trap(PastX(3f), Play(Card.DEVIL_SAW), PathSaw(7f, 7f to 14.4f, 7f to 10.6f, delay = 0.6f), Say(T("git blame: the rope was you.", "git blame: Das Seil warst du."))),
+                trap(Pressed('1'), Saw(-1.5f, 14.4f, 5.5f, 0f, 0.62f), PathSaw(7f, 18f to 14.4f, 18f to 10.6f, delay = 0.2f),
                     Say(T("Commit accepted. So is the blame.", "Commit angenommen. Die Schuld auch."))),
-                trap(PastX(17f), Saw(33.5f, 14.4f, -7f, 0f, 0.62f), Say(T("Blame from the front, too. I'm thorough.", "Schuld kommt auch von vorn. Ich bin gründlich."))),
-                trap(Zone(24.5f, 7f, 27f, 9.5f), Saw(33.5f, 8.4f, -6f, 0f, 0.62f), Say(T("Upstairs, same history.", "Oben, gleiche Historie."))),
-                trap(Zone(17f, 7f, 20f, 9.5f), Saw(-1.5f, 8.4f, 7f, 0f, 0.62f), Say(T("Squeezed. Version control is hard.", "Eingeklemmt. Versionskontrolle ist schwer."))),
+                trap(Zone(19.5f, 12f, 21.5f, 15.5f), Saw(33.5f, 14.4f, -7f, 0f, 0.62f), Say(T("Blame from the front, too. I'm thorough.", "Schuld kommt auch von vorn. Ich bin gr\u00fcndlich."))),
+                trap(Zone(24f, 12f, 26.9f, 15.5f), Move('a', 0f, -8f, 3f), Say(T("Going up. The history goes with you.", "Es geht nach oben. Die Historie f\u00e4hrt mit."))),
             ),
         ) {
             border(); floor()
-            fill(14..15, 10..14, 'w')
-            fill(2..27, 9..9); fill(23..27, 13..14); fill(28..30, 11..14)
-            put(2, 14, 'P'); put(3, 8, 'D')
+            fill(11..12, 1..14, 'w')
+            fill(24..26, 15..17, 'a'); fill(27..30, 9..14)
+            for (x in 24..26) put(x, 6, 'v')
+            put(2, 14, 'P'); put(29, 8, 'D')
         },
 
         // 44 — wallflower: the pit is floored with four shy planks that only dance when you step on the one before: the next one is
@@ -378,30 +378,29 @@ object World1Part3 {
             put(1, 14, 'P'); put(30, 8, 'D')
         },
 
-        // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes: three pieces of the ground are deleted one after another
-        // just ahead of your feet as you run (hop them), and on the way back along the shelf upstairs, which is protected
-        // ("/home"), two strips of it slide away from under the runner instead
-        // EASTER EGG: sudo rm -rf /. U1: the floor goes (drop), the sliding strips are the second family
+        // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes. A descent: you start on the top floor on the right and run left;
+        // two pieces of the floor are deleted just ahead of your feet, and under the top floor lies a shelf of spikes that catches whoever
+        // falls through. The top floor ends over a shaft: drop down it to the ground floor and run back to the right, where two more
+        // pieces of the ground are deleted ahead of you, down to the door in the bottom right corner
+        // EASTER EGG: sudo rm -rf /. U1: the floor goes (drop), top to bottom
         Level(
             name = T("sudo rm -rf /", "sudo rm -rf /"),
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
-            hint = T("The floor is deleted just ahead of you: hop where it is gone. Upstairs, the strips slide away: hop those too.", "Der Boden wird direkt vor dir gelöscht: Spring, wo er fehlt. Oben gleiten die Streifen weg: Auch darüber hüpfen."),
+            hint = T("The floor is deleted just ahead of you, top floor first: hop where it is gone, drop down the shaft, and hop again on the ground. The shelf in between is all spikes.", "Der Boden wird direkt vor dir gelöscht, zuerst oben: Spring, wo er fehlt, lass dich durch den Schacht fallen und spring unten wieder. Das Regal dazwischen besteht nur aus Stacheln."),
             traps = listOf(
-                trap(PastX(5.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
-                trap(PastX(10f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
-                trap(PastX(15f), Hide('c'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
-                trap(Touch('s'), Hide('s'), Say(T("rm: removing '/stairs' ... in a moment.", "rm: entferne '/stairs' ... gleich.")), delay = 0.9f),
-                trap(Zone(28f, 9f, 31f, 11.5f), Hide('f'), Say(T("rm: removing '/' ... the rest of it. Done.", "rm: entferne '/' ... den Rest. Erledigt."))),
-                trap(Zone(19f, 7f, 21.5f, 9.5f), Move('e', 7f, 0f, 14f), Say(T("mv: moving '/home' ... away from you.", "mv: verschiebe '/home' ... weg von dir."))),
-                trap(Zone(12f, 7f, 14.5f, 9.5f), Move('g', 7f, 0f, 14f)),
+                trap(BeforeX(28.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(BeforeX(20f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
+                trap(Zone(7f, 12f, 10f, 15.5f), Hide('d'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
+                trap(Zone(15f, 12f, 18f, 15.5f), Hide('g'), Say(T("rm: removing '/' ... the rest of it. Done.", "rm: entferne '/' ... den Rest. Erledigt."))),
             ),
         ) {
             border(); floor()
-            fill(3..8, 15..17, 'f'); fill(11..13, 15..17, 'f'); fill(16..18, 15..17, 'f'); fill(21..22, 15..17, 'f')
-            fill(9..10, 15..17, 'a'); fill(14..15, 15..17, 'b'); fill(19..20, 15..17, 'c')
-            fill(2..27, 9..9); fill(15..17, 9..9, 'e'); fill(8..10, 9..9, 'g')
-            pit(23..30); fill(23..27, 13..14, 's'); fill(28..30, 11..14)
-            put(2, 14, 'P'); put(3, 8, 'D')
+            fill(7..21, 5..5); fill(22..24, 5..5, 'a'); fill(25..30, 5..5)
+            fill(14..16, 5..5, 'b')
+            fill(7..30, 10..10)
+            for (x in 7..30) put(x, 9, '^')
+            fill(12..14, 15..17, 'd'); fill(20..22, 15..17, 'g')
+            put(29, 4, 'P'); put(29, 14, 'D')
         },
 
         // 46 — home stretch: the goal is on the left, behind a wall nobody climbs, so the way out is the switch behind you, at the far
@@ -454,17 +453,34 @@ object World1Part3 {
                 trap(Touch('k'), Play(Card.GHOST_BLOCK), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f), Say(T("Okay.", "Okay."))),
                 trap(Touch('m'), Move('h', 0f, -13f, 1.0f), Move('q', -8f, 0f, 2.0f), Say(T("Sandwich comes with a side of wall.", "Sandwich mit Beilage. Wand."))),
             ),
+            // rematch: Mephi mirrored the kitchen: you start left of the middle again, but the bread is on the right now and the pickle on the
+            // left, the first wall comes from the right and the second from the left, and the door is on the left
             rematch = listOf(
                 Round(
-                    T("Rematch. I'm hungry again.", "Revanche. Ich hab schon wieder Hunger."),
+                    T("Rematch. Hungry again. I mirrored the kitchen.", "Revanche. Schon wieder Hunger. Ich habe die K\u00fcche gespiegelt."),
+                    legend = mapOf('Z' to Glyph(spike = true, dir = Dir.LEFT), 'q' to Glyph(spike = true, dir = Dir.RIGHT)),
+                    hint = T("The kitchen is mirrored: the bread is over the right ledge now, the pickle over the left one, and the door is on the left.", "Die K\u00fcche ist gespiegelt: Das Brot h\u00e4ngt jetzt \u00fcber dem rechten Absatz, die Gurke \u00fcber dem linken, und die T\u00fcr ist links."),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.HEADBUTT), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f),
+                        trap(Touch('k'), Play(Card.HEADBUTT), Move('g', 0f, -13f, 1.0f), Move('Z', -12f, 0f, 3.5f),
                             Say(T("Same bread. Same hurry.", "Gleiches Brot. Gleiche Eile."))),
-                        trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', -8f, 0f, 2.0f),
+                        trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', 8f, 0f, 2.0f),
                             Say(T("Sandwich comes with the pickle on top.", "Sandwich mit Gurke obendrauf."))),
                         trap(Touch('m'), Move('y', 0f, 5f, 24f), delay = 0.1f),
                     ),
-                ),
+                ) {
+                    fill(1..30, 1..14, '.')
+                    fill(20..21, 13..14); fill(22..23, 11..14); fill(24..28, 9..14)
+                    art(24, 2, "zzzzz", "z.z.z", "zzzzz", c = 'z')
+                    put(25, 6, 'k'); put(26, 6, 'k')
+                    fill(30..30, 1..14, 'Z')
+                    fill(16..16, 2..14, 'g')
+                    fill(12..13, 13..14); fill(9..11, 11..14)
+                    put(9, 8, 'm'); put(8, 8, 'm')
+                    art(8, 4, "yyyy", "yyyy", c = 'y')
+                    fill(7..7, 2..14, 'h')
+                    fill(1..1, 1..14, 'q')
+                    put(17, 14, 'P'); put(5, 14, 'D')
+                },
             ),
         ) {
             border(); floor()

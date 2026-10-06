@@ -41,7 +41,7 @@ object World1RoomsC {
                 .rightTo(5.4f).rightJump(0.5f).landRight()
                 .waitFor { w -> w.saws.any { it.path?.loop == true && it.y > 14f && it.x < 9f } }
                 .rightJump(0.4f).landRight()
-                .rightTo(14.0f).waitFor { it.ropeUp(17f, 0.9f) }.rightTo(19.5f).rightJump(0.5f).landRight()
+                .rightTo(14.0f).waitFor { it.gateOpen('A') }.rightTo(19.5f).rightJump(0.5f).landRight()
                 .rightTo(23.2f).rightJump(0.5f).landRight().right(0.5f).left(0.2f)
                 .leftJump(0.5f).landLeft()
                 .leftUntil { w -> w.saws.any { it.y in 7f..9.2f && w.player.box.cx - it.x in 0f..4.6f } }.leftJump(0.35f).landLeft()
