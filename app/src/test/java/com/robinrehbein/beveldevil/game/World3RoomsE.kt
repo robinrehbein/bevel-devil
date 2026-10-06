@@ -9,6 +9,9 @@ object World3RoomsE {
         33 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight()
                 .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
+            // rematch: hop the stud on the far plank low instead of the long leap
+            { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
+                .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
         ),
         34 to listOf<Solution>(
             { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
@@ -18,6 +21,13 @@ object World3RoomsE {
                 .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.5f).landRight()
                 .rightTo(15.6f).waitFor { it.fans[0].wind < -7f && it.fans[1].wind == 0f }
                 .rightUntil { w -> w.saws.any { it.vx < -9f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 7.5f } }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+            // rematch: hop the button, then slog the whole corridor and hop each blade as it comes
+            { rightTo(5.2f).rightJump(0.5f).landRight()
+                .rightUntil { w -> w.saws.any { it.vx > 0f && w.player.box.cx - it.x < 3.0f } }.rightJump(0.5f).landRight()
+                .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
+                .rightUntil { w -> w.saws.any { it.vx < -10.5f && it.vx > -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
+                .rightUntil { w -> w.saws.any { it.vx < -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
+                .rightUntil { it.player.box.cx > 30.3f } },
         ),
         36 to listOf<Solution>(
             { rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }
@@ -41,6 +51,10 @@ object World3RoomsE {
             { rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
                 .waitFor { it.fans[0].wind > 4.5f }.rightUntil { it.player.box.cx > 23.2f }
                 .rightUntil { it.player.grounded && it.player.box.cx > 23.4f }.rightTo(27.0f).rightJump(0.1f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+            // rematch: the controls are twisted: press left to float right
+            { rightTo(8.6f).leftUntil { it.player.grounded && it.player.box.cx > 14.4f }
+                .waitFor { it.fans[0].wind > 4.5f }.leftUntil { it.player.box.cx > 22.8f }
+                .rightUntil { it.player.box.cx > 30.3f } },
         ),
     )
 }

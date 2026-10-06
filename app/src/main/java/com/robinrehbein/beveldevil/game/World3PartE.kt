@@ -28,6 +28,19 @@ object World3PartE {
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.7f),
             ),
             hint = T("Stand in the draft and hold on to the wall. Planks only give way once you are on them.", "Stell dich in den Aufwind und halt dich an der Wand. Planken geben erst nach, wenn du drauf stehst."),
+            // rematch: the planks hold now, and nothing waits for the second landing: but a stud has grown on the far plank, exactly where the
+            // long leap from round one comes down. Hop it low instead
+            rematch = listOf(
+                Round(
+                    T("Same ride. A different bridge.", "Gleiche Fahrt. Eine andere Brücke."),
+                    traps = listOf(
+                        trap(Landed(12.2f, 15.9f), Play(Card.SPIKE_SEED), Show('p'), say("Fresh from the factory: one plank, slightly pointy.", "Frisch ab Werk: eine Planke, leicht spitz.")),
+                        trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Another pause. Our regular passengers know it.", "Wieder eine Pause. Stammgäste kennen das.")),
+                        trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.75f),
+                    ),
+                    legend = mapOf('p' to Glyph(spike = true, hidden = true)),
+                ) { put(20, 7, 'p'); put(22, 5, '.') },
+            ),
         ) {
             border(); floor(); pit(7..11)
             fill(8..11, 17..17)
@@ -74,6 +87,31 @@ object World3PartE {
                 trap(PastX(13f), FanSet('w', 7.6f), say("Brisk.", "Frisch.")),
                 trap(Pressed('1'), Play(Card.BACKDRAFT), Power('g', false), FanSet('w', -8f), say("Tailwind, as requested.", "Rückenwind, wie bestellt.")),
                 trap(PastX(25f), Power('g', true), Saw(33f, 14.4f, -10f, 0f), say("The wall closes behind you. The blade does not.", "Die Wand schließt hinter dir. Das Blatt nicht.")),
+            ),
+            // rematch: the button moved before the wind and bites: it raises the wall and the gale and sends a blade. Hop it, then slog the whole
+            // corridor, with the blades coming from the front
+            rematch = listOf(
+                Round(
+                    T("Same wind. Better manners.", "Gleicher Wind. Bessere Manieren."),
+                    start = listOf(
+                        Fan('w', at = 31 to 9, dir = Dir.LEFT, reach = 22, speed = 6.6f, width = 6),
+                        Fan('g', at = 23 to 9, dir = Dir.LEFT, reach = 4, speed = 14f, width = 6), Power('g', false),
+                        Pad('1', at = 7 to 14),
+                    ),
+                    traps = listOf(
+                        trap(PastX(8f), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back, as before.", "Ein Blatt für den Rücken, wie gehabt.")),
+                        trap(Pressed('1'), Play(Card.DEVIL_SAW), Power('g', true), FanSet('w', 9.5f), Saw(33f, 14.4f, -9f, 0f), say("You pressed it! Wall up, wind up, blade out.", "Du hast gedrückt! Wand hoch, Wind hoch, Blatt raus.")),
+                        trap(PastX(10.5f), FanSet('w', 7f), say("Breezy again.", "Wieder luftig.")),
+                        trap(PastX(13f), Saw(33f, 14.4f, -10f, 0f), say("And the one from the shelf. Regulars get two.", "Und das aus dem Regal. Stammgäste bekommen zwei.")),
+                        trap(PastX(15.5f), FanSet('w', 6.2f), say("A little rest. Do not get used to it.", "Ein bisschen Ruhe. Gewöhn dich nicht dran.")),
+                        trap(PastX(18f), FanSet('w', 7f), say("Brisk. Remember brisk?", "Frisch. Weißt du noch, frisch?")),
+                        trap(PastX(19.5f), Saw(33f, 14.4f, -11f, 0f), say("Another one, fresh off the shelf.", "Noch eins, frisch aus dem Regal.")),
+                        trap(PastX(22f), FanSet('w', 5.4f), say("A lull, as a treat.", "Eine Flaute, als Leckerli.")),
+                        trap(PastX(24.5f), FanSet('w', 7f), say("And it picks up again.", "Und er zieht wieder an.")),
+                        trap(PastX(26.5f), Saw(33f, 14.4f, -12f, 0f), say("The last one. I promise. Roughly.", "Das letzte. Versprochen. Ungefähr.")),
+                        trap(PastX(28.5f), FanSet('w', 6.4f), say("Last gust. Door is right there.", "Letzte Böe. Die Tür ist gleich da.")),
+                    ),
+                ),
             ),
         ) {
             border(); floor()
@@ -184,6 +222,19 @@ object World3PartE {
                 trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.6f),
                 trap(PastX(17f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
                 trap(Landed(23f, 27f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
+            ),
+            // rematch: the controls are twisted as you float, and the mat has no opinions this time: left is right all the way across
+            rematch = listOf(
+                Round(
+                    T("Same castle. Fresh perspective.", "Gleiches Schloss. Frische Perspektive."),
+                    traps = listOf(
+                        trap(PastX(8.5f), Play(Card.TWISTED), Swap(true), say("Left is right. Probably.", "Links ist rechts. Vermutlich.")),
+                        trap(PastX(10f), FanSet('f', -4f), say("Reverse thrust, as advertised.", "Schubumkehr, wie angekündigt.")),
+                        trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Or backward. Who can tell.", "Schub voraus. Oder zurück. Wer weiß das schon."), delay = 0.6f),
+                        trap(PastX(17f), Power('g', true), say("Headwind again. Press the other way.", "Wieder Gegenwind. Drück in die andere Richtung.")),
+                        trap(PastX(22.5f), Swap(false), say("Untwisted. Surprise: left is left again.", "Entdreht. Überraschung: Links ist wieder links.")),
+                    ),
+                ) { put(29, 12, '.') },
             ),
         ) {
             border(); floor(); pit(9..22)
