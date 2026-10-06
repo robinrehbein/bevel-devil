@@ -255,7 +255,8 @@ object World3PartD {
             traps = listOf(
                 trap(Touch('k'), Play(Card.STALKER), Chase('s', 6f, left = 4f, right = 16f), HeatSpike('c', 1f), say("The crane is a stalker. Not a very good one.", "Der Kran ist ein Verfolger. Kein besonders guter.")),
                 trap(Touch('k'), Move('s', 0f, 11f, 22f), delay = 0.9f),
-                trap(PastX(23.5f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 1.1f),
+                trap(Zone(13.6f, 13f, 14.6f, 15.2f), Move('y', 0f, 12.6f, 22f), say("Pit lane rule one: do not stand in the pit lane.", "Boxengassen-Regel eins: nicht in der Boxengasse stehen."), delay = 0.15f),
+                trap(Landed(26f, 31f), Move('u', 0f, 11f, 22f), say("Pit crew: tyres changed, ceiling lowered.", "Boxencrew: Reifen gewechselt, Decke gesenkt."), delay = 0.9f),
                 trap(Touch('l'), Move('t', 0f, 7f, 22f), say("Second heatsink. Second crane. Same warranty.", "Zweiter Kühlkörper. Zweiter Kran. Gleiche Garantie."), delay = 0.8f),
             ),
             hint = T("The heatsink cools the chip only while you stand on it. Stay just long enough: the crane follows you.", "Der Kühlkörper kühlt den Chip nur, solange du draufstehst. Bleib nur kurz: Der Kran folgt dir."),
@@ -265,7 +266,7 @@ object World3PartD {
             fill(14..24, 11..12); fill(19..22, 9..10); fill(19..22, 9..9, 'l'); fill(16..18, 11..11, 'd')
             fill(14..15, 9..10); fill(10..13, 7..8)
             fill(27..30, 13..14)
-            fill(9..12, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u')
+            fill(9..12, 1..1, 's'); fill(19..22, 1..1, 't'); fill(27..30, 1..1, 'u'); fill(13..15, 1..1, 'y')
             spawn(1, 14); door(10, 6)
         },
 
@@ -290,8 +291,35 @@ object World3PartD {
                 trap(Zone(roomX(1, 4.4f), 13f, roomX(1, 5.6f), 15.2f), Fall('q'), say("The plates are warm. The ceiling noticed.", "Die Platten sind warm. Die Decke hat es gemerkt."), delay = 0.75f),
                 trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Did you think the reactor was one room?", "Dachtest du, der Reaktor ist ein Raum?"))),
                 trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
+                trap(PastX(roomX(2, 25f)), say("The exit. Finally. It is warm, too.", "Der Ausgang. Endlich. Auch der ist warm.")),
             ),
             hint = T("The pad on the plateau cuts the wall and starts the chip: run across right after it. Beyond each door there is more room.", "Der Knopf auf dem Plateau schaltet die Wand ab und startet den Chip: lauf gleich danach drüber. Hinter jeder Tür ist noch Platz."),
+            rematch = listOf(
+                Round(
+                    T("Emergency shutdown. The roof is the hot part now.", "Notabschaltung. Das Dach ist jetzt der heiße Teil."),
+                    hint = T("The roof is the chip now. Go underneath, cool down on the heatsink and press the pad. Do not wait where the ceiling falls.", "Das Dach ist jetzt der Chip. Geh darunter durch, kühl dich auf dem Kühlkörper ab und drück den Knopf. Warte nicht, wo die Decke fällt."),
+                    start = listOf(
+                        Circuit('W'), Pad('1', at = 11 to 14, circuits = "W"),
+                        Heat('c', rise = 1.6f, load = true), Heatsink('k', cools = "c"), Heat('p', rise = 1.1f, load = true),
+                        Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f), Heat('e', rise = 0.8f, cool = 6f),
+                    ),
+                    traps = listOf(
+                        trap(Zone(6.6f, 13f, 7.6f, 15.2f), HeatSpike('c', 1f), say("The chip is at 100 per cent. Cooling is at your discretion.", "Der Chip ist bei 100 Prozent. Kühlen liegt in deinem Ermessen.")),
+                        trap(Zone(17.2f, 13f, 18.2f, 15.2f), Fall('r'), say("Same insulation. Different mood.", "Gleiche Dämmung. Andere Laune."), delay = 0.1f),
+                        trap(AtDoor, Play(Card.GRAND_FINALE), Extend(into = 1, warn = 1.0f, door = roomX(1, 29) to 14, line = T("Everything at once. The room included.", "Alles auf einmal. Der Raum inklusive."))),
+                        trap(PastX(roomX(1, 3.2f)), HeatSpike('g', 0.85f), say("The plates remember being stood on. They are hot about it.", "Die Platten erinnern sich ans Draufstehen. Sie sind sauer.")),
+                        trap(Zone(roomX(1, 11.2f), 13f, roomX(1, 12.2f), 15.2f), Fall('q'), say("Do not stop here. The ceiling remembers.", "Bleib hier nicht stehen. Die Decke merkt sich das."), delay = 0.75f),
+                        trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Shutdown cancelled. The reactor wants an encore.", "Abschaltung abgebrochen. Der Reaktor will eine Zugabe."))),
+                        trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Residual heat: a figure of speech.", "Restwärme: eine Redewendung.")),
+                        trap(PastX(roomX(2, 15.5f)), HeatSpike('e', 0.85f), say("And residual heat, part two.", "Und Restwärme, Teil zwei.")),
+                        trap(PastX(roomX(2, 25f)), say("Door ahead. Please do not touch anything hot. Anything.", "Tür voraus. Bitte nichts Heißes anfassen. Gar nichts.")),
+                    ),
+                ) {
+                    room(0) { fill(21..22, 15..15, '#'); fill(4..5, 14..14, '.'); fill(6..7, 13..14, '.'); fill(8..13, 13..14, '.'); fill(8..13, 12..12, 'p'); fill(8..9, 15..15, 'k') }
+                    room(1) { fill(5..5, 15..15, '#'); fill(9..9, 15..15, '#'); fill(14..17, 1..1, '.'); fill(10..13, 1..1, 'q') }
+                    room(2) { fill(18..20, 15..15, 'e') }
+                },
+            ),
         ) {
             border(); floor()
             room(0) {
