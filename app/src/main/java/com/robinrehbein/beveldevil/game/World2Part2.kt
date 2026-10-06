@@ -261,8 +261,8 @@ object World2Part2 {
         },
 
         // 23 — the information superhighway, a trap room (U12 the transport goes wrong, floor-move and belts): lifts. The merge lane of the on-ramp
-        // is a conveyor that speeds you up toward the on-ramp, and the on-ramp itself is a lift flush with the road; it carries whoever steps on it up,
-        // past the deck (walk off to the right) and on into a ceiling of spikes. Along the deck a piece of the road is closed for repairs (hop it),
+        // is a conveyor that speeds you up toward the on-ramp, and the on-ramp itself is a lift flush with the road; it carries whoever steps on it up
+        // to the deck (walk off to the right at once), and the moment it has passed the deck it goes full throttle into a ceiling of spikes. Along the deck a piece of the road is closed for repairs (hop it),
         // and the last lift, to the exit deck, is out of service as soon as it has arrived: it rises four tiles, and a moment later it drops away
         // under whoever stays on it (walk off to the left onto the exit deck, where the door is)
         Level(
@@ -270,7 +270,8 @@ object World2Part2 {
             intro = T("Have a safe trip! Buckle up.", "Gute Fahrt! Bitte anschnallen."),
             traps = listOf(
                 trap(PastX(2.6f), Belt('g', 10f), say("Merge lane: accelerate to highway speed.", "Einfädelspur: auf Autobahntempo beschleunigen."), delay = 0.1f),
-                trap(Touch('a'), Move('a', 0f, -13f, 3f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
+                trap(Touch('a'), Move('a', 0f, -6f, 3f), say("On-ramp open. Next exit: the ceiling.", "Auffahrt frei. Nächste Ausfahrt: die Decke.")),
+                trap(Touch('a'), Move('a', 0f, -13f, 16f), say("Exit missed. Full throttle.", "Ausfahrt verpasst. Vollgas."), delay = 2.1f),
                 trap(PastX(15f), Move('b', -3f, 0f, 14f), say("Roadworks ahead. Nobody told the road.", "Baustelle voraus. Der Straße hat's keiner gesagt.")),
                 trap(Touch('c'), Move('c', 0f, -4f, 12f), say("Express lift to the exit. Doors closing.", "Expresslift zur Ausfahrt. Türen schließen.")),
                 trap(Touch('c'), Play(Card.SINKING), Move('c', 0f, 14f, 9f), say("Out of service. Effective immediately.", "Außer Betrieb. Ab sofort."), delay = 0.8f),
@@ -278,7 +279,7 @@ object World2Part2 {
             hint = T("Do not ride to the top. Get off where the deck is.", "Fahr nicht bis nach oben. Steig aus, wo das Deck ist."),
         ) {
             border(); floor()
-            fill(7..8, 15..17, 'g')
+            fill(7..8, 15..15, 'g')
             fill(10..11, 15..15, 'a'); ceilingSpikes(10..11)
             pit(12..27); fill(12..27, 17..17, '^')
             fill(12..12, 10..14); fill(12..27, 9..9); fill(19..21, 9..9, 'b'); fill(26..27, 9..9, 'c')
