@@ -453,17 +453,34 @@ object World1Part3 {
                 trap(Touch('k'), Play(Card.GHOST_BLOCK), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f), Say(T("Okay.", "Okay."))),
                 trap(Touch('m'), Move('h', 0f, -13f, 1.0f), Move('q', -8f, 0f, 2.0f), Say(T("Sandwich comes with a side of wall.", "Sandwich mit Beilage. Wand."))),
             ),
+            // rematch: Mephi mirrored the kitchen: you start left of the middle again, but the bread is on the right now and the pickle on the
+            // left, the first wall comes from the right and the second from the left, and the door is on the left
             rematch = listOf(
                 Round(
-                    T("Rematch. I'm hungry again.", "Revanche. Ich hab schon wieder Hunger."),
+                    T("Rematch. Hungry again. I mirrored the kitchen.", "Revanche. Schon wieder Hunger. Ich habe die K\u00fcche gespiegelt."),
+                    legend = mapOf('Z' to Glyph(spike = true, dir = Dir.LEFT), 'q' to Glyph(spike = true, dir = Dir.RIGHT)),
+                    hint = T("The kitchen is mirrored: the bread is over the right ledge now, the pickle over the left one, and the door is on the left.", "Die K\u00fcche ist gespiegelt: Das Brot h\u00e4ngt jetzt \u00fcber dem rechten Absatz, die Gurke \u00fcber dem linken, und die T\u00fcr ist links."),
                     traps = listOf(
-                        trap(Touch('k'), Play(Card.HEADBUTT), Move('g', 0f, -13f, 1.0f), Move('Z', 12f, 0f, 3.5f),
+                        trap(Touch('k'), Play(Card.HEADBUTT), Move('g', 0f, -13f, 1.0f), Move('Z', -12f, 0f, 3.5f),
                             Say(T("Same bread. Same hurry.", "Gleiches Brot. Gleiche Eile."))),
-                        trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', -8f, 0f, 2.0f),
+                        trap(Touch('m'), Move('h', 0f, -13f, 0.9f), Move('q', 8f, 0f, 2.0f),
                             Say(T("Sandwich comes with the pickle on top.", "Sandwich mit Gurke obendrauf."))),
                         trap(Touch('m'), Move('y', 0f, 5f, 24f), delay = 0.1f),
                     ),
-                ),
+                ) {
+                    fill(1..30, 1..14, '.')
+                    fill(20..21, 13..14); fill(22..23, 11..14); fill(24..28, 9..14)
+                    art(24, 2, "zzzzz", "z.z.z", "zzzzz", c = 'z')
+                    put(25, 6, 'k'); put(26, 6, 'k')
+                    fill(30..30, 1..14, 'Z')
+                    fill(16..16, 2..14, 'g')
+                    fill(12..13, 13..14); fill(9..11, 11..14)
+                    put(9, 8, 'm'); put(8, 8, 'm')
+                    art(8, 4, "yyyy", "yyyy", c = 'y')
+                    fill(7..7, 2..14, 'h')
+                    fill(1..1, 1..14, 'q')
+                    put(17, 14, 'P'); put(5, 14, 'D')
+                },
             ),
         ) {
             border(); floor()

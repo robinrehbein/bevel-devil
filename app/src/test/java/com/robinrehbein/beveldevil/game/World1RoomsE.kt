@@ -41,9 +41,9 @@ object World1RoomsE {
             { leftTo(12.4f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(5.9f).jump(0.4f)
                 .rightTo(14.0f).waitFor { it.group('g').oy <= -1.2f }.rightTo(17.0f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(22.2f).jump(0.4f).waitFor { it.player.grounded }
                 .rightTo(23.2f).waitFor { it.group('h').oy <= -1.2f }.rightTo(25.0f).right(2f) },
-            { leftTo(12.4f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(5.9f).jump(0.4f)
-                .rightTo(14.0f).waitFor { it.group('g').oy <= -1.2f }.rightTo(17.0f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(21.2f).rightJump(0.45f).landRight()
-                .waitFor { it.group('h').oy <= -1.2f }.rightTo(25.0f).right(2f) },
+            { rightTo(19.6f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightTo(26.1f).jump(0.4f)
+                .leftTo(18.0f).waitFor { it.group('g').oy <= -1.2f }.leftTo(15.0f).leftJump(0.45f).landLeft().leftJump(0.45f).landLeft().leftTo(10.8f).leftJump(0.45f).landLeft()
+                .waitFor { it.group('h').oy <= -1.2f }.leftTo(7.0f).left(2f) },
         ),
         46 to listOf<Solution>(
             { rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.darkFor('A') > 1.1f }
