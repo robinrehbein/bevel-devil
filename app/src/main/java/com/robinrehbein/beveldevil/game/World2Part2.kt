@@ -287,28 +287,28 @@ object World2Part2 {
             spawn(1); door(18, 4); bits(23)
         },
 
-        // 24 — the uplink, a trap room (U2 the ceiling comes down, with a saw from the side as the last surprise): the elevator is out of order and the
-        // uplink is in the basement, so you start up on the top deck and run right. Stalactites hang over the deck and drop as you come near: stop
-        // and let them pass. But the spot where everybody stops to wait is under a second cluster, and that one drops on whoever waits there (stop
-        // short, or do not stop at all). At the end you drop down to the lane and run back left under the underside of the deck, which comes down
-        // on whoever steps under it (keep running); on the last stretch before the door a saw rolls out of the back wall as you land (hop it)
+        // 24 — the uplink, a trap room (U2 the floor slides and the ceiling comes down, with a saw as the last surprise): the elevator is out of order
+        // and the uplink is in the basement, so you start up on the top deck and run right. There is a gap in the deck ahead, over the door; as you
+        // set off, the deck piece in front of it slides over into it, and the gap is where you are about to run, over a row of LEDs (stop, then jump
+        // it). Along the deck a rack is delivered from the ceiling onto whoever runs under it (stop, then hop it). At the end you drop down to the lane and run back left under the underside of the deck, which comes down on whoever steps under it
+        // (keep running); and as you land on the lane, the uplink sends its traffic down through the hole you jumped: a saw drops through it and
+        // rolls along the lane at you (hop it)
         Level(
             name = T("Uplink", "Uplink"),
             intro = T("The uplink is in the basement. So is the elevator.", "Der Uplink ist im Keller. Der Aufzug auch."),
-            legend = mapOf('V' to Glyph(spike = true, dir = Dir.DOWN), 'W' to Glyph(spike = true, dir = Dir.DOWN)),
             traps = listOf(
-                trap(PastX(3.0f), Move('V', 0f, 16f, 14f), say("Stalactites. Patience is a virtue.", "Stalaktiten. Geduld ist eine Tugend."), delay = 0.58f),
-                trap(Zone(6.2f, 3f, 8.8f, 6f), Move('W', 0f, 16f, 14f), say("Virtue is overrated.", "Tugend wird überschätzt."), delay = 0.75f),
+                trap(PastX(4.5f), Move('a', 3f, 0f, 12f), say("Packet reordered. Your floor arrives out of sequence.", "Paket umsortiert. Dein Boden kommt in falscher Reihenfolge an."), delay = 0.1f),
+                trap(PastX(16.6f), Move('c', 0f, 4f, 14f), say("A rack for you. Delivered from above.", "Ein Rack für dich. Von oben geliefert."), delay = 0.15f),
                 trap(Zone(19f, 12.5f, 26.9f, 15.5f), Move('r', 0f, 6f, 3.6f), say("Uplink full. Try the downlink.", "Uplink voll. Versuch's mit dem Downlink.")),
-                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 12f, 0f), say("Downlink traffic. It has teeth.", "Downlink-Verkehr. Er hat Zähne.")),
+                trap(Landed(26f, 31f), Play(Card.DEVIL_SAW), PathSaw(12f, 10f to 6.5f, 10f to 14.4f, 30f to 14.4f), say("Downlink traffic. It came through your hole.", "Downlink-Verkehr. Er kam durch dein Loch.")),
             ),
-            hint = T("Let the first stalactites pass, but do not wait right in front of them. Under the deck, keep running.", "Lass die ersten Stalaktiten vorbei, aber warte nicht direkt davor. Unter dem Deck: weiterlaufen."),
+            hint = T("The gap in the deck moves: stop when it does, then jump it. Under the deck, keep running, and hop what comes down the hole.", "Die Lücke im Deck wandert: Bleib stehen, wenn sie es tut, dann spring. Unter dem Deck: weiterlaufen, und spring über das, was durchs Loch kommt."),
         ) {
             border(); floor()
-            fill(0..26, 6..6)
-            fill(9..10, 1..2, 'V'); fill(5..8, 1..1, 'W')
+            fill(0..26, 6..6); fill(9..11, 6..6, 'a'); fill(12..14, 6..6, '.')
+            leds(8..14); fill(19..20, 1..1, 'c')
             fill(19..26, 7..8, 'r')
-            spawn(1, 5); door(12, 14); bits(24)
+            spawn(1, 5); door(16, 14); bits(24)
         },
 
         // 25 — the load balancer, a trap room (U1 the floor goes): one way over a spike pit, from node to node, and every node balances the

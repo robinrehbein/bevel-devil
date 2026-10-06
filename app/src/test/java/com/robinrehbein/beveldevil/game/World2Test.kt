@@ -413,7 +413,8 @@ class World2Test {
         for ((n, solve) in World2Rooms.solutions) {
             val run = solve(b(n))
             run.expect(WorldState.WON)
-            assertTrue("level $n: clean run only ${run.world.time} s", run.world.time >= 6f)
+            // §9a F: the floor is 4 s; playtime comes from dying and solving, not from a long run
+            assertTrue("level $n: clean run only ${run.world.time} s", run.world.time >= 4f)
             for (period in listOf(0.15f, 0.4f, 0.8f, 1.3f)) {
                 assertTrue("level $n: running right, jumping every $period s, wins", hammer(n, period).world.state != WorldState.WON)
             }
@@ -514,13 +515,14 @@ class World2Test {
     @Test fun l23RunningStraightOnDropsIntoTheRoadworks() = b(23).right(6f).expect(WorldState.DEAD)
     @Test fun l23StandingOnTheExitLiftIsFatal() = b(23).rightUntil { it.player.box.cx > 11f }.hopR(15.8f).rightTo(27.2f).wait(2.5f).expect(WorldState.DEAD)
 
-    // 24: stalactites fall where you run, the second cluster falls on whoever waits right in front of the first, the deck comes down on the lane
-    private fun l24Top(b: Bot) = b.rightTo(4.6f).waitFor { it.group('V').oy > 5.5f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-    @Test fun l24RunningUnderTheStalactitesIsFatal() = b(24).right(3f).expect(WorldState.DEAD)
-    @Test fun l24WaitingRightInFrontOfTheStalactitesIsFatal() = b(24).rightTo(7.4f).wait(2f).expect(WorldState.DEAD)
-    @Test fun l24WaitingShortOfTheSpotIsSafe() = b(24).rightTo(4.6f).wait(2f).expect(WorldState.PLAYING)
+    // 24: the deck piece slides into the gap and the gap is where you run, a rack drops onto the deck, the deck comes down on the lane, a saw comes down the hole
+    private fun l24Top(b: Bot) = b.rightTo(7.4f).waitFor { it.group('a').ox > 2.9f }.hopR(8.4f, 0.5f).rightTo(16.8f).waitFor { it.group('c').oy > 3.9f }.hopR(17.6f, 0.5f)
+        .rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+    @Test fun l24RunningIntoTheMovedGapIsFatal() = b(24).right(3f).expect(WorldState.DEAD)
+    @Test fun l24WaitingShortOfTheGapIsSafe() = b(24).rightTo(4.6f).wait(2f).expect(WorldState.PLAYING)
+    @Test fun l24RunningUnderTheRackIsFatal() = b(24).rightTo(7.4f).waitFor { it.group('a').ox > 2.9f }.hopR(8.4f, 0.5f).right(2f).expect(WorldState.DEAD)
     @Test fun l24StandingUnderTheDeckIsFatal() = l24Top(b(24)).leftTo(22f).wait(3f).expect(WorldState.DEAD)
-    @Test fun l24RunningStraightIntoTheSawFromTheBackWallIsFatal() = l24Top(b(24)).left(5f).expect(WorldState.DEAD)
+    @Test fun l24RunningStraightIntoTheSawFromTheHoleIsFatal() = l24Top(b(24)).left(5f).expect(WorldState.DEAD)
 
     // ---------- act 2, levels 17-24: what the reviews asked for ----------
 

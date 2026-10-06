@@ -95,9 +95,9 @@ object World2Rooms {
     /** 23: ride the on-ramp and step off onto the deck, hop the roadworks, ride the last lift only as far as the exit deck and jump off it. */
     fun l23(b: Bot) = b.hopR(5.3f).rightUntil { it.player.box.cx > 13f }.hopR(18.0f).rightUntil { it.group('c').oy < -3.9f }.leftTo(19f).left(1f)
 
-    /** 24: stop short of the waiting spot until the stalactites have passed, along the top deck, off the end, back under the deck without stopping, hop the saw out of the back wall, to the door. */
-    fun l24(b: Bot) = b.rightTo(4.6f).waitFor { it.group('V').oy > 5.5f }.rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-        .leftUntil { sawAheadLeft(it, 5.5f) }.leftJump(0.35f).landLeft().left(1.5f)
+    /** 24: stop short of the deck piece until it has slid into the gap, jump the gap it leaves, stop for the rack and hop it, along the deck and off the end, back left under the deck without stopping, hop the saw that comes down the hole, to the door. */
+    fun l24(b: Bot) = b.rightTo(7.4f).waitFor { it.group('a').ox > 2.9f }.hopR(8.4f, 0.5f).rightTo(16.8f).waitFor { it.group('c').oy > 3.9f }.hopR(17.6f, 0.5f).rightUntil { it.player.box.cx > 28f }.rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+        .leftUntil { sawAheadLeft(it, 3.5f) }.leftJump(0.35f).landLeft().left(1.5f)
 
     // ---------- block B (25-32): the rebuilt rooms ----------
 
