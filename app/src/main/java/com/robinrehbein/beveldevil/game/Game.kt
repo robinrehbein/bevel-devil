@@ -170,9 +170,36 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         private set
     /** Mephi gives himself away: a bluff card is flying and has not flipped yet. */
     val bluffTell get() = card != null && cardBluff && cardAge < BLUFF_FLIP
-    /** Where the flying card settles: -1 left, 0 stage center, 1 right. Center unless the player stands in its way. */
+    /**
+     * Where the flying card settles: -1 left, 0 stage center, 1 right, and [cardLift] tiles up (negative) or down; it
+     * keeps clear of the player and of what its trap (and any trap going off while it flies) acts on, see [CardSlot].
+     */
     var cardSide = 0
         private set
+    var cardLift = 0f
+        private set
+    /** Where the card glides from (side, lift), [cardMoveAge] seconds ago, when a later trap made it move. */
+    private var cardFrom = 0f to 0f
+    private var cardMoveAge = CARD_GLIDE
+    /** What the card keeps clear of, in tiles of the room in view. */
+    private val cardAreas = ArrayList<Area>()
+
+    /** Side (-1..1) and lift (tiles) of the card right now: its slot, or on the way there. */
+    fun cardSlot(): Pair<Float, Float> {
+        val f = (cardMoveAge / CARD_GLIDE).coerceIn(0f, 1f)
+        val e = f * f * (3f - 2f * f)
+        val (fs, fl) = cardFrom
+        return (fs + (cardSide - fs) * e) to (fl + (cardLift - fl) * e)
+    }
+
+    /** Picks the card's slot; with [glide] it slides there from where it is now, else it flies straight to it. */
+    private fun settleCard(w: World, glide: Boolean) {
+        val s = CardSlot.choose(Area.of(w.player.box).shift(-w.camX, 0f), cardAreas)
+        cardFrom = if (glide) cardSlot() else s.side.toFloat() to s.lift
+        cardMoveAge = if (glide) 0f else CARD_GLIDE
+        cardSide = s.side
+        cardLift = s.lift
+    }
     private var survivalCheck = -1f
     /** [time] the clear screen opened. */
     private var clearAt = 0f
@@ -349,6 +376,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (card != null) {
             val before = cardAge
             cardAge += dt
+            cardMoveAge += dt
             if (cardBluff && before < BLUFF_FLIP && cardAge >= BLUFF_FLIP) bluffRevealed()
             if (cardAge > CARD_LIFE + (if (cardBluff) BLUFF_FLIP else 0f)) card = null
         }
@@ -395,6 +423,13 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 heat = 1f
             }
             is Event.Breach -> rubble(e)
+            is Event.Crumble -> debris(e)
+            is Event.Target -> if (card != null) {
+                // a later trap went off under the card still in the air: it moves out of the way, if it covers it
+                val a = e.area.shift(-w.camX, 0f)
+                cardAreas += a
+                if (CardSlot.area(CardSlot.Slot(cardSide, cardLift)).overlap(a) > 0f) settleCard(w, glide = true)
+            }
             is Event.Pan -> audio.play(Sound.FLIP)
             is Event.Shake -> shake = maxOf(shake, e.amount)
             is Event.Say -> { say(e.text.toString(), 2.6f); bubbleIsTrap = bubble != null }
@@ -402,13 +437,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 card = e.card
                 cardBluff = e.bluff
                 cardAge = 0f
-                cardSide = world?.let { cw ->
-                    // the card is about 5.5×7.5 tiles around (16, 8.25) of the room in view; keep a margin for the player walking on
-                    val p = cw.player.box
-                    val x = p.cx - cw.camX
-                    val hits = abs(x - 16f) < 2.75f + 2f + p.w / 2 && abs(p.cy - 8.25f) < 3.75f + 1f + p.h / 2
-                    if (!hits) 0 else if (x > 16f) -1 else 1
-                } ?: 0
+                // out of the player's way and off what the trap does
+                cardAreas.clear()
+                e.area?.let { cardAreas += it.shift(-w.camX, 0f) }
+                settleCard(w, glide = false)
                 heat = 1f
                 glitch = GLITCH_TIME
                 if (!e.bluff) progress.findCard(e.card)
@@ -490,6 +522,26 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         repeat(10) {
             particles += Particle(b.x0 + fx.nextFloat() * w, b.y0 + fx.nextFloat() * h, (fx.nextFloat() - 0.5f) * 3f, -0.5f - fx.nextFloat(),
                 0.5f + fx.nextFloat() * 0.3f, 0xFFEADCCB.toInt(), size = 4, dust = true)
+        }
+    }
+
+    /**
+     * Tiles that vanished ([Action.Hide]) crumble: a few stone chunks per tile drop out of where each one was and fall
+     * away with gravity, with a puff of dust. Only the look: the tiles were gone at once.
+     */
+    private fun debris(c: Event.Crumble) {
+        val per = (DEBRIS_MAX / c.tiles.size).coerceIn(1, 4)
+        for ((i, t) in c.tiles.withIndex()) {
+            val (x, y) = t
+            if (i * per >= DEBRIS_MAX) break
+            repeat(per) { k ->
+                val cx = x + (k % 2) * 0.5f + 0.1f + fx.nextFloat() * 0.3f
+                val cy = y + (k / 2) * 0.5f + 0.1f + fx.nextFloat() * 0.3f
+                particles += Particle(cx, cy, (fx.nextFloat() - 0.5f) * 2.5f, 0.5f + fx.nextFloat() * 2.5f, 0.55f + fx.nextFloat() * 0.35f,
+                    when ((k + i) % 3) { 0 -> 0xFF9A8F86.toInt(); 1 -> 0xFF6E655F.toInt(); else -> 0xFFB8AC9E.toInt() }, size = if (k % 2 == 0) 3 else 2)
+            }
+            if (i % 2 == 0) particles += Particle(x + 0.5f, y + 0.3f, (fx.nextFloat() - 0.5f) * 2f, -0.3f - fx.nextFloat() * 0.5f,
+                0.4f + fx.nextFloat() * 0.3f, 0xFFEADCCB.toInt(), size = 4, dust = true)
         }
     }
 
@@ -859,6 +911,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     companion object {
         const val CARD_LIFE = 2.2f
+        /** Seconds the card takes to glide to another slot when a later trap goes off under it. */
+        const val CARD_GLIDE = 0.3f
+        /** Most chunks a crumbling floor ([Event.Crumble]) throws, however big it is. */
+        const val DEBRIS_MAX = 48
         /** Base life of a devil quip; [say] adds reading time, so it hangs about two seconds. */
         const val QUIP_LIFE = 0.4f
         /** Length of the CRT glitch when Mephi plays a card. */

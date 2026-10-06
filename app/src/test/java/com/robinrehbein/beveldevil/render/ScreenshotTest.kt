@@ -808,7 +808,7 @@ class ScreenshotTest {
             film(19).apply { play(1.0f); save("148-w3-l19-melt-fuse$tag") }
             film(22).apply { play(1.8f); save("149-w3-l22-heat-soak$tag") }
             film(24).apply { play(1.0f); save("150-w3-l24-cooling-fins$tag") }
-            film(26).apply { play(6f) { w().circuits['Z']!!.warn > 0.5f }; save("151-w3-l26-hot-wire$tag") }
+            film(26).apply { play(2.0f); save("151-w3-l26-hot-wire$tag") }
             film(30).apply { play(1.0f); save("152-w3-l30-burn-in$tag") }
             film(32).apply { play(1.0f); save("153-w3-l32-runaway$tag") }
             // act 3: Lüfter, the blue board
@@ -920,5 +920,18 @@ class ScreenshotTest {
         s.setOption(0, 1); s.setOption(1, 2); s.setOption(4, 0); s.setOption(2, 1)
         Lang.german = true
         shoot("27-settings-de", s, two)
+    }
+
+    /** 2-22: the carpet drops out under the flying card, which moves off the hole; the carpet crumbles. */
+    @Test
+    fun cardDodgesTheCarpet() {
+        Lang.german = false
+        Film(Game(MemoryProgress(), silent).apply { startCustom(com.robinrehbein.beveldevil.game.World2.levels[21]) }, sizes[0]).apply {
+            game.input.right = true
+            play(6f) { game.world!!.player.box.cx > 12.6f }
+            game.input.right = false
+            play(0.05f); save("28-bouncer-carpet-trap")
+            play(0.3f); save("28-bouncer-carpet-trap-later")
+        }
     }
 }
