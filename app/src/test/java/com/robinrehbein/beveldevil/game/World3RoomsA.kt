@@ -2,6 +2,9 @@ package com.robinrehbein.beveldevil.game
 
 /** Bot solutions of the rebuilt block A of World 3 (levels 1-8): one per round, round 1 first. Registered in [World3DesignTest]. */
 object World3RoomsA {
+    /** The path saw (pendulum) hanging in column [x]. */
+    private fun pend(w: World, x: Float): Float = w.saws.firstOrNull { it.path != null && Math.abs(it.x - x) < 0.1f }?.y ?: 99f
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         1 to listOf<Solution>(
             { hopL(18.5f).leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 14f }.rightTo(5.3f).rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
@@ -14,6 +17,16 @@ object World3RoomsA {
                 .rightUntil { w -> w.group('S').let { it.homeX + it.ox - w.player.box.cx < 3.0f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.box.cy > 10f }.landRight()
                 .rightTo(27.4f).rightJump(0.55f).landRight().right(1f) },
+        ),
+        3 to listOf<Solution>(
+            { hopR(4.0f).rightTo(9.2f).waitFor { it.group('p').visible }.rightTo(12.5f).rightJump(0.55f).landRight()
+                .rightTo(17.5f).rightJump(0.55f).landRight().waitFor { it.group('m').visible }
+                .rightTo(22.5f).rightJump(0.55f).landRight().rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
+        ),
+        4 to listOf<Solution>(
+            { leftUntil { it.player.grounded && it.player.box.b > 14f }.leftTo(19.3f).waitFor { w -> pend(w, 17.5f) < 12.3f }
+                .leftTo(15.8f).waitFor { w -> pend(w, 12.5f) < 12.0f }.leftTo(13.4f).leftJump(0.55f).landLeft().leftTo(9.6f)
+                .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(1f) },
         ),
     )
 }

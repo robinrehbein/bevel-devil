@@ -82,5 +82,51 @@ object World3PartA {
             fill(28..29, 14..14, 'Y')
             spawn(1, 14); door(30, 14)
         },
+
+        // 3 — a pit with islands, and every floor in it is on loan. A hole opens right behind the spawn (hop it), a clocked rail
+        // wants you to wait for its beat, a stepping stone gives way the moment you land, the island in the middle holds for a
+        // moment (wait there for the second rail, but not too long) and the last tiles before the door follow you.
+        Level(
+            name = T("Clock Cycle", "Taktgeber"),
+            intro = T("Punctuality is a feature. Mine, not yours.", "Pünktlichkeit ist ein Feature. Meins, nicht deins."),
+            start = listOf(Clock('p', on = 2.2f, off = 2.1f, phase = 2.2f), Clock('m', on = 1.8f, off = 1.6f, phase = 2.0f)),
+            traps = listOf(
+                trap(PastX(3.9f), Fall('g'), say("A hole. The floor had a better offer.", "Ein Loch. Der Boden hatte ein besseres Angebot."), delay = 0.2f),
+                trap(Touch('s'), Play(Card.CRUMBLE), Fall('s'), say("The stone was only on loan.", "Der Stein war nur geliehen."), delay = 0.4f),
+                trap(Touch('i'), Fall('i'), say("Island time is limited. Check the clock.", "Inselzeit ist begrenzt. Schau auf die Uhr."), delay = 1.8f),
+            ),
+            hint = T("Wait on the island. Never on a stone.", "Warte auf der Insel. Nie auf einem Stein."),
+        ) {
+            border(); floor()
+            pit(10..27)
+            fill(5..6, 15..17, 'g')
+            fill(10..12, 15..15, 'p')
+            fill(15..17, 15..15, 's')
+            fill(20..22, 15..15, 'i')
+            fill(25..27, 15..15, 'm')
+            fill(28..29, 13..14); fill(30..31, 11..14)
+            spawn(1, 14); door(30, 10)
+        },
+
+        // 4 — start right on a shelf, door left on top of a staircase. A fan blade rolls in from behind the moment you land, a
+        // pendulum blade hangs in the middle of the floor, and the copper bridge before the stairs is cut on a timer.
+        Level(
+            name = T("Solid Copper", "Massives Kupfer"),
+            intro = T("Nothing can go wrong here. Nothing.", "Hier kann nichts schiefgehen. Gar nichts."),
+            start = listOf(Circuit('a')),
+            traps = listOf(
+                trap(Landed(18f, 26f), Play(Card.DEVIL_SAW), Saw(32.6f, 14.4f, -3.4f, 0f), say("Stop staring. Fan blade, from behind.", "Nicht rumstehen. Lüfterblatt, von hinten.")),
+                trap(BeforeX(21.5f), PathSaw(5.5f, 17.5f to 14.4f, 17.5f to 9.5f, delay = 0.9f), say("Pendulum blade. Bring your own rhythm.", "Pendelblatt. Bring deinen eigenen Rhythmus mit.")),
+                trap(BeforeX(16.5f), PathSaw(5.5f, 12.5f to 14.4f, 12.5f to 9.5f, delay = 0.7f), say("A second pendulum. Over the bridge. Obviously.", "Ein zweites Pendel. Über der Brücke. Natürlich.")),
+                trap(Touch('b'), Power('a', false), say("Solid copper. Was.", "Massives Kupfer. War."), delay = 0.2f),
+            ),
+            hint = T("The blade behind you is slower than you. The one in front is not slow, just late.", "Das Blatt hinter dir ist langsamer als du. Das vor dir ist nicht langsam, nur spät."),
+        ) {
+            border(); floor()
+            fill(27..30, 9..9)
+            pit(11..14); fill(11..12, 15..15, 'a'); fill(13..14, 15..15, 'b')
+            fill(7..8, 13..14); fill(5..6, 11..14); fill(3..4, 9..14); fill(1..2, 7..14)
+            spawn(29, 8); door(1, 6)
+        },
     )
 }
