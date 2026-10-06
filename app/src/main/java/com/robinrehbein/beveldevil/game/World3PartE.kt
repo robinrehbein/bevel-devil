@@ -145,32 +145,29 @@ object World3PartE {
             spawn(10, 14); door(30, 5)
         },
 
-        // 39 — a downdraft over a short pit: you cannot jump against it, only between its gusts; the edge where you wait for them warms up (wait further back, sprint), the plates behind it are warm, and a blade rolls in
+        // 39 — Downdraft (R10, U2): scratch v4
         Level(
             name = T("Downdraft", "Fallwind"),
             intro = T("Gravity, but with a motor.", "Schwerkraft, aber mit Motor."),
-            start = listOf(Fan('d', at = 15 to 0, dir = Dir.DOWN, reach = 14, speed = 9f, width = 4, on = 2f, off = 2.4f)),
-            traps = listOf(
-                trap(Zone(13f, 13f, 15f, 15f), HeatSpike('w', 0.45f), say("The waiting room is heated. You're welcome.", "Der Warteraum ist beheizt. Gern geschehen.")),
-                trap(Landed(18.5f, 21.5f), Play(Card.OVERCLOCKED), HeatSpike('g', 0.7f), say("Made it across. The plates are warm.", "Drüben. Die Platten sind warm.")),
-                trap(Landed(25.5f, 28f), Saw(33f, 14.4f, -6f, 0f), say("And a fan blade for the road.", "Und ein Lüfterblatt für unterwegs.")),
+            start = listOf(
+                Fan('u', at = 3 to 17, dir = Dir.UP, reach = 12, speed = 6f, width = 4),
+                Fan('d', at = 13 to 0, dir = Dir.DOWN, reach = 15, speed = 2.2f, width = 4),
             ),
-            // rematch: the heating moved to the back rows, where round 1 was safe: wait at the edge now
-            rematch = listOf(
-                Round(
-                    T("Downdraft, reheated.", "Fallwind, zweiter Aufguss."),
-                    start = listOf(Fan('d', at = 15 to 0, dir = Dir.DOWN, reach = 14, speed = 9f, width = 4, on = 2f, off = 2.4f)),
-                    traps = listOf(
-                        trap(Zone(9f, 13f, 11.5f, 15f), HeatSpike('u', 0.7f), say("Heating moved to the back rows.", "Die Heizung ist nach hinten umgezogen."), delay = 0.9f),
-                        trap(Landed(18.5f, 21.5f), Play(Card.OVERCLOCKED), HeatSpike('g', 0.7f), say("Across. The plates are warm, as usual.", "Drüben. Die Platten sind warm, wie üblich.")),
-                        trap(Landed(25.5f, 28f), Saw(33f, 14.4f, -6f, 0f), say("The blade is a regular.", "Das Lüfterblatt ist Stammgast.")),
-                    ),
-                ) { fill(7..10, 15..15, 'u') },
+            traps = listOf(
+                trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Mind the ceiling. It minds you.", "Achtung, die Decke. Sie achtet auf dich."), delay = 0.3f),
+                trap(Landed(11f, 12.9f), Fall('h'), say("And the next one, for good measure.", "Und die nächste, zur Sicherheit."), delay = 0.3f),
+                trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
+                trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),
             ),
         ) {
-            border(); floor(); pit(15..18)
-            fill(11..14, 15..15, 'w'); fill(23..25, 15..15, 'g')
-            spawn(); door()
+            border(); floor()
+            fill(7..12, 6..14)
+            fill(17..18, 1..9)
+            put(10, 5, '^')
+            fill(7..7, 1..2, 'c'); fill(11..12, 1..2, 'h')
+            fill(20..23, 1..2, 'e')
+            fill(25..28, 12..12, 'v')
+            spawn(1, 14); door(29, 14)
         },
 
         // 40 — the updraft over the spikes reverses while you float: settle on the stone, it comes back; the landing is warm
