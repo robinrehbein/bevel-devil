@@ -80,7 +80,7 @@ class World3DesignTest : DesignTestBase() {
         val REBUILT: Set<Int> = (1..16).toSet()
 
         /** Level number → bot solution per round (round 1 first). */
-        val SOLUTIONS: Map<Int, List<Solution>> = World3RoomsA.solutions + World3RoomsB.solutions
+        val SOLUTIONS: Map<Int, List<Solution>> = World3RoomsA.solutions + World3RoomsB.solutions + World3RoomsC.solutions
 
         /** Plays the registered solution of level [n], [round] 1-based, and expects the win (for [World3Test]). */
         fun play(n: Int, round: Int = 1) =
