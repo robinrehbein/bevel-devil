@@ -96,21 +96,26 @@ object World3PartF {
             name = T("Wiring Diagram", "Schaltplan"),
             intro = T("Page one: everything is connected.", "Seite eins: Alles hängt zusammen."),
             start = listOf(
-                Circuit('a'), Circuit('p'), Circuit('l'), Circuit('w'),
+                Circuit('a'), Circuit('p'), Circuit('l'), Circuit('w'), Circuit('x', on = false),
                 Fan('f', at = 17 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
-                Pad('1', at = 5 to 14), Pad('2', at = 11 to 7, circuits = "w", mode = PadMode.OFF),
+                Pad('1', at = 5 to 14), Pad('2', at = 11 to 7),
             ),
             traps = listOf(
                 trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
+                trap(Pressed('1', 2), Clock('a', on = 1.8f, off = 60f), Power('f', true)),
+                trap(Pressed('1', 3), Clock('a', on = 1.8f, off = 60f), Power('f', true)),
                 trap(Touch('p'), Power('p', false), say("The landing is on a different circuit.", "Die Landefläche hängt an einem anderen Stromkreis."), delay = 0.4f),
                 trap(Touch('l'), Clock('l', on = 1.8f, off = 1.2f), say("The ledge is on a timer. Page two.", "Der Sims hat einen Timer. Seite zwei.")),
+                trap(Pressed('2'), BitFlip('w', 'x'), say("Bit flip: the wall and the floor under it share one bit. They swap.", "Bitkipper: Die Wand und der Boden darunter teilen sich ein Bit. Sie tauschen.")),
             ),
+            hint = T("Press the first switch, then run: the bridge only has power for a moment. The second switch hides at the far end of the ledge.", "Drück den ersten Schalter und lauf los: Die Brücke hat nur kurz Strom. Der zweite Schalter liegt am anderen Ende des Simses."),
         ) {
             border(); floor()
             pit(8..16); put(8, 15, 'a')
             fill(8..14, 15..15, 'a'); fill(15..16, 15..15, 'p')
             fill(19..23, 8..14)
             fill(9..16, 8..8, 'l')
+            pit(26..27); fill(26..27, 15..15, 'x')
             fill(26..27, 1..14, 'w')
             spawn(2, 14); door(29, 14)
         },
@@ -126,6 +131,7 @@ object World3PartF {
                 trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
                 trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
             ),
+            hint = T("Stand in the draft and wait for the ride. The world will turn by itself.", "Stell dich in den Luftstrom und warte auf die Fahrt. Die Welt dreht sich von allein."),
         ) {
             border(); floor()
             put(19, 1, 'v')
@@ -144,6 +150,7 @@ object World3PartF {
                 trap(Zone(13f, 7.5f, 16f, 10.5f), Move('q', -2.5f, 0f, 5f), say("The vent has a side entrance.", "Der Schacht hat einen Seiteneingang."), delay = 0.3f),
                 trap(Zone(21f, 3.5f, 25f, 5.5f), Move('p', 0f, -3.5f, 2.2f), say("Racks are hot-swappable. This shelf swaps up.", "Racks sind hot-swap-fähig. Dieses Regal fährt nach oben."), delay = 0.2f),
             ),
+            hint = T("Ride the vent with your back to the left wall. The shelf at the top swaps up: do not stay on it.", "Fahr im Schacht mit dem Rücken zur linken Wand. Das Regal oben fährt hoch: Bleib nicht drauf."),
         ) {
             border(); floor()
             fill(29..29, 6..14, 'W')
@@ -159,20 +166,22 @@ object World3PartF {
             intro = T("Power-on self-test. Three checks. One beep each.", "Einschalt-Selbsttest. Drei Prüfungen. Je ein Piep."),
             start = listOf(
                 Fan('a', at = 12 to 15, dir = Dir.UP, reach = 6, speed = 5.5f, width = 3),
-                Fan('b', at = 2 to 10, dir = Dir.UP, reach = 7, speed = 5.5f, width = 5),
+                Fan('b', at = 2 to 10, dir = Dir.UP, reach = 7, speed = 5.5f, width = 4),
             ),
             traps = listOf(
                 trap(Zone(12f, 12f, 15f, 15.5f), Play(Card.BIOS), Power('a', false), say("Beep. Fan: 0 RPM. Press F1 to continue.", "Piep. Lüfter: 0 U/min. F1 zum Fortfahren."), delay = 0.2f),
                 trap(Zone(12f, 12f, 15f, 15.5f), Power('a', true), delay = 1.3f),
                 trap(Zone(12f, 10.5f, 15f, 12.5f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
-                trap(Zone(2f, 6f, 7f, 8f), FanSet('b', 7.5f), say("Beep beep. Fan two: full speed. Nobody asked.", "Piep piep. Lüfter zwei: Vollgas. Keiner hat gefragt.")),
+                trap(Zone(2f, 6f, 6f, 8f), FanSet('b', 7.5f), say("Beep beep. Fan two: full speed. Nobody asked.", "Piep piep. Lüfter zwei: Vollgas. Keiner hat gefragt.")),
                 trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), say("Beep beep beep. Memory: restored from backup.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt.")),
             ),
+            hint = T("The serpentine goes up on the right, back left, up again, and right to the door. Hold on to the wall in the first lift.", "Der Weg geht rechts hoch, links zurück, wieder hoch und rechts zur Tür. Halt dich im ersten Aufzug an der Wand."),
         ) {
             border(); floor()
             fill(15..30, 10..14)
             fill(1..11, 10..10)
             fill(7..21, 5..5)
+            put(6, 9, '^'); put(11, 4, '^')
             spawn(2, 14); door(21, 4)
         },
 
@@ -192,6 +201,7 @@ object World3PartF {
                     line = T("Boot device 2: disk. Sector 0 unreadable. Boot device 3: next door.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: nebenan."))),
                 trap(PastX(roomX(1, 12f)), Clock('Z', on = 1.7f, off = 1.0f), say("Boot device 3: network. Authenticating.", "Bootgerät 3: Netzwerk. Authentifizierung läuft.")),
             ),
+            hint = T("The door that runs away is not the way out. Look up, then look at the wall.", "Die Tür, die wegläuft, ist nicht der Ausgang. Schau nach oben, dann auf die Wand."),
         ) {
             border(); floor()
             room(0) {
@@ -210,24 +220,23 @@ object World3PartF {
             intro = T("Press DEL to enter setup. Everything else is my job.", "ENTF für das Setup. Alles andere ist mein Job."),
             rooms = 2,
             start = listOf(
-                Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 7f, width = 3), Power('f', false),
+                Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 7f, width = 3),
                 Fan('g', at = 19 to 7, dir = Dir.UP, reach = 5, speed = -6f, width = 3),
-                Pad('A', at = 6 to 14), Pad('B', at = 14 to 6),
+                Pad('B', at = 14 to 6),
                 Heat('n', rise = 0.9f), Heat('m', rise = 1.8f),
                 Fan('D', at = roomX(1, 4) to 0, dir = Dir.DOWN, reach = 14, speed = 7f, width = 4),
-                Heat('c', rise = 2.0f), Heatsink('k', cools = "c"), Heat('e', rise = 1.2f),
+                Heat('c', rise = 2.0f, load = true), Heatsink('k', cools = "c"), Heat('e', rise = 1.2f),
             ),
             traps = listOf(
-                trap(Pressed('A'), Power('f', true), say("Setup, page one: the lift. Enabled.", "Setup, Seite eins: der Aufzug. Aktiviert.")),
                 trap(Landed(12f, 14f), HeatSpike('n', 0.7f), say("CPU: overclocked on arrival.", "CPU: bei Ankunft übertaktet.")),
                 trap(Pressed('B'), FanSet('g', 7f), say("Page two: fan mode. Reverse to forward.", "Seite zwei: Lüftermodus. Von rückwärts auf vorwärts.")),
                 trap(AtDoor, Play(Card.GRAND_FINALE), Extend(into = 1, top = 1, bottom = 2, warn = 0.7f, door = roomX(1, 26) to 14,
                     line = T("Save and exit? The exit is on the next screen.", "Speichern und beenden? Der Ausgang ist auf dem nächsten Bildschirm."))),
                 trap(Zone(roomX(1, 4f), 8f, roomX(1, 8f), 10f), FanSet('D', -7f), Flip(1.2f), say("Fan mode: REVERSE. Load defaults? No.", "Lüftermodus: UMGEKEHRT. Standardwerte laden? Nein.")),
                 trap(Zone(roomX(1, 4f), 8f, roomX(1, 8f), 10f), FanSet('D', 7f), delay = 0.7f),
-                trap(Landed(roomX(1, 4f), roomX(1, 12f)), HeatSpike('c', 0.8f), say("Core temperature: spiking. Cool it, or lose it.", "Kerntemperatur: steigt. Kühl ihn, oder verlier ihn.")),
                 trap(Zone(roomX(1, 21f), 13f, roomX(1, 25f), 15.5f), HeatSpike('e', 0.45f), say("Thermal threshold: a matter of opinion.", "Temperaturgrenze: Ansichtssache.")),
             ),
+            hint = T("The switch on the hot shelf turns the second fan around. Cool the chip on the heatsink before you run.", "Der Schalter auf dem heißen Regal dreht den zweiten Lüfter um. Kühl den Chip am Kühlkörper, bevor du läufst."),
         ) {
             border(); floor()
             room(0) {

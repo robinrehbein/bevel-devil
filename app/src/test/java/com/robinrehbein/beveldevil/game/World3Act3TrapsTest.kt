@@ -1,12 +1,11 @@
 package com.robinrehbein.beveldevil.game
 
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * The extra chain links of act 3 (levels 33-48): each one punishes the counter the trap before it taught. Levels 33-40 are the rebuilt block E
- * ([World3RoomsE]), 41-48 are still the old chain.
+ * ([World3RoomsE]), 41-48 the rebuilt block F ([World3RoomsF]); their rules are checked by [World3DesignTest].
  */
 class World3Act3TrapsTest {
     private fun b(n: Int) = Bot(World3.levels[n - 1])
@@ -77,36 +76,17 @@ class World3Act3TrapsTest {
         b(40).rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }.wait(1.4f).expect(WorldState.PLAYING)
     }
 
-    // 41: the live ceiling wiring is a scarecrow: it switches off under the jump, and walking under it drops you through the ledge
+    // 41-48 (block F): the bot solutions are the registered ones; each level kills whoever runs it carelessly
+    private fun sol(n: Int) = World3DesignTest.SOLUTIONS.getValue(n)[0]
+
     @Test
-    fun theLiveCeilingWiringSwitchesOffWhenYouJump() {
-        val up = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
-        assertTrue(up.world.circuits['Z']!!.powered)
-        up.rightTo(21.2f).rightJump(0.3f)
-        assertFalse(up.world.circuits['Z']!!.powered)
-        up.rightJump(0.25f).landRight().right(4f).expect(WorldState.WON)
-        // walking under it is safe, it only scares you into walking onto the ledge that breaks
-        val walk = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
-            .rightTo(24.5f)
-        walk.expect(WorldState.PLAYING)
-        assertTrue(walk.world.player.box.b > 4.5f)
+    fun theSolutionsOfBlockFWinInTheirRoom() {
+        for (n in 41..48) DesignRules.play(World3.levels[n - 1], 0, sol(n)).expect(WorldState.WON)
     }
 
-    // 43: landing on the bridge wakes a dead cable on it; running on dies, hopping it wins
     @Test
-    fun aCableOnTheBridgeGoesLiveAsYouLand() {
-        val bot = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().right(0.1f)
-        assertTrue(bot.world.circuits['Z']!!.powered)
-        bot.right(6f).expect(WorldState.DEAD)
-        assertFalse(b(43).wait(0.1f).world.circuits['Z']!!.powered)
-    }
-
-    // 45: dropping off the cool ledge onto the floor overclocks it; walking on burns, a long leap or hopping gets across
-    @Test
-    fun theFloorIsOverclockedWhereYouDropOntoIt() {
-        fun top() = b(45).rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h')
-        top().rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.DEAD)
-        top().right(0.4f).landRight().rightJump(0.3f).landRight().rightJump(0.3f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(3f)
-            .expect(WorldState.WON)
+    fun blockFHasItsCardsAndTheFinaleHasSixTraps() {
+        for (n in 41..48) assertTrue("level $n has no card", World3.levels[n - 1].traps.any { t -> t.actions.any { it is Action.Play } } || n in listOf(45, 46))
+        assertTrue(World3.levels[47].traps.size in 5..6)
     }
 }

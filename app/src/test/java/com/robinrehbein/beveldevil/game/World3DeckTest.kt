@@ -18,22 +18,8 @@ class World3DeckTest {
 
     // ---------- the solutions ----------
 
-    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (act 3: 41 and 42); the rebuilt levels 1-40 are in [rebuilt]. */
-    private val first: Map<Int, (Bot) -> Bot> = mapOf(
-        41 to { b -> climb41(b).rightTo(21.2f).rightJump(0.55f).landRight().right(4f) },
-        42 to { b -> b.rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f) },
-    )
-
-    private fun climb41(b: Bot) = b.rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
-
     /** The rebuilt levels with a rematch (blocks A to E): their solutions are the registered ones, round 1 first. */
     private val rebuilt: Map<Int, List<Solution>> = World3DesignTest.SOLUTIONS.filterValues { it.size > 1 }
-
-    /** Rematch rounds: level to the solution of each extra round. */
-    private val rematch: Map<Int, List<(Bot) -> Bot>> = mapOf(
-        41 to listOf { b -> climb41(b).rightTo(26f).right(4f) },
-        42 to listOf { b -> b.rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.right(3f) },
-    )
 
     // ---------- structure ----------
 
@@ -42,11 +28,10 @@ class World3DeckTest {
         val levels = World3.levels.withIndex().filter { (_, l) -> l.rematch.isNotEmpty() }.map { it.index + 1 }
         assertTrue("rematch levels $levels", levels.size in 12..18)
         for (act in 0..2) assertTrue("act ${act + 1}: $levels", levels.count { (it - 1) / 16 == act } in 4..7)
-        assertEquals(rematch.keys + rebuilt.keys, levels.toSet())
-        rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
+        assertEquals(rebuilt.keys, levels.toSet())
         rebuilt.forEach { (n, sols) -> assertEquals("level $n", sols.size - 1, level(n).rematch.size) }
-        // blocks A to E keep exactly thirteen rematch levels (3 + 2 + 2 + 3 + 3: levels 17 and 21 in block C, 28, 30 and 32 in block D, 33, 35 and 40 in block E)
-        assertEquals(13, rebuilt.size)
+        // blocks A to F keep exactly fifteen rematch levels (3 + 2 + 2 + 3 + 3 + 2: levels 17 and 21 in block C, 28, 30 and 32 in block D, 33, 35 and 40 in block E, 41 and 42 in block F)
+        assertEquals(15, rebuilt.size)
     }
 
     /**
@@ -122,26 +107,14 @@ class World3DeckTest {
 
     @Test
     fun everyRematchRoundIsSolvable() {
-        for ((n, rounds) in rematch) rounds.forEachIndexed { k, solve -> solve(bot(n, round = k + 1)).expect(WorldState.WON) }
         for ((n, sols) in rebuilt) for (r in 1 until sols.size) DesignRules.play(level(n), r, sols[r]).expect(WorldState.WON)
     }
 
     /** A rematch subverts the round before: the move that won it never wins the next round (round 2's on round 3 too). */
     @Test
     fun theRoundOneSolutionLosesTheRematch() {
-        assertEquals(rematch.keys, first.keys)
         for ((n, sols) in rebuilt) for (r in 1 until sols.size) {
             assertNotEquals("level $n: round 1's solution still wins round ${r + 1}", WorldState.WON, DesignRules.play(level(n), r, sols[0]).world.state)
-        }
-        for (n in rematch.keys) {
-            first.getValue(n)(bot(n)).expect(WorldState.WON)
-            val b = first.getValue(n)(bot(n, round = 1))
-            assertNotEquals("level $n: round 1's solution still wins round 2", WorldState.WON, b.world.state)
-            for ((k, solve) in rematch.getValue(n).withIndex().drop(1)) {
-                val c = rematch.getValue(n)[k - 1](bot(n, round = k + 1))
-                assertNotEquals("level $n: round ${k + 1}'s solution still wins round ${k + 2}", WorldState.WON, c.world.state)
-                solve(bot(n, round = k + 1)).expect(WorldState.WON)
-            }
         }
     }
 

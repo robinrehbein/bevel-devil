@@ -39,9 +39,10 @@ object World3RoomsF {
         46 to listOf<Solution>(
             { rightTo(13.5f).waitFor { w -> w.fans[0].on && w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Power && a.on } } }
                 .rightUntil { it.player.box.cy < 9.4f }
-                .leftUntil { it.player.grounded && it.player.box.cx < 11.5f }.leftTo(5.5f)
+                .leftUntil { it.player.grounded && it.player.box.cx < 11.5f }.leftTo(9.0f).leftJump(0.2f).leftTo(4.5f)
                 .waitFor { it.player.box.cy < 3.8f }.rightUntil { it.player.grounded && it.player.box.b < 5.5f }
-                .right(8f) },
+                .hopR(9.2f, 0.3f).rightUntil { w -> w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Undo } } }
+                .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.hopR(9.2f, 0.3f).right(8f) },
         ),
         47 to listOf<Solution>(
             { rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }
@@ -52,7 +53,7 @@ object World3RoomsF {
         48 to listOf<Solution>(
             {
                 var turned = false
-                rightTo(6.6f).rightTo(10.5f).waitFor { it.player.box.cy < 6.4f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
+                rightTo(10.5f).waitFor { it.player.box.cy < 6.4f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
                     .rightTo(20.0f).waitFor { it.player.box.cy < 2.6f }.rightUntil { it.player.grounded && it.player.box.b < 3.5f }
                     .rightTo(29.4f).waitFor { w -> w.cracks.any { it.fell } }
                     .rightTo(roomX(1, 5.5f)).rightUntil { w -> w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Flip } } }

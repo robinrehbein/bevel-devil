@@ -94,11 +94,12 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
+        for (n in listOf(2, 3, 5, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26, 27, 28, 31, 33, 34, 35, 36, 37, 39, 40, 41, 42, 45)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, the fallen slabs of the waiting room, a lift that never ran
-        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 23, 24, 25, 29, 30, 32, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
+        // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, the fallen slabs of the waiting room, a lift that never ran,
+        // a wall that stays shut (43), a lift he runs through (44, 46, 47), the way up that he never takes (48)
+        for (n in listOf(1, 4, 6, 9, 10, 11, 13, 23, 24, 25, 29, 30, 32, 38, 43, 44, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
@@ -113,7 +114,8 @@ class World3Test {
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight().wait(2f).expect(WorldState.DEAD)
         b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
         b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
-        b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).right(6f).expect(WorldState.DEAD)
+        // 42: the vent carries you up and the hood closes on whoever stays on the shelf
+        b(42).rightTo(15f).waitFor { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }.rightTo(22.5f).wait(3f).expect(WorldState.DEAD)
     }
 
     // ---------- the hardware cards ----------
@@ -210,19 +212,25 @@ class World3Test {
     }
 
     @Test
-    fun landingOnTheFloorBelowTheWiringDiagramCanBeRetried() {
-        // walking off the ledge cuts the bridge and lands on the floor; the fan and the pad still work: up again, jump
-        b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(17.5f).landRight().wait(0.3f)
-            .leftTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().rightTo(24.8f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
+    fun theBridgeOfTheWiringDiagramComesBackWhenYouPressTheSwitchAgain() {
+        // 43: the first switch gives the bridge power for a moment; whoever is late waits at a dead bridge, alive, and steps off and on the switch again
+        val bot = b(43).rightTo(5.6f).rightTo(7f).wait(2.4f)
+        assertFalse(bot.world.circuits['a']!!.powered)
+        bot.expect(WorldState.PLAYING)
+        bot.leftTo(4.3f).rightTo(5.6f).wait(0.2f)
+        assertTrue(bot.world.circuits['a']!!.powered)
+        bot.rightTo(14.8f).rightTo(17.8f).waitFor { it.player.box.cy < 7.4f }.expect(WorldState.PLAYING)
     }
 
     @Test
-    fun fallingThroughABrokenLedgeLeavesTheWayUpOpen() {
-        // 41: the top ledge breaks under a walk. The fans keep blowing. (33 and 40 end in a void: falling is a death, never a dead end.)
-        b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
-            .rightTo(22.3f).right(1.5f).wait(0.8f)
-            .hopL(25.5f).leftTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight()
-            .rightTo(21.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
+    fun theFanThatStopsForTheSelfTestComesBack() {
+        // 46: the first lift stops for the beep and runs again; whoever waits at its foot is never stranded
+        val bot = b(46).rightTo(13.5f).wait(0.5f)
+        assertTrue(bot.world.fans[0].target > 0f && !bot.world.fans[0].on)
+        bot.expect(WorldState.PLAYING)
+        bot.wait(1.6f)
+        assertTrue(bot.world.fans[0].on)
+        bot.expect(WorldState.PLAYING)
     }
 
     // ---------- acts ----------
@@ -326,17 +334,20 @@ class World3Test {
         assertEquals(listOf(48), grand)
         // the act-two finale (rebuilt) keeps its grand finale for the rematch
         assertTrue(Card.GRAND_FINALE in DesignRules.cards(World3.levels[31]))
-        // the boot order has two fake doors and then the real one
-        assertEquals(2, World3.levels[46].traps.count { it.trigger == Trigger.AtDoor })
+        // the boot order has one door that runs away before you touch it, and the real one, whose wall breaks open
+        assertEquals(1, World3.levels[46].traps.count { it.trigger == Trigger.AtDoor })
+        assertEquals(2, World3.levels[46].rooms)
+        assertEquals(2, World3.levels[47].rooms)
         assertNotNull(World(World3.levels[47]).door)
     }
 
     @Test
     fun metaTwistsAreFewAndHaveHardwareFlavour() {
-        val kinds = World3.levels.flatMap { l -> actions(l).filter(::meta).map { it::class.simpleName!! } }.toSet()
-        assertEquals(setOf("FakeWin", "Flip", "Roll"), kinds)
-        val levels = World3.levels.withIndex().filter { (_, l) -> actions(l).any(::meta) }.map { it.index + 1 }
-        assertEquals(listOf(44, 47, 48), levels)
+        // the monitor that turns (48) and the memory that rewinds (46); the fake endings were left out (a fake win takes 3.4 s of nothing, docs/LEVEL_DESIGN_V2.md H3)
+        val kinds = World3.levels.flatMap { l -> actions(l).filter { meta(it) || it is Action.Undo }.map { it::class.simpleName!! } }.toSet()
+        assertEquals(setOf("Flip", "Undo"), kinds)
+        val levels = World3.levels.withIndex().filter { (_, l) -> actions(l).any { meta(it) || it is Action.Undo } }.map { it.index + 1 }
+        assertEquals(listOf(46, 48), levels)
     }
 
     @Test
@@ -424,17 +435,24 @@ class World3Test {
     }
 
     @Test
-    fun bootOrderHasTwoFakeDoorsBeforeTheRealOne() {
-        val bot = b(47).rightTo(8.5f).waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
-            .waitWhile(2f) { !it.player.grounded || it.door.moving }
-        bot.expect(WorldState.PLAYING)
-        assertEquals(4f, bot.world.door.box.x + 0.1f, 0.01f)
+    fun theBaitDoorOfBootOrderRunsUpstairsAndTheRealOneBreaksTheWall() {
+        // 47: coming near the door on the floor sends it to the shelf (the roof it leaves behind falls where it stood) ...
+        val run = b(47).rightTo(16.6f).rightTo(22.5f).wait(1.2f)
+        run.expect(WorldState.PLAYING)
+        assertTrue("the door is on the shelf", run.world.door.box.y < 6f && run.world.door.box.x > 27f)
+        // ... and touching that one is not the end: the wall opens, and the door slips through it
+        val up = b(47).rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }.right(1.2f)
+        assertTrue(up.world.cracks.isNotEmpty())
     }
 
     @Test
-    fun theBiosFanTurnsOnYouIfYouLingerAtTheTop() {
-        b(48).rightTo(5f).waitPowered('Z', false).rightTo(8.4f).rightJump(0.55f).landRight().rightTo(19.3f).rightJump(0.12f)
-            .waitFor { it.player.box.cy < 6.4f }.wait(3f).expect(WorldState.DEAD)
+    fun theSwitchOnTheHotShelfTurnsTheSecondFanAround() {
+        // 48: the lift carries you to the hot shelf; the switch on it turns the fan at the far end from sucking to blowing
+        val bot = b(48).rightTo(10.5f).waitFor { it.player.box.cy < 6.4f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
+        val g = bot.world.fans.single { it.id == 'g' }
+        assertTrue(g.target < 0f)
+        bot.rightTo(15.0f)
+        assertTrue(g.target > 0f)
     }
 
     // ---------- Act 1: Stromkreise ----------
@@ -483,17 +501,12 @@ class World3Test {
     @Test fun level38() { World3DesignTest.play(38) }
     @Test fun level39() { World3DesignTest.play(39) }
     @Test fun level40() { World3DesignTest.play(40) }
-    @Test fun level41() = b(41).rightTo(7f).waitFor { it.player.box.cy < 6.9f }.rightTo(14f).waitFor { it.player.box.cy < 3.3f }.rightTo(17.5f).landRight().rightTo(21.2f).rightJump(0.55f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level42() = b(42).rightTo(12.4f).waitFor { it.player.box.cy < 5.8f }.rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level43() = b(43).rightTo(8f).waitFor { it.player.box.cy < 6.9f }.rightTo(14.6f).rightJump(0.55f).landRight().rightTo(24.8f).rightJump(0.35f).landRight().right(4f).expect(WorldState.WON)
-    @Test fun level44() = b(44).rightTo(6.5f).waitWhile(1f) { it.viewTurn() < 1f }.leftKeyRightTo(15f).waitWhile(5f) { it.viewTurn() > 0f }.rightTo(22.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level45() = b(45).rightTo(8.8f).waitFor { it.player.box.cy < 6.8f }.rightTo(13f).landRight().waitCooled('h').rightTo(15.6f).rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level46() = b(46).hopR(8.4f).rightTo(16.5f).waitCooled('c').rightTo(26.8f).waitFor { it.player.box.cy < 6.6f }.right(3f).expect(WorldState.WON)
-    @Test fun level47() = b(47).rightTo(8.5f).waitPowered('Z').waitPowered('Z', false).rightTo(12f).right(4f).waitWhile { it.fake != null }
-        .waitWhile(2f) { !it.player.grounded || it.door.moving }
-        .hopL(25.3f).leftTo(12.2f).waitPowered('Z').waitPowered('Z', false).leftTo(8f).left(4f).waitWhile { it.fake != null }
-        .waitWhile(2f) { !it.player.grounded || it.door.moving }
-        .rightTo(8.5f).waitPowered('Z').waitPowered('Z', false).rightTo(12f).rightTo(17f).waitFor { it.player.box.cy < 6.6f }.right(6f).expect(WorldState.WON)
-    @Test fun level48() = b(48).rightTo(5f).waitPowered('Z', false).rightTo(8.4f).rightJump(0.55f).landRight().rightTo(19.3f).rightJump(0.12f)
-        .waitFor { it.player.box.cy < 6.4f }.right(6f).expect(WorldState.WON)
+    @Test fun level41() { World3DesignTest.play(41) }
+    @Test fun level42() { World3DesignTest.play(42) }
+    @Test fun level43() { World3DesignTest.play(43) }
+    @Test fun level44() { World3DesignTest.play(44) }
+    @Test fun level45() { World3DesignTest.play(45) }
+    @Test fun level46() { World3DesignTest.play(46) }
+    @Test fun level47() { World3DesignTest.play(47) }
+    @Test fun level48() { World3DesignTest.play(48) }
 }
