@@ -32,19 +32,18 @@ object World3RoomsB {
                 .rightTo(19.8f).rightJump(0.55f).landRight().rightTo(27.5f).right(1f) },
         ),
         12 to listOf<Solution>(
-            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.55f).landRight()
-                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(17.8f)
+            // over the decoy button, under the low slab at a run, stop next to the high slab, climb it, wait out the blade on the wall
+            { leftTo(17.8f)
                 .waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.wait(0.25f)
                 .leftJump(0.35f).landLeft().leftJump(0.55f).landLeft()
                 .waitFor { w -> w.saws.any { it.y > 12f } && w.saws.filter { it.y > 12f }.all { it.x > w.player.box.cx + 0.3f } }
-                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(1.0f).left(1f) },
+                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(5.0f).left(0.5f) },
             // rematch: press the button under the slab, step out from under it, wait for the stair, then as before
-            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.3f } }.rightJump(0.55f).landRight()
-                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(15.8f).rightTo(18.2f)
+            { leftTo(15.8f).rightTo(18.2f)
                 .waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.wait(0.25f)
                 .leftJump(0.35f).landLeft().leftJump(0.55f).landLeft()
                 .waitFor { w -> w.saws.any { it.y > 12f } && w.saws.filter { it.y > 12f }.all { it.x > w.player.box.cx + 0.3f } }
-                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(1.0f).left(1f) },
+                .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(5.0f).left(0.5f) },
         ),
         13 to listOf<Solution>(
             { rightTo(2.6f).rightJump(0.55f).landRight().rightTo(8.4f).rightJump(0.55f).landRight()

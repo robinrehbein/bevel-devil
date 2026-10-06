@@ -35,34 +35,38 @@ object World3PartB {
         // 9 — a trap room of walls: two wells in the floor, two chip stacks at the far end. The first well is a drop you have to
         // take; when you climb out of it the first stack sweeps the whole floor towards you (turn back, the well behind you is
         // the only roof). The second stack comes when you pass the middle: now the roof is the well ahead of you, and it is
-        // close. The last tiles before the door go live. Holding right and hopping gets you pushed into a well and crushed.
+        // close. Do not hide too long: a pin grows out of the first well's wall once the wall has passed. The last tiles before the door go live.
+        // Holding right and hopping gets you pushed into a well and crushed.
         Level(
             name = T("Side Effect", "Nebenwirkung"),
             intro = T("Ask your sysadmin or your devil about side effects.", "Zu Risiken und Nebenwirkungen fragen Sie Ihren Teufel."),
+            legend = mapOf('Y' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(Circuit('Z', on = false)),
             traps = listOf(
                 trap(Landed(8f, 12.5f), Move('a', -28f, 0f, 15f), say("Side effects include: walls.", "Nebenwirkungen: Wände.")),
+                trap(Zone(5.8f, 15.3f, 8.2f, 17f), Move('Y', 1f, 0f, 4f), say("Side effect of hiding: the well grows a pin.", "Nebenwirkung vom Verstecken: Dem Brunnen wächst ein Stift."), delay = 2.75f),
                 trap(PastX(13.5f), Move('b', -26f, 0f, 14f), say("Common side effect: a second wall.", "Häufige Nebenwirkung: eine zweite Wand.")),
                 trap(PastX(18.5f), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Rare: the floor goes live. Rare, I said.", "Selten: Der Boden steht unter Strom. Selten, sagte ich.")),
             ),
             hint = T("The first roof is behind you. The second one is in front.", "Das erste Dach liegt hinter dir. Das zweite vor dir."),
         ) {
             border(); floor()
-            pit(6..7); fill(6..7, 17..17)
+            pit(6..7); fill(6..7, 17..17); put(5, 16, 'Y')
             pit(16..17); fill(16..17, 17..17)
             fill(29..30, 9..14, 'a'); fill(27..28, 9..14, 'b')
             fill(22..22, 14..14, 'Z')
             spawn(2, 14); door(25, 14)
         },
 
-        // 10 — a chip to hop, then stepping stones in a pit, everything on a beat: the first island is solid (wait there until the
-        // clocked stone lights up), the last stone wakes up when you land on the one before and is on a short shift once you touch it
+        // 10 — a chip to hop, then stepping stones in a pit, everything on a beat: the first island is solid, and the stone after it
+        // only starts its beat when you land on the island (whoever runs straight on meets its first dark half: wait there until it
+        // lights up again), the last stone wakes up when you land on the one before and is on a short shift once you touch it
         // (do not wait there either). On the far side the door runs up the wall to a ledge, and the stairs to it keep time as well: hurry.
         Level(
             name = T("Metronome", "Metronom"),
             intro = T("Step to the beat. Mine.", "Tritt im Takt. In meinem."),
-            start = listOf(Clock('b', on = 2.2f, off = 1.2f, phase = 1.1f)),
             traps = listOf(
+                trap(Landed(7.5f, 11f), Clock('b', on = 2.2f, off = 1.0f, phase = 1.8f), say("The metronome starts when you step up. Not before.", "Das Metronom startet, wenn du aufsteigst. Nicht vorher.")),
                 trap(Landed(12.5f, 16f), Clock('c', on = 1.4f, off = 60f, phase = 60.4f), say("Stone three clocks in. Late, as ever.", "Stein drei stempelt ein. Wie immer zu spät.")),
                 trap(Touch('c'), Clock('c', on = 1.0f, off = 60f), say("The island has a shift too. A short one.", "Die Insel hat auch Schicht. Eine kurze.")),
                 trap(Landed(17.5f, 21f), Play(Card.SHY_DOOR), DoorTo(30, 8), say("The door took the stairs. It does that.", "Die Tür hat die Treppe genommen. Macht sie öfter.")),
@@ -93,7 +97,7 @@ object World3PartB {
                 trap(Landed(21.5f, 27f), Play(Card.OVERCLOCKED), HeatSpike('b', 0.5f), say("Landing pad: preheated. You are welcome.", "Landeplatz: vorgeheizt. Gern geschehen.")),
                 trap(Zone(16.5f, 8f, 21f, 10.5f), Power('Z', true), say("That cable was lying there. Quietly. Now loudly.", "Das Kabel lag nur so da. Leise. Jetzt laut.")),
                 trap(Zone(1f, 13f, 7f, 15f), HeatSpike('c', 0.5f), say("Ground floor: also warm. Everything is warm. Hello.", "Erdgeschoss: auch warm. Alles ist warm. Hallo.")),
-                trap(Zone(15f, 13f, 22f, 15f), Power('Y', true), say("And one more. For the road.", "Und noch eins. Für unterwegs.")),
+                trap(Zone(20.6f, 13f, 22f, 15f), Power('Y', true), say("And one more. For whoever walks. Jumpers are spared.", "Und noch eins. Für alle, die gehen. Springer werden verschont.")),
             ),
             hint = T("Whatever you land on warms up. Keep moving.", "Was du auch betrittst, wird warm. Bleib in Bewegung."),
         ) {
@@ -106,34 +110,31 @@ object World3PartB {
             spawn(2, 3); door(28, 14)
         },
 
-        // 12 — do not press: start at the left end of a ledge, a fan blade rolls along it towards you, off the right end onto the floor
-        // and back under the ledge, over a big red button (a decoy), under a slab that comes down behind you if you hurry, to a wall of
-        // three tiles and a second slab above the run-up: run under that one and it comes down on you, wait next to it and it comes
-        // down as the stair over the wall. On the wall a third blade rolls in under your feet. Rematch: the card is the bluff, the
-        // button is real: press it twice, and the blade comes from behind.
+        // 12 — do not trust the button, trust the ceiling: start on the floor at the right, the door far left behind a wall of
+        // three tiles. A big red button lies right in the way (a decoy: nothing happens). Under the low ledge a slab comes down on
+        // whoever dawdles (run), then the slab above the run-up to the wall comes down on whoever keeps running (stop next to it,
+        // let it land, it is the stair). On the wall a blade rolls in under your feet. The straight dash for the door is the bait.
+        // Rematch: the card is the bluff and the button is real, lying right under the slab: press it, step back out from under,
+        // and the slab comes down as the stair. Whoever waits next to the slab like the first time waits for ever.
         Level(
             name = T("The Button", "Der Knopf"),
             intro = T("A very ordinary button.", "Ein ganz gewöhnlicher Knopf."),
-            start = listOf(Pad('1', at = 28 to 14)),
+            start = listOf(Pad('1', at = 26 to 14)),
             traps = listOf(
-                trap(After(0.5f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
-                trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
                 trap(Pressed('1'), say("Nothing happened. Suspicious, isn't it?", "Nichts passiert. Verdächtig, oder?")),
-                trap(BeforeX(19.5f), Play(Card.HEADBUTT), Fall('c'), say("The button was a decoy. The ceiling is real.", "Der Knopf war Attrappe. Die Decke ist echt.")),
-                trap(Zone(8.9f, 10f, 14.1f, 12.5f), Saw(-1f, 14.4f, 8f, 0f), say("Delivery! One blade, rolling, no returns.", "Lieferung! Ein Blatt, rollend, Rückgabe ausgeschlossen.")),
+                trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
+                trap(BeforeX(19.5f), Fall('c'), say("The button was a decoy. The ceiling is real.", "Der Knopf war Attrappe. Die Decke ist echt.")),
+                trap(Zone(8.9f, 10f, 14.1f, 12.5f), Play(Card.DEVIL_SAW), Saw(-1f, 14.4f, 8f, 0f), say("Delivery! One blade, rolling, no returns.", "Lieferung! Ein Blatt, rollend, Rückgabe ausgeschlossen.")),
             ),
-            hint = T("Do not stand under the slab. Stand next to it and let it land.", "Nicht unter die Platte stellen. Daneben stehen und sie landen lassen."),
-            // rematch: the card is the bluff and the button is real, standing right under the slab: press it, step out from under,
-            // and the slab comes down as the stair. Whoever waits next to the slab like the first time waits for ever.
+            hint = T("Run under the low slab. Do not run under the high one: stand next to it and let it land.", "Unter der niedrigen Platte durchrennen. Unter die hohe nicht: daneben stehen und sie landen lassen."),
             rematch = listOf(
                 Round(
                     T("Same button. Different mood.", "Gleicher Knopf. Er hat heute Montag."),
                     start = listOf(Pad('1', at = 15 to 14)),
-                    hint = T("The ceiling called in sick. The button did not.", "Die Decke ist krank. Der Knopf nicht."),
+                    hint = T("The blade card was a bluff. The button under the slab is not.", "Die Messerkarte war geblufft. Der Knopf unter der Platte nicht."),
                     traps = listOf(
-                        trap(After(0.5f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
                         trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
-                        trap(BeforeX(19.5f), Bluff(Card.HEADBUTT), say("Cancelled. The ceiling called in sick.", "Abgesagt. Die Decke hat sich krankgemeldet.")),
+                        trap(BeforeX(19.5f), Bluff(Card.DEVIL_SAW), say("A second blade. Cancelled: budget cuts.", "Ein zweites Messer. Gestrichen: Sparmaßnahmen.")),
                         trap(Pressed('1'), Fall('c'), say("Now it works. Mondays.", "Jetzt geht er. Montags eben."), delay = 0.9f),
                         trap(Zone(8.9f, 10f, 14.1f, 12.5f), Saw(-1f, 14.4f, 8f, 0f), say("Delivery! One blade, rolling, no returns.", "Lieferung! Ein Blatt, rollend, Rückgabe ausgeschlossen.")),
                     ),
@@ -145,7 +146,7 @@ object World3PartB {
             fill(20..22, 11..12, 'd')
             fill(13..17, 1..4); fill(14..16, 5..6, 'c')
             fill(9..13, 12..14)
-            spawn(19, 7); door(1, 14)
+            spawn(30, 14); door(5, 14)
         },
 
         // 13 — the fuse box is upstairs: a chip to climb, a step over a pit that is on a short shift once you touch it, a stable island
