@@ -213,27 +213,34 @@ object World3PartF {
             spawn(2, 14); door(20, 4)
         },
 
-        // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift, and step off at the shelf: the lift
-        // runs all the way up into the spiked ceiling). The door on the shelf is no end either: it runs back to where you started, and the lift now blows
-        // down. Halfway down the boot loop turns the lift around once more, overclocked, and slams whoever is still in it into the ceiling: step out of
-        // the draft. (One room: the annex is the finale's gag, 48.)
+        // 47 — Boot Order (R7+R6, U14+U4): you start in the middle of the room, and the door is right there on the floor to your left: a bait, it
+        // runs up the wall and along the ceiling, and drops onto the shelf at the right as you board the lift (ride it, and step off at the shelf: the lift runs all the way up into the spiked
+        // ceiling). The door on the shelf is no end either: it runs to the far left wall, past where you started, and the lift now blows down. At
+        // the bottom the boot loop turns the lift around once more, overclocked, and slams whoever is still in it into the ceiling: step out of the
+        // draft and walk on, past where you started. (One room: the annex is the finale's gag, 48.)
         Level(
             name = T("Boot Order", "Boot-Reihenfolge"),
             intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
             start = listOf(
-                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 13, speed = 6.5f, width = 3),
+                Fan('f', at = 18 to 15, dir = Dir.UP, reach = 13, speed = 9f, width = 4),
             ),
-            traps = listOf(
-                trap(Zone(15.5f, 12.5f, 18f, 15.5f), Play(Card.SHY_DOOR), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
-                trap(Zone(25.5f, 3.5f, 28f, 6.5f), FanSet('f', -7f), DoorTo(26, 14), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Right under your nose.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Direkt unter deiner Nase.")),
-                trap(Zone(25.5f, 3.4f, 28f, 6.6f), FanSet('f', 16f), say("Boot loop. Overclocked, this time. Mind the ceiling.", "Bootschleife. Diesmal übertaktet. Vorsicht, Decke."), delay = 1.3f),
+            traps = doorTrail(
+                Zone(9.6f, 12.5f, 13.4f, 15.5f), 9, 14, listOf(DoorTo(9, 1, 24f, hanging = true), DoorTo(25, 1, 24f, hanging = true)),
+                first = listOf(Play(Card.SHY_DOOR), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
+            ) + listOf(
+                trap(Zone(18f, 10f, 22f, 15.5f), DoorTo(25, 5, 24f), say("It found a shelf. Shelves are comfortable.", "Sie hat ein Regal gefunden. Regale sind bequem.")),
+            ) + doorTrail(
+                Zone(21.8f, 3.5f, 25f, 6.5f), 25, 5, listOf(DoorTo(23, 14), DoorTo(2, 14)),
+                first = listOf(FanSet('f', -7f), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Far left, behind you.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Ganz links, hinter dir.")),
+            ) + listOf(
+                trap(Zone(21.8f, 3.4f, 25f, 6.6f), FanSet('f', 16f), say("Boot loop. Overclocked, this time. Mind the ceiling.", "Bootschleife. Diesmal übertaktet. Vorsicht, Decke."), delay = 1.3f),
             ),
-            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs back, let the lift take you down. Get off it at the shelf, and if it turns around again, step out of it: it goes all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür zurückläuft, lass dich vom Lift hinunterbringen. Steig am Regal aus, und dreht er wieder um, tritt aus ihm heraus: Er fährt bis an die Decke."),
+            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs off to the far left, let the lift take you down and step out of it at once: it turns around again, all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür nach ganz links läuft, lass dich vom Lift hinunterbringen und tritt sofort heraus: Er dreht wieder um, bis an die Decke."),
         ) {
             border(); floor()
-            fill(24..28, 6..6); fill(29..30, 6..14)
-            fill(19..23, 1..1, 'v')
-            spawn(2, 14); door(19, 14)
+            fill(23..25, 6..6); fill(26..30, 6..14)
+            fill(17..22, 1..1, 'v')
+            spawn(15, 14); door(9, 14)
         },
 
         // 48 — BIOS Setup (the finale of the game)

@@ -57,10 +57,10 @@ object World3RoomsF {
                 .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.hopR(9.2f, 0.3f).right(8f) },
         ),
         47 to listOf<Solution>(
-            { rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }
-                .rightUntil { it.player.box.cx > 27.0f }
-                .leftUntil { it.player.box.cy > 8f }.waitFor { it.player.grounded }
-                .rightTo(26.4f).right(1f) },
+            { leftTo(12.2f).rightTo(19.2f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }
+                .rightUntil { it.player.box.cx > 23.6f }
+                .leftUntil { it.player.box.cy > 8f }.leftUntil { it.player.grounded }
+                .leftTo(5.0f).waitFor { it.door.box.cx < 3.5f }.left(1f) },
         ),
         48 to listOf<Solution>(
             {
