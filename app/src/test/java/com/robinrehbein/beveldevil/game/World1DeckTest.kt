@@ -158,12 +158,14 @@ class World1DeckTest {
 
     // levels 8, 12 and 15: the rematch plays against the habit round 1 taught (docs/LEVEL_DESIGN_V2.md H9)
     @Test fun level08Rematch() = World1DesignTest.play(8, 2)
-    /** Gravity is opt-in now: walking to the far end turns nothing over, so the way home along the floor is the spike. */
-    @Test fun level08RematchWalkingInTurnsNothingOver() {
-        val walked = b(8, 1).hopR(19.5f, 0.5f).rightTo(25.5f).landRight().wait(0.5f)
-        walked.expect(WorldState.PLAYING)
-        assertEquals(1f, walked.world.gravity, 0f)
-        walked.leftTo(10f).expect(WorldState.DEAD)
+    /** The room is upside down from the first steps: whoever keeps running right flies into the spikes of the ceiling. */
+    @Test fun level08RematchRunningOnFliesIntoTheCeilingSpikes() = b(8, 1).right(2f).expect(WorldState.DEAD)
+    /** The round 1 habit (walk to the spike and hop it) never gets there: the room turns over at the start. */
+    @Test fun level08RematchTheRoomTurnsOverAtOnce() {
+        val turned = b(8, 1).rightTo(5.0f).leftUntil { it.player.grounded }
+        turned.expect(WorldState.PLAYING)
+        assertTrue("upside down", turned.world.gravity < 0f)
+        assertTrue("the door hangs at the far end", turned.world.door.box.x > 28f)
     }
 
     @Test fun level12Rematch() = World1DesignTest.play(12, 2)
