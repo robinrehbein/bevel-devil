@@ -92,21 +92,30 @@ object World3PartB {
             spawn(2, 14); door(23, 14)
         },
 
-        // 11 — a dark cable in the path goes live when you come near; and the one behind the landing does too
+        // 11 — a tower of two shelves and the floor, a snake from top left to the door at the bottom right: along the top shelf (a chip
+        // to climb that warms up under your feet), off its end onto the middle shelf (the landing is preheated: keep moving), back
+        // along that one past a cable that comes alive, and off its other end onto the floor, where the landing plate warms up again
+        // and one more cable wakes in front of the door. The way down is the way round.
         Level(
             name = T("Loose Cables", "Kabelsalat"),
             intro = T("Tidy cabling. I did it myself.", "Saubere Verkabelung. Hab ich selbst gemacht."),
             start = listOf(Circuit('Z', on = false), Circuit('Y', on = false)),
             traps = listOf(
-                trap(PastX(12f), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Who said it was dead? Oh right, I did.", "Wer sagt, dass er tot ist? Ach ja, ich.")),
-                trap(Landed(15.5f, 17.8f), Power('Y', true), say("And its sibling.", "Und sein Geschwisterkabel.")),
-                trap(Airborne(18.5f, 23f), HeatSpike('g', 0.7f), say("The floor went and got warm.", "Der Boden ist auch warm geworden.")),
+                trap(Landed(11f, 15f), HeatSpike('a', 0.5f), say("The shelf is warm. So is the rest of the board.", "Das Regal ist warm. Der Rest der Platine auch.")),
+                trap(Landed(21.5f, 27f), Play(Card.OVERCLOCKED), HeatSpike('b', 0.5f), say("Landing pad: preheated. You are welcome.", "Landeplatz: vorgeheizt. Gern geschehen.")),
+                trap(Zone(16.5f, 8f, 21f, 10.5f), Power('Z', true), say("That cable was lying there. Quietly. Now loudly.", "Das Kabel lag nur so da. Leise. Jetzt laut.")),
+                trap(Zone(1f, 13f, 7f, 15f), HeatSpike('c', 0.5f), say("Ground floor: also warm. Everything is warm. Hello.", "Erdgeschoss: auch warm. Alles ist warm. Hallo.")),
+                trap(Zone(15f, 13f, 22f, 15f), Power('Y', true), say("And one more. For the road.", "Und noch eins. Für unterwegs.")),
             ),
+            hint = T("Whatever you land on warms up. Keep moving.", "Was du auch betrittst, wird warm. Bleib in Bewegung."),
         ) {
             border(); floor()
-            fill(13..14, 14..14, 'Z')
-            fill(18..19, 14..14, 'Y'); fill(21..22, 15..15, 'g')
-            spawn(); door()
+            fill(1..21, 4..4); fill(11..14, 3..3, 'a')
+            fill(9..30, 10..11); fill(22..25, 10..10, 'b')
+            fill(16..16, 9..9, 'Z')
+            fill(2..5, 15..15, 'c')
+            fill(22..22, 14..14, 'Y')
+            spawn(2, 3); door(28, 14)
         },
 
         // 12 — do not press: the button is a bluff; the ceiling drops when you run under it, and a fan blade rolls in behind the wall

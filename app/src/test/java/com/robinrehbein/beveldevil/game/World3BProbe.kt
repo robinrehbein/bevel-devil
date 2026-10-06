@@ -51,6 +51,36 @@ class World3BProbe {
             rule("H13") { DesignRules.familyViolations(n, l) }
             rule("H8") { DesignRules.cardLintViolations(l) }
         }
+        // ablation debug: "abl n r" lines in abl.txt print, per trap, which probe ends differently without it
+        File("/tmp/claude-0/pr/abl.txt").takeIf { it.exists() }?.readText()?.trim()?.split("\n")?.forEach { line ->
+            val p = line.trim().split(" ")
+            val n = p[0].toInt(); val r = p[1].toInt() - 1
+            val l = levels[n - 1]; val s = sols.getValue(n)[r]
+            val stage = l.rounds[r]
+            val clean = DesignRules.play(l, r, s)
+            val fired = clean.moments.flatMap { m -> m.parts.map { it.trap to m.triggered } }.toMap()
+            out.append("--- ablation of ${l.name.en} r${r + 1}\n")
+            for ((i, t) in stage.traps.withIndex()) {
+                val cut = DesignRules.without(stage, setOf(t))
+                val probes = listOf<Pair<String, (Level, Int) -> Bot>>(
+                    "clean" to { lv, rr -> DesignRules.play(lv, rr, s) },
+                    "brisk" to { lv, rr -> Bot(lv, rr, skipIdle = true).apply(s) },
+                    "hold" to { lv, rr -> DesignRules.naive(lv, rr, null) },
+                    "hop.7" to { lv, rr -> DesignRules.naive(lv, rr, 0.7f) },
+                    "wait8" to { lv, rr -> DesignRules.naive(lv, rr, null, DesignRules.PROBE_WAIT) },
+                )
+                val diffs = probes.filter { (_, f) -> DesignRules.outcome { f(l, r) } != DesignRules.outcome { f(cut, 0) } }.map { it.first }.toMutableList()
+                val at = fired[t]
+                if (at != null) {
+                    if (DesignRules.outcome { DesignRules.patientProbe(l, r, s, at) } != DesignRules.outcome { DesignRules.patientProbe(cut, 0, s, at) }) diffs += "patient"
+                    if (DesignRules.outcome { DesignRules.recklessProbe(l, r, s, at) } != DesignRules.outcome { DesignRules.recklessProbe(cut, 0, s, at) }) diffs += "reckless"
+                    val pr = DesignRules.recklessProbe(l, r, s, at)
+                    val pc = DesignRules.recklessProbe(cut, 0, s, at)
+                    out.append("   trap $i at t=%.2f reckless: with %s x=%.1f t=%.1f / without %s x=%.1f t=%.1f\n".format(at, pr.world.state, pr.world.player.box.cx, pr.world.time, pc.world.state, pc.world.player.box.cx, pc.world.time))
+                }
+                out.append("  trap $i ${t.trigger.toString().substringAfterLast('.').take(30)} ${t.actions.filterNot { it is Action.Say || it is Action.Play }.joinToString("+") { it::class.simpleName ?: "?" }}: differs in $diffs\n")
+            }
+        }
         // debug: "n r rhythm wait groups" in dbg.txt replays the naive player and prints a line per step of it
         File("/tmp/claude-0/pr/dbg.txt").takeIf { it.exists() }?.readText()?.trim()?.split("\n")?.forEach { line ->
             val p = line.trim().split(" ")
