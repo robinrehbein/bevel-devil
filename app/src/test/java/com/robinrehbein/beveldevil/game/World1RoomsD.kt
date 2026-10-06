@@ -45,7 +45,7 @@ object World1RoomsD {
         40 to listOf<Solution>(
             { rightUntil { it.swapped }.leftKeyRightTo(12.0f).waitFor { w -> !w.beams.any { it.laser.id == 'A' && it.lit } }.leftKeyRightTo(21.0f)
                 .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
-                .hopSL(13.6f, 0.4f).rightKeyLeftTo(3.2f).right(1f) },
+                .hopSL(18.6f, 0.4f).rightKeyLeftTo(12.6f).right(1f) },
         ),
         // 39: let the ceiling tile land and hop it, up the stairs to the upper floor, hop the piece that gives way, board the shelf, tilt and ride it
         // across, jump off its end over the bank that gives way onto the ledge with the door

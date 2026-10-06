@@ -247,7 +247,8 @@ object World1Part3 {
         // keys swap (kernel panic: left is right) and the memory test sweeps a beam across the shelf; run when it goes dark and do not
         // dawdle, a second beam near the end of the shelf keeps almost the same rhythm. At the end of the shelf the keys come back
         // ("restored. Probably."), you drop down the shaft (where you land is a bad sector a moment later) and run back along the ground
-        // floor to the door, where the keys swap once more halfway, with a pit in the way that has to be hopped with the new hands
+        // floor to the door in the middle of it (not under the start), where the keys swap once more halfway, with a pit in the way that has
+        // to be hopped with the new hands
         // TWIST: Swap (the one swapped-controls level of the act), Laser (the one beam)
         Level(
             name = T("Boot Sequence", "Systemstart"),
@@ -264,8 +265,8 @@ object World1Part3 {
         ) {
             border(); floor()
             fill(1..29, 9..9)
-            pit(11..12)
-            put(2, 8, 'P'); put(3, 14, 'D')
+            pit(16..17)
+            put(2, 8, 'P'); put(12, 14, 'D')
         },
 
         // 41 — TV night: the door is straight ahead behind a wall that is too high, so the way is the other way round. Left of the
