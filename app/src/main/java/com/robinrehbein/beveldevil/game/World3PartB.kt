@@ -9,6 +9,7 @@ import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.HeatSpike
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Saw
@@ -150,14 +151,15 @@ object World3PartB {
         },
 
         // 13 — the fuse box is upstairs: a chip to climb, a step over a pit that is on a short shift once you touch it, a stable island
-        // where you wait for the rails of the bridge to light up, and a ledge on the far side that gives way as you land. On it a
+        // where the bridge resets the moment you land (it goes dark: whoever runs on falls, whoever waits sees it light up again), and a ledge on the far side that gives way as you land. On it a
         // long fuse plate under a low ceiling (you cannot jump over it): running over it sends a surge through a live wall that was
         // dark a moment ago. Wait for it to die down, run, the floor behind the wall gives way too, and down to the door.
         Level(
             name = T("Fuse Box", "Sicherungskasten"),
             intro = T("The fuse box is upstairs. Naturally.", "Der Sicherungskasten ist oben. Natürlich."),
-            start = listOf(Circuit('Z', on = false), Clock('r', on = 1.8f, off = 1.2f, phase = 0.5f)),
+            start = listOf(Circuit('Z', on = false), Circuit('r')),
             traps = listOf(
+                trap(Landed(10.5f, 13.9f), Clock('r', on = 1.8f, off = 0.9f, phase = 1.8f), say("Fuse reset. The bridge reboots. Give it a second.", "Sicherung zurückgesetzt. Die Brücke startet neu. Gib ihr eine Sekunde.")),
                 trap(Touch('p'), Play(Card.CRUMBLE), Fall('p'), say("The step has a shift. It ends in half a second.", "Die Stufe hat Schicht. In einer halben Sekunde ist Feierabend."), delay = 0.45f),
                 trap(Touch('m'), Fall('m'), say("Same contract. Fewer minutes.", "Gleicher Vertrag. Weniger Minuten."), delay = 0.4f),
                 trap(Touch('f'), Clock('Z', on = 1.4f, off = 60f), say("Fuse plate. Everything you step on flows. Mostly into the wall.", "Sicherungsplatte. Alles, was du betrittst, fließt. Meistens in die Wand.")),
@@ -205,7 +207,7 @@ object World3PartB {
 
         // 15 — a plug on the shelf swaps the controls: start high, a fan blade sets off behind you and chases you along the shelf, halfway
         // the plug reverses left and right, so the rest of the shelf, the fall to the floor and the whole floor back to the door (a pit,
-        // a roller that comes at you head on, a spike) are done on the other keys. The plug at the door claims to restore the polarity:
+        // a roller that comes at you head on, a pendulum that wakes up as you land, a spike) are done on the other keys. The plug at the door claims to restore the polarity:
         // it does, and whoever keeps pressing the key that worked runs straight back into the spike behind it.
         // Rematch: the plug on the floor restores the polarity early, before the spike, and the one at the door reverses it again.
         Level(
@@ -216,6 +218,7 @@ object World3PartB {
                 trap(PastX(7f), Saw(-1f, 7.4f, 7f, 0f), say("A blade is following you. Politely. It has no key either.", "Ein Messer folgt dir. Höflich. Es hat auch keinen Schlüssel.")),
                 trap(Zone(17f, 5f, 21f, 8.5f), Play(Card.TWISTED), Swap(true), say("Polarity reversed. Left is right. Again.", "Polung vertauscht. Links ist rechts. Schon wieder.")),
                 trap(Zone(25f, 13f, 30f, 15.2f), Saw(-1f, 14.4f, 9f, 0f), say("The ground floor sends a roller. Express.", "Das Erdgeschoss schickt einen Roller. Express.")),
+                trap(Landed(12f, 15f), PathSaw(6f, 13.5f to 10.6f, 13.5f to 14.4f, delay = 0.2f), say("A pendulum. It swings the right way round. You do not.", "Ein Pendel. Es schwingt richtig herum. Du nicht.")),
                 trap(Zone(3.5f, 13f, 6f, 15.2f), Swap(false), say("Polarity restored. Probably.", "Polung wiederhergestellt. Vermutlich.")),
             ),
             hint = T("After the first plug the other key is the right one. After the second, think again.", "Nach dem ersten Stecker stimmt die andere Taste. Nach dem zweiten denk nochmal nach."),
@@ -225,7 +228,7 @@ object World3PartB {
                     hint = T("The plug on the floor sits before the spike now. The one at the door turns everything around again.", "Der Stecker unten sitzt jetzt vor dem Stachel. Der an der Tür dreht alles nochmal um."),
                     traps = listOf(
                         trap(PastX(7f), Saw(-1f, 7.4f, 7f, 0f), say("A blade is following you. Politely. It has no key either.", "Ein Messer folgt dir. Höflich. Es hat auch keinen Schlüssel.")),
-                        trap(Zone(17f, 5f, 21f, 8.5f), Play(Card.BIT_FLIP), Swap(true), say("Polarity reversed. Old habit.", "Polung vertauscht. Alte Gewohnheit.")),
+                        trap(Zone(17f, 5f, 21f, 8.5f), Play(Card.TWISTED), Swap(true), say("Polarity reversed. Old habit.", "Polung vertauscht. Alte Gewohnheit.")),
                         trap(Zone(25f, 13f, 30f, 15.2f), Saw(-1f, 14.4f, 9f, 0f), say("The ground floor sends a roller. Express.", "Das Erdgeschoss schickt einen Roller. Express.")),
                         trap(Zone(12f, 13f, 15f, 15.2f), Swap(false), say("Polarity restored. Early, this time.", "Polung wiederhergestellt. Diesmal früh.")),
                         trap(Zone(3.5f, 13f, 6f, 15.2f), Swap(true), say("And reversed again. For the door.", "Und wieder vertauscht. Für die Tür.")),
