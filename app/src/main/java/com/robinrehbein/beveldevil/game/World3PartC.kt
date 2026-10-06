@@ -201,7 +201,7 @@ object World3PartC {
             start = listOf(Heat('p', rise = 0.9f, cool = 1.2f), Heat('q', rise = 0.2f, cool = 0.4f)),
             traps = listOf(
                 trap(PastX(7.5f), HeatSpike('p', 1f), say("Warm-up exercise one: do not touch the warm part.", "Aufwärmübung eins: Den warmen Teil nicht anfassen.")),
-                trap(Zone(22f, 8f, 30f, 10f), Play(Card.HEADBUTT), Move('F', 17f, 0f, 5f), say("The strip has been waiting at the far end. It missed you.", "Der Streifen hat am anderen Ende gewartet. Du hast ihm gefehlt.")),
+                trap(Zone(22f, 8f, 30f, 10f), Move('F', 17f, 0f, 5f), say("The strip has been waiting at the far end. It missed you.", "Der Streifen hat am anderen Ende gewartet. Du hast ihm gefehlt.")),
                 trap(Zone(10.3f, 13.9f, 11.6f, 15.2f), HeatSpike('q', 1f), say("Exercise two. The same warm part, one floor down.", "Übung zwei. Der gleiche warme Teil, ein Stockwerk tiefer.")),
                 trap(Zone(15.5f, 13f, 17f, 15.2f), Move('G', -16f, 0f, 5f), say("Cool-down: a strip from the other side of the door.", "Abkühlen: ein Streifen von der anderen Seite der Tür.")),
             ),
@@ -214,24 +214,27 @@ object World3PartC {
             spawn(2, 3); door(29, 14)
         },
 
-        // 23 — the plate is lukewarm until you step on it; then Mephi turns it up, so waiting for the rail is not an option there
+        // 23 — you start on a little tower and step off it into a long ground floor under a ceiling of slabs. Three numbers are called, one
+        // after the other: each time a whole slab lets go just ahead of you and comes down just as you would be underneath (stop, wait for
+        // it to land, climb on, walk across). The last one is a staircase: the door sits on a ledge that is a hop too high without it.
+        // Waiting is what the room asks for.
         Level(
             name = T("Waiting Room", "Wartezimmer"),
-            intro = T("Take a seat. The plate is lukewarm.", "Setz dich ruhig. Die Platte ist lauwarm."),
-            start = listOf(Heat('h', rise = 3f), Clock('a', on = 2.4f, off = 2f, phase = 2f)),
+            intro = T("Please take a seat. You will be called.", "Bitte nehmen Sie Platz. Sie werden aufgerufen."),
             traps = listOf(
-                trap(PastX(8.3f), Play(Card.SINKING), Heat('h', rise = 0.8f), say("Set to Sauna. Sitting not recommended.", "Stufe Sauna. Sitzen nicht empfohlen.")),
-                trap(Touch('a'), Clock('a', on = 2.2f, off = 2f), say("The rail got a new appointment schedule.", "Die Schiene hat einen neuen Terminplan.")),
-                trap(Airborne(24.3f, 28.5f), HeatSpike('f', 0.7f), say("Next appointment: preheated.", "Nächster Termin: vorgeheizt.")),
+                trap(Landed(4.4f, 8f), Play(Card.HEADBUTT), Fall('a'), say("Number one, please.", "Nummer eins, bitte."), delay = 0.6f),
+                trap(Landed(17.4f, 20.5f), Fall('m'), say("Number two. Wait, I said.", "Nummer zwei. Warten, hatte ich gesagt."), delay = 0.5f),
+                trap(Touch('m'), Fall('e'), say("Number three. Take the stairs.", "Nummer drei. Nehmen Sie die Treppe."), delay = 0.35f),
             ),
+            hint = T("Do not walk under what hangs over you. Wait for it to land, then climb on.", "Lauf nicht unter dem durch, was über dir hängt. Warte, bis es unten liegt, und klettere drauf."),
         ) {
             border(); floor()
-            fill(8..11, 15..15, 'h')
-            bridge(12..22, 'a')
-            fill(26..28, 15..15, 'f')
-            spawn(); door()
+            fill(1..3, 6..14)
+            fill(10..26, 8..9)
+            fill(10..16, 10..10, 'a'); fill(22..24, 10..10, 'm'); fill(26..26, 10..11, 'e')
+            fill(27..30, 11..14)
+            spawn(1, 5); door(29, 10)
         },
-
 
         // 24 — cooling fins: hot plates as a staircase up to the door; they heat faster after the first landing, the top ledge is overclocked
         Level(
