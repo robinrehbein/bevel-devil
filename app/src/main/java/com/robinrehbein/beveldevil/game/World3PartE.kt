@@ -24,7 +24,7 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(Landed(12.2f, 15.9f), Play(Card.CRUMBLE), Fall('b'), say("Gate change: your plank just left.", "Gate geändert: Deine Planke ist schon weg."), delay = 0.1f),
-                trap(Landed(20f, 22.9f), Fall('c'), say("Seats are not reserved.", "Sitzplätze sind nicht reserviert."), delay = 0.4f),
+                trap(Touch('c'), Fall('c'), say("Seats are not reserved. Not even for a second.", "Sitzplätze sind nicht reserviert. Nicht mal für eine Sekunde."), delay = 0.35f),
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Brief pause. Please hold your altitude.", "Kurze Pause. Bitte Höhe halten.")),
                 trap(Zone(26f, 2.9f, 28.8f, 6.1f), FanSet('g', 9f), say("And up again. Mind the wall, not the view.", "Und wieder hoch. Achte auf die Wand, nicht auf die Aussicht."), delay = 1.7f),
             ),
