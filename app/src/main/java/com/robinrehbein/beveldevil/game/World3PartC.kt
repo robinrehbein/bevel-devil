@@ -12,6 +12,7 @@ import com.robinrehbein.beveldevil.game.Action.Heatsink
 import com.robinrehbein.beveldevil.game.Action.Hide
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.Pad
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Saw
@@ -84,7 +85,8 @@ object World3PartC {
         // 18 — the door is right there, behind a copper wall, and the switch that opens it is on the far side of a chip under load. The chip
         // heats all the time and is the only way across the pit, so go over at once (a blade comes along the chip, hop it). The switch
         // opens the wall, turns the load up and sends a blade after you; so the way back is over the same chip, now burning: cool it on
-        // the heatsink on the far side, but not for long.
+        // the heatsink on the far side, but not for long, a blade comes the other way over the chip (hop it), and a blade rises out of
+        // the floor under whoever leans on the locked wall before it opens.
         Level(
             name = T("Full Load", "Volllast"),
             intro = T("Chips get hot when they think. This one never stops.", "Chips werden heiß, wenn sie denken. Der hier hört nie auf."),
@@ -92,6 +94,8 @@ object World3PartC {
             traps = listOf(
                 trap(PastX(9f), Saw(33f, 14.4f, -7f, 0f), say("Blade express. It comes with the chip.", "Messer-Express. Gehört zum Chip."), delay = 0.25f),
                 trap(Pressed('1'), Play(Card.DEVIL_SAW), Saw(35.5f, 14.4f, -6f, 0f), Heat('c', rise = 1.6f, load = true), say("Pressed. The lock is open, the load is up, the blade is loose.", "Gedrückt. Das Schloss ist offen, die Last oben, das Messer los."), delay = 0.6f),
+                trap(Zone(25.5f, 13f, 29f, 15.2f), Saw(-1f, 14.4f, 7f, 0f), say("Two-way traffic on the chip. Blades keep right.", "Gegenverkehr auf dem Chip. Messer fahren rechts."), delay = 1.8f),
+                trap(BeforeX(4.4f), PathSaw(4f, 4.5f to 16.2f, 4.5f to 14.2f), say("Leaning on the door before it opens? The floor has a blade for that.", "An die Tür lehnen, bevor sie aufgeht? Der Boden hat ein Messer dafür."), delay = 0.3f),
             ),
             hint = T("Cross the chip at once, it only gets hotter. On the way back cool it on the sink first, but the blade is on your heels.", "Geh sofort über den Chip, er wird nur heißer. Zurück erst am Kühlkörper kühlen, aber das Messer ist dir auf den Fersen."),
         ) {
@@ -102,23 +106,25 @@ object World3PartC {
             spawn(5, 14); door(2, 14)
         },
 
-        // 19 ★ — a breather with one gag: the floor is a floor until you walk on it. As you set off the solder between three copper
-        // stones lets go (the stones were the only part of the floor that was meant to stay), the first stone flares under whoever lands
-        // on it and the second one gives way. Keep hopping; the third one is only slowly melting, as promised.
+        // 19 ★ — a breather with one gag: the only way over the pit is the fuse itself, a thin wire. The solder joint behind you lets go as
+        // you step on, the wire runs hot under your feet and melts under whoever stops (keep going), and it blows ahead of you, as fuses do: hop the gap. The punchline
+        // is the far end: a fuse wire does not take a landing. Once you are over the gap, walk it.
         Level(
             name = T("Melt Fuse", "Schmelzsicherung"),
             intro = T("Lead-free solder. Also free of mercy.", "Bleifreies Lot. Und gnadenfrei."),
-            start = listOf(Heat('m', rise = 2.2f, melt = true), Heat('n', rise = 2.2f, melt = true), Heat('o', rise = 2.2f, melt = true)),
+            start = listOf(Heat('w', rise = 1.0f, cool = 1.0f, melt = true)),
             traps = listOf(
-                trap(PastX(4f), Fall('f'), say("Floor plan: three stones. The rest was a rumor.", "Grundriss: drei Steine. Der Rest war ein Gerücht.")),
-                trap(Landed(10f, 12f), HeatSpike('m', 1f), say("Stone one: a little warm. Under you.", "Stein eins: ein bisschen warm. Unter dir."), delay = 0.3f),
-                trap(Landed(15f, 17f), Play(Card.SINKING), Fall('n'), say("Stone two: solid ground, limited offer.", "Stein zwei: fester Boden, nur kurz gültig."), delay = 0.3f),
+                trap(PastX(10.6f), Fall('f'), say("The solder joint behind you: gone. No way back, no way down.", "Die Lötstelle hinter dir: weg. Kein Zurück, kein Runter."), delay = 0.15f),
+                trap(Zone(11f, 13f, 12.8f, 15.2f), HeatSpike('w', 0.7f), say("Fuse armed. It is rated for one devil. You are not him.", "Sicherung scharf. Ausgelegt für einen Teufel. Du bist es nicht.")),
+                trap(PastX(11.2f), Play(Card.SINKING), Fall('x'), say("And there it blows. Right on schedule.", "Und da brennt sie durch. Pünktlich."), delay = 0.05f),
+                trap(Landed(17.6f, 27f), Fall('y'), say("A fuse wire, and you land on it. Physics sends its regards.", "Ein Schmelzdraht, und du landest drauf. Schöne Grüße von der Physik."), delay = 0.12f),
             ),
-            hint = T("Do not stop on a stone. Any stone.", "Auf keinem Stein stehen bleiben. Auf keinem."),
+            hint = T("Hop where the wire blows, then walk: the far end breaks under a landing.", "Spring, wo der Draht durchbrennt, dann geh: Das hintere Ende bricht unter einer Landung."),
         ) {
             border(); floor()
-            fill(10..11, 15..17, 'm'); fill(15..16, 15..17, 'n'); fill(20..21, 15..17, 'o')
-            fill(7..9, 15..17, 'f'); fill(12..14, 15..17, 'f'); fill(17..19, 15..17, 'f'); fill(22..23, 15..17, 'f')
+            pit(11..26)
+            fill(9..10, 15..17, 'f')
+            fill(11..12, 15..15, 'w'); fill(13..15, 15..15, 'x'); fill(16..17, 15..15, 'w'); fill(18..26, 15..15, 'y')
             spawn(2, 14); door(29, 14)
         },
 

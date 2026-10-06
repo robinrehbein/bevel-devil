@@ -22,10 +22,13 @@ object World3RoomsC {
         ),
         18 to listOf<Solution>(
             { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
-                .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c').leftTo(3.0f).left(1.5f) },
+                .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c')
+                .leftUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.8f } }.leftJump(0.55f).landLeft()
+                .leftTo(3.0f).left(1.5f) },
         ),
         19 to listOf<Solution>(
-            { rightTo(6.3f).rightJump(0.45f).landRight().rightTo(11.0f).rightJump(0.45f).landRight().rightTo(16.0f).rightJump(0.45f).landRight().rightTo(21.0f).rightJump(0.45f).landRight().right(1.5f) },
+            // run onto the fuse, hop where it blows, run off before it melts
+            { rightTo(11.9f).rightJump(0.45f).landRight().rightTo(29.5f).right(0.5f) },
         ),
         20 to listOf<Solution>(
             { rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
