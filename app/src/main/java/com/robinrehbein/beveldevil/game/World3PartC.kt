@@ -177,8 +177,9 @@ object World3PartC {
                         trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 10f, 9f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
                     ),
                 ) {
-                    fill(6..12, 14..14); fill(14..18, 14..14)
-                    put(4, 14, '.'); spawn(3, 14); put(3, 9, '.'); door(2, 9)
+                    put(11, 15, 'b')
+                    fill(6..9, 14..14); fill(11..16, 14..14)
+                    put(5, 14, '.'); spawn(3, 14); put(4, 9, '.'); door(2, 9)
                 },
             ),
         ) {
@@ -188,7 +189,7 @@ object World3PartC {
             fill(1..2, 13..14, 'S')
             fill(22..23, 13..14); fill(24..29, 11..14)
             put(10, 9, 'U')
-            spawn(4, 14); door(3, 9)
+            spawn(5, 14); door(4, 9)
         },
 
         // 22 — the chip warms up; linger on it and it goes to full load; a fan blade rolls in, so hop it without slowing down;

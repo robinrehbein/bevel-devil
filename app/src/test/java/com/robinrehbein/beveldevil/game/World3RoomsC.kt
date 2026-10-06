@@ -32,9 +32,9 @@ object World3RoomsC {
         21 to listOf<Solution>(
             { rightTo(10.7f).waitCooled('b').rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(25.2f).leftJump(0.55f).landLeft()
-                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
+                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(4.6f).left(1f) },
             // rematch: the stove is on for good and the sink sends the wall at once: hop over it on the blocks
-            { rightTo(4.6f).rightJump(0.4f).landRight().rightTo(11.6f).rightJump(0.4f).landRight().rightTo(18.2f)
+            { rightTo(4.6f).rightJump(0.4f).landRight().rightTo(9.4f).rightJump(0.4f).landRight().rightTo(16.2f).rightJump(0.4f).landRight()
                 .rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(25.2f).leftJump(0.55f).landLeft()
                 .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(2.4f).left(1f) },
