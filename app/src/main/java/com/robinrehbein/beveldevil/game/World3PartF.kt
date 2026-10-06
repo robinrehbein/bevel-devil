@@ -100,14 +100,16 @@ object World3PartF {
             spawn(27, 14); door(2, 14)
         },
 
-        // 43 — Wiring Diagram
+        // 43 — Wiring Diagram (R1+R10, U17), run from right to left: the first switch powers the lift and, for a moment, the bridge over the
+        // pit (run), the landing past it is on another circuit and drops, the lift takes you up to a ledge on a timer, the second switch at its far
+        // end flips one bit that the wall in front of the door shares with the floor under it.
         Level(
             name = T("Wiring Diagram", "Schaltplan"),
             intro = T("Page one: everything is connected.", "Seite eins: Alles hängt zusammen."),
             start = listOf(
                 Circuit('a'), Circuit('p'), Circuit('l'), Circuit('w'), Circuit('x', on = false),
-                Fan('f', at = 17 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
-                Pad('1', at = 5 to 14), Pad('2', at = 11 to 7),
+                Fan('f', at = 13 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
+                Pad('1', at = 26 to 14), Pad('2', at = 20 to 7),
             ),
             traps = listOf(
                 trap(Pressed('1'), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
@@ -120,35 +122,40 @@ object World3PartF {
             hint = T("Press the first switch, then run: the bridge only has power for a moment. The second switch hides at the far end of the ledge.", "Drück den ersten Schalter und lauf los: Die Brücke hat nur kurz Strom. Der zweite Schalter liegt am anderen Ende des Simses."),
         ) {
             border(); floor()
-            pit(8..16); put(8, 15, 'a')
-            fill(8..14, 15..15, 'a'); fill(15..16, 15..15, 'p')
-            fill(19..23, 8..14)
-            fill(9..16, 8..8, 'l')
-            pit(26..27); fill(26..27, 15..15, 'x')
-            fill(26..27, 1..14, 'w')
-            spawn(2, 14); door(29, 14)
+            pit(15..23); put(23, 15, 'a')
+            fill(17..23, 15..15, 'a'); fill(15..16, 15..15, 'p')
+            fill(8..12, 8..14)
+            fill(15..22, 8..8, 'l')
+            pit(4..5); fill(4..5, 15..15, 'x')
+            fill(4..5, 1..14, 'w')
+            spawn(29, 14); door(2, 14)
         },
 
-        // 44 — Display (a breather: one lure, one punchline, and the screen rotates back for whoever dawdles)
+        // 44 — Display (a breather, U10): you start on the shelf in the middle of the room, and the way right is walled off. The lift is far
+        // over at the left: ride it, and at the top the screen is mounted upside down, you fall to the ceiling and walk it over the wall to the
+        // door, which hangs from the ceiling too (hop the stud; past the wall the cooling fan behind the screen blows in your face). Auto-rotate
+        // comes back after a few seconds, and below the door the floor is studded: do not dawdle up there.
         Level(
             name = T("Display", "Anzeige"),
             intro = T("I mounted the monitor myself.", "Den Monitor habe ich selbst montiert."),
             start = listOf(
-                Fan('f', at = 8 to 15, dir = Dir.UP, reach = 9, speed = 3f, width = 5),
+                Fan('f', at = 2 to 15, dir = Dir.UP, reach = 9, speed = 3f, width = 5),
+                Fan('g', at = 30 to 1, dir = Dir.LEFT, reach = 11, speed = 4.5f, width = 2), Power('g', false),
             ),
             traps = listOf(
-                trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
-                trap(Zone(14f, 6f, 18f, 8.2f), Gravity(true), say("Nice shelf. Shame about the screen orientation.", "Schönes Regal. Schade um die Bildschirmausrichtung.")),
-                trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
-                trap(Zone(8f, 5.4f, 13f, 7.6f), Gravity(false), say("Auto-rotate is on. You had three seconds.", "Automatisch drehen ist an. Du hattest drei Sekunden."), delay = 3.4f),
+                trap(Zone(2f, 11f, 7f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
+                trap(Zone(2f, 5.5f, 7f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
+                trap(Zone(2f, 5.4f, 7f, 7.6f), Gravity(false), say("Auto-rotate is on. You had four seconds.", "Automatisch drehen ist an. Du hattest vier Sekunden."), delay = 4.0f),
+                trap(Zone(19f, 1f, 21f, 3f), Power('g', true), say("The cooling fan behind the screen kicks in. Upside down, it blows in your face.", "Der Lüfter hinterm Bildschirm springt an. Kopfüber bläst er dir ins Gesicht.")),
             ),
-            hint = T("Stay in the draft all the way up, whatever the shelf promises. Up top, the screen rotates back soon: hurry to the door.", "Bleib im Luftstrom bis ganz oben, egal was das Regal verspricht. Oben dreht sich der Bildschirm bald zurück: Beeil dich zur Tür."),
+            hint = T("The way over the wall is the ceiling. Ride the lift all the way up, and hurry along the ceiling: the screen rotates back soon.", "Der Weg über die Wand ist die Decke. Fahr mit dem Aufzug ganz nach oben, und beeil dich an der Decke: Der Bildschirm dreht sich bald zurück."),
         ) {
             border(); floor()
             fill(14..17, 8..8)
-            fill(15..15, 1..1, 'v')
+            fill(18..18, 2..14)
+            fill(11..11, 1..1, 'v')
             fill(20..28, 14..14, '^')
-            spawn(2, 14); door(26, 1)
+            spawn(15, 7); door(26, 1)
         },
 
         // 45 — Cold Air

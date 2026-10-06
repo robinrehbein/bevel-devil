@@ -28,14 +28,18 @@ object World3RoomsF {
                 .rightUntil { it.player.grounded }.left(6f) },
         ),
         43 to listOf<Solution>(
-            { rightTo(5.6f).rightTo(18.0f).rightUntil { it.player.box.cy < 7.4f }
-                .leftUntil { it.player.grounded && it.player.box.cx < 16.8f }.leftTo(11.8f)
-                .rightUntil { it.player.box.cx > 19.5f }.rightTo(23.5f).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-                .right(3f) },
+            // (run right to left) press the first switch, run the powered bridge, up the lift, back right along the ledge to the
+            // second switch, then left over the block and through where the wall was
+            { leftTo(26.4f).leftTo(14.0f).leftUntil { it.player.box.cy < 7.4f }
+                .rightUntil { it.player.grounded && it.player.box.cx > 15.2f }.rightTo(20.2f)
+                .leftUntil { it.player.box.cx < 12.5f }.leftTo(8.5f).leftUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .left(3f) },
         ),
         44 to listOf<Solution>(
-            { rightTo(9.5f).waitFor { it.player.box.cy < 6.4f }
-                .waitFor { it.player.grounded }.rightTo(12.4f).rightJump(0.45f).landRight().rightTo(26f).right(1f) },
+            // off the shelf to the lift, up and over onto the ceiling, hop the stud, along the ceiling to the door
+            { leftTo(5.0f).waitFor { it.player.box.cy < 6.4f }
+                .waitFor { it.player.grounded }.rightTo(8.4f).rightJump(0.45f).landRight()
+.rightTo(26f).right(1f) },
         ),
         45 to listOf<Solution>(
             { rightTo(14.5f).waitFor { it.player.box.cy < 9.5f }.leftUntil { it.player.box.cy < 4.6f }
