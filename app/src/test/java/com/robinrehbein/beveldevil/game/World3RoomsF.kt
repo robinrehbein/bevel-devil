@@ -32,5 +32,9 @@ object World3RoomsF {
             { rightTo(9.5f).waitFor { it.player.box.cy < 6.4f }
                 .rightTo(16.4f).rightJump(0.25f).landRight().rightTo(29f).right(1f) },
         ),
+        45 to listOf<Solution>(
+            { rightTo(14.5f).waitFor { it.player.box.cy < 9.5f }.leftUntil { it.player.box.cy < 4.6f }
+                .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.right(4f) },
+        ),
     )
 }

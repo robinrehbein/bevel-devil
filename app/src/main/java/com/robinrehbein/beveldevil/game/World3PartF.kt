@@ -131,5 +131,26 @@ object World3PartF {
             put(19, 1, 'v')
             spawn(2, 14); door(29, 1)
         },
+
+        // 45 — Cold Air
+        Level(
+            name = T("Cold Air", "Kaltluft"),
+            intro = T("Plenty of hot air here. Mostly mine.", "Hier gibt es viel heiße Luft. Meist meine."),
+            start = listOf(
+                Fan('f', at = 13 to 15, dir = Dir.UP, reach = 11, speed = 3.6f, width = 3),
+            ),
+            traps = listOf(
+                trap(PastX(8f), Play(Card.COLLAPSE), Move('W', -8f, 0f, 7f), say("Cold aisle, closing. Warm aisle, also closing.", "Kaltgang schließt. Warmgang schließt auch.")),
+                trap(Zone(13f, 7.5f, 16f, 10.5f), Move('q', -2.5f, 0f, 5f), say("The vent has a side entrance.", "Der Schacht hat einen Seiteneingang."), delay = 0.3f),
+                trap(Zone(21f, 3.5f, 25f, 5.5f), Move('p', 0f, -3.5f, 2.2f), say("Racks are hot-swappable. This shelf swaps up.", "Racks sind hot-swap-fähig. Dieses Regal fährt nach oben."), delay = 0.2f),
+            ),
+        ) {
+            border(); floor()
+            fill(29..29, 6..14, 'W')
+            fill(11..12, 2..9)
+            fill(17..18, 8..9, 'q')
+            fill(16..20, 5..5); fill(21..24, 5..5, 'p')
+            spawn(2, 14); door(30, 14)
+        },
     )
 }
