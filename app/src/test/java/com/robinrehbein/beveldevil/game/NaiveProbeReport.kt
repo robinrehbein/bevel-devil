@@ -15,7 +15,7 @@ class NaiveProbeReport {
         const val TIMEOUT = NaiveProbes.TIMEOUT
         const val FREEZE = NaiveProbes.FREEZE
         const val SHIFT = NaiveProbes.SHIFT
-        const val OUT = "/tmp/claude-0/-home-user-bevel-devil/e7fb7e56-3e5d-5200-85e3-f028f08c7c64/scratchpad/naive-probe-report.txt"
+        const val OUT = "build/reports/naive-probe-report.txt"
         /** Rounds that get a verbose per-probe block: "world-level". */
         val VERBOSE = setOf("2-24", "2-25", "2-26", "2-27", "2-29")
     }
