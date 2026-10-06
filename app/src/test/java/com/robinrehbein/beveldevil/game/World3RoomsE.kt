@@ -2,6 +2,9 @@ package com.robinrehbein.beveldevil.game
 
 /** Bot solutions of the rebuilt block E of World 3 (levels 33-40): one per round, round 1 first. Registered in [World3DesignTest]. */
 object World3RoomsE {
+    /** The x of the first piece of group [id] (home plus offset). */
+    private fun gx(w: World, id: Char): Float = w.group(id).let { it.homeX + it.ox }
+
     val solutions: Map<Int, List<Solution>> = mapOf(
         33 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight()
@@ -15,6 +18,13 @@ object World3RoomsE {
                 .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.5f).landRight()
                 .rightTo(15.6f).waitFor { it.fans[0].wind < -7f && it.fans[1].wind == 0f }
                 .rightUntil { w -> w.saws.any { it.vx < -9f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 7.5f } }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+        ),
+        36 to listOf<Solution>(
+            { rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }
+                .leftUntil { it.player.box.cx < 9.2f }.leftUntil { it.player.grounded }
+                .rightUntil { w -> w.player.box.cx > 18.5f }
+                .rightUntil { w -> gx(w, 'C') > w.player.box.cx && gx(w, 'C') - w.player.box.cx < 3.5f }.rightJump(0.5f).landRight()
+                .rightUntil { it.player.box.cx > 30f } },
         ),
     )
 }

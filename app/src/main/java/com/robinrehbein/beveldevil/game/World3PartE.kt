@@ -81,32 +81,24 @@ object World3PartE {
             spawn(1, 14); door(30, 14)
         },
 
-        // 36 — an updraft over a spike pit: looks deadly, carries you across; the far side is warm, and a fan blade rolls in
+        // 36 — Air Cushion (trap room, U6): scratch v1
         Level(
             name = T("Air Cushion", "Luftkissen"),
-            intro = T("Watch your step. Literally.", "Pass auf, wo du hintrittst. Wörtlich."),
-            start = listOf(Fan('f', at = 9 to 17, dir = Dir.UP, reach = 7, speed = 8f, width = 12)),
+            intro = T("Soft landing guaranteed.", "Weiche Landung garantiert."),
+            start = listOf(Fan('d', at = 8 to 0, dir = Dir.DOWN, reach = 15, speed = 3f, width = 6)),
             traps = listOf(
-                trap(Landed(20.5f, 23.5f), HeatSpike('g', 0.65f), say("The pit was the safe part.", "Die Grube war der sichere Teil.")),
-                trap(PastX(23.6f), Play(Card.GHOST_BLOCK), Saw(33f, 14.4f, -6.5f, 0f), say("Fan blade, rolling in.", "Lüfterblatt, rollt an.")),
-            ),
-            // rematch: no blade; two pins stand behind the warm landing instead, and they slide onto the spot where a jump over
-            // them lands. Provoke them with a small hop, then jump the place they moved to
-            rematch = listOf(
-                Round(
-                    T("Once more, with feeling. And pins.", "Nochmal mit Gefühl. Und Steckkontakten."),
-                    start = listOf(Fan('f', at = 9 to 17, dir = Dir.UP, reach = 7, speed = 8f, width = 12)),
-                    traps = listOf(
-                        trap(Landed(20.5f, 23.5f), HeatSpike('g', 0.65f), say("The pit is still the safe part.", "Die Grube ist immer noch der sichere Teil.")),
-                        trap(Airborne(22f, 26f), Play(Card.SPIKE_SEED), Move('S', 2f, 0f, 16f), say("Pins: plug and pray.", "Pins: Plug and Pray.")),
-                    ),
-                ) { put(23, 14, 'S'); put(24, 14, 'S') },
+                trap(Zone(8f, 3f, 14f, 5.5f), Play(Card.COLLAPSE), Move('A', 3.5f, 0f, 5f), say("The walls have teeth. They are shy.", "Die Wände haben Zähne. Sie sind schüchtern.")),
+                trap(Zone(8f, 7f, 14f, 8.5f), Move('B', -4f, 0f, 5f), say("Other side now. Mind the draft.", "Jetzt die andere Seite. Vorsicht, Zugluft.")),
+                trap(Landed(8f, 13.9f), Move('C', -9f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
             ),
         ) {
-            border(); floor(); pit(9..20)
-            fill(9..20, 17..17); fill(9..20, 16..16, '^')
-            fill(21..22, 15..15, 'g')
-            spawn(); door()
+            border(); floor()
+            fill(0..7, 4..14)
+            fill(14..17, 1..12)
+            fill(5..7, 7..7, 'A')
+            fill(14..17, 10..10, 'B')
+            put(30, 14, 'C')
+            spawn(1, 3); door(29, 14)
         },
 
         // 37 — the tailwind runs in shifts: jump when it is working; after the first landing the gusts get stronger
