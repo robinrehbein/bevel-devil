@@ -58,22 +58,27 @@ object World3PartE {
             spawn(1, 14); door(30, 14)
         },
 
-        // 35 — a headwind that takes breaks: no jump clears the spikes against it; it gusts harder once you are close, the first lull ends early under your jump (leap from the very edge), and the landing is warm
+        // 35 — Headwind (R4, U7): scratch v3
         Level(
             name = T("Headwind", "Gegenwind"),
             intro = T("Breezy today.", "Heute ist es windig."),
-            start = listOf(Fan('w', at = 31 to 11, dir = Dir.LEFT, reach = 12, speed = 5.5f, width = 4, on = 2.2f, off = 2f)),
+            start = listOf(
+                Fan('w', at = 31 to 9, dir = Dir.LEFT, reach = 22, speed = 6.6f, width = 6),
+                Fan('g', at = 23 to 9, dir = Dir.LEFT, reach = 4, speed = 14f, width = 6),
+                Pad('1', at = 15 to 14),
+            ),
             traps = listOf(
-                trap(PastX(18.5f), Play(Card.BACKDRAFT), FanSet('w', 7f), say("Gusts upgraded. No charge.", "Böen aufgerüstet. Kostenlos.")),
-                // the lull ends early under the first jump: only a leap from the very edge still clears the spikes
-                trap(Airborne(22.5f, 25f), Fan('w', at = 31 to 11, dir = Dir.LEFT, reach = 12, speed = 5.5f, width = 4, on = 2.2f, off = 2f), say("Break's over. Early shift.", "Pause vorbei. Frühschicht."), delay = 0.15f),
-                trap(Airborne(23.5f, 27f), HeatSpike('g', 0.7f), say("Landing strip: warm.", "Landebahn: warm.")),
+                trap(PastX(4f), Saw(-1f, 14.4f, 11f, 0f), say("A blade for your back. The wind has no say there.", "Ein Blatt für den Rücken. Der Wind hat da nichts zu melden.")),
+                trap(Landed(8f, 14f), Saw(33f, 14.4f, -10f, 0f), say("Fan blade, fresh off the shelf.", "Lüfterblatt, frisch aus dem Regal.")),
+                trap(PastX(11f), FanSet('w', 7.1f), say("Breezy.", "Luftig.")),
+                trap(PastX(13f), FanSet('w', 7.6f), say("Brisk.", "Frisch.")),
+                trap(Pressed('1'), Play(Card.BACKDRAFT), Power('g', false), FanSet('w', -8f), say("Tailwind, as requested.", "Rückenwind, wie bestellt.")),
+                trap(PastX(25f), Power('g', true), Saw(33f, 14.4f, -10f, 0f), say("The wall closes behind you. The blade does not.", "Die Wand schließt hinter dir. Das Blatt nicht.")),
             ),
         ) {
             border(); floor()
-            put(25, 14, '^'); put(26, 14, '^')
-            fill(27..28, 15..15, 'g')
-            spawn(); door()
+            fill(23..23, 1..9)
+            spawn(1, 14); door(30, 14)
         },
 
         // 36 — an updraft over a spike pit: looks deadly, carries you across; the far side is warm, and a fan blade rolls in
