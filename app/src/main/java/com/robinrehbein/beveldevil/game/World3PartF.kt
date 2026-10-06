@@ -64,18 +64,23 @@ object World3PartF {
                 Fan('D', at = 27 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
             ),
             traps = listOf(
-                trap(PastX(11f), Play(Card.STALKER), Chase('W', 4.4f, left = 0f, right = 30f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
+                trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
                 trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Exhaust hood, closing time.", "Abzugshaube, Feierabend."), delay = 0.2f),
+                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("The drain breathes in. So do the spikes up there.", "Der Abfluss atmet ein. Die Stacheln da oben auch.")),
+                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
             ),
-            hint = T("Stand in the vent and let it carry you. Up top, do not linger under the hood.", "Stell dich in den Schacht und lass dich tragen. Oben nicht unter der Haube trödeln."),
-            // rematch: the vent is pressure-sensitive now: whoever stands still in it (as in round one) gets the ceiling slab down the shaft. Keep hopping
+            hint = T("Stand in the vent and let it carry you. Up top, do not linger under the hood, and do not trust the slow way down: step out of the draft.", "Stell dich in den Schacht und lass dich tragen. Oben nicht unter der Haube trödeln, und trau dem langsamen Weg nach unten nicht: Tritt aus dem Luftstrom."),
+            // rematch: the vent is pressure-sensitive now: whoever stands still in it (as in round one) gets the ceiling slab down the shaft. Keep
+            // hopping, and the drain still breathes in, so step out of it as before
             rematch = listOf(
                 Round(
                     T("Same vent. It listens now.", "Gleicher Schacht. Er hört jetzt zu."),
                     traps = listOf(
-                        trap(PastX(11f), Play(Card.STALKER), Chase('W', 4.4f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
+                        trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
                         trap(Idle(0.5f), Move('c', 0f, 12f, 16f), say("Standing still in my vent? That is loitering.", "In meinem Schacht rumstehen? Das ist Herumlungern.")),
                         trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.2f),
+                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
+                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
                     ),
                 ) {
                     fill(14..16, 1..2, 'c')
@@ -88,6 +93,7 @@ object World3PartF {
             fill(19..20, 1..4); fill(19..20, 8..14)
             fill(21..25, 1..2, 'h')
             fill(30..30, 7..14)
+            fill(27..29, 1..1, 'v')
             spawn(3, 14); door(29, 14)
         },
 

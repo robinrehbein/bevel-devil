@@ -17,10 +17,12 @@ object World3RoomsF {
         ),
         42 to listOf<Solution>(
             { rightTo(15.0f).waitFor { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
-                .right(6f) },
-            // rematch: keep hopping in the vent, standing still is loitering
+                .rightUntil { it.fans[1].wind < -2f }.leftUntil { it.player.box.cx < 26.3f }
+                .leftUntil { it.player.grounded }.right(6f) },
+            // rematch: keep hopping in the vent, standing still is loitering; the drain breathes in as before
             { rightTo(15.0f).fidgetUntil { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
-                .right(6f) },
+                .rightUntil { it.fans[1].wind < -2f }.leftUntil { it.player.box.cx < 26.3f }
+                .leftUntil { it.player.grounded }.right(6f) },
         ),
         43 to listOf<Solution>(
             { rightTo(5.6f).rightTo(18.0f).rightUntil { it.player.box.cy < 7.4f }
