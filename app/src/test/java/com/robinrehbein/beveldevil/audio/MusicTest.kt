@@ -53,9 +53,9 @@ class MusicTest {
         assertEquals(58, Tracker.midi("Bb3"))
     }
 
-    /** Exports the loops for listening: build/music (and the scratchpad copy when present). */
+    /** Exports the loops for listening: build/music. */
     @Test fun exportWavs() {
-        val dirs = listOf(File("build/music"), File("/tmp/claude-0/-home-user-bevel-devil/73154ab0-d1a8-597e-94c1-c27aa16f3670/scratchpad/music"))
+        val dirs = listOf(File("build/music"))
         for (dir in dirs) {
             if (!dir.isDirectory && !dir.mkdirs()) continue
             for ((t, p) in pcm) File(dir, "${t.name.lowercase()}.wav").writeBytes(Tracker.wav(p))
