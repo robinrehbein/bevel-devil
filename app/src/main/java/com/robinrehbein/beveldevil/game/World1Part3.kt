@@ -213,27 +213,27 @@ object World1Part3 {
             put(29, 14, 'P'); put(25, 8, 'D')
         },
 
-        // 39 — hardware store: a ceiling tile drops in aisle 6; the pit is too wide to jump, and the only way across is the shelf at its edge,
-        // which slides with the tilt of your phone (a ferry): the far bank gives way as you pass, so jump off the ferry's end onto the
-        // stairs. Upstairs, on the way back, the next ceiling tile comes down where you hurry
+        // 39 — hardware store: a ceiling tile drops in aisle 6 and is hopped, then the stairs go up three floors to the platform, where
+        // the floor sample at its edge is gone for a moment (wait for it); beyond it the pit is too wide to jump, and the only way across
+        // is the shelf at its edge, which slides with the tilt of your phone (a ferry): the far bank gives way as you ride in, so jump
+        // off the ferry's end onto the high ledge with the door, up on the right
         // MOTION: Tilt (one of the two phone-motion levels of the act)
         Level(
             name = T("Hardware Store", "Baumarkt"),
             intro = T("I built something wide. No instructions.", "Ich habe was Breites gebaut. Ohne Anleitung."),
-            hint = T("The shelf at the edge of the pit slides when you tilt the phone. Hold it tilted, and jump off the shelf's end.", "Das Regal am Rand des Lochs gleitet, wenn du das Handy kippst. Halte es schräg und spring am Ende vom Regal ab."),
-            start = listOf(Tilt('a', left = 0f, right = 7f, speed = 8f)),
+            hint = T("The shelf at the edge of the pit slides when you tilt the phone. Hold it tilted, and jump off the shelf's end.", "Das Regal am Rand des Lochs gleitet, wenn du das Handy kippst. Halte es schr\u00e4g und spring am Ende vom Regal ab."),
+            start = listOf(Tilt('a', left = 0f, right = 3f, speed = 3.4f)),
             traps = listOf(
                 trap(PastX(3f), Play(Card.HEADBUTT), Move('s', 0f, 13f, 24f), Shake(0.4f), Say(T("Aisle 6: ceiling tiles. Falling prices.", "Gang 6: Deckenplatten. Fallende Preise."))),
-                trap(PastX(17f), Fall('g'), Say(T("The far bank is a display model.", "Das andere Ufer ist ein Ausstellungsstück."))),
-                trap(Zone(24.5f, 7f, 26f, 9.5f), Move('t', 0f, 7f, 18f), Shake(0.5f), Say(T("Ceiling tiles upstairs, too. Mind your head.", "Deckenplatten gibt's oben auch. Kopf einziehen.")), delay = 0.45f),
+                trap(Landed(16f, 20f), Blink('h', on = 1.2f, off = 1.1f, phase = 1.2f), Say(T("Floor sample. Not for sale. Back in a minute.", "Bodenmuster. Unverk\u00e4uflich. Gleich wieder da."))),
+                trap(PastX(25f), Move('g', 0f, 14f, 40f), Say(T("The far bank is a display model.", "Das andere Ufer ist ein Ausstellungsst\u00fcck."))),
             ),
         ) {
-            border(); floor(); pit(10..19)
-            fill(10..12, 15..15, 'a'); fill(20..21, 15..17, 'g')
-            fill(6..8, 1..1, 's'); fill(24..26, 1..1, 't')
-            fill(22..26, 13..14); fill(28..30, 11..14)
-            fill(10..26, 9..9)
-            put(1, 14, 'P'); put(10, 8, 'D')
+            border(); floor(); pit(16..30)
+            fill(6..8, 1..1, 's')
+            fill(10..11, 13..14); fill(12..13, 11..14); fill(14..15, 9..14)
+            fill(16..19, 7..8); fill(20..21, 7..7, 'h'); fill(22..24, 7..7, 'a'); fill(28..28, 7..7, 'g'); fill(29..30, 5..14)
+            put(2, 14, 'P'); put(30, 4, 'D')
         },
 
         // 40 — boot sequence: spawn on a shelf over the void, the door far below on the ground at the other end. At the first steps the

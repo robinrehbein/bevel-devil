@@ -399,10 +399,14 @@ class World1Test {
         assertTrue(run.world.player.box.cx > 8f)
     }
 
-    /** 39: the shelf only moves with the tilt of the phone. Without it, running on drops into the pit. */
-    @Test fun level39WithoutTiltTheShelfStaysPut() = b(39).rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightTo(10.6f).wait(2f)
-        .also { assertEquals(0f, it.world.group('a').ox, 0.01f) }.expect(WorldState.PLAYING)
+    /** 39: the shelf only moves with the tilt of the phone; the floor sample at the platform's edge is gone for a moment; the far bank gives way. */
+    private fun upTheStairs39() = b(39).rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightJump(0.45f).landRight()
+        .rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+    private fun onTheShelf39() = upTheStairs39().rightUntil { it.player.box.cx > 17.0f }.waitFor { it.group('h').visible }.rightUntil { it.player.box.cx > 23.0f }
+    @Test fun level39WithoutTiltTheShelfStaysPut() = onTheShelf39().wait(3f).also { assertEquals(0f, it.world.group('a').ox, 0.01f) }.expect(WorldState.PLAYING)
     @Test fun level39RunningUnderTheTileIsFatal() = b(39).right(3f).expect(WorldState.DEAD)
+    @Test fun level39RunningOnOverTheFloorSampleIsFatal() = upTheStairs39().rightUntil { it.player.box.cx > 17.0f }.right(3f).expect(WorldState.DEAD)
+    @Test fun level39TheFarBankGivesWayAsYouRideIn() = onTheShelf39().tilt(1f).waitFor { it.group('a').ox >= 2.9f }.rightUntil { it.player.box.cx > 25.5f }.right(2f).expect(WorldState.DEAD)
 
     /** 40: after the panic the keys are swapped, so holding right runs back to the start. */
     @Test fun level40HoldingRightRunsBack() = b(40).right(5f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 5f) }.expect(WorldState.PLAYING)

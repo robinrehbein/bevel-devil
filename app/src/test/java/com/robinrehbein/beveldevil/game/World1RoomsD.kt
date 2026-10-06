@@ -47,12 +47,13 @@ object World1RoomsD {
                 .leftUntil(3f) { !it.swapped }.rightUntil(3f) { it.player.box.b > 11f }.landRight().leftUntil { it.swapped }
                 .hopSL(13.6f, 0.4f).rightKeyLeftTo(3.2f).right(1f) },
         ),
-        // 39: let the ceiling tile land and hop it, board the shelf, tilt and ride it across, jump off its end onto the stairs, up, back along
-        // the upper floor, let the second tile land and hop it
+        // 39: let the ceiling tile land and hop it, up the stairs to the upper floor, hop the piece that gives way, board the shelf, tilt and ride it
+        // across, jump off its end over the bank that gives way onto the ledge with the door
         39 to listOf<Solution>(
-            { rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightTo(10.6f).tilt(1f)
-                .waitFor { it.group('a').ox >= 6.9f }.rightTo(19.2f).rightJump(0.5f).landRight().rightTo(26.0f).rightJump(0.5f).landRight()
-                .leftTo(29.9f).leftJump(0.5f).landLeft().left(6f) },
+            { rightTo(3.5f).waitFor { it.group('s').oy >= 12.9f }.rightTo(4.0f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+                .rightJump(0.45f).landRight().rightJump(0.45f).landRight()
+                .rightUntil { it.player.box.cx > 17.0f }.waitFor { it.group('h').visible }.rightUntil { it.player.box.cx > 23.0f }
+                .tilt(1f).waitFor { it.group('a').ox >= 2.9f }.rightUntil { it.player.box.cx > 26.0f }.rightJump(0.5f).landRight().right(3f) },
         ),
         // 38: hop the oncoming saw, let the picture turn, flee the second saw to the stairs with the mirrored keys, climb, the picture is
         // back: leave step 2 to the upper floor, let the rope go up, hop home
