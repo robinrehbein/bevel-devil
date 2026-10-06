@@ -249,7 +249,7 @@ object World2Part2 {
             intro = T("The bouncer won't let you in. I like him.", "Der Türsteher lässt dich nicht rein. Ich mag ihn."),
             traps = listOf(
                 trap(BeforeX(18f), Saw(-1.5f, 14.4f, 9f, 0f), say("Bouncer: you're not on the list.", "Türsteher: Du stehst nicht auf der Liste.")),
-                trap(Zone(0.5f, 9f, 2.9f, 11.1f), PathSaw(10f, 33.5f to 9.4f, 4f to 9.4f, 1.5f to 10.3f), say("Second bouncer. He patrols the floor.", "Zweiter Türsteher. Er geht Streife.")),
+                trap(Zone(0.5f, 9f, 2.9f, 11.1f), PathSaw(12f, 31.5f to 9.4f, 4f to 9.4f, 1.5f to 10.3f), say("Second bouncer. He patrols the floor.", "Zweiter Türsteher. Er geht Streife.")),
             ) + doorTrail(
                 Zone(16f, 7f, 18f, 10.1f), 25, 9,
                 listOf(DoorTo(25, 2, 24f, hanging = true), DoorTo(4, 2, 24f, hanging = true), DoorTo(4, 9, 24f)),

@@ -505,7 +505,7 @@ class World2Test {
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.b}", bot.world.player.box.cx < 5f && bot.world.player.box.b < 9f)
     }
     // 22: the first bouncer rolls at you along the lane, the second along the club floor, and the door flees back to the left behind the second one
-    private fun l22Hopped(b: Bot) = World2Rooms.l22ToLane(b).rightUntil { World2Rooms.sawAhead(it, 4.8f) }.rightJump(0.35f).landRight()
+    private fun l22Hopped(b: Bot) = World2Rooms.l22ToLane(b).rightUntil { World2Rooms.sawAhead(it, 6.0f) }.rightJump(0.5f).landRight()
     @Test fun l22RunningStraightIntoTheFirstBouncerIsFatal() = b(22).left(4f).expect(WorldState.DEAD)
     @Test fun l22StandingStillWhenTheFirstBouncerComesIsFatal() = b(22).leftTo(17f).wait(4f).expect(WorldState.DEAD)
     @Test fun l22StandingStillOnTheClubFloorIsFatal() = World2Rooms.l22ToLane(b(22)).wait(8f).expect(WorldState.DEAD)
