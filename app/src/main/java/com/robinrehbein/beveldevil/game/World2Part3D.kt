@@ -192,8 +192,10 @@ object World2Part3D {
 
         // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,
         // admin, root. Each belt is calm until you step on it, then it runs against you, a little faster every step, so there is no standing on any of
-        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted, the belts run harder
-        // against you, and the bridge at the top is a belt too, far too fast to walk: it has to be hopped
+        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted. The belts run harder against
+        // you, the bridge and its door are gone, and the way out is a ledge in the top left. The belts have all turned around: they carry you up, to the
+        // right, and off their ends into the LEDs (ride, hop at the end), and from the root belt it is back left onto a carpet that runs the other
+        // way (hold left against it) and on to the ledge with the door. Round 1's door on the bridge does not exist
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
@@ -208,15 +210,18 @@ object World2Part3D {
             rematch = listOf(
                 Round(
                     T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt gegen dich."),
-                    start = listOf(Belt('a', 0f), Belt('b', -3.5f), Belt('c', -4f), Belt('p', -3f)),
+                    start = listOf(Belt('a', 0f), Belt('b', 0f), Belt('c', 0f), Belt('q', 0f)),
                     traps = listOf(
-                        trap(Touch('a'), Belt('a', -5.2f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
-                        trap(Touch('b'), Belt('b', -6.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
-                        trap(Touch('c'), Belt('c', -7f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
-                        trap(Touch('p'), Belt('p', -9.5f), say("Last step: the handrail is the floor.", "Letzte Stufe: Das Geländer ist der Boden."), delay = 0.1f),
-                        trap(Landed(27f, 30f), Play(Card.HEADBUTT), Fall('p'), say("Same-day delivery, by gravity.", "Zustellung am selben Tag, per Schwerkraft."), delay = 0.9f),
+                        trap(Touch('a'), Belt('a', 2.4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
+                        trap(Touch('b'), Belt('b', 2.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
+                        trap(Touch('c'), Belt('c', 6f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
+                        trap(Zone(8f, 7f, 15f, 10.5f), Play(Card.BACKDRAFT), Belt('q', 5.5f), Saw(1.5f, 9.4f, 6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
                     ),
-                ),
+                ) {
+                    put(29, 10, '.'); fill(27..30, 11..11, '.')
+                    fill(8..14, 10..10, 'q'); fill(2..7, 10..10); fill(17..18, 12..12, 'c')
+                    put(3, 9, 'D')
+                },
             ),
         ) {
             border(); floor()

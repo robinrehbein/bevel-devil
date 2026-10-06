@@ -82,9 +82,9 @@ object World2RoomsD {
     fun l46(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
         .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().right(3f)
 
-    /** 46, round 2: the same climb on the harder belts, and a hop from the landing to the door, because the bridge is a belt too fast to walk. */
-    fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
-        .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().rightJump(0.35f).right(2f)
+    /** 46, round 2: the same climb on the harder belts, then back left from the top belt onto the carpet that runs the other way (hold left against it), and on over the ledge to the door. */
+    fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().waitFor { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
+        .waitFor { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().leftUntil { it.player.box.cx < 17.9f }.leftJump(0.5f).landLeft().leftUntil { World2Rooms.sawAheadRight(it, 3.4f) }.leftJump(0.5f).landLeft().left(4f)
 
     /** 47: hop the cart on the lane (the controls swap as you leave the ground, so go on with the other key), stop for the pendulum, slip under it, up the narrow steps with swapped hands; on the first step the controls are back to normal: to the deck and the door. */
     fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).leftJump(0.45f).landLeft()
