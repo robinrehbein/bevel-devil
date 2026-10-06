@@ -40,7 +40,7 @@ object World3PartA {
         // overclocked: hop that one too, leaving it with a jump.
         Level(
             name = T("First Copper", "Erstes Kupfer"),
-            intro = T("A button, a wall of live copper, a timer. Even I can explain this.", "Ein Knopf, eine Wand unter Strom, ein Timer. Das kann sogar ich erklären."),
+            intro = T("A button, a live wall, a timer. Even I can explain this.", "Ein Knopf, eine Stromwand, ein Timer. Sogar ich erkläre das."),
             start = listOf(Circuit('Z'), Pad('1', at = 5 to 5, circuits = "Z", mode = PadMode.OFF)),
             traps = listOf(
                 trap(BeforeX(19.5f), HeatSpike('g', 0.95f), say("Complimentary preheating.", "Kostenlose Vorheizung.")),

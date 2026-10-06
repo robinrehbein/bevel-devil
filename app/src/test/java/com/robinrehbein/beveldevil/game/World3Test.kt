@@ -94,20 +94,16 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30, 31, 32, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
+        for (n in listOf(2, 3, 5, 7, 8, 9, 10, 11, 14, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30, 31, 32, 34, 35, 36, 37, 39, 40, 42, 43, 45, 46, 47, 48)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
         // in these the naive runner is only stopped: the chip under load, a slab, a wall, a ledge he cannot reach
-        for (n in listOf(5, 12, 13, 15, 18, 24, 29, 33, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
+        for (n in listOf(1, 4, 6, 12, 13, 15, 18, 24, 29, 33, 38, 41, 44)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
-    /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain. */
+    /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
     @Test
     fun theObviousRunDiesAtTheSecondTrap() {
-        b(1).rightTo(22f).rightJump(0.55f).landRight().wait(1.5f).expect(WorldState.DEAD)
-        b(4).hopR(11.5f).right(3f).expect(WorldState.DEAD)
-        b(5).rightTo(14.3f).rightJump(0.55f).landRight().right(6f).expect(WorldState.DEAD)
-        b(8).hopR(14f).right(3f).expect(WorldState.DEAD)
         b(11).hopR(11.5f).right(3f).expect(WorldState.DEAD)
         b(20).hopR(13f).wait(1.5f).expect(WorldState.DEAD)
         b(24).hopR(3.6f).wait(1.6f).expect(WorldState.DEAD)
@@ -252,14 +248,14 @@ class World3Test {
         assertTrue(actions(World3.levels[2]).any { it is Action.Clock })
         assertTrue(World3Part1.levels.take(3).all { it.traps.isNotEmpty() })
         val a = World3Part1.levels.flatMap(::actions)
-        assertTrue(a.any { it is Action.Pad && it.mode == PadMode.HOLD } && a.any { it is Action.Pad && it.mode == PadMode.OFF })
+        assertTrue(a.any { it is Action.Pad && it.mode == PadMode.ON } && a.any { it is Action.Pad && it.mode == PadMode.OFF })
         assertTrue(a.any { it is Action.BitFlip } && a.any { it is Action.Power && !it.on })
     }
 
     @Test
     fun trapsComeInChains() {
-        // every level from the fourth on is a chain of at least two traps; the first three each spring at least one surprise
-        val short = World3.levels.withIndex().filter { (i, l) -> i >= 3 && l.traps.size < 2 }.map { it.index + 1 }
+        // every level from the fourth on (except the single-trap bit flip of 8) is a chain of at least two traps; the first three each spring at least one surprise
+        val short = World3.levels.withIndex().filter { (i, l) -> i >= 3 && i != 7 && l.traps.size < 2 }.map { it.index + 1 }
         assertTrue("levels without a chain: $short", short.isEmpty())
         assertTrue(World3.levels.take(3).all { it.traps.isNotEmpty() })
         val average = World3.levels.sumOf { it.traps.size } / World3.levels.size.toFloat()
@@ -379,25 +375,26 @@ class World3Test {
     // ---------- the levels that react to the player in unusual ways ----------
 
     @Test
-    fun powerCutDropsTheRailUnderTheNaiveRunner() {
-        val bot = b(4).right(2f)
-        bot.expect(WorldState.DEAD)
-        assertFalse(bot.world.circuits['a']!!.powered)
-        assertEquals(Card.COLLAPSE, bot.world.lastCard)
+    fun touchingTheSolidRailCutsItsNeighbour() {
+        // 4: the rail 'b' looks solid and is, until you touch it: then the rail 'a' goes dark
+        assertTrue(World3.levels[3].traps.any { t -> t.trigger is Trigger.Touch && t.actions.any { it is Action.Power && !it.on } })
+        World3DesignTest.play(4)
     }
 
     @Test
-    fun theSecondPadUndoesTheFirst() {
-        val bot = b(6).right(1.4f)
-        assertEquals(2, bot.world.pads.sumOf { it.presses })
-        assertFalse(bot.world.circuits['a']!!.powered)
+    fun theSecondButtonPutsTheWallBack() {
+        // 6: the first button cuts the wall of live copper, the second (on the way back) restores it
+        val bot = DesignRules.play(World3.levels[5], 0, World3DesignTest.SOLUTIONS.getValue(6)[0])
+        bot.expect(WorldState.WON)
+        assertTrue(bot.world.pads.all { it.presses >= 1 })
     }
 
     @Test
     fun aCosmicRayFlipsTheRailsAndJumpingEarlySavesYou() {
-        b(8).right(2f).expect(WorldState.DEAD)
-        val flip = b(8).hopR(14f)
-        assertTrue(flip.world.circuits['b']!!.powered && !flip.world.circuits['a']!!.powered)
+        Bot(World3.levels[7]).right(8f).expect(WorldState.DEAD)
+        val won = DesignRules.play(World3.levels[7], 0, World3DesignTest.SOLUTIONS.getValue(8)[0])
+        won.expect(WorldState.WON)
+        assertTrue(won.world.circuits['b']!!.powered && !won.world.circuits['a']!!.powered)
     }
 
     @Test
@@ -443,14 +440,14 @@ class World3Test {
     }
 
     // ---------- Act 1: Stromkreise ----------
-    @Test fun level01() = b(1).rightTo(22f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level02() = b(2).rightTo(23.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level03() = b(3).rightTo(8.3f).waitPowered('a', false).waitPowered('a').rightTo(23.4f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level04() = b(4).hopR(11.5f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level05() = b(5).rightTo(14.3f).rightJump(0.55f).landRight().rightTo(20.8f).rightJump(0.55f).landRight().waitPowered('Z').waitPowered('Z', false).right(3f).expect(WorldState.WON)
-    @Test fun level06() = b(6).rightTo(5.3f).rightJump(0.55f).landRight().rightTo(16.6f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level07() = b(7).rightTo(10.1f).leftUntil { !it.circuits['Z']!!.powered }.rightTo(14f).rightTo(18.5f).fidgetUntil { !it.circuits['Y']!!.powered }.right(3f).expect(WorldState.WON)
-    @Test fun level08() = b(8).hopR(14f).hopR(18.9f).right(3f).expect(WorldState.WON)
+    @Test fun level01() { World3DesignTest.play(1) }
+    @Test fun level02() { World3DesignTest.play(2) }
+    @Test fun level03() { World3DesignTest.play(3) }
+    @Test fun level04() { World3DesignTest.play(4) }
+    @Test fun level05() { World3DesignTest.play(5) }
+    @Test fun level06() { World3DesignTest.play(6) }
+    @Test fun level07() { World3DesignTest.play(7) }
+    @Test fun level08() { World3DesignTest.play(8) }
     @Test fun level09() = b(9).rightTo(16.2f).rightJump(0.55f).landRight().right(3f).expect(WorldState.WON)
     @Test fun level10() = b(10).rightTo(6f).rightJump(0.55f).landRight().rightTo(12.3f).waitPowered('b')
         .rightJump(0.55f).landRight().rightTo(19.3f).waitPowered('c').rightJump(0.55f).landRight().rightTo(26.3f).right(3f).expect(WorldState.WON)
