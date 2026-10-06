@@ -34,24 +34,23 @@ object World3RoomsD {
                 .leftTo(16.6f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(0.8f) },
         ),
         30 to listOf<Solution>(
+            // climb on (the second step sinks), hop the pin on the shelf, let the test pattern sink (the pin behind is slow), walk to the door
             { rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-                .rightTo(9.4f).rightTo(10.4f).rightJump(0.55f).landRight()
-                .rightTo(16.6f).rightTo(17.4f).rightJump(0.55f).landRight()
+                .rightUntil { w -> w.group('Q').let { it.homeX + it.ox - w.player.box.cx < 3.2f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-                .leftTo(14.2f).leftJump(0.55f).landLeft().leftTo(8.6f).left(0.5f) },
-            // rematch: same arch, but the spikes in the lane are real (hop them) and the shelf sprouts some of its own (hop them too); the plates come first
+                .waitFor { !it.group('S').visible }.leftTo(11.4f).left(0.5f) },
+            // rematch: the first step sinks, hop the pin on the shelf, hop the real spikes at once (the floor before them heats up, the
+            // pin behind does not wait)
             { rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-                .rightTo(9.4f).rightTo(10.4f).rightJump(0.55f).landRight()
-                .rightTo(18.1f).rightJump(0.55f).landRight()
+                .rightUntil { w -> w.group('Q').let { it.homeX + it.ox - w.player.box.cx < 3.2f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-                .leftTo(22.4f).leftJump(0.55f).landLeft().leftTo(14.2f).leftJump(0.55f).landLeft().leftTo(8.6f).left(0.5f) },
+                .leftTo(22.4f).leftJump(0.55f).landLeft().leftTo(11.4f).left(0.5f) },
         ),
         29 to listOf<Solution>(
-            { rightTo(24.0f).right(0.7f).leftJump(0.3f).landLeft().leftTo(21.2f)
-                .waitFor { w -> landed(w, 't', 0.5f) }
-                .leftTo(19.0f).leftJump(0.5f).landLeft()
-                .leftTo(13.4f).leftJump(0.55f).landLeft()
-                .leftTo(5.0f).left(1.0f) },
+            // over the floor heating to the hatch pad, straight up through the hatch, back left over the radiator, over the
+            // thermostat pad into the wall it opens
+            { rightTo(24.0f).right(0.7f).leftJump(0.3f).landLeft()
+                .leftTo(2.4f).left(0.5f) },
         ),
         28 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.b > 12.5f }

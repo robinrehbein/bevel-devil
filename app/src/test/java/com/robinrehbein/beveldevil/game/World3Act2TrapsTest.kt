@@ -75,11 +75,15 @@ class World3Act2TrapsTest {
 
     @Test
     fun burnInTheTestPatternSpikesAreOnlyRoundOnesLie() {
-        // round one: hopping the spikes that are about to sink lands among the hidden ones
-        val bot = Bot(World3.levels[29], 0).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-            .rightTo(9.4f).rightTo(10.4f).rightJump(0.55f).landRight().rightTo(16.6f).rightTo(17.4f).rightJump(0.55f).landRight()
-            .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(2f)
-        bot.expect(WorldState.DEAD)
+        // round one: hopping the spikes that are about to sink lands on the plate behind them, which flares for whoever is in the air
+        val hop: Solution = {
+            rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+                .rightUntil { w -> w.group('Q').let { it.homeX + it.ox - w.player.box.cx < 3.2f } }.rightJump(0.55f).landRight()
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(22.4f).leftJump(0.55f).landLeft().left(2f)
+        }
+        DesignRules.play(World3.levels[29], 0, hop).expect(WorldState.DEAD)
+        // round two: the spikes are real, so walking through them as in round one is the end of it
+        DesignRules.play(World3.levels[29], 1, World3DesignTest.SOLUTIONS.getValue(30)[0]).expect(WorldState.DEAD)
     }
 
     /** None of the rebuilt levels of block D strands the player: every registered solution of every round wins, and none needs a second try. */

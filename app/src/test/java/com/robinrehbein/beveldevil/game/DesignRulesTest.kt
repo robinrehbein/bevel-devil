@@ -109,7 +109,7 @@ class DesignRulesTest {
             border(); floor(); put(10, 14, 'A'); put(2, 14, 'P'); put(29, 14, 'D')
         }
         assertEquals(1, DesignRules.spikePopupCount(fake))
-        for (name in listOf("Burn-in Test")) {
+        for (name in listOf("Cold Start")) {
             assertEquals(name, 1, DesignRules.heatSpikeFinaleCount(World3.levels.single { it.name.en == name }))
         }
     }

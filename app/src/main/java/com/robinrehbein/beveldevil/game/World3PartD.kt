@@ -171,80 +171,82 @@ object World3PartD {
             spawn(2, 4); door(29, 12)
         },
 
-        // 29 — a puzzle room (R2 the hold switch, U15 the help is the trap). You start in a crawl space under a low roof, and the only way on is a hatch of
-        // copper in the roof at the far end that is open only while you stand on the pad beneath it: stand on it, jump straight up through the hatch
-        // (the copper cannot close on you in the gap). The moment you press, a slab above the hatch comes down through it: it is meant for whoever
-        // stays on the pad. On the roof the way leads back left: a second slab falls on the path as you come (let it land, then hop it), the
-        // plates before the far end are overclocked (hop them), and the door is behind a wall of copper at the end of the roof that a second pad opens for as long as you stand on it:
-        // step on the pad and walk straight off it into the wall.
+        // 29 — a puzzle room (R2 the hold switch, U15 the help is the trap): a thermostat in three settings. You start in the middle of a crawl
+        // space under a low roof; the door is up on the roof at the far left, and the crawl space under it is a dead end set to 'roast' (the
+        // obvious way there is the bait). The floor heating in the crawl comes on as you pass (keep moving), and the only way up is a hatch
+        // of copper in the roof at the far right that is open only while you stand on the pad beneath it: stand on it, jump straight up (the
+        // copper cannot close on you in the gap); the press drops a slab through the hatch for whoever stays. On the roof the way leads back
+        // left over a radiator that comes on as you come (keep moving), and the door is behind a wall of copper that a second pad opens for as
+        // long as you stand on it, on a plate that is the thermostat itself: step on and walk straight off it into the wall.
         Level(
             name = T("Thermostat", "Thermostat"),
             intro = T("The wall has a thermostat. Somewhere.", "Die Wand hat ein Thermostat. Irgendwo."),
             start = listOf(
                 Circuit('w'), Pad('1', at = 27 to 14, circuits = "w", mode = PadMode.HOLD),
                 Circuit('n'), Pad('2', at = 5 to 12, circuits = "n", mode = PadMode.HOLD),
-                Heat('q', rise = 0.8f, cool = 6f),
+                Heat('c', rise = 1.5f), Heat('r', rise = 1.5f), Heat('p', rise = 1.5f), Heat('h', rise = 1.5f),
             ),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.HEADBUTT), Fall('s'), say("Thermostat: set to 'crush'. Stand still to enjoy.", "Thermostat: auf 'zerquetschen' gestellt. Stehenbleiben zum Genießen."), delay = 0.7f),
-                trap(Zone(20f, 11f, 21.5f, 13f), Fall('t'), say("Ceiling insulation. It comes off in one piece.", "Deckendämmung. Kommt in einem Stück runter."), delay = 0.15f),
-                trap(Zone(12.4f, 11f, 13.6f, 13f), HeatSpike('q', 0.85f), say("The roof has a setting for 'warm'. This is the other one.", "Das Dach hat eine Stufe 'warm'. Das ist die andere.")),
+                trap(Zone(1f, 13.5f, 5.5f, 15.2f), HeatSpike('h', 1f), say("This end of the crawl space is set to 'roast'. The door is upstairs.", "Dieses Ende des Kriechkellers steht auf 'Braten'. Die Tür ist oben."), delay = 0.3f),
+                trap(Zone(19.3f, 13.5f, 23f, 15.2f), HeatSpike('c', 0.5f), say("Floor heating: on. Lingering: off.", "Fußbodenheizung: an. Herumstehen: aus.")),
+                trap(Zone(13f, 11f, 15.7f, 13f), HeatSpike('r', 0.5f), say("The roof is a radiator. Of course it is.", "Das Dach ist ein Heizkörper. Natürlich.")),
+                trap(Pressed('2'), HeatSpike('p', 0.8f), say("Thermostat: set to 'leave'. Step off.", "Thermostat: auf 'Geh weiter' gestellt. Runter da.")),
+                trap(Pressed('1'), Play(Card.COLLAPSE), Fall('s'), say("Thermostat: set to 'crush'. Stand still to enjoy.", "Thermostat: auf 'zerquetschen' gestellt. Stehenbleiben zum Genießen."), delay = 0.7f),
             ),
-            hint = T("The pad opens the hatch above it for as long as you stand on it. Jump straight up and do not stay.", "Der Knopf öffnet die Luke über ihm, solange du draufstehst. Spring senkrecht hoch und bleib nicht."),
+            hint = T("The pad opens the hatch above it for as long as you stand on it. Jump straight up, and do not stand on anything warm.", "Der Knopf öffnet die Luke über ihm, solange du draufstehst. Spring senkrecht hoch, und bleib auf nichts Warmem stehen."),
         ) {
             border(); floor()
-            fill(1..30, 13..13); fill(26..28, 13..13, 'w'); fill(9..11, 13..13, 'q')
-            fill(3..4, 1..12, 'n'); fill(28..28, 14..14); fill(1..6, 14..14)
-            fill(26..28, 1..1, 's'); fill(15..16, 1..1, 't')
-            spawn(8, 14); door(2, 12)
+            fill(1..30, 13..13); fill(26..28, 13..13, 'w'); fill(28..28, 14..14)
+            fill(19..22, 15..15, 'c'); fill(1..4, 15..15, 'h')
+            fill(13..15, 13..13, 'r'); fill(5..6, 13..13, 'p')
+            fill(3..4, 1..12, 'n')
+            fill(26..28, 1..1, 's')
+            spawn(14, 14); door(2, 12)
         },
 
-        // 30 — the burn-in test (U14, a trap room: the lie is the spikes). An arch: a staircase of hot steps up to a shelf (hop it, the steps flare as
-        // you land on the first), along the shelf over two patches of overclocked plates (hop them) and off its end to the floor, where the way to the
-        // door leads back left underneath it. Across the way lie a pair of spikes, and behind them hidden ones: the spikes are a test pattern, they
-        // sink after you land, so whoever hops them lands where the hidden ones sprout for whoever is in the air. The plates in front of the door
-        // flare as you turn into the lane (hop them).
-        // Rematch: the test pattern is real this time. Round 1's wait for the spikes to sink is the end of you, one single spike stands in the
-        // lane and has to be hopped, the plates come first; and the shelf has a second layer: hidden spikes sprout in front of whoever runs along it.
+        // 30 — the burn-in test (U14, a trap room: the lie is the spikes). An arch: a staircase up to a shelf, along the shelf and off its end to
+        // the floor, where the way to the door leads back left underneath it. The second step sinks under you (climb on), a pin comes along the
+        // shelf at you (hop it), and as you land on the floor a pin sets off behind you. Across the lane lie a pair of spikes: they are a test
+        // pattern and sink after you land, and whoever hops them by reflex lands on the plate behind them, which flares for whoever is in the
+        // air.
+        // Rematch: the test pattern is real this time. Round 1's wait for the spikes to sink is the end of you: hop them (the plate stays cold).
+        // The first step sinks instead of the second, and the floor in front of the spikes is a burn-in plate: no waiting there either.
         Level(
             name = T("Burn-in Test", "Einbrenntest"),
             intro = T("Stress test: walk to the door. Easy.", "Stresstest: lauf zur Tür. Ganz leicht."),
-            legend = mapOf('T' to Glyph(spike = true, hidden = true), 'U' to Glyph(spike = true, hidden = true)),
-            start = listOf(Heat('f', rise = 0.8f, cool = 6f), Heat('l', rise = 0.8f, cool = 6f), Heat('m', rise = 0.8f, cool = 6f), Heat('b', rise = 0.8f, cool = 6f)),
+            legend = mapOf('Q' to Glyph(spike = true, dir = Dir.LEFT), 'R' to Glyph(spike = true, dir = Dir.LEFT)),
+            start = listOf(Heat('t', rise = 0.8f, cool = 6f)),
             traps = listOf(
-                trap(Landed(2.5f, 5.5f), HeatSpike('f', 0.4f), say("Every step is a pixel. Mine, all mine.", "Jede Stufe ist ein Pixel. Meine, alle meine.")),
-                trap(Zone(8.5f, 7f, 10.2f, 9.2f), Play(Card.OVERCLOCKED), HeatSpike('l', 0.85f), say("Burn-in: please do not stand on the logo.", "Einbrennen: Bitte nicht aufs Logo stellen.")),
-                trap(Zone(15.5f, 7f, 17f, 9.2f), HeatSpike('m', 0.85f), say("The logo is also on the other side. Branding.", "Das Logo ist auch auf der anderen Seite. Markenauftritt.")),
-                trap(Zone(22.4f, 13.5f, 23.4f, 15.2f), HeatSpike('b', 1f), say("Last pixel before the door. Also mine.", "Letztes Pixel vor der Tür. Auch meins.")),
-                trap(Zone(17.3f, 11.6f, 22.6f, 13.7f), Show('T'), say("Surprise! The test pattern has a second layer.", "Überraschung! Das Testbild hat eine zweite Ebene.")),
-                trap(Landed(25f, 30f), Hide('S'), say("Test pattern: spikes. Just kidding. Mostly.", "Testbild: Stacheln. War ein Scherz. Fast."), delay = 0.4f),
+                trap(Landed(4.6f, 7f), Play(Card.SINKING), Move('f', 0f, 2f, 0.9f), say("Step two failed the stress test. Keep climbing.", "Stufe zwei ist durch den Stresstest gefallen. Weiterklettern.")),
+                trap(Zone(15.5f, 7f, 17.5f, 9.2f), Move('Q', -15f, 0f, 5f), say("A test pin. It runs the shelf in the other direction.", "Ein Prüfstift. Er läuft das Regal in der Gegenrichtung ab.")),
+                trap(Landed(25f, 30f), Move('R', -16f, 0f, 5f), say("Test pattern: spikes. Just kidding. Mostly. Also, a pin.", "Testbild: Stacheln. War ein Scherz. Fast. Und ein Stift."), delay = 0.6f),
+                trap(Landed(25f, 30f), Hide('S'), delay = 0.4f),
+                trap(Zone(19.6f, 11.6f, 22.6f, 13.7f), HeatSpike('t', 1f), say("Surprise! The test pattern has a second layer. A warm one.", "Überraschung! Das Testbild hat eine zweite Ebene. Eine warme.")),
             ),
-            hint = T("The spikes in the way are only a test pattern: let them sink. Do not hop them.", "Die Stacheln im Weg sind nur ein Testbild: lass sie versinken. Spring nicht drüber."),
+            hint = T("The spikes in the lane are only a test pattern: let them sink, do not hop them. The pin behind you is slow.", "Die Stacheln in der Gasse sind nur ein Testbild: lass sie versinken, spring nicht drüber. Der Stift hinter dir ist langsam."),
             rematch = listOf(
                 Round(
                     T("The test pattern is real this time. Probably.", "Diesmal ist das Testbild echt. Wahrscheinlich."),
-                    start = listOf(Heat('f', rise = 0.8f, cool = 6f), Heat('l', rise = 0.8f, cool = 6f), Heat('b', rise = 0.8f, cool = 6f)),
-                    hint = T("The spikes stay. Hop them, and watch the shelf: it has a second layer now.", "Die Stacheln bleiben. Spring drüber, und achte aufs Regal: Das hat jetzt eine zweite Ebene."),
+                    hint = T("The spikes stay: hop them, the plate behind them is cold now. The first step is the soft one.", "Die Stacheln bleiben: spring drüber, die Platte dahinter ist jetzt kalt. Die erste Stufe ist die weiche."),
+                    start = listOf(Heat('w', rise = 0.8f, cool = 6f)),
                     traps = listOf(
-                        trap(Landed(2.5f, 5.5f), HeatSpike('f', 0.4f), say("Round two: every step is a pixel again.", "Runde zwei: Jede Stufe ist wieder ein Pixel.")),
-                        trap(Zone(8.5f, 7f, 10.2f, 9.2f), Play(Card.THROTTLE), Heat('l', rise = 0.8f, cool = 6f), HeatSpike('l', 0.85f), say("Refresh rate: lowered. Temperature: not.", "Bildwiederholrate: gesenkt. Temperatur: nicht.")),
-                        trap(Zone(15f, 7f, 16.4f, 9.2f), Show('U'), say("The shelf has a second layer, and it is sharp.", "Das Regal hat eine zweite Ebene, und die ist spitz."), delay = 0.3f),
-                        trap(Zone(23.8f, 13.5f, 24.8f, 15.2f), HeatSpike('b', 1f), say("Last pixel before the door. You know the drill.", "Letztes Pixel vor der Tür. Du kennst das schon.")),
+                        trap(Landed(2.6f, 5f), Move('g', 0f, 2f, 0.9f), say("Round two: the first step failed too.", "Runde zwei: Die erste Stufe ist auch durchgefallen.")),
+                        trap(Zone(15.5f, 7f, 17.5f, 9.2f), Move('Q', -15f, 0f, 5f), say("Same test pin. Same direction. Different test.", "Gleicher Prüfstift. Gleiche Richtung. Anderer Test.")),
+                        trap(Landed(25f, 30f), Play(Card.HEADBUTT), Move('R', -16f, 0f, 5f), say("The pin behind you does not wait for spikes to sink.", "Der Stift hinter dir wartet nicht, bis Stacheln versinken."), delay = 0.6f),
+                        trap(Zone(21.4f, 13f, 24.5f, 15.2f), HeatSpike('w', 1f), say("Burn-in plate in front of the spikes. Nobody waits here for them to sink.", "Einbrennplatte vor den Stacheln. Hier wartet keiner, bis sie versinken."), delay = 0.5f),
                     ),
                 ) {
-                    fill(18..20, 9..9, '#')
-                    fill(20..20, 8..8, 'U')
-                    fill(11..13, 15..15, '#'); fill(19..20, 15..15, 'b')
-                    fill(19..20, 14..14, '.'); fill(11..11, 14..14, 'S')
+                    fill(3..4, 13..14, 'g'); fill(5..6, 11..11, '#')
+                    fill(22..24, 15..15, 'w')
                 },
             ),
         ) {
             border(); floor()
-            fill(3..4, 13..14); fill(5..6, 11..14); fill(7..24, 9..10)
-            fill(3..4, 13..13, 'f'); fill(5..6, 11..11, 'f'); fill(11..13, 9..9, 'l'); fill(18..20, 9..9, 'm')
-            fill(19..20, 14..14, 'S'); fill(16..17, 14..14, 'T')
-            fill(11..13, 15..15, 'b')
-            spawn(2, 14); door(8, 14)
+            fill(3..4, 13..14); fill(5..6, 12..14); fill(5..6, 11..11, 'f')
+            fill(7..24, 9..10); fill(7..7, 11..14)
+            put(23, 8, 'Q'); put(30, 14, 'R')
+            fill(19..19, 14..14, 'S'); fill(16..17, 15..15, 't')
+            spawn(2, 14); door(11, 14)
         },
 
         // 31 — a puzzle room (R11 cool the chips, R5 two floors, U3 the crane walks with you). The floor beyond a two-tile heatsink is a chip under load that
