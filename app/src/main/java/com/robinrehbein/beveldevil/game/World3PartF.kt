@@ -243,7 +243,9 @@ object World3PartF {
             spawn(15, 14); door(9, 14)
         },
 
-        // 48 — BIOS Setup (the finale of the game)
+        // 48 — BIOS Setup (the finale of the game): you start up on the BIOS splash ledge at the top left and drop into the lift, which takes you to
+        // a hot shelf (keep moving) with the switch that turns the second fan from sucking to blowing; up on the top shelf the door is no end: the
+        // screen goes on, the fan in the next room reverses with the picture, and the last chip has to be cooled before the run to the door.
         Level(
             name = T("BIOS Setup", "BIOS-Setup"),
             intro = T("Press DEL to enter setup. Everything else is my job.", "ENTF für das Setup. Alles andere ist mein Job."),
@@ -271,7 +273,8 @@ object World3PartF {
             room(0) {
                 fill(12..13, 7..7, 'n'); fill(14..22, 7..7, 'm')
                 fill(22..30, 3..3)
-                spawn(3, 14); door(29, 2)
+                fill(1..5, 6..6)
+                spawn(2, 5); door(29, 2)
             }
             room(1) {
                 fill(1..3, 3..3)
