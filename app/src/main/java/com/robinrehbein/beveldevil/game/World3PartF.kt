@@ -152,5 +152,28 @@ object World3PartF {
             fill(16..20, 5..5); fill(21..24, 5..5, 'p')
             spawn(2, 14); door(30, 14)
         },
+
+        // 46 — POST
+        Level(
+            name = T("POST", "Selbsttest"),
+            intro = T("Power-on self-test. Three checks. One beep each.", "Einschalt-Selbsttest. Drei Prüfungen. Je ein Piep."),
+            start = listOf(
+                Fan('a', at = 12 to 15, dir = Dir.UP, reach = 6, speed = 5.5f, width = 3),
+                Fan('b', at = 2 to 10, dir = Dir.UP, reach = 7, speed = 5.5f, width = 5),
+            ),
+            traps = listOf(
+                trap(Zone(12f, 12f, 15f, 15.5f), Play(Card.BIOS), Power('a', false), say("Beep. Fan: 0 RPM. Press F1 to continue.", "Piep. Lüfter: 0 U/min. F1 zum Fortfahren."), delay = 0.2f),
+                trap(Zone(12f, 12f, 15f, 15.5f), Power('a', true), delay = 1.3f),
+                trap(Zone(12f, 10.5f, 15f, 12.5f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
+                trap(Zone(2f, 6f, 7f, 8f), FanSet('b', 7.5f), say("Beep beep. Fan two: full speed. Nobody asked.", "Piep piep. Lüfter zwei: Vollgas. Keiner hat gefragt.")),
+                trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), say("Beep beep beep. Memory: restored from backup.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt.")),
+            ),
+        ) {
+            border(); floor()
+            fill(15..30, 10..14)
+            fill(1..11, 10..10)
+            fill(7..21, 5..5)
+            spawn(2, 14); door(21, 4)
+        },
     )
 }

@@ -36,5 +36,12 @@ object World3RoomsF {
             { rightTo(14.5f).waitFor { it.player.box.cy < 9.5f }.leftUntil { it.player.box.cy < 4.6f }
                 .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.right(4f) },
         ),
+        46 to listOf<Solution>(
+            { rightTo(13.5f).waitFor { w -> w.fans[0].on && w.sprung.any { s -> s.trap.actions.any { a -> a is Action.Power && a.on } } }
+                .rightUntil { it.player.box.cy < 9.4f }
+                .leftUntil { it.player.grounded && it.player.box.cx < 11.5f }.leftTo(5.5f)
+                .waitFor { it.player.box.cy < 3.8f }.rightUntil { it.player.grounded && it.player.box.b < 5.5f }
+                .right(8f) },
+        ),
     )
 }
