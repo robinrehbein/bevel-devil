@@ -26,5 +26,8 @@ object World3RoomsE {
                 .rightUntil { w -> gx(w, 'C') > w.player.box.cx && gx(w, 'C') - w.player.box.cx < 3.5f }.rightJump(0.5f).landRight()
                 .rightUntil { it.player.box.cx > 30f } },
         ),
+        37 to listOf<Solution>(
+            { rightTo(14.7f).rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 29.5f } },
+        ),
     )
 }

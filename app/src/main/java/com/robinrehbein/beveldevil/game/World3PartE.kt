@@ -101,21 +101,26 @@ object World3PartE {
             spawn(1, 3); door(29, 14)
         },
 
-        // 37 — the tailwind runs in shifts: jump when it is working; after the first landing the gusts get stronger
+        // 37 — Lull (trap room, U3): scratch v2
         Level(
             name = T("Lull", "Flaute"),
             intro = T("Union rules apply to fans too.", "Für Lüfter gilt der Betriebsrat."),
-            start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6, on = 2.2f, off = 2.4f)),
+            legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
+            start = listOf(
+                Fan('w', at = 21 to 9, dir = Dir.LEFT, reach = 15, speed = 6f, width = 6, on = 2.0f, off = 1.5f),
+                Fan('u', at = 22 to 17, dir = Dir.UP, reach = 12, speed = 4f, width = 5), Power('u', false),
+            ),
             traps = listOf(
-                trap(Touch('e'), Play(Card.SINKING), Fall('e'), say("Break time is over. For the floor, too.", "Pause vorbei. Für den Boden auch."), delay = 0.45f),
-                trap(Landed(18f, 20.5f), FanSet('w', 14f), say("Overtime: the gusts are stronger now.", "Überstunden: die Böen sind jetzt stärker.")),
-                trap(Airborne(24f, 29f), FanSet('w', -6f), say("And then it turns around.", "Und dann dreht er sich um.")),
+                trap(PastX(5f), Play(Card.SINKING), Move('W', 24f, 0f, 3.2f), say("Break time is over. Everyone out.", "Pause vorbei. Alle raus.")),
+                trap(PastX(19f), Power('u', true), say("The lift only runs for passengers.", "Der Aufzug fährt nur für Fahrgäste.")),
             ),
         ) {
-            border(); floor(); pit(10..17)
-            fill(18..19, 15..17, 'e')
-            pit(23..27)
-            spawn(); door()
+            border(); floor(); pit(15..18)
+            fill(21..21, 1..9)
+            fill(27..30, 6..17)
+            fill(1..1, 10..14, 'W')
+            fill(9..13, 12..12, 'v')
+            spawn(3, 14); door(29, 5)
         },
 
         // 38 — the fan is dead until you step on the reset pad; leaving the draft, a dead cable wakes up, and the landing is warm
