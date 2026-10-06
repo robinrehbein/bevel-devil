@@ -1,31 +1,20 @@
 package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Bluff
-import com.robinrehbein.beveldevil.game.Action.BitFlip
-import com.robinrehbein.beveldevil.game.Action.Blink
-import com.robinrehbein.beveldevil.game.Action.Chase
 import com.robinrehbein.beveldevil.game.Action.Circuit
 import com.robinrehbein.beveldevil.game.Action.Clock
 import com.robinrehbein.beveldevil.game.Action.DoorTo
 import com.robinrehbein.beveldevil.game.Action.Extend
 import com.robinrehbein.beveldevil.game.Action.Fall
 import com.robinrehbein.beveldevil.game.Action.HeatSpike
-import com.robinrehbein.beveldevil.game.Action.Hide
-import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.Pad
-import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Saw
-import com.robinrehbein.beveldevil.game.Action.Show
 import com.robinrehbein.beveldevil.game.Action.Swap
-import com.robinrehbein.beveldevil.game.Action.Toggle
 import com.robinrehbein.beveldevil.game.Trigger.After
-import com.robinrehbein.beveldevil.game.Trigger.Airborne
-import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Trigger.BeforeX
-import com.robinrehbein.beveldevil.game.Trigger.Idle
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Pressed
@@ -34,10 +23,9 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 
 /**
- * World 3, levels 1-16. Act 1, "Stromkreise": copper rails, pressure pads, clocks and live traces, Mephi cutting the
- * power under you, a bit flip. The first three levels teach; from the fourth on the traps come in chains, each one
- * springing on the spot (mid-jump, at the landing, the moment you step on a rail) and each of a different kind.
- * The room looks calm: the danger is what the hardware does, not what is hidden in the floor.
+ * World 3, act 1, block B (levels 9-16: Side Effect, Metronome, Loose Cables, The Button, Fuse Box, Power Supply, Connector and
+ * the finale Motherboard), rebuilt under the V2 level design (docs/LEVEL_DESIGN_V2.md, section 8). Each level is one idea in one
+ * dominant family; the bot solutions are in the test sources ([World3RoomsB]).
  */
 object World3PartB {
     private val hidden = Glyph(spike = true, hidden = true)
@@ -128,7 +116,7 @@ object World3PartB {
             intro = T("A very ordinary button.", "Ein ganz gewöhnlicher Knopf."),
             start = listOf(Pad('1', at = 28 to 14)),
             traps = listOf(
-                trap(After(0.05f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
+                trap(After(0.5f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
                 trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
                 trap(Pressed('1'), say("Nothing happened. Suspicious, isn't it?", "Nichts passiert. Verdächtig, oder?")),
                 trap(BeforeX(19.5f), Play(Card.HEADBUTT), Fall('c'), say("The button was a decoy. The ceiling is real.", "Der Knopf war Attrappe. Die Decke ist echt.")),
@@ -143,7 +131,7 @@ object World3PartB {
                     start = listOf(Pad('1', at = 15 to 14)),
                     hint = T("The ceiling called in sick. The button did not.", "Die Decke ist krank. Der Knopf nicht."),
                     traps = listOf(
-                        trap(After(0.05f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
+                        trap(After(0.5f), Saw(29.5f, 7.4f, -5f, 0f), say("Welcome. Mind the blade. It came with the room.", "Willkommen. Vorsicht, Messer. Gehört zum Zimmer.")),
                         trap(Zone(19.5f, 12f, 23.5f, 15f), Fall('d'), say("Hurry up. Nobody likes standing under a ceiling.", "Beeil dich. Niemand steht gern unter einer Decke."), delay = 0.4f),
                         trap(BeforeX(19.5f), Bluff(Card.HEADBUTT), say("Cancelled. The ceiling called in sick.", "Abgesagt. Die Decke hat sich krankgemeldet.")),
                         trap(Pressed('1'), Fall('c'), say("Now it works. Mondays.", "Jetzt geht er. Montags eben."), delay = 0.9f),
@@ -261,7 +249,7 @@ object World3PartB {
             rooms = 2,
             start = listOf(Circuit('a', on = false), Circuit('Z', on = false), Pad('1', at = 3 to 14)),
             traps = listOf(
-                trap(Pressed('1'), Clock('a', on = 3.2f, off = 60f), say("The bridge is on a timer. Again.", "Die Brücke hat einen Timer. Schon wieder.")),
+                trap(Pressed('1'), Clock('a', on = 3.2f, off = 7f), say("The bridge is on a timer. Again.", "Die Brücke hat einen Timer. Schon wieder.")),
                 trap(Zone(15f, 13f, 19.5f, 15.2f), Clock('Z', on = 1.8f, off = 2.4f), say("Gate firmware updated. While you were standing in it.", "Tor-Firmware aktualisiert. Während du davorstandest.")),
                 trap(Zone(19.4f, 13f, 21.8f, 15.2f), HeatSpike('i', 0.5f), say("The floor under the gate: a little warm. For you.", "Der Boden unter dem Tor: ein bisschen warm. Für dich.")),
                 trap(Landed(22f, 25.2f), Fall('p'), say("Step one: on loan. Step two: also.", "Stufe eins: geliehen. Stufe zwei: auch."), delay = 0.45f),

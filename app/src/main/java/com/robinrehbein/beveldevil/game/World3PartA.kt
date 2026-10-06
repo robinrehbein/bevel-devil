@@ -231,7 +231,7 @@ object World3PartA {
             intro = T("It's not a bug, it's a flicker.", "Das ist kein Fehler, das ist ein Flimmern."),
             start = listOf(Clock('Z', on = 1.2f, off = 1.2f, phase = 0.5f), Clock('Y', on = 1.2f, off = 1.2f, phase = 0.9f)),
             traps = listOf(
-                trap(PastX(2.4f), Fall('a'), say("Loose ceiling. Mind the first one.", "Lose Decke. Pass auf die erste auf."), delay = 0.5f),
+                trap(PastX(3.0f), Fall('a'), say("Loose ceiling. Mind the first one.", "Lose Decke. Pass auf die erste auf."), delay = 0.5f),
                 trap(PastX(5.6f), Play(Card.COLLAPSE), Fall('c'), say("Observed. Collapsed.", "Beobachtet. Kollabiert."), delay = 0.35f),
                 trap(PastX(12.8f), Fall('b'), say("Another one, just behind your heels.", "Noch eine, dicht hinter deinen Fersen."), delay = 0.5f),
                 trap(PastX(20.4f), Fall('d'), say("The wall flickers, the ceiling does not.", "Die Wand flackert, die Decke nicht."), delay = 0.9f),
@@ -245,7 +245,7 @@ object World3PartA {
                     hint = T("The ceiling you waited for is now the one you walk away from. And the beam wants a minute.", "Die Decke, auf die du gewartet hast, lässt du jetzt hinter dir. Und der Strahl will eine Minute."),
                     start = emptyList(),
                     traps = listOf(
-                        trap(PastX(2.4f), Fall('a'), say("Same first slab. I can't think of everything.", "Dieselbe erste Platte. Mir fällt ja nicht alles ein."), delay = 0.5f),
+                        trap(PastX(3.0f), Fall('a'), say("Same first slab. I can't think of everything.", "Dieselbe erste Platte. Mir fällt ja nicht alles ein."), delay = 0.5f),
                         trap(PastX(8.2f), Fall('b'), say("Reserved seating: wait here, it's coming.", "Reservierter Platz: Warte hier, sie kommt gleich."), delay = 0.7f),
                         trap(PastX(13.5f), Fall('c'), say("This one was always going to be behind you.", "Die hier war schon immer hinter dir."), delay = 0.3f),
                         trap(Landed(14f, 17.5f), Play(Card.SPIKE_SEED), Laser('A', 18 to 1, 18 to 14, on = 0.95f, off = 60f, delay = 0.1f), say("A beam, grown on the step. Fresh.", "Ein Strahl, frisch auf der Stufe gewachsen.")),

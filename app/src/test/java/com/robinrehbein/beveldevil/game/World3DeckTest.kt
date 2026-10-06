@@ -18,10 +18,8 @@ class World3DeckTest {
 
     // ---------- the solutions ----------
 
-    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (levels 9-16 and acts 2-3); the rebuilt block A is in [rebuilt]. */
+    /** Round 1 (as in [World3Test]) of the old-chain levels that get a rematch (acts 2-3); the rebuilt act 1 is in [rebuilt]. */
     private val first: Map<Int, (Bot) -> Bot> = mapOf(
-        12 to { b -> b.rightTo(18f).rightJump(0.55f).landRight().waitFor { (it.saws.firstOrNull()?.x ?: 99f) < 21.5f }.right(3f) },
-        15 to { b -> b.rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopR(20f).rightUntil { it.pads[2].presses >= 1 }.leftKeyRightTo(31f) },
         17 to { b -> b.rightTo(15.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(3f) },
         21 to { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightJump(0.55f).landRight().rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
         28 to { b -> b.rightTo(16.5f).waitCooled('h').rightUntilSaw(4.3f).rightJump(0.55f).landRight().right(4f) },
@@ -43,8 +41,6 @@ class World3DeckTest {
 
     /** Rematch rounds: level to the solution of each extra round. */
     private val rematch: Map<Int, List<(Bot) -> Bot>> = mapOf(
-        12 to listOf { b -> b.rightTo(21.5f).rightUntilSaw(3.2f).rightJump(0.55f).landRight().right(2f) },
-        15 to listOf { b -> b.rightUntil { it.pads[0].presses >= 1 }.hopS(7.3f).leftUntil { it.pads[1].presses >= 1 }.hopS(20f).leftUntil { it.pads[2].presses >= 1 }.leftKeyRightTo(31f) },
         17 to listOf { b -> b.rightTo(5f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(3f) },
         21 to listOf { b -> b.rightTo(11.5f).waitCooled('h').rightTo(18.5f).waitCooled('h').rightTo(24.6f).rightJump(0.55f).landRight().right(4f) },
         28 to listOf { b -> b.rightTo(16.5f).waitCooled('h').right(3f) },
@@ -69,8 +65,8 @@ class World3DeckTest {
         assertEquals(rematch.keys + rebuilt.keys, levels.toSet())
         rematch.forEach { (n, rounds) -> assertEquals("level $n", rounds.size, level(n).rematch.size) }
         rebuilt.forEach { (n, sols) -> assertEquals("level $n", sols.size - 1, level(n).rematch.size) }
-        // block A keeps exactly three rematch levels
-        assertEquals(3, rebuilt.size)
+        // blocks A and B keep exactly five rematch levels (3 + 2: levels 12 and 15)
+        assertEquals(5, rebuilt.size)
     }
 
     /**

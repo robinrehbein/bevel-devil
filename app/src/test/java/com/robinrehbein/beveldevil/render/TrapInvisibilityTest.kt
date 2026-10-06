@@ -180,7 +180,7 @@ class TrapInvisibilityTest {
             if (level.traps.isEmpty()) continue
             // traps that fire on their own while nobody moves are not surprises of this kind
             if (level.traps.any { it.trigger is Trigger.After || it.trigger is Trigger.Idle || it.trigger is Trigger.Heated }) continue
-            val harmless = Level(level.name, level.intro, level.legend, emptyList(), level.start) {
+            val harmless = Level(level.name, level.intro, level.legend, emptyList(), level.start, rooms = level.rooms) {
                 for (y in 0 until level.rows) for (x in 0 until level.cols) put(x, y, level.map.grid[y][x])
             }
             val a = World(level)
