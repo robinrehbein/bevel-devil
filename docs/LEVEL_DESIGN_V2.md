@@ -442,7 +442,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 | # | Name | R | U | Raum |
 |---|---|---|---|---|
 |33|Updraft|R10|U1|Rätsel|
-|34|Tailwind|R5|U12|Rätsel|
+|34|Tailwind ★|–|U12|★|
 |35|Headwind|R4 (Pad stellt Lüfter)|U7|Rätsel|
 |36|Air Cushion|–|U6|Falle|
 |37|Lull|–|U3|Falle|

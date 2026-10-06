@@ -1,31 +1,8 @@
 package com.robinrehbein.beveldevil.game
 
-import com.robinrehbein.beveldevil.game.Action.Bluff
-import com.robinrehbein.beveldevil.game.Action.BitFlip
-import com.robinrehbein.beveldevil.game.Action.Circuit
-import com.robinrehbein.beveldevil.game.Action.Clock
-import com.robinrehbein.beveldevil.game.Action.DoorTo
-import com.robinrehbein.beveldevil.game.Action.FakeWin
-import com.robinrehbein.beveldevil.game.Action.Fall
-import com.robinrehbein.beveldevil.game.Action.Fan
-import com.robinrehbein.beveldevil.game.Action.FanSet
-import com.robinrehbein.beveldevil.game.Action.Flip
-import com.robinrehbein.beveldevil.game.Action.Heat
-import com.robinrehbein.beveldevil.game.Action.HeatSpike
-import com.robinrehbein.beveldevil.game.Action.Heatsink
-import com.robinrehbein.beveldevil.game.Action.Move
-import com.robinrehbein.beveldevil.game.Action.Pad
-import com.robinrehbein.beveldevil.game.Action.Play
-import com.robinrehbein.beveldevil.game.Action.Power
-import com.robinrehbein.beveldevil.game.Action.Roll
-import com.robinrehbein.beveldevil.game.Action.Saw
-import com.robinrehbein.beveldevil.game.Trigger.Airborne
-import com.robinrehbein.beveldevil.game.Trigger.AtDoor
-import com.robinrehbein.beveldevil.game.Trigger.Landed
-import com.robinrehbein.beveldevil.game.Trigger.PastX
-import com.robinrehbein.beveldevil.game.Trigger.Pressed
-import com.robinrehbein.beveldevil.game.Trigger.Touch
-import com.robinrehbein.beveldevil.game.Trigger.Zone
+import com.robinrehbein.beveldevil.game.Action.*
+import com.robinrehbein.beveldevil.game.Trigger.*
+
 
 /**
  * World 3, act 3, block E (levels 33-40: Updraft, Tailwind, Headwind, Air Cushion, Lull, Silence, Downdraft, Air Castle), rebuilt under
@@ -63,35 +40,22 @@ object World3PartE {
             spawn(1, 14); door(29, 2)
         },
 
-        // 34 — teaches the crosswind: it only grabs you in the air; after the first landing the wind takes breaks
+        // 34 — Tailwind (breather, U12 as gusts that come and go): scratch v13
         Level(
             name = T("Tailwind", "Rückenwind"),
             intro = T("Go with the flow. Jump into it.", "Schwimm mit dem Strom. Spring hinein."),
-            start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6)),
+            start = listOf(Fan('w', at = 31 to 6, dir = Dir.LEFT, reach = 22, speed = -12f, width = 7)),
             traps = listOf(
-                trap(Touch('e'), Play(Card.CRUMBLE), Fall('e'), say("Landing zone: crumbly.", "Landezone: bröselig."), delay = 0.45f),
-                trap(Landed(17f, 19.6f), Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6, on = 1.6f, off = 2.2f), say("Wind break: the second gap needs a gust.", "Windpause: die zweite Lücke braucht eine Böe.")),
-                trap(Airborne(23f, 28f), FanSet('w', 6f), say("The gust drops off mid-air.", "Die Böe lässt mitten in der Luft nach.")),
-            ),
-            // rematch: the landing holds but the floor where you waited for the gust goes: wait on the landing, then
-            // run and jump without stopping
-            rematch = listOf(
-                Round(
-                    T("Weather update: mostly crumbly.", "Wetterbericht: überwiegend bröselig."),
-                    start = listOf(Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6)),
-                    traps = listOf(
-                        trap(Touch('e'), say("Landing zone: holding. Surprisingly.", "Landezone: hält. Überraschend.")),
-                        trap(PastX(19.9f), Play(Card.CRUMBLE), Fall('y'), say("The bus stop was the crumbly part.", "Die Haltestelle war der bröselige Teil."), delay = 0.25f),
-                        trap(Landed(17f, 19.6f), Fan('w', at = 0 to 8, dir = Dir.RIGHT, reach = 30, speed = 10f, width = 6, on = 1.6f, off = 2.2f), say("Wind breaks, as before.", "Windpausen, wie gehabt.")),
-                        trap(Airborne(23f, 28f), FanSet('w', 6f), say("The gust drops off. Tradition.", "Die Böe lässt nach. Tradition.")),
-                    ),
-                ) { fill(19..21, 15..17, 'y') },
+                trap(PastX(11f), FanSet('w', 0f), say("Lull. The wind is catching its breath.", "Flaute. Der Wind holt kurz Luft.")),
+                trap(Zone(17f, 12f, 19.2f, 15f), FanSet('w', -12f), say("Here it comes again. Jump into it.", "Da kommt er wieder. Spring hinein."), delay = 0.15f),
+                trap(Landed(25f, 28.5f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.55f), say("The landing strip is preheated.", "Die Landebahn ist vorgeheizt.")),
+                trap(Airborne(21f, 24f), FanSet('w', -6f), say("The gust loses breath mid-air.", "Der Böe geht mitten in der Luft die Luft aus.")),
             ),
         ) {
-            border(); floor(); pit(9..16)
-            fill(17..18, 15..17, 'e')
-            pit(22..27)
-            spawn(); door()
+            border(); floor(); pit(19..24)
+            fill(25..28, 15..15, 'h')
+            fill(29..30, 12..12, 'v')
+            spawn(1, 14); door(30, 14)
         },
 
         // 35 — a headwind that takes breaks: no jump clears the spikes against it; it gusts harder once you are close, the first lull ends early under your jump (leap from the very edge), and the landing is warm
