@@ -405,7 +405,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |4|Solid Copper|–|U7|Falle|
 |5|Turnstile|–|U2|Falle|
 |6|Two Buttons|R1 (zwei Schalter, einer Falle)|U15|Rätsel|
-|7|Loose Contact|R8+R5|U2|Rätsel|
+|7|Loose Contact|R8|U2|Rätsel|
 |8|Memory ★|–|U17 (Bit-Flip)|★|
 |9|Side Effect|–|U3|Falle|
 |10|Metronome|R8|U4|Rätsel|

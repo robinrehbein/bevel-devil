@@ -30,7 +30,7 @@ class World3DesignTest : DesignTestBase() {
             4 to d("–", "U7"),
             5 to d("–", "U2"),
             6 to d("R1", "U15"),
-            7 to d("R8+R5", "U2"),
+            7 to d("R8", "U2"),
             8 to d("–", "U17", breather = true),
             9 to d("–", "U3"),
             10 to d("R8", "U4"),

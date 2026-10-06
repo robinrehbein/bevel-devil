@@ -60,6 +60,13 @@ object World3RoomsA {
             { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
                 .rightTo(17.0f).waitFor { w -> darkStart(w, 'Z') }.rightTo(20.6f).rightTo(24.5f).waitFor { w -> darkStart(w, 'Y') }
                 .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
+            // rematch: wait under the slab that stays up, hop the one that landed, wait out the seeded beam
+            { var seenA = false; var seenB = false
+              rightTo(12.2f).waitFor { w -> w.group('b').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.4f).landRight()
+                .waitFor { w -> if (w.beams.any { it.laser.id == 'A' && it.lit }) seenA = true; seenA && w.beams.none { it.laser.id == 'A' && (it.lit || it.warn > 0f) } }
+                .rightTo(23.4f)
+                .waitFor { w -> if (w.beams.any { it.laser.id == 'B' && it.lit }) seenB = true; seenB && w.beams.none { it.laser.id == 'B' && (it.lit || it.warn > 0f) } }
+                .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
         ),
         8 to listOf<Solution>(
             { rightTo(16.4f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },

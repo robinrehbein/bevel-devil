@@ -237,6 +237,23 @@ object World3PartA {
                 trap(PastX(20.4f), Fall('d'), say("The wall flickers, the ceiling does not.", "Die Wand flackert, die Decke nicht."), delay = 0.9f),
             ),
             hint = T("Wait where nothing hangs above you.", "Warte dort, wo nichts über dir hängt."),
+            // rematch: the slabs swap their jobs. The one that used to land in front now drops behind you, the one that used to
+            // drop behind now lands in front, and a beam seeded on the step makes you wait a second time
+            rematch = listOf(
+                Round(
+                    T("Same hall. The ceiling has been rearranged.", "Gleiche Halle. Die Decke wurde umgeräumt."),
+                    hint = T("The ceiling you waited for is now the one you walk away from. And the beam wants a minute.", "Die Decke, auf die du gewartet hast, lässt du jetzt hinter dir. Und der Strahl will eine Minute."),
+                    start = emptyList(),
+                    traps = listOf(
+                        trap(PastX(2.4f), Fall('a'), say("Same first slab. I can't think of everything.", "Dieselbe erste Platte. Mir fällt ja nicht alles ein."), delay = 0.5f),
+                        trap(PastX(8.2f), Fall('b'), say("Reserved seating: wait here, it's coming.", "Reservierter Platz: Warte hier, sie kommt gleich."), delay = 0.7f),
+                        trap(PastX(13.5f), Fall('c'), say("This one was always going to be behind you.", "Die hier war schon immer hinter dir."), delay = 0.3f),
+                        trap(Landed(14f, 17.5f), Play(Card.SPIKE_SEED), Laser('A', 18 to 1, 18 to 14, on = 0.95f, off = 60f, delay = 0.1f), say("A beam, grown on the step. Fresh.", "Ein Strahl, frisch auf der Stufe gewachsen.")),
+                        trap(PastX(20.4f), Fall('d'), say("Mind the last roof. The walls stopped flickering.", "Achtung, letztes Dach. Die Wände flackern nicht mehr."), delay = 0.9f),
+                        trap(Zone(21.8f, 12f, 23f, 15f), Laser('B', 25 to 1, 25 to 14, on = 0.95f, off = 60f, delay = 0.15f), say("Second beam. The first one told you what to do.", "Zweiter Strahl. Der erste hat dir gesagt, was zu tun ist.")),
+                    ),
+                ) { wire(19, '.'); wire(26, '.'); fill(16..16, 1..9); fill(16..16, 10..11, 'b') },
+            ),
         ) {
             border(); floor()
             fill(3..5, 1..9); fill(3..5, 10..11, 'a')
