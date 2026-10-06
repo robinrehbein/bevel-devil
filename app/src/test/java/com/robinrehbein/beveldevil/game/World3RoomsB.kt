@@ -46,5 +46,13 @@ object World3RoomsB {
                 .waitFor { w -> w.saws.any { it.y > 12f } && w.saws.filter { it.y > 12f }.all { it.x > w.player.box.cx + 0.3f } }
                 .leftUntil { it.player.grounded && it.player.box.b > 14.5f }.leftTo(1.0f).left(1f) },
         ),
+        13 to listOf<Solution>(
+            { rightTo(2.6f).rightJump(0.55f).landRight().rightTo(8.4f).rightJump(0.55f).landRight()
+                .rightTo(13.2f).waitFor { fresh(it, 'r') }.rightTo(16.6f).rightJump(0.55f).landRight()
+                .rightTo(22.9f)
+                .waitFor { w -> w.circuits['Z']?.let { it.clock != null && !it.powered } == true }
+                .rightTo(27.6f).rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .leftTo(28.4f).left(1f) },
+        ),
     )
 }

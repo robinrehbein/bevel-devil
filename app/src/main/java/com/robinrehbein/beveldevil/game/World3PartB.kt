@@ -160,24 +160,31 @@ object World3PartB {
             spawn(19, 7); door(1, 14)
         },
 
-        // 13 — the fuse box is on top of the hill: climb it to switch the live wall off, but it only slows the current;
-        // waiting for the dark beat on the rail in front of the wall cuts the rail (wait on the hill instead), and the floor behind the wall drops
+        // 13 — the fuse box is upstairs: a chip to climb, a step over a pit that is on a short shift once you touch it, a stable island
+        // where you wait for the rails of the bridge to light up, and a ledge on the far side that gives way as you land. On it a
+        // long fuse plate under a low ceiling (you cannot jump over it): running over it sends a surge through a live wall that was
+        // dark a moment ago. Wait for it to die down, run, the floor behind the wall gives way too, and down to the door.
         Level(
             name = T("Fuse Box", "Sicherungskasten"),
             intro = T("The fuse box is upstairs. Naturally.", "Der Sicherungskasten ist oben. Natürlich."),
-            start = listOf(Circuit('Z'), Pad('1', at = 11 to 11, circuits = "Z", mode = PadMode.OFF), Circuit('a')),
+            start = listOf(Circuit('Z', on = false), Clock('r', on = 1.8f, off = 1.2f, phase = 0.5f)),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('Z', on = 0.8f, off = 2.8f, phase = 0.8f), say("Fuse box: the fuse is a clock now.", "Sicherungskasten: die Sicherung ist jetzt ein Taktgeber.")),
-                trap(Touch('a'), Power('a', false), say("Waiting room closed. Should have waited upstairs.", "Wartezimmer geschlossen. Oben warten wäre klüger gewesen."), delay = 0.8f),
-                trap(PastX(22.6f), Fall('x'), say("Load-bearing floor is optional.", "Tragender Boden ist optional."), delay = 0.15f),
+                trap(Touch('p'), Play(Card.CRUMBLE), Fall('p'), say("The step has a shift. It ends in half a second.", "Die Stufe hat Schicht. In einer halben Sekunde ist Feierabend."), delay = 0.45f),
+                trap(Touch('m'), Fall('m'), say("Same contract. Fewer minutes.", "Gleicher Vertrag. Weniger Minuten."), delay = 0.4f),
+                trap(Touch('f'), Clock('Z', on = 1.4f, off = 60f), say("Fuse plate. Everything you step on flows. Mostly into the wall.", "Sicherungsplatte. Alles, was du betrittst, fließt. Meistens in die Wand.")),
+                trap(Touch('g'), Fall('g'), say("The far side is on loan too. Sorry. Everything is.", "Die andere Seite ist auch geliehen. Tut mir leid. Alles hier."), delay = 0.3f),
             ),
+            hint = T("Whatever you run over on the long plate warms the wall. Wait for it to die down.", "Was du auf der langen Platte betrittst, setzt die Wand unter Strom. Warte, bis sie abklingt."),
         ) {
             border(); floor()
-            chip(6, 2, 1); chip(8, 2, 2); chip(10, 4, 3); chip(14, 2, 2); chip(16, 2, 1)
-            bridge(18..21, 'a')
-            wire(22, 'Z')
-            fill(24..26, 15..17, 'x')
-            spawn(); door()
+            fill(4..5, 13..14)
+            pit(6..27)
+            fill(6..8, 13..13, 'p'); fill(11..13, 11..11)
+            fill(14..17, 11..11, 'r')
+            fill(18..19, 9..10, 'm'); fill(20..22, 9..10, 'f'); fill(23..24, 9..10); fill(25..26, 9..10, 'g'); fill(27..27, 9..10)
+            fill(20..22, 6..7)
+            fill(24..24, 1..8, 'Z')
+            spawn(1, 14); door(28, 14)
         },
 
         // 14 — the pad powers the bridge for a few seconds only

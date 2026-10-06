@@ -95,6 +95,9 @@ class World3BProbe {
                 if (at != null) {
                     if (DesignRules.outcome { DesignRules.patientProbe(l, r, s, at) } != DesignRules.outcome { DesignRules.patientProbe(cut, 0, s, at) }) diffs += "patient"
                     if (DesignRules.outcome { DesignRules.recklessProbe(l, r, s, at) } != DesignRules.outcome { DesignRules.recklessProbe(cut, 0, s, at) }) diffs += "reckless"
+                    val pa = DesignRules.patientProbe(l, r, s, at)
+                    val pac = DesignRules.patientProbe(cut, 0, s, at)
+                    out.append("   trap $i patient: with %s x=%.1f y=%.1f t=%.1f / without %s x=%.1f y=%.1f t=%.1f\n".format(pa.world.state, pa.world.player.box.cx, pa.world.player.box.b, pa.world.time, pac.world.state, pac.world.player.box.cx, pac.world.player.box.b, pac.world.time))
                     val pr = DesignRules.recklessProbe(l, r, s, at)
                     val pc = DesignRules.recklessProbe(cut, 0, s, at)
                     out.append("   trap $i at t=%.2f reckless: with %s x=%.1f t=%.1f / without %s x=%.1f t=%.1f\n".format(at, pr.world.state, pr.world.player.box.cx, pr.world.time, pc.world.state, pc.world.player.box.cx, pc.world.time))
