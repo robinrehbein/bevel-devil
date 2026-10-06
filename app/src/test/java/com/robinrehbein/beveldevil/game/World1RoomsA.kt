@@ -41,10 +41,9 @@ object World1RoomsA {
             { leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
             { leftUntil { it.swapped }.hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).right(1.2f) },
         ),
-        // 13: straight through under the ceiling bits, stairs, back along the upper floor
+        // 13: along the upper floor under the dropping ceiling, off its end, back along the ground floor to the door
         13 to listOf<Solution>(
-            { rightTo(24.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
-                .leftJump(0.5f).landLeft().leftTo(1.5f) },
+            { leftTo(3.5f).rightTo(28.0f).right(1.5f) },
         ),
         // 14: ride the first lift to the upper floor and step off, hop the saw, ride the second lift down and step off
         14 to listOf<Solution>(

@@ -219,10 +219,10 @@ class World1Test {
     /** 12: walking home with swapped keys but without hopping meets the pit. */
     @Test fun level12WalkingIntoThePitDies() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().rightKeyLeftTo(11.5f).wait(1f).expect(WorldState.DEAD)
 
-    /** 13: the spikes in the ceiling are a bluff, the plain ceiling is not. */
-    @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)
-    @Test fun level13StandingUnderThePlainCeilingIsFatal() = b(13).rightTo(13.5f).wait(1f).expect(WorldState.DEAD)
-    @Test fun level13TheLoweringCeilingCatchesWhoeverStops() = b(13).rightTo(21.5f).wait(2f).expect(WorldState.DEAD)
+    /** 13: up on the floor the ceiling drops on whoever stops under it; down on the ground the spikes in the ceiling are a bluff, the plain ceiling is not. */
+    @Test fun level13StandingUnderTheCeilingOnTheUpperFloorIsFatal() = b(13).leftTo(22.8f).wait(1f).expect(WorldState.DEAD)
+    @Test fun level13TheSpikesInTheCeilingNeverFall() = b(13).leftTo(3.5f).rightTo(7.5f).wait(2f).expect(WorldState.PLAYING)
+    @Test fun level13StandingUnderThePlainCeilingIsFatal() = b(13).leftTo(3.5f).rightTo(13.5f).wait(1f).expect(WorldState.DEAD)
 
     /** 14: both lifts go too far, and the floor the first one leaves behind goes with it. */
     @Test fun level14TheFirstLiftCarriesYouIntoTheSpikes() = b(14).right(0.3f).wait(4f).expect(WorldState.DEAD)

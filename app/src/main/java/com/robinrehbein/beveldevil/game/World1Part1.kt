@@ -328,25 +328,27 @@ object World1Part1 {
             put(29, 14, 'P'); put(2, 14, 'D')
         },
 
-        // 13 — spikes hang in the ceiling and the room shakes at them: a bluff. The plain bits of the ceiling are the real ones:
-        // one drops as you pass, one comes down on the lane, one on the upper floor on the way back
+        // 13 — the room is upside down compared with the others: you start on the upper floor on the right and run left, and the ceiling
+        // up there drops pieces as you pass under them (one on whoever stops, one more further on); off the end of the upper floor you drop
+        // down to the ground floor and run back to the right, to the door in the bottom right corner. Down there spikes hang in the
+        // ceiling and the room shakes at them: a bluff. The plain bits of the ceiling are the real ones: one drops as you pass
         Level(
             name = T("Wednesday", "Mittwoch"),
             intro = T("It's Wednesday. I'm grumpy. That's all.", "Es ist Mittwoch. Ich habe schlechte Laune. Mehr nicht."),
             hint = T("Don't look at the spikes. Look at the plain ceiling.", "Schau nicht auf die Stacheln. Schau auf die glatte Decke."),
             legend = mapOf('S' to ceilingSpike),
             traps = listOf(
-                trap(PastX(5f), Shake(0.6f), Say(T("Ooh, spikes up there. Scary, huh?", "Ooh, Stacheln da oben. Gruselig, was?"))),
+                trap(Zone(21.6f, 4f, 24f, 9.5f), Fall('d'), Say(T("Wednesday is not over yet.", "Der Mittwoch ist noch nicht vorbei."))),
+                trap(Zone(8.6f, 4f, 11f, 9.5f), Fall('e'), Say(T("Hard hat day. Sorry, no hats.", "Helmpflicht heute. Leider keine Helme."))),
+                trap(Zone(5.5f, 12f, 8f, 15.5f), Shake(0.6f), Say(T("Ooh, spikes up there. Scary, huh?", "Ooh, Stacheln da oben. Gruselig, was?"))),
                 trap(Zone(13f, 12f, 14f, 15f), Play(Card.HEADBUTT), Fall('c'), Say(T("Now THAT was the real one.", "DAS war jetzt die echte."))),
-                trap(Zone(21f, 12f, 22f, 15f), Move('m', 0f, 3.5f, 5f), Say(T("The ceiling is low on Wednesdays.", "Mittwochs hängt die Decke tief."))),
-                trap(Zone(22f, 5f, 23f, 9.5f), Fall('d'), Say(T("Wednesday is not over yet.", "Der Mittwoch ist noch nicht vorbei."))),
             ),
         ) {
             border(); floor()
-            fill(27..28, 13..14); fill(29..30, 11..14)
-            fill(1..28, 9..9)
-            fill(7..8, 10..10, 'S'); fill(12..13, 10..10, 'c'); fill(19..22, 10..10, 'm'); fill(22..23, 1..2, 'd')
-            put(2, 14, 'P'); put(2, 8, 'D')
+            fill(5..30, 9..9)
+            fill(7..8, 10..10, 'S'); fill(12..13, 10..10, 'c')
+            fill(22..23, 1..2, 'd'); fill(9..10, 1..2, 'e')
+            put(29, 8, 'P'); put(29, 14, 'D')
         },
 
         // 14 — the door is right behind a wall, so take the lifts: the first one rises to the upper floor and carries on into the
