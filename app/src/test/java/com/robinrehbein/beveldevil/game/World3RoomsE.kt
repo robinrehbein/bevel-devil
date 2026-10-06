@@ -29,5 +29,9 @@ object World3RoomsE {
         37 to listOf<Solution>(
             { rightTo(14.7f).rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 29.5f } },
         ),
+        38 to listOf<Solution>(
+            { leftTo(2.4f).rightTo(18.6f).waitFor { w -> w.circuits['Z']?.let { !it.powered && w.time - it.flipTime < 0.4f } == true }
+                .rightUntil { it.player.box.cx > 25f }.rightTo(25.6f).rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+        ),
     )
 }

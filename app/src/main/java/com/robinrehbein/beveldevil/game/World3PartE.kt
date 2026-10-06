@@ -123,24 +123,26 @@ object World3PartE {
             spawn(3, 14); door(29, 5)
         },
 
-        // 38 — the fan is dead until you step on the reset pad; leaving the draft, a dead cable wakes up, and the landing is warm
+        // 38 — Silence (trap room, U15): scratch v3
         Level(
             name = T("Silence", "Stille"),
             intro = T("It's so quiet in here.", "Schön leise hier."),
             start = listOf(
-                Fan('f', at = 9 to 15, dir = Dir.UP, reach = 9, speed = 9f, width = 2), Power('f', false),
-                Pad('1', at = 5 to 14), Circuit('Z', on = false),
+                Fan('f', at = 20 to 17, dir = Dir.UP, reach = 12, speed = 4.5f, width = 4), Power('f', false),
+                Clock('Z', on = 1.1f, off = 1.9f), Circuit('Y', on = false), Circuit('k'),
             ),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.DECOY), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
-                trap(Landed(12f, 17f), Power('Z', true), say("Sorry, a cable on the ledge.", "Sorry, ein Kabel auf der Kante.")),
-                trap(Airborne(17f, 22f), HeatSpike('g', 0.7f), say("Landing pad: toasty.", "Landeplatz: kuschelig.")),
+                trap(Touch('k'), Play(Card.SHORT_CIRCUIT), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
+                trap(PastX(15f), FanSet('f', 7.5f), say("Passenger detected. Full power.", "Fahrgast erkannt. Volle Leistung.")),
+                trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cable.", "Willkommen oben. Vorsicht, Kabel.")),
             ),
         ) {
             border(); floor()
-            fill(12..30, 8..8); fill(21..22, 8..8, 'g')
-            fill(18..19, 7..7, 'Z')
-            spawn(); door(28, 7)
+            fill(1..3, 15..15, 'k')
+            fill(19..23, 9..9, 'Z')
+            fill(24..30, 6..17)
+            fill(27..28, 5..5, 'Y')
+            spawn(10, 14); door(30, 5)
         },
 
         // 39 — a downdraft over a short pit: you cannot jump against it, only between its gusts; the edge where you wait for them warms up (wait further back, sprint), the plates behind it are warm, and a blade rolls in
