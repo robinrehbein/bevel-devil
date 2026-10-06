@@ -164,24 +164,32 @@ object World3PartD {
             spawn(2, 4); door(29, 12)
         },
 
-        // 29 — the wall opens when the plate reaches 55 degrees: sit on it, then run; the floor behind the wall is overclocked,
-        // and running on from the warm landing finds the floor before the door gone
+        // 29 — a puzzle room (R2 the hold switch, U15 the help is the trap). You start in a crawl space under a low roof, and the only way on is a hatch of
+        // copper in the roof at the far end that is open only while you stand on the pad beneath it: stand on it, jump straight up through the hatch
+        // (the copper cannot close on you in the gap). The moment you press, a slab above the hatch comes down through it: it is meant for whoever
+        // stays on the pad. On the roof the way leads back left: a second slab falls on the path as you come (let it land, then hop it), the
+        // plates before the far end are overclocked (hop them), and the door is behind a wall of copper at the end of the roof that a second pad opens for as long as you stand on it:
+        // step on the pad and walk straight off it into the wall.
         Level(
             name = T("Thermostat", "Thermostat"),
             intro = T("The wall has a thermostat. Somewhere.", "Die Wand hat ein Thermostat. Irgendwo."),
-            start = listOf(Heat('h', rise = 2.4f)),
-            traps = listOf(
-                trap(Heated('h', 0.55f), Play(Card.GHOST_BLOCK), Hide('w'), say("Thermostat reached. Wall removed. Nothing suspicious.", "Thermostat erreicht. Wand entfernt. Nichts Verdächtiges.")),
-                trap(PastX(17f), HeatSpike('g', 0.7f), say("Nothing suspicious. Except the floor.", "Nichts Verdächtiges. Außer dem Boden.")),
-                trap(Landed(19f, 25f), Fall('x'), say("Solder joint: cold. Floor: gone.", "Lötstelle: kalt. Boden: weg.")),
+            start = listOf(
+                Circuit('w'), Pad('1', at = 27 to 14, circuits = "w", mode = PadMode.HOLD),
+                Circuit('n'), Pad('2', at = 5 to 12, circuits = "n", mode = PadMode.HOLD),
+                Heat('q', rise = 0.8f, cool = 6f),
             ),
+            traps = listOf(
+                trap(Pressed('1'), Play(Card.HEADBUTT), Fall('s'), say("Thermostat: set to 'crush'. Stand still to enjoy.", "Thermostat: auf 'zerquetschen' gestellt. Stehenbleiben zum Genießen."), delay = 0.7f),
+                trap(Zone(20f, 11f, 21.5f, 13f), Fall('t'), say("Ceiling insulation. It comes off in one piece.", "Deckendämmung. Kommt in einem Stück runter."), delay = 0.15f),
+                trap(Zone(12.4f, 11f, 13.6f, 13f), HeatSpike('q', 0.85f), say("The roof has a setting for 'warm'. This is the other one.", "Das Dach hat eine Stufe 'warm'. Das ist die andere.")),
+            ),
+            hint = T("The pad opens the hatch above it for as long as you stand on it. Jump straight up and do not stay.", "Der Knopf öffnet die Luke über ihm, solange du draufstehst. Spring senkrecht hoch und bleib nicht."),
         ) {
             border(); floor()
-            fill(8..12, 15..15, 'h')
-            wire(16, 'w')
-            fill(20..23, 15..15, 'g')
-            fill(26..27, 15..17, 'x')
-            spawn(); door()
+            fill(1..30, 13..13); fill(26..28, 13..13, 'w'); fill(9..11, 13..13, 'q')
+            fill(3..4, 1..12, 'n'); fill(28..28, 14..14); fill(1..6, 14..14)
+            fill(26..28, 1..1, 's'); fill(15..16, 1..1, 't')
+            spawn(8, 14); door(2, 12)
         },
 
         // 30 — burn-in test: the gate changes rhythm, the floor right before it burns in under whoever waits there, the door is

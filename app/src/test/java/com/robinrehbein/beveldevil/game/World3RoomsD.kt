@@ -15,6 +15,13 @@ object World3RoomsD {
     private fun sawsAhead(w: World, x: Float, hi: Float = 0f) = w.saws.any { it.vx < 0f && it.x > x && it.y > hi }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        29 to listOf<Solution>(
+            { rightTo(24.0f).right(0.7f).at("pad").leftJump(0.3f).landLeft().at("up").leftTo(21.2f).at("t2")
+                .waitFor { w -> landed(w, 't', 0.5f) }.at("landed")
+                .leftTo(19.0f).leftJump(0.5f).landLeft().at("hop")
+                .leftTo(13.4f).at("plates").leftJump(0.55f).landLeft().at("over")
+                .leftTo(5.0f).at("wall").left(1.0f) },
+        ),
         28 to listOf<Solution>(
             { rightTo(6.6f).at("ledge").rightUntil { it.player.grounded && it.player.box.b > 12.5f }.at("land")
                 .rightTo(12.4f).at("edge1").rightUntil { it.player.grounded && it.player.box.b > 15.5f }.at("in1")
