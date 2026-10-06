@@ -121,6 +121,7 @@ class World2DeckTest {
 
     @Test fun l01r2() { World2DesignTest.play(1, round = 2) }
     @Test fun l01r2HoppingTheBluffLandsInSpikes() = b(1, 2).hopR(10.2f).right(0.5f).expect(WorldState.DEAD)
+    @Test fun l01r2WalkingOntoTheSecondStretchDropsYou() = b(1, 2).right(3f).expect(WorldState.DEAD)
     @Test fun l04r2() { World2DesignTest.play(4, round = 2) }
     @Test fun l07r2() { World2DesignTest.play(7, round = 2) }
     /** Sky Blue, round 2: the ceiling stalks you over the plateau; waiting under it, where round 1 waited, is the end. */

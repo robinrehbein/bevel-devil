@@ -293,6 +293,7 @@ class World2Test {
     @Test fun level01() { World2DesignTest.play(1) }
     /** Hello, World!: hopping the first pit and running on lands in the pit that opens as you touch down. */
     @Test fun level01TheLandingIsAPitToo() = b(1).hopR(10.2f).right(2f).expect(WorldState.DEAD)
+    @Test fun level01StoppingWhereYouLandIsFatal() = b(1).hopR(10.2f).wait(2f).expect(WorldState.DEAD)
     @Test fun level02() { World2DesignTest.play(2) }
     /** Open Port: the floor portal in the middle is the loopback; the hop over it grows a spike where you run on. */
     @Test fun level02TheLoopbackSendsYouHome() = b(2).rightTo(16.9f).right(0.15f).wait(0.2f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 8f) }.expect(WorldState.PLAYING)
@@ -310,6 +311,7 @@ class World2Test {
     @Test fun level07() { World2DesignTest.play(7) }
     @Test fun level08() { World2DesignTest.play(8) }
     @Test fun level08RunningOnIntoTheUnpluggedBlockIsFatal() = b(8).right(4f).expect(WorldState.DEAD)
+    @Test fun level08HoppingOverTheBlockFromAfarLandsOnItWhenItFails() = b(8).hopR(14.6f).right(0.3f).expect(WorldState.DEAD)
     @Test fun level09() { World2DesignTest.play(9) }
     @Test fun level09HoldingRightWalksIntoTheWallAndTheSawFindsYou() = b(9).right(6f).expect(WorldState.DEAD)
     @Test fun level10() { World2DesignTest.play(10) }

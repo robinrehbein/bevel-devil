@@ -84,7 +84,7 @@ class World2DesignTest : DesignTestBase() {
         val SOLUTIONS: Map<Int, List<Solution>> = mapOf<Int, List<Solution>>(
             1 to listOf(
                 { hopR(10.2f).hopR(18.0f).right(1.5f) },
-                { rightTo(17.5f).hopR(18.6f).right(1.5f) },
+                { rightTo(17.4f).hopR(18.4f).right(1.5f) },
             ),
             2 to listOf(
                 { hopR(15.5f).hopR(21.9f).rightJump(0.4f).landRight()
@@ -133,7 +133,7 @@ class World2DesignTest : DesignTestBase() {
                     .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
             ),
             8 to listOf(
-                { rightUntil { it.player.box.cx > 15.3f }.waitFor { it.group('a').oy > 3f }.waitFor { it.group('a').oy < 0.3f }.rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
+                { rightTo(16.6f).rightJump(0.4f).landRight().rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
             ),
             9 to listOf(
                 { waitFor { it.swapped }.leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.35f).landLeft()
@@ -149,7 +149,7 @@ class World2DesignTest : DesignTestBase() {
             ),
             11 to listOf(
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
-                    .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).left(1f)
+                    .waitFor { w -> w.saws.any { it.y < 8.5f && it.x > 8f } }.leftTo(2.2f).leftUntil { it.player.grounded && it.player.box.b > 14.5f }
                     .hopR(10.8f, 0.5f).hopR(15.2f, 0.5f).hopR(21.5f, 0.5f).right(1.5f) },
                 { hopR(10.8f, 0.5f).leftTo(13f).leftJump(0.5f).landLeft()
                     .waitUntil(3.5f).leftTo(2.2f).waitUntil(5.4f).rightTo(12.6f)

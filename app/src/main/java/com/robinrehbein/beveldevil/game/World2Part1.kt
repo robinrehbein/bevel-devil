@@ -38,8 +38,9 @@ object World2Part1 {
 
     val levels: List<Level> = listOf(
 
-        // 1 — EASTER EGG: Hello, World! A breather with one gag: the floor driver segfaults twice, and the second time it is
-        // the landing. Round 2 plays against round 1's reflex: the first pit is a bluff, and the hop over nothing lands in spikes
+        // 1 — EASTER EGG: Hello, World! A breather with one gag: the floor driver segfaults twice, the first time right under your
+        // feet (hop before it), the second time the next stretch as you land. Round 2 plays against round 1's reflex: the first pit is a
+        // bluff, the hop over nothing lands in spikes, and the second stretch goes the moment you set foot on it (hop it from the edge)
         Level(
             name = T("Hello, World!", "Hallo, Welt!"),
             intro = T("Print it, then walk to the door.", "Gib es aus, dann lauf zur Tür."),
@@ -47,6 +48,7 @@ object World2Part1 {
             traps = listOf(
                 trap(PastX(9f), Play(Card.COLLAPSE), Fall('a'), say("Hello, World! Segfault in the floor driver.", "Hallo, Welt! Segfault im Boden-Treiber.")),
                 trap(Landed(14.4f, 17f), Fall('b'), say("Hello again, World.", "Hallo nochmal, Welt."), delay = 0.1f),
+                trap(Landed(14.4f, 17f), Fall('c'), delay = 1.0f),
             ),
             rematch = listOf(
                 Round(
@@ -54,13 +56,13 @@ object World2Part1 {
                     traps = listOf(
                         trap(PastX(9f), Bluff(Card.COLLAPSE)),
                         trap(Airborne(2f, 16.5f), Show('C'), say("Jumped to conclusions.", "Voreilig gesprungen.")),
-                        trap(PastX(17f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
+                        trap(Zone(19.7f, 12f, 23.2f, 15.5f), Fall('b'), say("Goodbye, World.", "Tschüss, Welt.")),
                     ),
                 ) { fill(11..19, 14..14, 'C') },
             ),
         ) {
             border(); floor()
-            fill(11..13, 15..17, 'a'); fill(20..22, 15..17, 'b')
+            fill(11..13, 15..17, 'a'); fill(14..19, 15..17, 'c'); fill(20..22, 15..17, 'b')
             spawn(); door(); bits(1)
         },
 
@@ -197,15 +199,18 @@ object World2Part1 {
         },
 
         // 7 — EASTER EGG: Blue Screen of Death (stop code 0x7B: inaccessible boot device). The only level that runs right to left: the door is at
-        // the far left, behind the hill. Over the hill the ceiling crashes: the first piece lands on the plateau and becomes a step, the second
-        // (in the low tunnel to the door) is made of paper: it falls where you come down, and is gone again a moment later. Dashing under either
-        // is the end, so wait for it. Round 2: the first piece stalks you and drops on whoever stops under it
+        // the far left, behind the hill. On the way up the hill a piece of ceiling crashes onto the step where you would catch your breath (keep
+        // climbing); over the hill the next one lands on the plateau and becomes a step, and the last (in the low tunnel to the door) is a ghost
+        // made of paper: it appears where you come down, falls, and is gone again a moment later. Dashing under the plateau piece or the paper is
+        // the end, so wait for them. Round 2: the first piece stalks you and drops on whoever stops under it
         Level(
             name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
+            legend = mapOf('d' to hiddenSolid),
             traps = listOf(
-                trap(BeforeX(19.6f), Play(Card.COLLAPSE), Fall('a'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt."), delay = 0.28f),
-                trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt."), delay = 0.25f),
+                trap(Landed(24f, 26f), Fall('s'), say("Minor glitch. Do not stop.", "Kleiner Fehler. Nicht anhalten."), delay = 0.6f),
+                trap(BeforeX(19.6f), Fall('a'), say("STOP: 0x0000007B. Your ceiling has crashed.", "STOP: 0x0000007B. Deine Decke ist abgestürzt."), delay = 0.28f),
+                trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Play(Card.GHOST_BLOCK), Show('d'), Fall('d'), say("Collecting error info: 100%. Dying now.", "Fehlerinfo sammeln: 100 %. Sterbe jetzt."), delay = 0.25f),
                 trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('d'), delay = 1.55f),
             ),
             hint = T("Wait for each piece to land. The paper one goes away again.", "Warte, bis jedes Stück gelandet ist. Das aus Papier verschwindet wieder."),
@@ -214,32 +219,36 @@ object World2Part1 {
                     T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
                     hint = T("The ceiling follows you now. Do not wait where you waited. Two paper pieces at the end.", "Die Decke folgt dir jetzt. Warte nicht, wo du gewartet hast. Zwei Papierstücke am Ende."),
                     traps = listOf(
-                        trap(BeforeX(23.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 12f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(BeforeX(19.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 4f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
                         trap(Idle(0.6f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.1f),
+                        trap(Landed(24f, 26f), Fall('s'), say("Same glitch. Still do not stop.", "Gleicher Fehler. Immer noch nicht anhalten."), delay = 0.6f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Paper again. Two sheets this time.", "Wieder Papier. Diesmal zwei Blatt."), delay = 0.25f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('e'), delay = 0.15f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('e'), delay = 1.0f),
-                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('d'), delay = 2.5f),
+                        trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Hide('d'), delay = 1.9f),
                     ),
+                    legend = mapOf('d' to Glyph(spike = false)),
                 ) { fill(6..7, 9..10, 'e') },
             ),
         ) {
             border(); floor()
             fill(26..27, 13..14); fill(24..25, 11..14); fill(22..23, 9..14); fill(20..21, 7..14); fill(14..19, 5..14)
             fill(12..13, 9..14); fill(10..11, 13..14)
-            fill(1..8, 1..8); fill(15..16, 1..2, 'a'); fill(3..4, 9..10, 'd')
+            fill(1..8, 1..8); fill(15..16, 1..2, 'a'); fill(3..4, 9..10, 'd'); fill(22..23, 1..2, 's')
             spawn(29); door(1); bits(7)
         },
 
-        // 8 — EASTER EGG: RAM memory test (POST counts up, 640K). A breather with one punchline: a whole block of floor is "unplugged"
-        // for a moment, and plugged in again as if nothing had happened. Whoever runs on, hops over it or waited for it, falls
+        // 8 — EASTER EGG: RAM memory test (POST counts up, 640K). A breather with one punchline: the floor is memory, and the block you step
+        // on fails the test: it goes dark under your feet and is plugged in again a moment later as if nothing had happened (hop the moment
+        // you set foot on it). The last address leaks, too
         Level(
             name = T("Memory Test", "Speichertest"),
             intro = T("POST: 640K ought to be enough for anybody.", "POST: 640K sollten für jeden reichen."),
+            start = listOf(Circuit('a'), Circuit('b')),
             traps = listOf(
-                trap(PastX(8f), Play(Card.SINKING), Move('a', 0f, 9f, 40f), say("RAM check: 3 of 4 blocks OK.", "RAM-Check: 3 von 4 Blöcken OK."), delay = 0.1f),
-                trap(PastX(8f), Move('a', 0f, -9f, 40f), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
-                trap(PastX(23f), Fall('b'), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
+                trap(PastX(16.4f), Play(Card.SHORT_CIRCUIT), Power('a', false), say("RAM check: 3 of 4 blocks OK. Yours is number 4.", "RAM-Check: 3 von 4 Blöcken OK. Deiner ist Nummer 4."), delay = 0.12f),
+                trap(PastX(16.4f), Power('a', true), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
+                trap(PastX(23f), Power('b', false), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
             ),
         ) {
             border()
@@ -269,7 +278,8 @@ object World2Part1 {
         // 10 — a routing puzzle: a wall splits the room and the door is on the other side of it. Three tunnels wait in the room (the nearest hangs in mid-air above the floor, a hop away)
         // floor, the nearest one only goes home. The right one is closed until it has been knocked on (stand at its mouth for a moment) and
         // comes out on a long shelf above the room; the second tunnel up there is off as well and wakes up when you walk past. The floor
-        // goes missing three times on the way: twice on the way to the tunnels, once behind the wall
+        // flickers on the way: the line drops packets, and three stretches of floor (two on the way to the tunnels, one behind the wall)
+        // start to blink on and off as you come near, off first (hop them)
         Level(
             name = T("VPN Tunnel", "VPN-Tunnel"),
             intro = T("Your connection is secure. Really secure.", "Deine Verbindung ist sicher. Wirklich sicher."),
@@ -279,36 +289,38 @@ object World2Part1 {
                 Portal('c', 13 to 8, 9 to 14, twoWay = false), Power('c', false),
             ),
             traps = listOf(
-                trap(BeforeX(28.4f), Play(Card.CRUMBLE), Fall('a'), say("Tunnel established. One packet dropped.", "Tunnel steht. Ein Paket verloren."), delay = 0.1f),
-                trap(BeforeX(18.4f), Fall('e'), say("Second hop: encrypted. So is the floor.", "Zweiter Hop: verschlüsselt. Der Boden auch."), delay = 0.1f),
+                trap(BeforeX(28.4f), Play(Card.CRUMBLE), Blink('a', 0.6f, 0.6f, phase = 0.6f), say("Tunnel established. One packet dropped.", "Tunnel steht. Ein Paket verloren.")),
+                trap(BeforeX(18.4f), Blink('e', 0.6f, 0.6f, phase = 0.6f), say("Second hop: encrypted. So is the floor.", "Zweiter Hop: verschlüsselt. Der Boden auch.")),
                 trap(Zone(14f, 10f, 17f, 15.5f), Power('b', true), say("Port knocking. Please stay on the line.", "Port-Knocking. Bitte bleiben Sie in der Leitung."), delay = 1.3f),
-                trap(Zone(20f, 7f, 23f, 9.5f), Power('c', true), say("Keepalive received. Eventually.", "Keepalive empfangen. Irgendwann."), delay = 1.5f),
-                trap(BeforeX(7.4f), Fall('f'), say("Third hop: the same, but worse.", "Dritter Hop: dasselbe, nur schlimmer."), delay = 0.1f),
+                trap(Zone(20f, 7f, 23f, 9.5f), Power('c', true), say("Keepalive received. Eventually.", "Keepalive empfangen. Irgendwann."), delay = 0.9f),
+                trap(BeforeX(7.4f), Blink('f', 0.5f, 0.5f, phase = 0.5f), say("Third hop: the same, but worse.", "Dritter Hop: dasselbe, nur schlimmer.")),
             ),
             hint = T("The nearest tunnel only leads home. Wait at the mouth of the next one until it opens, then look up.", "Der nächste Tunnel führt nur nach Hause. Warte vor dem übernächsten, bis er aufgeht, und schau dann nach oben."),
         ) {
             border(); floor()
             fill(10..11, 0..14)
             fill(12..30, 9..10)
-            fill(25..25, 15..17, 'a'); fill(17..17, 15..17, 'e'); fill(3..3, 15..17, 'f')
+            fill(24..25, 15..17, 'a'); fill(17..18, 15..17, 'e'); fill(3..4, 15..17, 'f')
             fill(0..2, 14..14)
             spawn(29); door(1, 13); bits(10)
         },
 
         // 11 — EASTER EGG: fan #3 failed. A puzzle room: the door sits behind a rack gate (a slab that slides into the floor), the
         // switch is up on the mezzanine at the far end. Fan 1 circles the mezzanine (rushing at the switch runs into it); the
-        // switch opens the gate for seven seconds and sets fan 2 loose in the aisle; past the rack the raised floor is lifted
+        // switch opens the gate for seven seconds and sets fan 2 loose in the aisle, and fan 3 comes rolling in right behind you as you set
+        // off from the far wall (keep running); past the rack the raised floor is lifted
         Level(
             name = T("Server Room", "Serverraum"),
             intro = T("Nice and cool in here. Three fans, all fit.", "Schön kühl hier. Drei Lüfter, alle fit."),
             start = listOf(Pad('1', at = 2 to 10)),
             traps = listOf(
-                trap(Zone(8f, 8.5f, 12.6f, 11f), Play(Card.DEVIL_SAW), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
+                trap(Zone(8f, 8.5f, 12.6f, 11f), PathSaw(5f, 5.5f to 10.3f, 8.5f to 10.3f, 8.5f to 6.5f, 5f to 6.5f, 5f to 10.3f, loop = true, delay = 0.4f),
                     say("Fan 1 of 3 spinning. It does laps.", "Lüfter 1 von 3 dreht. Er dreht Runden.")),
+                trap(Zone(0.5f, 12.5f, 4f, 15.5f), Saw(-1.5f, 14.4f, 5f, 0f), say("Fan 3 reporting for duty. Right behind you.", "Lüfter 3 meldet sich zum Dienst. Direkt hinter dir."), delay = 0.3f),
                 trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
                     say("Rack unlocked. For 7 seconds. Fan 2 is on call.", "Rack offen. Für 7 Sekunden. Lüfter 2 hat Bereitschaft.")),
                 trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
-                trap(PastX(14.7f), Move('p', 0f, 8f, 30f), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
+                trap(PastX(14.7f), Play(Card.COLLAPSE), Move('p', 0f, 8f, 30f), say("Raised floor: tiles lifted for maintenance.", "Doppelboden: Platten zur Wartung entnommen.")),
             ),
             hint = T("The switch is upstairs. The fans keep a rhythm.", "Der Schalter ist oben. Die Lüfter halten einen Takt."),
             // rematch: the aisle left of the spawn is a hot aisle now (LEDs): dropping off the shelf where round 1 dropped is fatal.
@@ -323,6 +335,7 @@ object World2Part1 {
                         trap(Pressed('1'), Move('w', 0f, 4f, 14f), PathSaw(6f, 24f to 19.5f, 24f to 13.7f),
                             say("Rack unlocked. Fan 2 is on call. The hot aisle is not.", "Rack offen. Lüfter 2 hat Bereitschaft. Der Heißgang nicht.")),
                         trap(Pressed('1'), Move('w', 0f, -4f, 14f), say("Rack locked again. Session expired.", "Rack wieder zu. Sitzung abgelaufen."), delay = 7f),
+                        trap(After(5.9f), Saw(4.4f, 10.4f, 4f, 0f), say("Fan 3 takes the high road this time. Behind you.", "Lüfter 3 nimmt diesmal den oberen Weg. Hinter dir.")),
                         trap(PastX(14.7f), Play(Card.COLLAPSE), Move('p', 0f, 8f, 30f), say("Raised floor: lifted again. Maintenance is thorough.", "Doppelboden: wieder entnommen. Die Wartung ist gründlich.")),
                     ),
                 ) { put(1, 14, '^'); put(2, 14, '^') },
@@ -483,7 +496,7 @@ object World2Part1 {
                 Power('1', false), Power('2', false),
             ),
             traps = listOf(
-                trap(PastX(12.7f), Play(Card.HEADBUTT), Move('l', 0f, 2f, 8f), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür."), delay = 0.3f),
+                trap(PastX(12.7f), Play(Card.GRAND_FINALE), Move('l', 0f, 2f, 8f), say("Hello. I'm between you and the door.", "Hallo. Ich bin zwischen dir und der Tür."), delay = 0.3f),
                 trap(PastX(12.7f), Move('r', 0f, 2f, 8f), delay = 0.5f),
                 trap(PastX(12.7f), Swap(true), say("Connection encrypted. By me. Left is right now.", "Verbindung verschlüsselt. Von mir. Links ist jetzt rechts."), delay = 0.6f),
                 trap(PastX(12.7f), Power('1', true), say("Packet forwarded. Eventually.", "Paket weitergeleitet. Irgendwann."), delay = 2.55f),
