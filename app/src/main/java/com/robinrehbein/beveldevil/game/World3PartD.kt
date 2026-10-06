@@ -240,11 +240,12 @@ object World3PartD {
             spawn(2, 14); door(8, 14)
         },
 
-        // 31 — a puzzle room (R11 cool the chips, R5 two floors, U3 the crane walks with you). The floor is a chip under load that heats all the time;
-        // the heatsink bench in front of it cools it only while you stand on it, and the moment you touch the bench the crane above it starts to walk
-        // after you and comes down on whoever is still there a moment later (stand just long enough, then cross). Along the chip, up a step: a crane
-        // comes down on the step as you land (keep going), back left onto a shelf, over a block that is the second heatsink (a second chip, a second crane)
-        // and up two steps to the door.
+        // 31 — a puzzle room (R11 cool the chips, R5 two floors, U3 the crane walks with you). The floor beyond a two-tile heatsink is a chip under load that
+        // heats all the time. The moment you touch the heatsink the chip jumps to full heat and the crane above it starts to walk after you and comes down
+        // on whoever is still there a moment later (stand just long enough to cool, then cross; running over the sink is not enough). A second crane hangs
+        // over the first tile of the chip and falls on whoever stops there. Out of the chip lane, on to a step: a crane comes down on it a moment after you
+        // land (keep going), back left onto a shelf, up onto a block that is the second heatsink (a second chip, a second crane that falls on whoever
+        // stays), over the chip on the shelf and up two steps to the door.
         Level(
             name = T("Pit Stop", "Boxenstopp"),
             intro = T("Grab a heatsink. They're all trustworthy.", "Nimm ruhig einen Kühlkörper. Alle vertrauenswürdig."),
