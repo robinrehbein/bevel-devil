@@ -34,7 +34,8 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
  * fans that look deadly but carry you. Nothing ever leaves the player stuck: a fan is never switched off for good.
  */
 object World3Part3 {
-    val levels: List<Level> = World3PartE.levels + listOf(
+    /** Levels 41-48 as they were before block F ([World3PartF]) replaced them one by one; dropped when the block is whole. */
+    private val old: List<Level> = listOf(
 
         // 41 — two updrafts, one above the other: ledge, ledge, door; the first ledge is warm, live ceiling wiring talks you out of jumping (it switches off when you do), and the top ledge breaks under a walk
         Level(
@@ -236,4 +237,6 @@ object World3Part3 {
             spawn(); door(29, 5)
         },
     )
+
+    val levels: List<Level> = World3PartE.levels + World3PartF.levels + old.drop(World3PartF.levels.size)
 }

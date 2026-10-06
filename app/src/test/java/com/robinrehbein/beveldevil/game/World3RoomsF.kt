@@ -1,0 +1,19 @@
+package com.robinrehbein.beveldevil.game
+
+/** Bot solutions of the rebuilt block F of World 3 (levels 41-48): one per round, round 1 first. Registered in [World3DesignTest]. */
+object World3RoomsF {
+    val solutions: Map<Int, List<Solution>> = mapOf(
+        41 to listOf<Solution>(
+            { rightTo(4.6f).rightUntil { it.player.grounded && it.player.box.cx > 6.5f }
+                .rightTo(8.4f).rightJump(0.1f).landRight()
+                .rightTo(11.6f).rightJump(0.1f).landRight()
+                .rightTo(15.6f).rightJump(0.1f).landRight()
+                .rightTo(23.0f).waitFor { it.player.box.cy < 6.4f }.leftUntil { it.player.box.cy < 4.4f }
+                .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.rightTo(30f).right(1f) },
+            // rematch: walk the bridge, do not hop it
+            { rightTo(4.6f).rightUntil { it.player.grounded && it.player.box.cx > 6.5f }
+                .rightTo(23.0f).waitFor { it.player.box.cy < 6.4f }.leftUntil { it.player.box.cy < 4.4f }
+                .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.rightTo(30f).right(1f) },
+        ),
+    )
+}
