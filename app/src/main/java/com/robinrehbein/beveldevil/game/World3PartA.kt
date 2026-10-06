@@ -35,72 +35,79 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
 object World3PartA {
     val levels: List<Level> = listOf(
 
-        // 1 — start high, door low: a descent in two floors. The deck is warm in the middle (hop it), the pad at its far end cuts
-        // the live wall on the floor below, but only on a timer, and the way down lands you on a plate that has just been
-        // overclocked: hop that one too, leaving it with a jump.
+        // 1 — the first copper, and everything is wired: start high on a deck, the door on a shelf low in the middle. A copper inlay
+        // in the deck goes live under whoever stops on it (keep moving), the button at the far end cuts the live wall below, and the
+        // rail under your feet with it (breaker open: for everything), the strip on the floor where you land is switched on (hop
+        // it), and the wall closes again on a timer: run through, up the step at the far end, back left along the shelf.
         Level(
             name = T("First Copper", "Erstes Kupfer"),
             intro = T("A button, a live wall, a timer. Even I can explain this.", "Ein Knopf, eine Stromwand, ein Timer. Sogar ich erkläre das."),
-            start = listOf(Circuit('Z'), Pad('1', at = 5 to 5, circuits = "Z", mode = PadMode.OFF)),
+            start = listOf(Circuit('Z'), Circuit('Q', on = false), Circuit('Y', on = false), Circuit('d'), Pad('1', at = 12 to 5, circuits = "Z", mode = PadMode.OFF)),
             traps = listOf(
-                trap(BeforeX(19.5f), HeatSpike('g', 0.95f), say("Complimentary preheating.", "Kostenlose Vorheizung.")),
-                trap(Pressed('1'), say("Click. The breaker is open. Do hurry.", "Klick. Die Sicherung ist offen. Beeil dich.")),
-                trap(Pressed('1'), Power('Z', true), say("Breaker closed. Hope you weren't attached.", "Sicherung zu. Hoffentlich warst du nicht dran."), delay = 3.4f),
-                trap(Landed(2f, 8f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.95f), say("Landing pad: warm, as promised.", "Landeplatz: warm, wie versprochen.")),
+                trap(BeforeX(27.6f), Play(Card.SHORT_CIRCUIT), Power('Q', true), say("Copper inlay. Live, for the connoisseur.", "Kupfereinlage. Unter Strom, für Kenner."), delay = 0.2f),
+                trap(Pressed('1'), say("Click. The wall is dark. For now.", "Klick. Die Wand ist aus. Vorerst.")),
+                trap(Zone(5f, 3f, 10.6f, 6f), Power('d', false), say("Breaker open. For everything. Sorry.", "Sicherung raus. Für alles. Sorry."), delay = 0.25f),
+                trap(Landed(1f, 11.5f), Power('Y', true), say("Welcome downstairs. The floor is on, too.", "Willkommen unten. Der Boden ist auch an."), delay = 0.85f),
+                trap(Zone(9f, 12f, 12f, 15f), Power('Z', true), say("Breaker closed. Hope you weren't attached.", "Sicherung zu. Hoffentlich warst du nicht dran."), delay = 1.5f),
             ),
-            hint = T("The deck bites the runner. The wire bites the dawdler.", "Das Deck beißt den Läufer. Der Draht beißt den Trödler."),
-            // rematch: the wall is gone and the button rings nothing; the warm plates moved house (hop them where they are now),
-            // and the landing wakes a stalker that follows along the floor: do not stop to look back
+            hint = T("Press, fall, hop, run. The wall does not wait, the shelf is behind you.", "Drücken, fallen, hüpfen, rennen. Die Wand wartet nicht, das Regal liegt hinter dir."),
+            // rematch: the wall is dark now and the button switches it ON: hop the button. The inlay moved, a stalker follows you
+            // down, the wall comes on by itself if you dawdle at its foot, and the shelf rail is cut under your feet
             rematch = listOf(
                 Round(
                     T("Same copper, new manners.", "Gleiches Kupfer, neue Manieren."),
-                    start = listOf(Pad('1', at = 5 to 5)),
+                    start = listOf(Circuit('Z', on = false), Circuit('Q', on = false), Circuit('d'), Circuit('k'), Pad('1', at = 12 to 5, circuits = "Z", mode = PadMode.ON)),
                     legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
-                    hint = T("The wall is gone. Something else is coming for you now.", "Die Wand ist weg. Jetzt kommt etwas anderes hinter dir her."),
+                    hint = T("Do not touch the button this time. And something follows you down.", "Diesmal den Knopf nicht anfassen. Und dir folgt etwas nach unten."),
                     traps = listOf(
-                        trap(BeforeX(14.5f), HeatSpike('g', 0.95f), say("The warm bit moved house.", "Das Warme ist umgezogen.")),
-                        trap(Pressed('1'), say("Click. Nothing. I did say: decorative.", "Klick. Nichts. Ich sagte ja: Deko.")),
-                        trap(Landed(2f, 8f), Play(Card.STALKER), Chase('W', speed = 4.2f, left = 0f, right = 28f), say("Someone followed you down. Politely.", "Jemand ist dir nach unten gefolgt. Höflich.")),
-                        trap(Zone(9f, 12f, 10.5f, 15f), HeatSpike('h', 1f), say("And the landing pad moved with it.", "Und der Landeplatz ist mitgezogen.")),
-                        trap(Zone(21.8f, 12f, 23f, 15f), HeatSpike('k', 1f), say("One more warm bit for the road.", "Noch ein warmes Stück für unterwegs.")),
+                        trap(Zone(16f, 3f, 19f, 6f), Power('Q', true), say("The inlay moved. Copper gets around.", "Die Einlage ist umgezogen. Kupfer kommt rum."), delay = 0.45f),
+                        trap(Pressed('1'), say("Click. You switched the wall ON. Thank you.", "Klick. Du hast die Wand EINgeschaltet. Danke.")),
+                        trap(Zone(5.5f, 3f, 10.5f, 6f), Power('d', false), say("No button needed. The rail drops on its own now.", "Ohne Knopf. Die Schiene fällt jetzt von allein."), delay = 0.2f),
+                        trap(Zone(1f, 12f, 11.5f, 15f), Play(Card.STALKER), Chase('W', speed = 4.6f, left = 0f, right = 6f), say("Someone followed you down. Politely.", "Jemand ist dir nach unten gefolgt. Höflich.")),
+                        trap(Zone(9.5f, 12f, 15f, 15f), Power('Z', true), say("The wall noticed you. Late, but it did.", "Die Wand hat dich bemerkt. Spät, aber doch."), delay = 1.4f),
+                        trap(Zone(22f, 9f, 26.5f, 11f), Power('k', false), say("The shelf was on loan from the same breaker.", "Das Regal hing an derselben Sicherung."), delay = 0.6f),
                     ),
                 ) {
-                    fill(15..17, 6..6); fill(6..8, 15..15)
-                    fill(15..15, 7..14, '.')
-                    fill(9..11, 6..6, 'g'); fill(11..13, 15..15, 'h'); fill(24..26, 15..15, 'k')
+                    fill(21..21, 5..5, '.'); fill(16..18, 5..5, 'Q'); fill(4..7, 14..14, '.')
+                    fill(22..24, 11..11, 'k')
                     fill(1..1, 12..14, 'W')
                 },
             ),
         ) {
             border(); floor()
             fill(3..30, 6..6)
-            fill(15..17, 6..6, 'g')
-            fill(6..8, 15..15, 'h')
-            wire(15, 'Z', top = 7)
-            spawn(30, 5); door(30, 14)
+            fill(5..10, 6..6, 'd')
+            fill(21..21, 5..5, 'Q')
+            fill(15..17, 7..14, 'Z')
+            fill(4..7, 14..14, 'Y')
+            fill(27..30, 13..14)
+            fill(18..25, 11..11)
+            spawn(28, 5); door(19, 10)
         },
 
-        // 2 — a pillar in the middle of the room: up the stairs, over the top, down the other side. The overhead line above the
-        // top lights up for a moment (wait for it at the foot of the line), a pin on the roof of the pillar walks towards
-        // you the while (jump it), and the doormat in front of the door has been plugged in.
+        // 2 — a pillar in the middle of the room: up the stairs, over the top, down the other side, and every pin in the room moves.
+        // One walks to meet you at the start (jump it), the overhead line above the top lights up as you arrive (wait for it at
+        // its foot), a pin on the roof of the pillar walks towards you the while (jump it), and one slides out of the pillar's
+        // foot behind you on the far side while the doormat is plugged in (do not stop, hop the mat).
         Level(
             name = T("Live Wire", "Unter Strom"),
             intro = T("Mind the wires. They mind you.", "Achte auf die Kabel. Die achten auf dich."),
             start = listOf(Circuit('Z', on = false), Circuit('Y', on = false)),
             traps = listOf(
-                trap(PastX(1.6f), Move('K', -3.5f, 0f, 2.5f), say("The welcome pin. It comes to you.", "Der Begrüßungsstift. Er kommt zu dir.")),
-                trap(Landed(14f, 19f), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Overhead line: live from the second you look up.", "Oberleitung: unter Strom, sobald du hochschaust."), delay = 0.2f),
-                trap(Landed(14f, 19f), Power('Z', false), delay = 1.45f),
-                trap(Zone(14f, 5.6f, 19f, 7f), Move('S', -7f, 0f, 3f), say("A visiting pin. It followed you home.", "Ein Besucher-Stift. Er ist dir nachgelaufen."), delay = 0.9f),
-                trap(Landed(24f, 29f), Power('Y', true), say("The doormat has been plugged in.", "Die Fußmatte wurde eingesteckt."), delay = 0.3f),
+                trap(PastX(2.6f), Move('K', -3.5f, 0f, 2.5f), say("The welcome pin. It comes to you.", "Der Begrüßungsstift. Er kommt zu dir.")),
+                trap(Landed(11.6f, 19f), Play(Card.BIOS), Power('Z', true), say("Overhead line: live from the second you look up.", "Oberleitung: unter Strom, sobald du hochschaust."), delay = 0.1f),
+                trap(Landed(11.6f, 19f), Power('Z', false), delay = 1.3f),
+                trap(Zone(12f, 7.6f, 19f, 9f), Move('S', -10f, 0f, 3f), say("A visiting pin. It followed you home.", "Ein Besucher-Stift. Er ist dir nachgelaufen."), delay = 0.9f),
+                trap(Landed(23.5f, 29f), Move('R', 5f, 0f, 5.5f), say("A pin from the wall. It wants the door too.", "Ein Stift aus der Wand. Er will auch zur Tür."), delay = 0.15f),
+                trap(Landed(23.5f, 29f), Power('Y', true), say("And the doormat has been plugged in.", "Und die Fußmatte wurde eingesteckt."), delay = 0.3f),
             ),
-            hint = T("The wire above the pillar glows only for a moment. The pin does not stop.", "Der Draht über dem Pfeiler glüht nur kurz. Der Stift hört nicht auf."),
+            hint = T("The wire above the pillar glows only for a moment. The pins never stop.", "Der Draht über dem Pfeiler glüht nur kurz. Die Stifte hören nie auf."),
         ) {
             border(); floor()
-            fill(8..9, 13..14); fill(10..11, 11..14); fill(12..13, 9..14)
-            fill(14..22, 7..14)
-            fill(19..21, 5..6, 'Z')
-            put(22, 6, 'S'); put(5, 14, 'K')
+            fill(8..9, 13..14); fill(10..11, 11..14)
+            fill(12..22, 9..14)
+            fill(19..21, 7..8, 'Z')
+            put(22, 8, 'S'); put(5, 14, 'K'); put(23, 14, 'R')
             fill(28..29, 14..14, 'Y')
             spawn(1, 14); door(30, 14)
         },

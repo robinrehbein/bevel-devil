@@ -15,19 +15,23 @@ object World3RoomsA {
 
     val solutions: Map<Int, List<Solution>> = mapOf(
         1 to listOf<Solution>(
-            { hopL(18.5f).leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 14f }.rightTo(5.3f).rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
-            // rematch: the plates moved, the landing wakes a stalker
-            { leftTo(12.7f).leftJump(0.55f).landLeft().leftTo(2.6f).rightUntil { it.player.grounded && it.player.box.b > 14f }
-                .rightTo(9.8f).rightJump(0.55f).landRight().rightTo(22.3f).rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
+            // keep moving over the inlay, press the button, fall with the rail, hop the strip, run through the wall, step up, back left
+            { leftTo(23.8f).leftJump(0.4f).landLeft().leftUntil { it.player.box.b > 8f }.landLeft()
+                .rightTo(25.0f).rightJump(0.55f).landRight().leftTo(27.7f).leftJump(0.55f).landLeft().leftTo(19.3f).left(0.5f) },
+            // rematch: hop the button (it switches the wall on), fall with the rail, outrun the stalker and the wall, and do not
+            // stop on the shelf rail
+            { leftTo(14.75f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.landLeft()
+                .rightTo(25.0f).rightJump(0.55f).landRight()
+                .leftTo(27.7f).leftJump(0.55f).landLeft().leftTo(19.3f).left(0.5f) },
         ),
         2 to listOf<Solution>(
             { rightUntil { w -> w.group('K').let { it.homeX + it.ox - w.player.box.cx < 3.0f } }.rightJump(0.55f).landRight()
-                .rightTo(7.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight()
-                .rightTo(13.6f).rightJump(0.55f).landRight()
+                .rightTo(7.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
+                .rightTo(11.2f).rightJump(0.55f).landRight()
                 .waitFor { it.group('Z').visible }.waitFor { !it.group('Z').visible }
                 .rightUntil { w -> w.group('S').let { it.homeX + it.ox - w.player.box.cx < 3.0f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.box.cy > 10f }.landRight()
-                .rightTo(27.4f).rightJump(0.55f).landRight().right(1f) },
+                .rightTo(27.0f).rightJump(0.55f).landRight().right(1f) },
         ),
         3 to listOf<Solution>(
             { hopR(4.0f).rightTo(9.2f).waitFor { it.group('p').visible }.rightTo(12.5f).rightJump(0.55f).landRight()
