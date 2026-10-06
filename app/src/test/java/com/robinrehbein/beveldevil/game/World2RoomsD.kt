@@ -36,16 +36,43 @@ object World2RoomsD {
     /** The ceiling slab (group [id]) has landed and is at rest. */
     private fun slabDown(w: World, id: Char) = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > 1f }
 
+    /** On the ground, the landed slab (group [id]) stands ahead with its left face within [d] tiles. */
+    private fun faceAhead(w: World, id: Char, d: Float) = w.player.grounded && w.group(id).let { g ->
+        g.mode == GroupMode.IDLE && g.oy > 1f && g.pieces.minOf { it.box.x } - w.player.box.cx in 0f..d
+    }
+
     /** Mephi has hit undo (the undo trap has sprung). */
     private fun undone(w: World) = w.sprung.any { s -> s.trap.actions.any { it is Action.Undo } }
 
-    /** 44: stop short of the slab, wait for it to land, hop onto the block and off its far side (the undo throws you back), hop the block again, stop for the second slab, hop it, to the door. */
-    fun l44(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f).rightUntil { undone(it) }
-        .hopR(10.0f, 0.5f).rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).right(3f)
+    /** 44: hop the wall, stop short of the slab (under the one that hangs over your waiting place), wait for it to land, hop the block and on; when the undo puts you back, run at once and hop the block again, stop for the second slab, hop it, to the door. */
+    fun l44(b: Bot) = b.rightUntil { it.player.box.cx > 2.9f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { undone(it) }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 21.4f }.waitFor { slabDown(it, 'd') }
+        .rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().right(3f)
 
-    /** 44, round 2: both slabs as before, and the undo comes right before the door: hop the second block again. */
-    fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f)
-        .rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).rightUntil { undone(it) }.hopR(21.0f, 0.5f).right(3f)
+
+
+
+
+
+
+
+
+
+    /** 44, round 2: the first slab drops further on, so stop later; the second slab follows, and the undo comes right before the door: it sends you back to your first waiting place, under the slab that hangs over it: run at once, hop both blocks again, to the door. */
+    fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 2.9f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 8.8f }.waitFor { slabDown(it, 'c') }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 18.2f }.waitFor { slabDown(it, 'd') }
+        .rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().rightUntil { undone(it) }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().right(3f)
+
+
+
+
+
+
+
+
+
 
     /** 45: crawl right to the pad at the far end, jump up through the hatch, along the roof, up the steps to the door. */
     fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
