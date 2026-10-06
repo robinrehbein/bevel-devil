@@ -118,33 +118,50 @@ object World3PartD {
             spawn(); door()
         },
 
-        // 28 — rest on the heatsink, and a fan blade rolls in along the floor; wait there for it and a second, faster blade comes
-        // from behind; the plates behind the first blade warm up as you land
+        // 28 — the break room (U7, a trap room): you start on a shelf and drop to the floor, which has two deep dips, each a hot plate with a
+        // heatsink on a step at its far end to sit on. As you land a fan blade comes in along the floor at ankle height; the dips are the one
+        // place it cannot reach: sit on the heatsink while it passes overhead. The moment you sit down a second blade crawls out of the wall of
+        // the dip at the height of the bench: climb out as soon as the first has gone by. The second bench is the same, with the blades coming
+        // from both sides.
+        // Rematch: the break is over. The benches are filled in, the dips are only three wide (hop them, a blade patrols the bottom of each)
+        // and the blades from the front fly at head height now: waiting under one is fine, hopping into one is the end of you, so each hop waits
+        // for the blade to be well past. The way out is a staircase of three steps instead of the floor.
         Level(
             name = T("Break Time", "Pause"),
             intro = T("Take a seat on the heatsink. Relax.", "Setz dich auf den Kühlkörper. Entspann dich."),
-            start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h")),
+            start = listOf(Heat('h', rise = 1.3f), Heat('g', rise = 1.3f), Heatsink('k', cools = "hg"), Heatsink('l', cools = "hg")),
             traps = listOf(
-                trap(PastX(16.5f), Play(Card.DEVIL_SAW), Saw(33f, 14.4f, -7f, 0f), say("Fan blade! It's rotating. On the floor.", "Lüfterblatt! Es dreht sich. Am Boden.")),
-                trap(Touch('k'), Saw(-2f, 14.4f, 10f, 0f), say("Fans have more than one blade.", "Lüfter haben mehr als ein Blatt.")),
-                trap(Landed(18f, 27f), HeatSpike('h', 0.6f), say("Sorry, the landing strip is warm.", "Sorry, die Landebahn ist warm.")),
+                trap(Landed(8f, 12.9f), Play(Card.DEVIL_SAW), Saw(33f, 12.4f, -8f, 0f), say("Fan blade! It's rotating. On the floor.", "Lüfterblatt! Es dreht sich. Am Boden.")),
+                trap(Zone(17f, 13.8f, 19f, 15.1f), PathSaw(3.2f, 11f to 14.4f, 18.4f to 14.4f), say("Fans have more than one blade.", "Lüfter haben mehr als ein Blatt.")),
+                trap(Zone(25f, 13.8f, 27f, 15.1f), Saw(33f, 12.4f, -7.5f, 0f), PathSaw(2.6f, 20f to 14.4f, 26.4f to 14.4f), say("Second bench, second blades. I do the seating plan.", "Zweite Bank, zweite Blätter. Ich mache den Sitzplan.")),
             ),
-            // rematch: the blade from the front now flies at head height: the hop that cleared it in round 1 runs into it,
-            // walking passes under it (and the one from behind still punishes a long rest)
+            hint = T("The dips are the one place the blades cannot reach. Sit on the heatsink, and do not stay.", "Die Mulden sind der einzige Ort, den die Blätter nicht erreichen. Setz dich auf den Kühlkörper, aber bleib nicht."),
             rematch = listOf(
                 Round(
-                    T("Break's over. Second shift.", "Pause vorbei. Spätschicht."),
-                    start = listOf(Heat('h', rise = 1.3f), Heatsink('k', cools = "h")),
+                    T("Break is over. The benches are decoration now.", "Pause vorbei. Die Bänke sind jetzt Deko."),
+                    hint = T("Do not sit down in there. Cross the dips in the air, and let each high blade go by first.", "Setz dich da unten nicht hin. Spring über die Mulden, und lass erst das hohe Blatt vorbei."),
+                    start = listOf(Heat('h', rise = 1.3f), Heat('g', rise = 1.3f)),
                     traps = listOf(
-                        trap(PastX(16.5f), Play(Card.DEVIL_SAW), Saw(33f, 12.9f, -7f, 0f), say("Fan blade, mounted higher. Ergonomics.", "Lüfterblatt, höher montiert. Ergonomie.")),
-                        trap(Touch('k'), Saw(-2f, 14.4f, 10f, 0f), say("The rear one is floor-mounted.", "Das hintere ist bodennah montiert.")),
+                        trap(
+                            Landed(6f, 12f), Play(Card.THROTTLE), Heat('h', rise = 0.5f), Heat('g', rise = 0.5f), Saw(18f, 10.9f, -8f, 0f),
+                            PathSaw(3.2f, 13.2f to 14.4f, 15.4f to 14.4f),
+                            say("Staff meeting in the break room. Blades only.", "Teambesprechung im Pausenraum. Nur Blätter."),
+                        ),
+                        trap(Landed(16f, 19f), Saw(28f, 10.9f, -8f, 0f), PathSaw(3.2f, 21.2f to 14.4f, 23.4f to 14.4f), say("Second shift, same height. Ergonomics is a lifestyle.", "Zweite Schicht, gleiche Höhe. Ergonomie ist ein Lebensstil.")),
+                        trap(Landed(24f, 26.5f), Saw(33f, 12.4f, -8f, 0f), say("One more for the stairs. Hop, do not queue.", "Noch eins für die Treppe. Hüpf, nicht anstellen.")),
                     ),
-                ),
+                ) {
+                    fill(5..6, 5..6, '.')
+                    fill(16..18, 13..15); fill(24..26, 13..15)
+                    fill(26..27, 11..12); fill(28..29, 9..12); fill(30..30, 7..12); door(30, 6)
+                },
             ),
         ) {
-            border(); floor()
-            fill(7..15, 15..15, 'h'); put(16, 15, 'k'); fill(17..25, 15..15, 'h')
-            spawn(); door()
+            border(); floor(13)
+            fill(1..6, 5..6)
+            pit(13..18, 13); fill(13..18, 16..17); fill(13..16, 16..16, 'h'); fill(17..18, 15..15, 'k')
+            pit(21..26, 13); fill(21..26, 16..17); fill(21..24, 16..16, 'g'); fill(25..26, 15..15, 'l')
+            spawn(2, 4); door(29, 12)
         },
 
         // 29 — the wall opens when the plate reaches 55 degrees: sit on it, then run; the floor behind the wall is overclocked,
