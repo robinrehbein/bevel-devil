@@ -191,33 +191,25 @@ object World3PartF {
             spawn(2, 14); door(21, 4)
         },
 
-        // 47 — Boot Order
+        // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift). The door on the shelf is no end
+        // either: it runs back to where you started, and the lift now blows down. Halfway down the boot loop turns the lift around once more: step out of
+        // the draft. (One room: the annex is the finale's gag, 48.)
         Level(
             name = T("Boot Order", "Boot-Reihenfolge"),
             intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
-            rooms = 2,
             start = listOf(
-                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 10, speed = 7.5f, width = 3),
-                Circuit('Z', on = false),
+                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 10, speed = 6.5f, width = 3),
             ),
             traps = listOf(
-                trap(Zone(15.5f, 12.5f, 18f, 15.5f), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
-                trap(Zone(15.5f, 12.5f, 18f, 15.5f), Fall('h'), delay = 0.5f),
-                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, top = 12, bottom = 14, warn = 1.2f, door = roomX(1, 29) to 14,
-                    line = T("Boot device 2: disk. Sector 0 unreadable. Boot device 3: next door.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: nebenan."))),
-                trap(PastX(roomX(1, 12f)), Clock('Z', on = 1.7f, off = 1.0f), say("Boot device 3: network. Authenticating.", "Bootgerät 3: Netzwerk. Authentifizierung läuft.")),
+                trap(Zone(15.5f, 12.5f, 18f, 15.5f), Play(Card.SHY_DOOR), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
+                trap(Zone(25.5f, 3.5f, 28f, 6.5f), FanSet('f', -7f), DoorTo(26, 14), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Right under your nose.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Direkt unter deiner Nase.")),
+                trap(Zone(25.5f, 3.5f, 28f, 6.5f), FanSet('f', 6.5f), say("Boot loop. Everything old is new again.", "Bootschleife. Alles Alte ist wieder neu."), delay = 1.3f),
             ),
-            hint = T("The door that runs away is not the way out. Look up, then look at the wall.", "Die Tür, die wegläuft, ist nicht der Ausgang. Schau nach oben, dann auf die Wand."),
+            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs back, let the lift take you down. If it turns around again, step out of it.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür zurückläuft, lass dich vom Lift hinunterbringen. Dreht er wieder um, tritt aus ihm heraus."),
         ) {
             border(); floor()
-            room(0) {
-                fill(16..19, 1..2, 'h')
-                fill(24..28, 6..6)
-                spawn(8, 14); door(19, 14)
-            }
-            room(1) {
-                fill(22..22, 8..14, 'Z')
-            }
+            fill(24..28, 6..6); fill(29..30, 6..14)
+            spawn(2, 14); door(19, 14)
         },
 
         // 48 — BIOS Setup (the finale of the game)

@@ -334,9 +334,9 @@ class World3Test {
         assertEquals(listOf(48), grand)
         // the act-two finale (rebuilt) keeps its grand finale for the rematch
         assertTrue(Card.GRAND_FINALE in DesignRules.cards(World3.levels[31]))
-        // the boot order has one door that runs away before you touch it, and the real one, whose wall breaks open
-        assertEquals(1, World3.levels[46].traps.count { it.trigger == Trigger.AtDoor })
-        assertEquals(2, World3.levels[46].rooms)
+        // the boot order has two doors that run away (one room: the annex belongs to the finale's gag), the finale has two rooms
+        assertEquals(2, World3.levels[46].traps.count { t -> t.actions.any { it is Action.DoorTo } })
+        assertEquals(1, World3.levels[46].rooms)
         assertEquals(2, World3.levels[47].rooms)
         assertNotNull(World(World3.levels[47]).door)
     }
@@ -435,14 +435,18 @@ class World3Test {
     }
 
     @Test
-    fun theBaitDoorOfBootOrderRunsUpstairsAndTheRealOneBreaksTheWall() {
-        // 47: coming near the door on the floor sends it to the shelf (the roof it leaves behind falls where it stood) ...
-        val run = b(47).rightTo(16.6f).rightTo(22.5f).wait(1.2f)
+    fun theBaitDoorOfBootOrderRunsUpstairsAndTheRealOneRunsBackDown() {
+        // 47: coming near the door on the floor sends it to the shelf ...
+        val run = b(47).rightTo(16.6f).rightTo(19.5f).wait(1.2f)
         run.expect(WorldState.PLAYING)
         assertTrue("the door is on the shelf", run.world.door.box.y < 6f && run.world.door.box.x > 27f)
-        // ... and touching that one is not the end: the wall opens, and the door slips through it
-        val up = b(47).rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }.right(1.2f)
-        assertTrue(up.world.cracks.isNotEmpty())
+        // ... and coming near that one sends it back to the floor, while the lift turns to blow down; the boot loop turns it around once more
+        val up = b(47).rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }.rightUntil { it.player.box.cx > 27.0f }
+        up.wait(0.3f)
+        assertTrue("the door is on the floor", up.world.door.box.y > 10f)
+        assertTrue("the lift blows down", up.world.fans[0].target < 0f)
+        up.wait(1.6f)
+        assertTrue("the lift is on again", up.world.fans[0].target > 0f)
     }
 
     @Test
