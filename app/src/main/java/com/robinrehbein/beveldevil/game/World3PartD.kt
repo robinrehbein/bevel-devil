@@ -192,35 +192,52 @@ object World3PartD {
             spawn(8, 14); door(2, 12)
         },
 
-        // 30 — burn-in test: the gate changes rhythm, the floor right before it burns in under whoever waits there, the door is
-        // a fake, the floor around it is overclocked and the real door ran off
+        // 30 — the burn-in test (U14, a trap room: the lie is the spikes). An arch: a staircase of hot steps up to a shelf (hop it, the steps flare as
+        // you land on the first), along the shelf over two patches of overclocked plates (hop them) and off its end to the floor, where the way to the
+        // door leads back left underneath it. Across the way lie a pair of spikes, and behind them hidden ones: the spikes are a test pattern, they
+        // sink after you land, so whoever hops them lands where the hidden ones sprout for whoever is in the air. The plates in front of the door
+        // flare as you turn into the lane (hop them).
+        // Rematch: the test pattern is real this time. Round 1's wait for the spikes to sink is the end of you, one single spike stands in the
+        // lane and has to be hopped, the plates come first; and the shelf has a second layer: hidden spikes sprout in front of whoever runs along it.
         Level(
             name = T("Burn-in Test", "Einbrenntest"),
             intro = T("Stress test: walk to the door. Easy.", "Stresstest: lauf zur Tür. Ganz leicht."),
-            start = listOf(Clock('Z', on = 1.3f, off = 1.7f)),
+            legend = mapOf('T' to Glyph(spike = true, hidden = true), 'U' to Glyph(spike = true, hidden = true)),
+            start = listOf(Heat('f', rise = 0.8f, cool = 6f), Heat('l', rise = 0.8f, cool = 6f), Heat('m', rise = 0.8f, cool = 6f), Heat('b', rise = 0.8f, cool = 6f)),
             traps = listOf(
-                trap(PastX(5.2f), Clock('Z', on = 0.9f, off = 1.5f), say("Test profile 2: shorter gaps.", "Testprofil 2: kürzere Pausen.")),
-                trap(PastX(7.2f), HeatSpike('e', 0.6f), say("Test profile 3: the waiting area burns in.", "Testprofil 3: der Wartebereich brennt ein.")),
-                trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, HeatSpike('f', 0.55f), DoorTo(17, 14), say("Stress test passed! ...Just kidding. Run.", "Stresstest bestanden! ...Scherz. Lauf."))),
+                trap(Landed(2.5f, 5.5f), HeatSpike('f', 0.4f), say("Every step is a pixel. Mine, all mine.", "Jede Stufe ist ein Pixel. Meine, alle meine.")),
+                trap(Zone(8.5f, 7f, 10.2f, 9.2f), Play(Card.OVERCLOCKED), HeatSpike('l', 0.85f), say("Burn-in: please do not stand on the logo.", "Einbrennen: Bitte nicht aufs Logo stellen.")),
+                trap(Zone(15.5f, 7f, 17f, 9.2f), HeatSpike('m', 0.85f), say("The logo is also on the other side. Branding.", "Das Logo ist auch auf der anderen Seite. Markenauftritt.")),
+                trap(Zone(22.4f, 13.5f, 23.4f, 15.2f), HeatSpike('b', 1f), say("Last pixel before the door. Also mine.", "Letztes Pixel vor der Tür. Auch meins.")),
+                trap(Zone(17.3f, 11.6f, 22.6f, 13.7f), Show('T'), say("Surprise! The test pattern has a second layer.", "Überraschung! Das Testbild hat eine zweite Ebene.")),
+                trap(Landed(25f, 30f), Hide('S'), say("Test pattern: spikes. Just kidding. Mostly.", "Testbild: Stacheln. War ein Scherz. Fast."), delay = 0.4f),
             ),
-            // rematch: the gate floor is cool now, the spot a step back (where round 1 was safe) burns in
+            hint = T("The spikes in the way are only a test pattern: let them sink. Do not hop them.", "Die Stacheln im Weg sind nur ein Testbild: lass sie versinken. Spring nicht drüber."),
             rematch = listOf(
                 Round(
-                    T("Burn-in, pass two. Different pixels.", "Einbrenntest, zweiter Lauf. Bildschirmschoner aus."),
-                    start = listOf(Clock('Z', on = 1.3f, off = 1.7f)),
+                    T("The test pattern is real this time. Probably.", "Diesmal ist das Testbild echt. Wahrscheinlich."),
+                    start = listOf(Heat('f', rise = 0.8f, cool = 6f), Heat('l', rise = 0.8f, cool = 6f), Heat('b', rise = 0.8f, cool = 6f)),
+                    hint = T("The spikes stay. Hop them, and watch the shelf: it has a second layer now.", "Die Stacheln bleiben. Spring drüber, und achte aufs Regal: Das hat jetzt eine zweite Ebene."),
                     traps = listOf(
-                        trap(PastX(5.2f), Clock('Z', on = 0.9f, off = 1.5f), say("Test profile 2 again.", "Wieder Testprofil 2.")),
-                        trap(PastX(5.4f), HeatSpike('d', 0.6f), say("Test profile 3b: the back row burns in.", "Testprofil 3b: die hintere Reihe brennt ein.")),
-                        trap(AtDoor, Play(Card.DECOY), FakeWin(FakeEnd.CLEAR, null, HeatSpike('f', 0.55f), DoorTo(17, 14), say("Passed! ...You know the drill.", "Bestanden! ...Du kennst das schon."))),
+                        trap(Landed(2.5f, 5.5f), HeatSpike('f', 0.4f), say("Round two: every step is a pixel again.", "Runde zwei: Jede Stufe ist wieder ein Pixel.")),
+                        trap(Zone(8.5f, 7f, 10.2f, 9.2f), Play(Card.THROTTLE), Heat('l', rise = 0.8f, cool = 6f), HeatSpike('l', 0.85f), say("Refresh rate: lowered. Temperature: not.", "Bildwiederholrate: gesenkt. Temperatur: nicht.")),
+                        trap(Zone(15f, 7f, 16.4f, 9.2f), Show('U'), say("The shelf has a second layer, and it is sharp.", "Das Regal hat eine zweite Ebene, und die ist spitz."), delay = 0.3f),
+                        trap(Zone(23.8f, 13.5f, 24.8f, 15.2f), HeatSpike('b', 1f), say("Last pixel before the door. You know the drill.", "Letztes Pixel vor der Tür. Du kennst das schon.")),
                     ),
-                ) { fill(5..6, 15..15, 'd') },
+                ) {
+                    fill(18..20, 9..9, '#')
+                    fill(20..20, 8..8, 'U')
+                    fill(11..13, 15..15, '#'); fill(19..20, 15..15, 'b')
+                    fill(19..20, 14..14, '.'); fill(11..11, 14..14, 'S')
+                },
             ),
         ) {
             border(); floor()
-            fill(7..9, 15..15, 'e')
-            wire(10, 'Z')
-            fill(23..30, 15..15, 'f')
-            spawn(); door()
+            fill(3..4, 13..14); fill(5..6, 11..14); fill(7..24, 9..10)
+            fill(3..4, 13..13, 'f'); fill(5..6, 11..11, 'f'); fill(11..13, 9..9, 'l'); fill(18..20, 9..9, 'm')
+            fill(19..20, 14..14, 'S'); fill(16..17, 14..14, 'T')
+            fill(11..13, 15..15, 'b')
+            spawn(2, 14); door(8, 14)
         },
 
         // 31 — the second heatsink is hotter than advertised: hop over it; the landing plate and the end are warm too

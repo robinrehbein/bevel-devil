@@ -15,6 +15,19 @@ object World3RoomsD {
     private fun sawsAhead(w: World, x: Float, hi: Float = 0f) = w.saws.any { it.vx < 0f && it.x > x && it.y > hi }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        30 to listOf<Solution>(
+            { rightJump(0.5f).landRight().at("s1").rightJump(0.5f).landRight().at("s2").rightJump(0.5f).landRight().at("ledge")
+                .rightTo(9.4f).at("pre1").rightTo(10.4f).rightJump(0.55f).landRight().at("over1")
+                .rightTo(16.6f).at("pre2").rightTo(17.4f).rightJump(0.55f).landRight().at("over2")
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.at("land")
+                .leftTo(14.2f).at("edge").leftJump(0.55f).landLeft().at("over3").leftTo(8.6f).left(0.5f) },
+            // rematch: same arch, but the spikes in the lane are real (hop them) and the shelf sprouts some of its own (hop them too); the plates come first
+            { rightJump(0.5f).landRight().at("s1").rightJump(0.5f).landRight().at("s2").rightJump(0.5f).landRight().at("ledge")
+                .rightTo(9.4f).at("pre1").rightTo(10.4f).rightJump(0.55f).landRight().at("over1")
+                .rightTo(18.1f).rightJump(0.55f).landRight().at("over2")
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.at("land")
+                .leftTo(22.4f).at("plates").leftJump(0.55f).landLeft().at("h1").leftTo(14.2f).leftJump(0.55f).landLeft().at("h2").leftTo(8.6f).left(0.5f) },
+        ),
         29 to listOf<Solution>(
             { rightTo(24.0f).right(0.7f).at("pad").leftJump(0.3f).landLeft().at("up").leftTo(21.2f).at("t2")
                 .waitFor { w -> landed(w, 't', 0.5f) }.at("landed")
