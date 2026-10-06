@@ -189,7 +189,7 @@ object World3PartE {
                 trap(Touch('k'), Play(Card.SHORT_CIRCUIT), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
                 trap(PastX(12.5f), Power('X', true), say("Floor cable live. Silence has a price.", "Bodenkabel unter Strom. Stille hat ihren Preis.")),
                 trap(Zone(20f, 9.6f, 24f, 14.5f), FanSet('f', 7.5f), say("Passenger detected. Full power. All the way up.", "Fahrgast erkannt. Volle Leistung. Ganz nach oben.")),
-                trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cable.", "Willkommen oben. Vorsicht, Kabel.")),
+                trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cables. Both of them. The one you hover under, too.", "Willkommen oben. Vorsicht, Kabel. Beide. Auch das, unter dem du schwebst."), delay = 0.6f),
             ),
             hint = T("Touch the copper on the left first: it brings the fan back. Time the blinking floor, and step off the draft at the top before it pins you to the ceiling.", "Berühr zuerst das Kupfer links: Es holt den Lüfter zurück. Pass den blinkenden Boden ab, und tritt oben aus dem Luftstrom, bevor er dich an die Decke drückt."),
         ) {
@@ -198,7 +198,7 @@ object World3PartE {
             fill(19..23, 9..9, 'Z')
             fill(24..30, 6..17)
             fill(27..28, 5..5, 'Y')
-            fill(20..23, 3..3, 'v'); fill(14..14, 14..14, 'X')
+            fill(20..23, 3..3, 'v'); fill(20..23, 4..4, 'Y'); fill(14..14, 14..14, 'X')
             spawn(10, 14); door(30, 5)
         },
 
