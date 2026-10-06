@@ -55,10 +55,12 @@ class World3Act3TrapsTest {
     // 38: the lift runs, the cable in its shaft takes turns: riding up while it is live ends at the cable
     @Test
     fun theCableInTheShaftIsLiveInItsTurn() {
-        val bot = b(38).leftTo(2.4f).rightTo(18.6f).waitFor { it.circuits['Z']?.powered == true }.rightUntil { it.player.box.cx > 25f }
+        val bot = b(38).leftTo(2.4f).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(18.6f).waitFor { it.circuits['Z']?.powered == true }.rightUntil { it.player.box.cx > 25f }
         bot.expect(WorldState.DEAD)
+        // the floor cable goes live as soon as you head for the lift: walking over it kills, hopping it does not
+        b(38).right(1.5f).expect(WorldState.DEAD)
         // and without touching the plate the lift stays dead
-        b(38).rightTo(22f).wait(2f).expect(WorldState.PLAYING)
+        b(38).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(22f).wait(2f).expect(WorldState.PLAYING)
     }
 
     // 39: the bridge: the slab behind the lift exit comes down on whoever stands under it, the stud wants a hop, the floor closes on whoever waits

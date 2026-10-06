@@ -9,8 +9,10 @@ object World3RoomsE {
         33 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight()
                 .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
-            // rematch: wait at the edge until the draft is back, then hop the stud on the far plank low instead of the long leap
-            { rightTo(5.7f).waitFor { it.fans[0].wind > 8.5f }.rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
+            // rematch: ride, steer back to the edge when the draft takes its break, ride again once it is back, then hop the stud on the
+            // far plank low instead of the long leap
+            { rightTo(6.6f).rightUntil { it.fans[0].wind < 1f }.leftUntil { it.player.grounded }
+                .waitFor { it.fans[0].wind > 8.5f }.rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
                 .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
         ),
         34 to listOf<Solution>(
@@ -29,11 +31,12 @@ object World3RoomsE {
                 .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
                 .rightUntil { w -> w.saws.any { it.vx < -10.5f && it.vx > -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
                 .rightUntil { w -> w.saws.any { it.vx < -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
+                .rightUntil { w -> w.saws.any { it.vx < -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 6.0f } }.rightJump(0.5f).landRight()
                 .rightUntil { it.player.box.cx > 30.3f } },
         ),
         36 to listOf<Solution>(
             { rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }
-                .leftUntil { it.player.box.cx < 9.2f }.leftUntil { it.player.grounded }
+                .leftUntil { it.player.box.cx < 9.2f }.waitFor { it.player.box.b > 11.95f }.rightUntil { it.player.box.cx > 12.2f }.rightUntil { it.player.grounded }
                 .rightUntil { w -> w.player.box.cx > 18.5f }
                 .rightUntil { w -> gx(w, 'C') > w.player.box.cx && gx(w, 'C') - w.player.box.cx < 3.5f }.rightJump(0.5f).landRight()
                 .rightUntil { it.player.box.cx > 30f } },
@@ -43,7 +46,7 @@ object World3RoomsE {
                 .rightUntil { it.player.box.cx > 29.5f } },
         ),
         38 to listOf<Solution>(
-            { leftTo(2.4f).rightTo(18.6f).waitFor { w -> w.circuits['Z']?.let { !it.powered && w.time - it.flipTime < 0.4f } == true }
+            { leftTo(2.4f).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(18.6f).waitFor { w -> w.circuits['Z']?.let { !it.powered && w.time - it.flipTime < 0.4f } == true }
                 .rightUntil { it.player.box.cx > 25f }.rightTo(25.6f).rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         39 to listOf<Solution>(
