@@ -129,6 +129,7 @@ object World3PartE {
                 trap(Zone(8f, 7f, 14f, 8.5f), Move('B', -4f, 0f, 5f), say("Other side now. Mind the draft.", "Jetzt die andere Seite. Vorsicht, Zugluft.")),
                 trap(Landed(8f, 13.9f), Move('C', -9f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
             ),
+            hint = T("The first bar hits whoever floats in the middle, the second whoever hugs the wall. Keep moving down the shaft, and hop the last one along the floor.", "Der erste Balken trifft, wer in der Mitte schwebt, der zweite, wer an der Wand klebt. Bleib im Schacht in Bewegung und hüpf unten über den letzten."),
         ) {
             border(); floor()
             fill(0..7, 4..14)
@@ -145,17 +146,21 @@ object World3PartE {
             intro = T("Union rules apply to fans too.", "Für Lüfter gilt der Betriebsrat."),
             legend = mapOf('W' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(
-                Fan('w', at = 21 to 9, dir = Dir.LEFT, reach = 15, speed = 6f, width = 6, on = 2.0f, off = 1.5f),
+                Fan('w', at = 21 to 9, dir = Dir.LEFT, reach = 15, speed = 6f, width = 6, on = 3.0f, off = 1.5f),
                 Fan('u', at = 22 to 17, dir = Dir.UP, reach = 12, speed = 4f, width = 5), Power('u', false),
             ),
             traps = listOf(
                 trap(PastX(5f), Play(Card.SINKING), Move('W', 24f, 0f, 3.2f), say("Break time is over. Everyone out.", "Pause vorbei. Alle raus.")),
+                trap(PastX(9f), FanSet('w', 4.8f), say("Coffee break: the draft takes five.", "Kaffeepause: Der Zug macht fünf Minuten.")),
                 trap(PastX(19f), Power('u', true), say("The lift only runs for passengers.", "Der Aufzug fährt nur für Fahrgäste.")),
+                trap(Landed(19.8f, 21.9f), Move('f', 0f, 3f, 6f), say("Do not linger at the lift. The floor has a schedule too.", "Nicht am Aufzug trödeln. Der Boden hat auch einen Fahrplan."), delay = 0.45f),
             ),
+            hint = T("The headwind rests in rhythm. Sprint while it rests, and do not stop at the lift.", "Der Gegenwind ruht im Takt. Sprinte, solange er ruht, und trödle nicht am Aufzug."),
         ) {
             border(); floor(); pit(15..18)
             fill(21..21, 1..9)
             fill(27..30, 6..17)
+            fill(19..21, 15..16, 'f')
             fill(1..1, 10..14, 'W')
             fill(9..13, 12..12, 'v')
             spawn(3, 14); door(29, 5)
@@ -174,6 +179,7 @@ object World3PartE {
                 trap(PastX(15f), FanSet('f', 7.5f), say("Passenger detected. Full power.", "Fahrgast erkannt. Volle Leistung.")),
                 trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cable.", "Willkommen oben. Vorsicht, Kabel.")),
             ),
+            hint = T("Touch the copper on the left first: it brings the fan back. Up top, time the blinking floor.", "Berühr zuerst das Kupfer links: Es holt den Lüfter zurück. Oben musst du den blinkenden Boden abpassen."),
         ) {
             border(); floor()
             fill(1..3, 15..15, 'k')
@@ -197,6 +203,7 @@ object World3PartE {
                 trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
                 trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),
             ),
+            hint = T("Every ceiling falls on whoever stands under it. Land, then keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter steht. Landen, weitergehen, und rechne in der Mitte mit einem Turbo."),
         ) {
             border(); floor()
             fill(7..12, 6..14)
@@ -223,6 +230,7 @@ object World3PartE {
                 trap(PastX(17f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
                 trap(Landed(23f, 27f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
             ),
+            hint = T("The reverse thrust throws you back, but the keep in the middle is a fine place to stand. The welcome mat is not.", "Die Schubumkehr wirft dich zurück, aber der Bergfried in der Mitte ist ein guter Standplatz. Die Fußmatte nicht."),
             // rematch: the controls are twisted as you float, and the mat has no opinions this time: left is right all the way across
             rematch = listOf(
                 Round(
