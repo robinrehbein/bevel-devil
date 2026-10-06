@@ -238,10 +238,10 @@ class World2Test {
         val home = b(38).rightTo(14.4f).wait(1.2f)
         home.expect(WorldState.PLAYING)
         assertTrue("x=${home.world.player.box.cx}", home.world.player.box.cx < 6f)
-        // the second one leads up to the roof, at the far right end
-        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.wait(0.1f)
+        // the second one leads up to the roof, at the far left end above the start
+        val roof = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cy < 9f }.wait(0.1f)
         roof.expect(WorldState.PLAYING)
-        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx > 26f && roof.world.player.box.b < 8.5f)
+        assertTrue("x=${roof.world.player.box.cx} y=${roof.world.player.box.b}", roof.world.player.box.cx < 6f && roof.world.player.box.b < 8.5f)
     }
 
     @Test
@@ -271,14 +271,14 @@ class World2Test {
 
     @Test
     fun replayAttackPunishesStandingStillWhileYourLastRunComes() {
-        // first attempt: run right until the first saw gets you; the log keeps the run
+        // first attempt: run right until the pendulum gets you; the log keeps the run
         val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
         // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
-        val second = first.retry().right(0.9f).wait(2.5f)
+        val second = first.retry().right(0.28f).wait(2.5f)
         second.expect(WorldState.DEAD)
         assertEquals(Card.DEVIL_SAW, second.world.lastCard)
         // without a previous attempt nothing replays: standing there for as long is fine
-        b(36).right(0.9f).wait(2.5f).expect(WorldState.PLAYING)
+        b(36).right(0.28f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -377,6 +377,13 @@ class World2Test {
         val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
         assertEquals(2, bot.world.level.rooms)
         assertTrue(bot.world.door.tx > 32f)
+    }
+    /** Hop Limit: the link in front of you after the drop was re-pointed and sends you home (TTL), while the real one waits behind you, under the ledge. */
+    @Test fun level30TheLinkInFrontGoesHome() {
+        val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
+            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.rightUntil(6f) { it.player.box.cx < 10f }
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 10f)
     }
     @Test fun level31() { World2DesignTest.play(31) }
     @Test fun level32() { World2DesignTest.play(32) }
@@ -548,6 +555,8 @@ class World2Test {
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)
     @Test fun level36() { World2DesignTest.play(36) }
+    /** Access Log: running on along the lane meets the pendulum that hangs over it from the start. */
+    @Test fun level36RunningOnMeetsThePendulum() = b(36).right(3f).expect(WorldState.DEAD)
     @Test fun level37() { World2DesignTest.play(37) }
     /** Two-Factor Auth: without the first switch the wall holds, whatever you do on the lane. */
     @Test fun level37TheFirstWallHoldsWithoutTheSwitch() {
@@ -577,5 +586,10 @@ class World2Test {
     @Test fun level45() { World2DesignTest.play(45) }
     @Test fun level46() { World2DesignTest.play(46) }
     @Test fun level47() { World2DesignTest.play(47) }
+    /** Math Problem: the controls swap in the air, as you hop the cart. */
+    @Test fun level47TheControlsSwapInTheAir() {
+        val bot = b(47).rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).wait(0.1f)
+        assertTrue(bot.world.swapped)
+    }
     @Test fun level48() { World2DesignTest.play(48) }
 }

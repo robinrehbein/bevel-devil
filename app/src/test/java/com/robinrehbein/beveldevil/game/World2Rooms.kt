@@ -133,24 +133,49 @@ object World2Rooms {
         .leftUntil { it.player.box.cx < 19.6f }.wait(0.05f).waitFor(cond = clear('O')).left(3f)
 
     /** The pendulum saw at [x] stays clear of the lane (up, not coming down) for the next [from]..[to] seconds. */
-    fun pendulumCalm(w: World, x: Float, from: Float = 0.1f, to: Float = 0.5f): Boolean {
+    fun pendulumCalm(w: World, x: Float, from: Float = 0.1f, to: Float = 0.5f, yMax: Float = 12.2f): Boolean {
         val s = w.saws.firstOrNull { kotlin.math.abs(it.x - x) < 0.2f && it.path != null } ?: return false
-        return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < 12.2f }
+        return (0..8).all { k -> s.path!!.at(w.time - s.t0 + from + (to - from) * k / 8f).second < yMax }
     }
 
-    /** 29: stop in front of each pendulum saw and slip under it when it is up. */
-    fun l29(b: Bot) = b.rightTo(7.7f).waitFor { pendulumCalm(it, 10f) }.rightUntil { it.player.box.cx > 11.7f }
-        .rightTo(13.7f).waitFor { pendulumCalm(it, 16f) }.rightUntil { it.player.box.cx > 17.7f }
-        .rightTo(19.7f).waitFor { pendulumCalm(it, 22f) }.right(3f)
+    /** 29: stop in front of the first pendulum and slip under it when it is up, hop the saw that patrols the lane, stop in front of the third pendulum, slip under it and up the three steps to the door. */
+    fun l29(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightUntil { sawAhead(it, 3.8f) }.rightJump(0.35f).landRight()
+        .rightTo(20.4f).waitFor { pendulumCalm(it, 23.5f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
-    /** 29, round 2: slip under the first pendulum as before, wait in front of the lane for the second saw to lap off into the upper corner, run the lane, and slip under the last pendulum. */
-    fun l29r2(b: Bot) = b.rightTo(6.7f).waitFor { pendulumCalm(it, 10f, 0.1f, 0.65f) }.rightUntil { it.player.box.cx > 11.7f }
-        .waitFor { w -> w.saws.any { it.path?.loop == true && it.x > 21f && it.y < 12.2f } }.rightUntil { it.player.box.cx > 21.9f }
-        .waitFor { pendulumCalm(it, 25f) }.right(3f)
 
-    /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, through the second tunnel, hop the spikes. */
+
+
+
+
+
+
+
+
+
+
+
+
+    /** 29, round 2: slip under the first pendulum (it is swinging already), wait in front of the lane for the thread that laps the middle to have turned up into the corner, run the lane, stop at the last pendulum and up the steps. */
+    fun l29r2(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(11.0f)
+        .waitFor { w -> w.saws.any { it.path?.loop == true && it.y < 9f && it.x < 17f } }.rightTo(21.9f)
+        .waitFor { pendulumCalm(it, 23.5f) }.rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
     fun l30(b: Bot) = b.rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }
-        .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.b > 12f }.rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
+        .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.right(0.3f).rightTo(roomX(1, 25.7f)).rightJump(0.35f).landRight().right(2f)
 
     /** Blinking group [id] is solid during the whole stretch from [from] to [to] seconds ahead. */
     fun stoneUp(w: World, id: Char, from: Float, to: Float): Boolean {
@@ -196,10 +221,10 @@ object World2Rooms {
     fun l35(b: Bot) = b.hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
         .rightUntil { it.player.box.cx > 23f }.hopR(24.4f, 0.5f).hopR(26.0f, 0.5f).right(2f)
 
-    /** 36: along the deck (hop the saw that rolls at you, hop the second one as you land), off its end, left along the lane (hop the saw from the left, wait for the guard to turn, run past it) to the door. */
-    fun l36(b: Bot) = b.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.5f).landRight().rightUntil { sawAhead(it, 4.9f) }.rightJump(0.5f).landRight()
-        .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.leftUntil { sawAheadRight(it, 4.3f) }.leftJump(0.5f).landLeft()
-        .leftUntil { sawAheadRight(it, 5.7f) }.leftJump(0.5f).landLeft().left(2.5f)
+    /** 36: slip under the pendulum at the start, along the lane (hop the login that rolls out of the stairs), up the three steps, hop the saw that patrols the roof and run to the door. */
+    fun l36(b: Bot) = b.rightTo(5.0f).waitFor { pendulumCalm(it, 7.5f, 0.05f, 0.5f, 12.6f) }.rightUntil { sawAhead(it, 4.0f) }.rightJump(0.35f).landRight()
+        .rightTo(14.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
+        .rightJump(0.5f).landRight().waitFor { w -> w.saws.any { it.path != null && it.x > 20f && it.x < 26.0f } }.rightJump(0.5f).landRight().right(2f)
 
     /** On the ground, a saw rolls toward the player from the right... ahead on the left within [d] tiles. */
     fun sawAheadRight(w: World, d: Float) = w.player.grounded && w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= d && kotlin.math.abs(it.y - w.player.box.cy) < 1.5f }
@@ -210,8 +235,9 @@ object World2Rooms {
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
         .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f)
 
-    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole, along the roof from the far end to the door, never standing on the planks. */
-    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cx > 25f }.leftTo(7.0f).leftJump(0.5f).landLeft().hopL(4.4f, 0.5f).left(1f)
+    /** 38: hop the first hole (it leads home), over the sinking ground and into the second hole (it comes out on the roof, at the left end above the start), along the roof to the right (never standing on the planks), up the two steps to the door. */
+    fun l38(b: Bot) = b.hopR(12.8f, 0.5f).rightUntil { it.player.box.cy < 9f }.rightTo(24.4f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
+
 
     /** 39: along the deck (stop for the flash, hop the trip wire), off its end, left along the lane (stop for the flash), turn the stuck firewall off and on again, to the door. */
     fun l39ToFirewall(b: Bot) = b.rightUntil { it.player.box.cx > 7.8f }.waitFor(cond = clear('A')).hopR(15.0f, 0.5f)

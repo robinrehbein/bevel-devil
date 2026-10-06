@@ -15,6 +15,7 @@ import com.robinrehbein.beveldevil.game.Action.Laser
 import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Play
+import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.Portal
 import com.robinrehbein.beveldevil.game.Action.Power
 import com.robinrehbein.beveldevil.game.Action.Reroute
@@ -82,7 +83,7 @@ object World2Part3D {
 
         // 42 — gold mine (a puzzle room: R5 two floors, R7 the bait; U15 the easy way is the trap). You start on the deck over the lane, the door is
         // below you on the lane, and the hole in the deck right next to the start is the shortcut: spikes grow where you land in it. The way is the
-        // long one: along the deck (a cart rolls at you), off its end, and back along the lane (a cart rolls out of the mine from the left) over the gold
+        // long one: along the deck (an ore bucket swings over it on a rope: stop, slip under it), off its end, and back along the lane (a cart rolls out of the mine from the left) over the gold
         // pile, which is the one place to stand while it passes. Rematch: the gold is the honeypot now and gives way under you
         Level(
             name = T("Gold Mine", "Goldgrube"),
@@ -90,7 +91,7 @@ object World2Part3D {
             legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(Landed(6f, 8.9f), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
-                trap(PastX(11f), Play(Card.DEVIL_SAW), Saw(26f, 9.4f, -5.5f, 0f), say("Cart 1: ore on the way out.", "Lore 1: Erz auf dem Weg nach draußen.")),
+                trap(PastX(15.5f), Play(Card.DEVIL_SAW), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("Pulley 1: ore on the way out. Mind the rope.", "Flaschenzug 1: Erz auf dem Weg nach draußen. Achtung, das Seil.")),
                 trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7f, 0f), say("Cart 2: it knows the mine better than you.", "Lore 2: Sie kennt die Grube besser als du.")),
                 trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Cart 3: express to the exit.", "Lore 3: Express zum Ausgang.")),
             ),
@@ -99,7 +100,7 @@ object World2Part3D {
                     T("Honeypot refilled. Hole patched. Help yourself.", "Honeypot nachgefüllt. Loch geflickt. Bedien dich."),
                     traps = listOf(
                         trap(Touch('h'), say("Gold touched. Nobody minds. Yet.", "Gold berührt. Keinen stört's. Noch.")),
-                        trap(PastX(11f), Saw(26f, 9.4f, -5.5f, 0f), say("The cart is early. Mind the gold.", "Die Lore ist früh dran. Achtung, das Gold.")),
+                        trap(PastX(15.5f), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("The bucket is early. Mind the gold.", "Der Eimer ist früh dran. Achtung, das Gold.")),
                         trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 5f, 0f), say("Second cart. Same mine.", "Zweite Lore. Gleiche Grube.")),
                         trap(Touch('i'), Play(Card.COLLAPSE), Hide('i'), say("All that glitters is a trapdoor.", "Es ist nicht alles Gold, was glänzt, manches ist eine Falltür."), delay = 0.3f),
                         trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Third cart. No parking.", "Dritte Lore. Parken verboten.")),
@@ -135,30 +136,35 @@ object World2Part3D {
             spawn(2, 14); door(29, 14); bits(43)
         },
 
-        // 44 — rebase (a trap room: U16 Ctrl+Z). A slab drops out of the ceiling as you come near (wait until it lands, hop the block), and when you are
-        // past it Mephi hits undo: you are put back where you were two seconds ago, standing, and the block is still there. Then the second slab. Rematch:
-        // the undo comes right before the door, and throws you back in front of the second slab
+        // 44 — rebase (a trap room: U16 Ctrl+Z, with falling slabs). A low wall (hop it), then three slabs hang over the lane. The first drops out of the ceiling as you come
+        // near (wait until it lands, hop the block). When you are past it Mephi hits undo: you are put back where you waited, standing, under the slab that
+        // hung over your waiting place, and it drops half a second later (run!). Then the third slab, and the door. Rematch: the undo comes right before the
+        // door and sends you back three seconds, to where you waited for the first slab: under the slab above it, with both blocks to hop again. Round 1's waiting places are wrong now
         Level(
             name = T("Rebase", "Rebase"),
             intro = T("<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature", "<<<<<<< HEAD  ...  =======  ...  >>>>>>> feature"),
             traps = listOf(
-                trap(PastX(9f), Play(Card.HEADBUTT), Fall('c'), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen."), delay = 0.35f),
-                trap(PastX(17f), Undo(2f), say("git reset --hard HEAD~1", "git reset --hard HEAD~1")),
-                trap(PastX(19f), Fall('d'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig."), delay = 0.35f),
+                trap(PastX(8.5f), Play(Card.HEADBUTT), Fall('c'), say("Automatic merge failed. Fix conflicts and try again.", "Automatischer Merge fehlgeschlagen. Konflikte lösen und nochmal versuchen."), delay = 0.35f),
+                trap(PastX(19f), Undo(2f), Fall('e'), say("git reset --hard HEAD~1. Conflict resolved. Mostly.", "git reset --hard HEAD~1. Konflikt gelöst. Größtenteils."), delay = 0.1f),
+                trap(PastX(21f), Fall('d'), say("Accept both changes? Bold.", "Beide Änderungen übernehmen? Mutig."), delay = 0.22f),
             ),
             rematch = listOf(
                 Round(
                     T("Rematch. Force-pushed.", "Revanche. Force-Push."),
                     traps = listOf(
-                        trap(PastX(9f), Fall('c'), say("Your history is mine now.", "Deine Historie gehört jetzt mir."), delay = 0.35f),
-                        trap(PastX(19f), Fall('d'), say("Both changes were mine anyway.", "Beide Änderungen waren sowieso von mir."), delay = 0.35f),
-                        trap(PastX(27.5f), Play(Card.UNDO), Undo(2f), say("git push --force. Oops. Again.", "git push --force. Hoppla. Nochmal.")),
+                        trap(PastX(7.5f), Fall('c'), say("Your history is mine now.", "Deine Historie gehört jetzt mir."), delay = 0.35f),
+                        trap(PastX(16.5f), Fall('d'), say("Both changes were mine anyway.", "Beide Änderungen waren sowieso von mir."), delay = 0.35f),
+                        trap(PastX(27f), Play(Card.UNDO), Undo(3.4f), Fall('e'), say("git push --force. Oops. Again.", "git push --force. Hoppla. Nochmal."), delay = 0.1f),
                     ),
-                ),
+                ) {
+                    fill(14..16, 1..2, '.'); fill(24..26, 1..2, '.'); fill(8..10, 1..2, '.')
+                    fill(12..14, 1..2, 'c'); fill(21..23, 1..2, 'd'); fill(7..9, 1..2, 'e')
+                },
             ),
         ) {
             border(); floor()
-            fill(13..15, 1..2, 'c'); fill(23..25, 1..2, 'd')
+            fill(4..5, 13..14)
+            fill(14..16, 1..2, 'c'); fill(8..10, 1..2, 'e'); fill(24..26, 1..2, 'd')
             spawn(); door(); bits(44)
         },
 
@@ -186,8 +192,10 @@ object World2Part3D {
 
         // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,
         // admin, root. Each belt is calm until you step on it, then it runs against you, a little faster every step, so there is no standing on any of
-        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted, the belts run harder
-        // against you, and the bridge at the top is a belt too, far too fast to walk: it has to be hopped
+        // them, and the top is a plank bridge over the LEDs that drops out a while after you land on it. Rematch: demoted. The belts run harder against
+        // you, the bridge and its door are gone, and the way out is a ledge in the top left. The belts have all turned around: they carry you up, to the
+        // right, and off their ends into the LEDs (ride, hop at the end), and from the root belt it is back left onto a carpet that runs the other
+        // way (hold left against it) and on to the ledge with the door. Round 1's door on the bridge does not exist
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
@@ -202,15 +210,18 @@ object World2Part3D {
             rematch = listOf(
                 Round(
                     T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt gegen dich."),
-                    start = listOf(Belt('a', 0f), Belt('b', -3.5f), Belt('c', -4f), Belt('p', -3f)),
+                    start = listOf(Belt('a', 0f), Belt('b', 0f), Belt('c', 0f), Belt('q', 0f)),
                     traps = listOf(
-                        trap(Touch('a'), Belt('a', -5.2f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
-                        trap(Touch('b'), Belt('b', -6.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
-                        trap(Touch('c'), Belt('c', -7f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
-                        trap(Touch('p'), Belt('p', -9.5f), say("Last step: the handrail is the floor.", "Letzte Stufe: Das Geländer ist der Boden."), delay = 0.1f),
-                        trap(Landed(27f, 30f), Play(Card.HEADBUTT), Fall('p'), say("Same-day delivery, by gravity.", "Zustellung am selben Tag, per Schwerkraft."), delay = 0.9f),
+                        trap(Touch('a'), Belt('a', 2.4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
+                        trap(Touch('b'), Belt('b', 2.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
+                        trap(Touch('c'), Belt('c', 6f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
+                        trap(Zone(8f, 7f, 15f, 10.5f), Play(Card.BACKDRAFT), Belt('q', 5.5f), Saw(1.5f, 9.4f, 6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
                     ),
-                ),
+                ) {
+                    put(29, 10, '.'); fill(27..30, 11..11, '.')
+                    fill(8..14, 10..10, 'q'); fill(2..7, 10..10); fill(17..18, 12..12, 'c')
+                    put(3, 9, 'D')
+                },
             ),
         ) {
             border(); floor()
@@ -222,22 +233,23 @@ object World2Part3D {
             spawn(); put(29, 10, 'D'); bits(46)
         },
 
-        // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls at you along the lane, a second,
-        // faster one starts behind you, and the steps at the end lead up to a deck over the lane, (the top step: the integer overflows and left is right).
-        // The way to the door is back along the deck with swapped hands, and a cart comes at you there as well
+        // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls out of the foot of the stairs at you, and the
+        // moment you leave the ground to hop it the integer overflows: left is right, in mid-air. A pendulum hangs over the lane in front of the stairs (stop,
+        // slip under it when it is up) and the stairs are narrow, five steps up to the deck at the top right. On the first step the counter
+        // wraps around once more: left is left again. No way back: the door is at the far end
         Level(
             name = T("Math Problem", "Rechenaufgabe"),
             intro = T("What's 127 plus 1? Take your time.", "Was ist 127 plus 1? Lass dir Zeit."),
             traps = listOf(
-                trap(PastX(6f), Saw(32f, 14.4f, -6f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
-                trap(PastX(24f), Saw(-1.5f, 14.4f, 12f, 0f), say("Integer overflow: the next one comes from behind.", "Ganzzahlüberlauf: Die nächste kommt von hinten.")),
-                trap(Landed(21f, 24.9f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
-                trap(Zone(15f, 8f, 18f, 10.5f), Saw(-1.5f, 9.4f, 6f, 0f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
+                trap(PastX(3f), Saw(22.5f, 14.4f, -7f, 0f), say("127 carts in the queue. One is yours.", "127 Loren in der Schlange. Eine ist deine.")),
+                trap(Airborne(7.5f, 16f), Play(Card.TWISTED), Swap(true), say("127 + 1 = -128. Left is right now.", "127 + 1 = -128. Links ist jetzt rechts.")),
+                trap(PastX(13f), PathSaw(4f, 18.5f to 11f, 18.5f to 14f, 18.5f to 5f, r = 1f), say("Signed or unsigned? Neither, it is a saw.", "Mit oder ohne Vorzeichen? Weder noch, es ist eine Säge.")),
+                trap(Landed(21.9f, 23.1f), Swap(false), say("-128 + 1 = -127. Left is left again. I am as surprised as you.", "-128 + 1 = -127. Links ist wieder links. Ich bin genauso überrascht wie du.")),
             ),
         ) {
             border(); floor()
-            fill(25..26, 14..14); fill(27..30, 12..14); fill(1..26, 10..10)
-            spawn(); door(3, 9); bits(47)
+            fill(22..22, 13..14); fill(23..23, 11..14); fill(24..24, 9..14); fill(25..25, 7..14); fill(26..30, 5..14)
+            spawn(); door(30, 4); bits(47)
         },
 
         // 48 — shutdown, the act and world finale, two rooms (R4 the switch, R3 the portal routing; U11 the route is re-pointed, U9 the controls swap,

@@ -148,24 +148,23 @@ object World2Part3C {
             spawn(28, 14); door(29, 8)
         },
 
-        // 36 — access log (a trap room: U16 the replay, with saws). Along the deck a saw rolls at you, and as you land from the hop a second, faster one;
-        // off the end of the deck you drop onto the lane, a saw rolls in from the left, and a guard patrols in front of the door. Every attempt is
-        // written to the log, and from the second attempt on the log is replayed against you: your last try walks the deck again as a ghost,
-        // a second behind you
+        // 36 — access log (a trap room: U16 the replay, with saws). A staircase from the bottom left to the top right, no way back: a pendulum hangs over the
+        // lane right at the start (slip under it when it is up), the next login rolls out of the foot of the stairs along the lane (hop it), and the
+        // last one patrols the roof in front of the door, where it appears as you land on it (hop it). Every attempt is written to the log, and
+        // from the second attempt on the log is replayed against you: your last try walks the lane again as a ghost, a moment behind you
         Level(
             name = T("Access Log", "Zugriffsprotokoll"),
             intro = T("Nothing new here. Honestly.", "Nichts Neues hier. Ehrlich."),
             traps = listOf(
-                trap(PastX(4.5f), Play(Card.DEVIL_SAW), Saw(32f, 8.4f, -6f, 0f), say("Login 1: it comes to you.", "Login 1: Er kommt zu dir.")),
-                trap(Landed(18f, 27f), Saw(32f, 8.4f, -9f, 0f), say("Login 2: same, but in a hurry.", "Login 2: Genauso, aber eilig.")),
-                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7f, 0f), say("Login 3: from the other side.", "Login 3: Von der anderen Seite.")),
-                trap(Landed(6f, 16f), Saw(-1.5f, 14.4f, 12f, 0f), say("Login 4: the guard has a bad temper.", "Login 4: Der Wächter hat schlechte Laune.")),
+                trap(PastX(2.6f), Play(Card.DEVIL_SAW), PathSaw(6f, 7.5f to 9.5f, 7.5f to 14f, 7.5f to 5f, r = 1f), say("Login 1: it hangs, and it swings.", "Login 1: Er hängt, und er pendelt.")),
+                trap(PastX(8.5f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you.", "Login 2: Er kommt zu dir.")),
+                trap(Landed(21f, 26f), PathSaw(3.5f, 30f to 6.4f, 22.2f to 6.4f), say("Login 3: the door sends its regards.", "Login 3: Die Tür lässt grüßen.")),
                 trap(PastX(2.6f), Ghost(0.4f), say("Replay attack: I sent your last run again.", "Replay-Angriff: Ich habe deinen letzten Versuch nochmal gesendet.")),
             ),
         ) {
             border(); floor()
-            fill(1..27, 9..9)
-            spawn(2, 8); door(2, 14)
+            fill(15..16, 13..14); fill(17..18, 11..14); fill(19..20, 9..14); fill(21..30, 7..14)
+            spawn(2, 14); door(30, 6)
         },
 
         // 37 — two-factor auth (a puzzle room: R1 the switches, U15 the help is the trap). The lane is locked by a copper wall, and the first
@@ -195,14 +194,14 @@ object World2Part3C {
         },
 
         // 38 — Bobby Tables (a puzzle room: R3 the portals, U1 the floor). DROP TABLE floor: the lane has two holes with a wormhole at the bottom of
-        // each. The first leads back to the start, the second up to the roof, at the far right end, which is the way on: the door sits at the other
-        // end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof: keep moving
+        // each. The first leads back to the start, the second up to the roof, at the far left end above the start, which is the way on: the door sits at
+        // the other end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof: keep moving
         Level(
             name = T("Bobby Tables", "Klein Bobby Tables"),
             intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
             start = listOf(
                 Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 3 to 14, twoWay = false),
-                Portal('3', 21 to 17, 28 to 7, twoWay = false), Portal('4', 22 to 17, 28 to 7, twoWay = false),
+                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 3 to 7, twoWay = false),
             ),
             traps = listOf(
                 trap(Touch('i'), Play(Card.SINKING), Fall('i'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?"), delay = 0.5f),
@@ -216,8 +215,8 @@ object World2Part3C {
             fill(24..25, 9..14)
             fill(2..30, 8..8)
             fill(17..19, 8..8, 'j'); fill(9..11, 8..8, 'k')
-            fill(3..5, 6..7); fill(1..2, 4..5)
-            spawn(2, 14); door(1, 3)
+            fill(26..27, 6..7); fill(28..30, 4..7)
+            spawn(2, 14); door(30, 3)
         },
 
         // 39 — contingency plan (a trap room: U16 the pause, with lasers). Along the deck a rule is installed in front of you: a firewall flashes once

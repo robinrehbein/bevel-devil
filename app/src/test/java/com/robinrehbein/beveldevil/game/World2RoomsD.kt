@@ -17,13 +17,13 @@ object World2RoomsD {
     /** The cart (a saw on the lane level) is past the player: it is to the right of them by [d] tiles. */
     private fun cartPast(w: World, d: Float) = w.saws.none { it.y > 13.5f && it.vx > 0f && it.x < w.player.box.cx + d }
 
-    /** 42: hop the hole in the deck, hop cart 1, off the end of the deck, left over the pile (stand on it while cart 2 passes), run to the door. */
-    fun l42(b: Bot) = b.hopR(6.0f, 0.5f).rightUntil { World2Rooms.sawAhead(it, 3.6f) }.rightJump(0.5f).landRight()
+    /** 42: hop the hole in the deck, stop for the ore bucket on its rope and slip under it, off the end of the deck, left over the pile (stand on it while cart 2 passes), run to the door. */
+    fun l42(b: Bot) = b.hopR(6.0f, 0.5f).rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
         .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().waitFor { cartPast(it, 1.2f) }.leftTo(9.6f).left(3f)
 
     /** 42, round 2: as before, but the pile gives way under you: over it without a stop and hop cart 2 on the lane instead of standing on the gold. */
-    fun l42r2(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.6f) }.rightJump(0.5f).landRight()
+    fun l42r2(b: Bot) = b.rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
         .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().leftJump(0.5f).landLeft()
         .leftUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.leftJump(0.5f).landLeft().left(3f)
@@ -36,16 +36,43 @@ object World2RoomsD {
     /** The ceiling slab (group [id]) has landed and is at rest. */
     private fun slabDown(w: World, id: Char) = w.group(id).let { it.mode == GroupMode.IDLE && it.oy > 1f }
 
+    /** On the ground, the landed slab (group [id]) stands ahead with its left face within [d] tiles. */
+    private fun faceAhead(w: World, id: Char, d: Float) = w.player.grounded && w.group(id).let { g ->
+        g.mode == GroupMode.IDLE && g.oy > 1f && g.pieces.minOf { it.box.x } - w.player.box.cx in 0f..d
+    }
+
     /** Mephi has hit undo (the undo trap has sprung). */
     private fun undone(w: World) = w.sprung.any { s -> s.trap.actions.any { it is Action.Undo } }
 
-    /** 44: stop short of the slab, wait for it to land, hop onto the block and off its far side (the undo throws you back), hop the block again, stop for the second slab, hop it, to the door. */
-    fun l44(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f).rightUntil { undone(it) }
-        .hopR(10.0f, 0.5f).rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).right(3f)
+    /** 44: hop the wall, stop short of the slab (under the one that hangs over your waiting place), wait for it to land, hop the block and on; when the undo puts you back, run at once and hop the block again, stop for the second slab, hop it, to the door. */
+    fun l44(b: Bot) = b.rightUntil { it.player.box.cx > 2.9f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { undone(it) }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 21.4f }.waitFor { slabDown(it, 'd') }
+        .rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().right(3f)
 
-    /** 44, round 2: both slabs as before, and the undo comes right before the door: hop the second block again. */
-    fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 9.3f }.waitFor { slabDown(it, 'c') }.hopR(10.0f, 0.5f)
-        .rightUntil { it.player.box.cx > 19.3f }.waitFor { slabDown(it, 'd') }.hopR(21.0f, 0.5f).rightUntil { undone(it) }.hopR(21.0f, 0.5f).right(3f)
+
+
+
+
+
+
+
+
+
+    /** 44, round 2: the first slab drops further on, so stop later; the second slab follows, and the undo comes right before the door: it sends you back to your first waiting place, under the slab that hangs over it: run at once, hop both blocks again, to the door. */
+    fun l44r2(b: Bot) = b.rightUntil { it.player.box.cx > 2.9f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 8.8f }.waitFor { slabDown(it, 'c') }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 18.2f }.waitFor { slabDown(it, 'd') }
+        .rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().rightUntil { undone(it) }
+        .rightUntil { faceAhead(it, 'c', 2.0f) }.rightJump(0.5f).landRight().rightUntil { faceAhead(it, 'd', 2.0f) }.rightJump(0.5f).landRight().right(3f)
+
+
+
+
+
+
+
+
+
 
     /** 45: crawl right to the pad at the far end, jump up through the hatch, along the roof, up the steps to the door. */
     fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
@@ -55,14 +82,30 @@ object World2RoomsD {
     fun l46(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
         .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().right(3f)
 
-    /** 46, round 2: the same climb on the harder belts, and a hop from the landing to the door, because the bridge is a belt too fast to walk. */
-    fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
-        .rightUntil { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 23.4f }.rightJump(0.55f).landRight().rightJump(0.35f).right(2f)
+    /** 46, round 2: the same climb on the harder belts, then back left from the top belt onto the carpet that runs the other way (hold left against it), and on over the ledge to the door. */
+    fun l46r2(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().waitFor { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
+        .waitFor { it.player.box.cx > 15.4f }.rightJump(0.55f).landRight().leftUntil { it.player.box.cx < 17.9f }.leftJump(0.5f).landLeft().leftUntil { World2Rooms.sawAheadRight(it, 3.4f) }.leftJump(0.5f).landLeft().left(4f)
 
-    /** 47: hop the cart on the lane (the controls swap as you land), up the steps with swapped hands, left onto the deck, hop the cart that comes at you and run on to the door. */
-    fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.6f) }.rightJump(0.5f).landRight().hopS(24.2f, 0.35f).hopS(26.4f, 0.55f)
-        .rightUntil { it.player.box.cx < 28.6f }.rightJump(0.55f).landRight()
-        .rightUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.rightJump(0.5f).landRight().right(3f)
+    /** 47: hop the cart on the lane (the controls swap as you leave the ground, so go on with the other key), stop for the pendulum, slip under it, up the narrow steps with swapped hands; on the first step the controls are back to normal: to the deck and the door. */
+    fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).leftJump(0.45f).landLeft()
+        .leftKeyRightTo(16.0f).waitFor { World2Rooms.pendulumCalm(it, 18.5f, 0.1f, 0.6f, 10.0f) }
+        .leftKeyRightTo(21.0f).leftJump(0.5f).landLeft().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.4f).landRight().right(2f)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * 48: left to the pad behind the start (the portal is re-pointed), into the portal onto the deck, wait for the firewall, hop the tripwire, to the door and through the

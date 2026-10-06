@@ -164,7 +164,7 @@ class World2DeckTest {
     /** Race Condition, round 2: the second thread laps the lane; wait for it to be up in the corner, then run. */
     @Test fun l29r2() { World2DesignTest.play(29, round = 2) }
     @Test fun l29r2TheRoundOneRunMeetsTheLappingSaw() = World2Rooms.l29(b(29, 2)).expect(WorldState.DEAD)
-    @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.7f).waitFor { World2Rooms.pendulumCalm(it, 10f, 0.1f, 0.65f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun l29r2RunningTheLaneRightAfterTheFirstPendulumIsFatal() = b(29, 2).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(3f).expect(WorldState.DEAD)
 
     // ---------- Act 3: Root ----------
 
