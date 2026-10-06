@@ -21,5 +21,10 @@ object World3RoomsC {
         19 to listOf<Solution>(
             { rightTo(6.3f).rightJump(0.45f).landRight().rightTo(11.0f).rightJump(0.45f).landRight().rightTo(16.0f).rightJump(0.45f).landRight().rightTo(21.0f).rightJump(0.45f).landRight().right(1.5f) },
         ),
+        20 to listOf<Solution>(
+            { rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
+                .rightTo(28.0f).leftJump(0.5f).landLeft().leftTo(21.3f).leftJump(0.5f).landLeft().leftTo(14.3f).leftJump(0.5f).landLeft()
+                .leftTo(7.3f).leftJump(0.5f).landLeft().leftTo(2.6f).left(1f) },
+        ),
     )
 }

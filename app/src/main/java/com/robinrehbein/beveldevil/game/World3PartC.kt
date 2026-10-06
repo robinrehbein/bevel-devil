@@ -122,28 +122,31 @@ object World3PartC {
             spawn(2, 14); door(29, 14)
         },
 
-        // 20 — the plate that glows is cool; the plain floor is what burns; as you land behind the last plate the door flies home
-        // to the cool plate, and the floor on the way back is overclocked again: wait for it to cool
+        // 20 — the glowing plates are cool and the plain floor between them is the part that burns: hop from plate to plate. When you are on
+        // your way to the door it flies home to the start, and the plates have turned: they are the hot ones now, the plain floor is cool.
+        // The way back is hopped the other way round, landing where you used to jump over.
         Level(
             name = T("Cold Start", "Kaltstart"),
             intro = T("Nice and cool here. Take your time.", "Schön kühl hier. Lass dir Zeit."),
-            start = listOf(Heat('h', rise = 14f, cool = 1f)),
+            start = listOf(Heat('h', rise = 14f, cool = 3f)),
             traps = listOf(
-                trap(PastX(13.2f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.7f), say("Overclocked! Factory settings: mine.", "Übertaktet! Werkseinstellung: meine.")),
-                trap(Airborne(23.4f, 26f), HeatSpike('g', 0.75f), DoorTo(29, 12, speed = 20f), say("Twice! It's a feature.", "Nochmal! Ist ein Feature.")),
-                // the door hovers within jumping reach until you land, then flies over your head to the glowing plate
-                trap(
-                    Landed(25.5f, 28.6f), DoorTo(7, 14, speed = 30f), HeatSpike('f', 1f), Heat('f', rise = 1.5f, cool = 3f),
-                    say("The door prefers the cool plate. The way back is overclocked.", "Die Tür mag die kühle Platte. Der Rückweg ist übertaktet."),
-                ),
+                trap(PastX(5.8f), Heat('f', rise = 0.8f, cool = 0.8f), HeatSpike('f', 1f), say("Plain floor. That is the hot kind.", "Schlichter Boden. Das ist die heiße Sorte.")),
+                trap(PastX(12.2f), Heat('g', rise = 0.8f, cool = 0.8f), HeatSpike('g', 1f), say("The glow is the cool part. Everyone gets that backwards.", "Das Glühen ist der kühle Teil. Das verwechselt jeder.")),
+                trap(PastX(19.2f), Heat('i', rise = 0.8f, cool = 0.8f), HeatSpike('i', 1f), say("One more stretch of plain floor. Do not read the room, read the floor.", "Noch ein Stück schlichter Boden. Lies nicht den Raum, lies den Boden.")),
+            ) + doorTrail(
+                PastX(27.6f), 30, 14,
+                listOf(DoorTo(30, 1, 24f, hanging = true), DoorTo(2, 1, 24f, hanging = true), DoorTo(2, 14, 24f)),
+                first = listOf(Play(Card.SHY_DOOR), say("The door has plans. The plates have changed theirs.", "Die Tür hat Pläne. Die Platten haben ihre geändert.")),
+            ) + listOf(
+                trap(Landed(24.5f, 27.7f), HeatSpike('h', 1f), delay = 1.3f),
             ),
+            hint = T("The glowing plates are the cool ones. When the door leaves, they are not any more.", "Die glühenden Platten sind kühl. Wenn die Tür geht, sind sie es nicht mehr."),
         ) {
             border(); floor()
-            fill(5..9, 15..15, 'h')
-            fill(13..19, 15..15, 'f'); fill(23..25, 15..15, 'g')
-            spawn(); door()
+            fill(4..6, 15..15, 'h'); fill(11..13, 15..15, 'h'); fill(18..20, 15..15, 'h'); fill(25..27, 15..15, 'h')
+            fill(7..10, 15..15, 'f'); fill(14..17, 15..15, 'g'); fill(21..24, 15..15, 'i')
+            spawn(1, 14); door(30, 14)
         },
-
 
         // 21 — three plates that share their heat and two sinks between them; the sinks make the plates nervous, the last leg
         // turns up as you leave the second sink (leap from the sink), and the floor after it is overclocked
