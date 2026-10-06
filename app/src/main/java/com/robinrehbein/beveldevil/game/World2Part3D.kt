@@ -84,37 +84,41 @@ object World2Part3D {
         },
 
         // 42 — gold mine (a puzzle room: R5 two floors, R7 the bait; U15 the easy way is the trap). You start on the deck over the lane, the door is
-        // below you on the lane, and the hole in the deck right next to the start is the shortcut: spikes grow where you land in it. The way is the
-        // long one: along the deck (an ore bucket swings over it on a rope: stop, slip under it), off its end, and back along the lane (a cart rolls out of the mine from the left) over the gold
-        // pile, which is the one place to stand while it passes. Rematch: the gold is the honeypot now and gives way under you
+        // on the lane a little further on, and the hole in the deck right next to the start is the shortcut: the copper where you land in it is a
+        // dead trace that goes live under you. The way is the long one: along the deck (an ore bucket swings over it on a rope: stop, slip under
+        // it; a rock drops behind you further on), off its end, and back along the lane (a cart rolls out of the mine from the left) over the gold
+        // pile, which is the one place to stand while it passes, and to the door before the express cart. Rematch: the gold is the honeypot now:
+        // it is a copper rail, and its power is cut under you
         Level(
             name = T("Gold Mine", "Goldgrube"),
             intro = T("Take the easy way. You've earned it.", "Nimm den leichten Weg. Du hast ihn dir verdient."),
-            legend = mapOf('A' to hidden),
+            start = listOf(Circuit('A', on = false)),
             traps = listOf(
-                trap(Landed(6f, 8.9f), Show('A'), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
-                trap(PastX(15.5f), Play(Card.DEVIL_SAW), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("Pulley 1: ore on the way out. Mind the rope.", "Flaschenzug 1: Erz auf dem Weg nach draußen. Achtung, das Seil.")),
-                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7f, 0f), say("Cart 2: it knows the mine better than you.", "Lore 2: Sie kennt die Grube besser als du.")),
-                trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Cart 3: express to the exit.", "Lore 3: Express zum Ausgang.")),
+                trap(Zone(5.5f, 12.5f, 12.9f, 15.5f), Power('A', true), say("Honeypot triggered. Intruder detected: you.", "Honeypot ausgelöst. Eindringling erkannt: du.")),
+                trap(PastX(15.5f), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("Pulley 1: ore on the way out. Mind the rope.", "Flaschenzug 1: Erz auf dem Weg nach draußen. Achtung, das Seil.")),
+                trap(PastX(22.5f), Saw(22.9f, -1f, 0f, 10f), say("Loose rock. Mines have those.", "Lockerer Fels. Gibt's in Minen.")),
+                trap(Landed(27.5f, 31f), Play(Card.SHORT_CIRCUIT), Saw(-1.5f, 14.4f, 12f, 0f), Power('A', true), say("Cart 2: it knows the mine better than you. The honeypot is live now, too.", "Lore 2: Sie kennt die Grube besser als du. Der Honeypot steht jetzt auch unter Strom.")),
+                trap(Zone(16.5f, 12f, 19.9f, 15.5f), Saw(-1.5f, 14.4f, 9f, 0f), say("Cart 3: express to the exit. Racing you.", "Lore 3: Express zum Ausgang. Mit dir um die Wette.")),
             ),
             rematch = listOf(
                 Round(
                     T("Honeypot refilled. Hole patched. Help yourself.", "Honeypot nachgefüllt. Loch geflickt. Bedien dich."),
+                    start = listOf(Circuit('i')),
                     traps = listOf(
-                        trap(Touch('h'), say("Gold touched. Nobody minds. Yet.", "Gold berührt. Keinen stört's. Noch.")),
                         trap(PastX(15.5f), PathSaw(4f, 20f to 6.4f, 20f to 9f, 20f to -2f, r = 1f), say("The bucket is early. Mind the gold.", "Der Eimer ist früh dran. Achtung, das Gold.")),
+                        trap(PastX(21.5f), Saw(21.9f, -1f, 0f, 10f), say("Loose rock. A bit earlier this time.", "Lockerer Fels. Diesmal etwas früher.")),
                         trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 5f, 0f), say("Second cart. Same mine.", "Zweite Lore. Gleiche Grube.")),
-                        trap(Touch('i'), Play(Card.COLLAPSE), Hide('i'), say("All that glitters is a trapdoor.", "Es ist nicht alles Gold, was glänzt, manches ist eine Falltür."), delay = 0.3f),
-                        trap(Zone(8.5f, 12f, 9.9f, 15.5f), Saw(32f, 14.4f, -9f, 0f), say("Third cart. No parking.", "Dritte Lore. Parken verboten.")),
+                        trap(Touch('i'), Play(Card.SHORT_CIRCUIT), Power('i', false), say("All that glitters is on a power strip. Click.", "Es ist nicht alles Gold, was glänzt. Manches hängt an der Steckdosenleiste. Klick."), delay = 0.3f),
+                        trap(Zone(16.5f, 12f, 18.4f, 15.5f), Saw(32f, 14.4f, -12f, 0f), say("Third cart. From behind. No parking.", "Dritte Lore. Von hinten. Parken verboten.")),
                     ),
-                ) { fill(12..15, 13..13, 'i'); fill(13..14, 12..12, 'i'); fill(7..8, 10..10); fill(6..9, 14..14, '.') },
+                ) { fill(20..23, 13..13, 'i'); fill(21..22, 12..12, 'i'); fill(7..8, 10..10); fill(6..12, 14..14, '.') },
             ),
         ) {
             border(); floor()
             fill(1..6, 10..10); fill(9..27, 10..10)
-            fill(11..16, 14..14); fill(12..15, 13..13)
-            leds(6..9, c = 'A')
-            put(3, 9, 'P'); door(2, 14); bits(42)
+            fill(19..24, 14..14); fill(20..23, 13..13)
+            fill(6..12, 14..14, 'A')
+            put(3, 9, 'P'); door(13, 14); bits(42)
         },
 
         // 43 — workshop (a trap room: U16 percussive maintenance, shake the phone). The lane ends in a wall, and the only way on is the cable port at
@@ -171,25 +175,26 @@ object World2Part3D {
         },
 
         // 45 — playground (a puzzle room: R2 the hold switch, U3 the walls close in). You start in a crawl space under a roof, the walls come: one from the
-        // left as you crawl, and the far end of the roof is a hatch of copper that is only open while you stand on the pad beneath it. Stand on the
-        // pad, jump up through the hatch (the copper cannot close on you in the gap), and the other wall closes in below you. On the roof it is
-        // your way back to the door, with a wall of its own behind you, and two steps up to the deck
+        // left as you crawl (over a floor belt that drags you back toward it), and the far end of the roof is a hatch of copper that is only open
+        // while you stand on the pad beneath it. Stand on the pad, jump up through the hatch (the copper cannot close on you in the gap), and the
+        // other wall closes in below you. On the roof it is back left and up the steps to the door, with a wall of its own behind you
         Level(
             name = T("Playground", "Spielplatz"),
             intro = T("Nothing can happen to you in here, says the docs.", "Hier drin kann dir nichts passieren, sagt die Doku."),
-            start = listOf(Circuit('g'), Pad('1', at = 26 to 14, circuits = "g", mode = PadMode.HOLD), Belt('b', -3f)),
+            start = listOf(Circuit('g'), Pad('1', at = 26 to 14, circuits = "g", mode = PadMode.HOLD), Belt('b', -1.5f)),
             traps = listOf(
                 trap(PastX(10f), Play(Card.COLLAPSE), Move('s', 25f, 0f, 3.6f), say("The sandbox is being garbage collected.", "Die Sandbox wird gerade aufgeräumt.")),
                 trap(Pressed('1'), Move('r', -8f, 0f, 4f), say("Stand still. The walls are only playing.", "Stillstehen. Die Wände spielen nur."), delay = 0.2f),
-                trap(Landed(19f, 26.5f), Move('y', -22f, 0f, 3.0f), say("Playtime is over. Up the steps.", "Die Pause ist vorbei. Die Stufen hoch.")),
+                trap(Landed(19f, 27.5f), Move('y', -22f, 0f, 3.0f), say("Playtime is over. Up the steps.", "Die Pause ist vorbei. Die Stufen hoch.")),
+                trap(Zone(28f, 9f, 31f, 15.5f), Move('z', 0f, 4f, 12f), say("Out of the sandbox? Into the bin.", "Raus aus der Sandbox? Rein in den Papierkorb."), delay = 0.2f),
             ),
             hint = T("The copper only lets you out while you stand on the pad. Jump from it.", "Das Kupfer lässt dich nur raus, solange du auf dem Knopf stehst. Spring von ihm."),
         ) {
             border(); floor()
             fill(3..22, 13..13); fill(23..26, 13..13, 'g')
-            fill(7..18, 15..15, 'b'); fill(2..2, 13..14, 's'); fill(27..27, 13..14, 'r'); fill(27..27, 11..12, 'y')
+            fill(7..18, 15..15, 'b'); fill(2..2, 13..14, 's'); fill(27..27, 13..14, 'r'); fill(27..27, 11..12, 'y'); fill(28..30, 9..10, 'z')
             fill(3..9, 9..12); fill(10..12, 10..12); fill(13..15, 11..12); fill(16..17, 12..12)
-            spawn(4, 14); door(4, 8); bits(45)
+            spawn(4, 14); door(14, 10); bits(45)
         },
 
         // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,

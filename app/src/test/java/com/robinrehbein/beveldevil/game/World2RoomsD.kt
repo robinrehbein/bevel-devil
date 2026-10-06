@@ -20,12 +20,12 @@ object World2RoomsD {
     /** 42: hop the hole in the deck, stop for the ore bucket on its rope and slip under it, off the end of the deck, left over the pile (stand on it while cart 2 passes), run to the door. */
     fun l42(b: Bot) = b.hopR(6.0f, 0.5f).rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-        .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().waitFor { cartPast(it, 1.2f) }.leftTo(9.6f).left(3f)
+        .leftUntil { it.player.box.cx < 26.0f }.leftJump(0.4f).landLeft().waitFor { cartPast(it, 1.2f) }.left(2.5f)
 
     /** 42, round 2: as before, but the pile gives way under you: over it without a stop and hop cart 2 on the lane instead of standing on the gold. */
     fun l42r2(b: Bot) = b.rightTo(17.4f).waitFor { World2Rooms.pendulumCalm(it, 20f, 0.1f, 0.6f, 7.4f) }
         .rightUntil { it.player.grounded && it.player.box.b > 14.5f }
-        .leftUntil { it.player.box.cx < 17.5f }.leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().leftJump(0.5f).landLeft()
+        .leftUntil { it.player.box.cx < 26.0f }.leftJump(0.4f).landLeft().leftJump(0.5f).landLeft()
         .leftUntil { World2Rooms.sawAheadLeft(it, 3.6f) }.leftJump(0.5f).landLeft().left(3f)
 
     /** 43: along the lane until the beam has flashed, up to the port, shake the cable, through the port onto the deck, wait out the two flashes, drop off the end to the door. */
@@ -76,7 +76,7 @@ object World2RoomsD {
 
     /** 45: crawl right to the pad at the far end, jump up through the hatch, along the roof, up the steps to the door. */
     fun l45(b: Bot) = b.rightUntil { it.player.box.cx > 26.5f }.leftJump(0.55f).landLeft().leftUntil { it.player.box.cx < 19.2f }.leftJump(0.5f).landLeft()
-        .leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(1.5f)
+        .leftJump(0.4f).landLeft().left(1.5f)
 
     /** 46: up onto the first belt, run against it to its end, hop the LEDs onto the second, run against it onto the pillar, wait there for root's maintenance window, cross root under the lifted gate and hop onto the bridge, along it to the door before it sinks. */
     fun l46(b: Bot) = b.rightTo(3.3f).rightJump(0.3f).landRight().rightUntil { it.player.box.cx > 8.4f }.rightJump(0.55f).landRight()
