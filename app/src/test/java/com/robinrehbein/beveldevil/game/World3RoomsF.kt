@@ -43,5 +43,11 @@ object World3RoomsF {
                 .waitFor { it.player.box.cy < 3.8f }.rightUntil { it.player.grounded && it.player.box.b < 5.5f }
                 .right(8f) },
         ),
+        47 to listOf<Solution>(
+            { rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }
+                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.rightTo(30.4f)
+                .waitFor { w -> w.cracks.any { it.fell } }.rightTo(roomX(1, 20.5f))
+                .waitFor { w -> w.circuits['Z']?.powered == false }.rightTo(roomX(1, 29f)).right(2f) },
+        ),
     )
 }

@@ -175,5 +175,33 @@ object World3PartF {
             fill(7..21, 5..5)
             spawn(2, 14); door(21, 4)
         },
+
+        // 47 — Boot Order
+        Level(
+            name = T("Boot Order", "Boot-Reihenfolge"),
+            intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
+            rooms = 2,
+            start = listOf(
+                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 10, speed = 7.5f, width = 3),
+                Circuit('Z', on = false),
+            ),
+            traps = listOf(
+                trap(Zone(15.5f, 12.5f, 18f, 15.5f), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
+                trap(Zone(15.5f, 12.5f, 18f, 15.5f), Fall('h'), delay = 0.5f),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, top = 12, bottom = 14, warn = 1.2f, door = roomX(1, 29) to 14,
+                    line = T("Boot device 2: disk. Sector 0 unreadable. Boot device 3: next door.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: nebenan."))),
+                trap(PastX(roomX(1, 12f)), Clock('Z', on = 1.7f, off = 1.0f), say("Boot device 3: network. Authenticating.", "Bootgerät 3: Netzwerk. Authentifizierung läuft.")),
+            ),
+        ) {
+            border(); floor()
+            room(0) {
+                fill(16..19, 1..2, 'h')
+                fill(24..28, 6..6)
+                spawn(8, 14); door(19, 14)
+            }
+            room(1) {
+                fill(22..22, 8..14, 'Z')
+            }
+        },
     )
 }
