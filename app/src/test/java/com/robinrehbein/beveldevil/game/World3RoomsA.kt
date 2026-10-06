@@ -44,7 +44,7 @@ object World3RoomsA {
                 .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(1f) },
         ),
         5 to listOf<Solution>(
-            { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+            { rightTo(14.0f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
                 .rightUntil { it.player.box.cx > 23.8f }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(30.1f).leftJump(0.55f).landLeft().waitFor { w -> w.group('d').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }
                 .leftJump(0.55f).landLeft().leftTo(2.4f) },
@@ -62,16 +62,16 @@ object World3RoomsA {
         ),
         7 to listOf<Solution>(
             { rightTo(7.2f).waitFor { w -> w.group('c').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
-                .rightTo(17.0f).waitFor { w -> darkStart(w, 'Z') }.rightTo(20.6f).rightTo(24.5f).waitFor { w -> darkStart(w, 'Y') }
+                .rightTo(13.6f).rightJump(0.45f).landRight()
+                .rightTo(17.6f).waitFor { w -> darkStart(w, 'Z') }.rightTo(20.6f).rightTo(24.5f).waitFor { w -> darkStart(w, 'Y') }
                 .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
-            // rematch: wait for the first slab (it lands in front now) and climb it, wait under the slab that stays up, hop the one that landed, wait out the seeded beam
-            { var seenA = false; var seenB = false
-              waitFor { w -> w.group('a').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+            // rematch: wait for the first slab (it lands in front now) and climb it, wait under the slab that stays up, climb the one
+            // that landed, hop the spikes it grew, wait out the beam
+            { waitFor { w -> w.group('a').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
                 .rightTo(12.2f).waitFor { w -> w.group('b').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.4f).landRight()
-                .waitFor { w -> if (w.beams.any { it.laser.id == 'A' && it.lit }) seenA = true; seenA && w.beams.none { it.laser.id == 'A' && (it.lit || it.warn > 0f) } }
-                .rightTo(23.4f)
-                .waitFor { w -> if (w.beams.any { it.laser.id == 'B' && it.lit }) seenB = true; seenB && w.beams.none { it.laser.id == 'B' && (it.lit || it.warn > 0f) } }
-                .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
+                .rightTo(16.2f).rightJump(0.55f).landRight()
+                .rightTo(22.1f).waitFor { w -> w.group('e').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }.rightJump(0.55f).landRight()
+                .rightTo(26.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
         ),
         8 to listOf<Solution>(
             // hop on the near half and off again at once, then walk (do not jump) off the far half before the second ray
