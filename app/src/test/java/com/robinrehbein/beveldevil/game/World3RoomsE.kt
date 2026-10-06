@@ -21,20 +21,21 @@ object World3RoomsE {
             { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         35 to listOf<Solution>(
-            // hop the blade from behind and the one from the front, step on the button, stand at the wall (hop the blade on its way) until the gale is off
-            { rightUntil { w -> w.saws.any { it.vx > 0f && w.player.box.cx - it.x < 3.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.2f } }.rightJump(0.5f).landRight()
-                .rightTo(13.6f)
-                .waitFor { it.fans[1].wind == 0f }.rightUntil { it.player.box.cx > 24.6f }
-                .rightUntil { w -> w.saws.any { it.vx < -9f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 7.5f } }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+            // (mirrored: the run goes left) hop the blade from behind and the one from the front, step on the button, stand at the wall
+            // (hop the blade on its way) until the gale is off
+            { leftUntil { w -> w.saws.any { it.vx < 0f && it.x - w.player.box.cx < 3.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 3.2f } }.leftJump(0.5f).landLeft()
+                .leftTo(18.4f)
+                .waitFor { it.fans[1].wind == 0f }.leftUntil { it.player.box.cx < 7.4f }
+                .leftUntil { w -> w.saws.any { it.vx > 9f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 7.5f } }.leftJump(0.5f).landLeft().leftUntil { it.player.box.cx < 1.7f } },
             // rematch: hop the button, then slog the whole corridor and hop each blade as it comes
-            { rightTo(5.2f).rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx > 0f && w.player.box.cx - it.x < 3.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx < -10.5f && it.vx > -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx < -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 4.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { w -> w.saws.any { it.vx < -11.5f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 6.0f } }.rightJump(0.5f).landRight()
-                .rightUntil { it.player.box.cx > 30.3f } },
+            { leftTo(26.8f).leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx < 0f && it.x - w.player.box.cx < 3.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx > 10.5f && it.vx < 11.5f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx > 11.5f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { w -> w.saws.any { it.vx > 11.5f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 6.0f } }.leftJump(0.5f).landLeft()
+                .leftUntil { it.player.box.cx < 1.7f } },
         ),
         36 to listOf<Solution>(
             { rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }
@@ -56,14 +57,15 @@ object World3RoomsE {
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.rightUntil { it.player.box.cx > 29.5f } },
         ),
         40 to listOf<Solution>(
-            { rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
-                .waitFor { it.fans[0].wind > 4.5f }.rightUntil { it.player.box.cx > 23.2f }
-                .rightUntil { it.player.grounded && it.player.box.cx > 23.4f }.rightTo(27.0f).rightJump(0.1f).landRight().rightUntil { it.player.box.cx > 30.3f } },
-            // rematch: the controls are twisted: press left to float right, right again once they untwist in mid-flight, and left
+            // (mirrored: the run goes left) float to the keep, sit out the reverse thrust on it, float on and hop the mat
+            { leftTo(23.4f).leftUntil { it.player.grounded && it.player.box.cx < 17.6f }
+                .waitFor { it.fans[0].wind > 4.5f }.leftUntil { it.player.box.cx < 8.8f }
+                .leftUntil { it.player.grounded && it.player.box.cx < 8.6f }.leftTo(5.0f).leftJump(0.1f).landLeft().leftUntil { it.player.box.cx < 1.7f } },
+            // rematch: the controls are twisted: press right to float left, left again once they untwist in mid-flight, and right
             // again on the far side
-            { rightTo(8.6f).leftUntil { it.player.grounded && it.player.box.cx > 14.4f }
-                .waitFor { it.fans[0].wind > 4.5f }.leftUntil { !it.swapped }
-                .rightUntil { it.swapped }.leftUntil { it.player.box.cx > 30.3f } },
+            { leftTo(23.4f).rightUntil { it.player.grounded && it.player.box.cx < 17.6f }
+                .waitFor { it.fans[0].wind > 4.5f }.rightUntil { !it.swapped }
+                .leftUntil { it.swapped }.rightUntil { it.player.box.cx < 1.7f } },
         ),
     )
 }

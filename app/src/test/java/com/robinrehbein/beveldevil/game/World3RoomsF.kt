@@ -16,13 +16,16 @@ object World3RoomsF {
                 .rightUntil { it.player.grounded && it.player.box.b < 5.5f }.rightTo(30f).right(1f) },
         ),
         42 to listOf<Solution>(
-            { rightTo(15.0f).waitFor { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
-                .rightUntil { it.fans[1].wind < -2f }.leftUntil { it.player.box.cx < 26.3f }
-                .leftUntil { it.player.grounded }.right(6f) },
-            // rematch: keep hopping in the vent, standing still is loitering; the drain breathes in as before
-            { rightTo(15.0f).fidgetUntil { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }
-                .rightUntil { it.fans[1].wind < -2f }.leftUntil { it.player.box.cx < 26.3f }
-                .leftUntil { it.player.grounded }.right(6f) },
+            // ride the vent up, stop short of the hood, hop it, down the shaft; when the drain breathes in step out to the right
+            { leftTo(17.0f).waitFor { it.player.box.cy < 6.8f }.leftUntil { it.player.grounded && it.player.box.b < 7.5f }
+                .leftTo(12.8f).waitFor { it.group('h').oy > 3.9f }.leftJump(0.5f).landLeft()
+                .leftUntil { it.player.box.cx < 4.2f }.leftUntil { it.fans[1].wind < -2f }.rightUntil { it.player.box.cx > 5.7f }
+                .rightUntil { it.player.grounded }.left(6f) },
+            // rematch: keep hopping in the vent, standing still is loitering; the rest as before
+            { leftTo(17.0f).fidgetUntil { it.player.box.cy < 6.8f }.leftUntil { it.player.grounded && it.player.box.b < 7.5f }
+                .leftTo(12.8f).waitFor { it.group('h').oy > 3.9f }.leftJump(0.5f).landLeft()
+                .leftUntil { it.player.box.cx < 4.2f }.leftUntil { it.fans[1].wind < -2f }.rightUntil { it.player.box.cx > 5.7f }
+                .rightUntil { it.player.grounded }.left(6f) },
         ),
         43 to listOf<Solution>(
             { rightTo(5.6f).rightTo(18.0f).rightUntil { it.player.box.cy < 7.4f }

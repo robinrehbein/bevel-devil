@@ -57,46 +57,47 @@ object World3PartF {
             spawn(1, 14); door(30, 4)
         },
 
-        // 42 — Exhaust
+        // 42 — Exhaust (U8, a trap room, mirrored: you start at the right and the door is at the far left, down the exhaust shaft). A wall of
+        // teeth sets off behind you as you head for the vent; ride it up to the shelf (it carries whoever stands in it). On the shelf the exhaust
+        // hood slams down ahead of you, not on you: stop short of it and hop it. Beyond it the shaft blows you gently down, until the drain breathes
+        // in and sucks everything up into the spikes in its housing: step out of the draft to the right and walk the last stretch to the door.
+        // Rematch: the vent is pressure-sensitive now. Whoever stands still in it (as in round one) is dropped back to the teeth: keep hopping.
         Level(
             name = T("Exhaust", "Abluft"),
             intro = T("It's a bit warm in here.", "Ist ein bisschen warm hier."),
             start = listOf(
-                Fan('f', at = 14 to 15, dir = Dir.UP, reach = 9, speed = 6.5f, width = 3),
-                Fan('D', at = 27 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
+                Fan('f', at = 15 to 15, dir = Dir.UP, reach = 9, speed = 6.5f, width = 3),
+                Fan('D', at = 2 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
             ),
             traps = listOf(
-                trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
-                trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Exhaust hood, closing time.", "Abzugshaube, Feierabend."), delay = 0.2f),
-                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("The drain breathes in. So do the spikes up there.", "Der Abfluss atmet ein. Die Stacheln da oben auch.")),
-                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
+                trap(BeforeX(21f), Play(Card.STALKER), Chase('W', 3.0f, left = 30f, right = 0f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
+                trap(Zone(11.5f, 5f, 13.6f, 7f), Move('h', 0f, 4f, 6.5f), say("Exhaust hood, closing time. It closes in front of you. Out of courtesy.", "Abzugshaube, Feierabend. Sie schließt vor dir. Aus Höflichkeit.")),
+                trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', -7f), say("The drain breathes in. So do the spikes up there.", "Der Abfluss atmet ein. Die Stacheln da oben auch.")),
+                trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', 3f), delay = 2.2f),
             ),
-            hint = T("Stand in the vent and let it carry you. Up top, do not linger under the hood, and do not trust the slow way down: step out of the draft.", "Stell dich in den Schacht und lass dich tragen. Oben nicht unter der Haube trödeln, und trau dem langsamen Weg nach unten nicht: Tritt aus dem Luftstrom."),
-            // rematch: the vent is pressure-sensitive now: whoever stands still in it (as in round one) gets the ceiling slab down the shaft. Keep
-            // hopping, and the drain still breathes in, so step out of it as before
+            hint = T("Stand in the vent and let it carry you. Up top, the hood shuts ahead of you: wait for it, then hop it. Do not trust the slow way down: step out of the draft.", "Stell dich in den Schacht und lass dich tragen. Oben schließt die Haube vor dir: Warte, dann spring drüber. Trau dem langsamen Weg nach unten nicht: Tritt aus dem Luftstrom."),
             rematch = listOf(
                 Round(
                     T("Same vent. It listens now.", "Gleicher Schacht. Er hört jetzt zu."),
+                    hint = T("Do not stand still in the vent: it drops whoever loiters. Keep hopping on the way up.", "Steh im Schacht nicht still: Er lässt fallen, wer herumlungert. Hüpf auf dem Weg nach oben weiter."),
                     traps = listOf(
-                        trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
-                        trap(Idle(0.5f), Move('c', 0f, 12f, 16f), say("Standing still in my vent? That is loitering.", "In meinem Schacht rumstehen? Das ist Herumlungern.")),
-                        trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.05f),
-                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
-                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
+                        trap(BeforeX(21f), Play(Card.STALKER), Chase('W', 3.0f, left = 30f, right = 0f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
+                        trap(Idle(0.5f), FanSet('f', -5f), say("Standing still in my vent? That is loitering. Back down you go.", "In meinem Schacht rumstehen? Das ist Herumlungern. Wieder runter mit dir.")),
+                        trap(Zone(11.5f, 5f, 13.6f, 7f), Move('h', 0f, 4f, 6.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs.")),
+                        trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
+                        trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', 3f), delay = 2.2f),
                     ),
-                ) {
-                    fill(14..16, 1..2, 'c')
-                },
+                ),
             ),
         ) {
             border(); floor()
-            fill(1..2, 11..14, 'W')
-            fill(17..26, 7..7)
-            fill(19..20, 1..4); fill(19..20, 8..14)
-            fill(21..25, 1..2, 'h')
-            fill(30..30, 7..14)
-            fill(27..29, 1..1, 'v')
-            spawn(3, 14); door(29, 14)
+            fill(30..30, 10..14, 'W'); put(29, 14, '#')
+            fill(5..14, 7..7)
+            fill(11..12, 8..14)
+            fill(6..10, 1..2, 'h')
+            fill(1..1, 3..14)
+            fill(2..4, 1..1, 'v')
+            spawn(27, 14); door(2, 14)
         },
 
         // 43 — Wiring Diagram

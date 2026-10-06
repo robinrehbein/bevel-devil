@@ -27,7 +27,7 @@ class World3Act3TrapsTest {
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.right(1.5f).expect(WorldState.DEAD)
     }
 
-    // 35: the button turns the wall of wind off and the headwind into a tailwind; a blade comes with it
+    // 35 (run right to left): the button turns the wall of wind off and the headwind into a tailwind; a blade comes with it
     @Test
     fun theButtonSetsTheFanAndTheWindOver() {
         val won = DesignRules.play(World3.levels[34], 0, World3DesignTest.SOLUTIONS.getValue(35)[0])
@@ -35,7 +35,7 @@ class World3Act3TrapsTest {
         assertTrue(won.world.pads.single().presses >= 1)
         assertTrue("tailwind after the button", won.world.fans[0].target < 0f)
         // in the rematch the button is moved before the wind and bites: stepping on it ends the run
-        Bot(World3.levels[34], 1).rightTo(8.5f).wait(3f).expect(WorldState.DEAD)
+        Bot(World3.levels[34], 1).leftTo(23.5f).wait(3f).expect(WorldState.DEAD)
     }
 
     // 36: bar B comes out of the right wall: hugging it, the usual way, is where it hits
@@ -76,9 +76,9 @@ class World3Act3TrapsTest {
     // 40: the draft reverses while you float: the keep is the only safe place, and nobody stays on it for long
     @Test
     fun theDraftSinksWhoDoesNotStopOnTheKeep() {
-        b(40).rightTo(8.6f).right(5f).expect(WorldState.DEAD)
+        b(40).leftTo(23.4f).left(5f).expect(WorldState.DEAD)
         // standing on the keep for good works as long as you do not leave before the draft is back
-        b(40).rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }.wait(1.4f).expect(WorldState.PLAYING)
+        b(40).leftTo(23.4f).leftUntil { it.player.grounded && it.player.box.cx < 17.6f }.wait(1.4f).expect(WorldState.PLAYING)
     }
 
     // 41-48 (block F): the bot solutions are the registered ones; each level kills whoever runs it carelessly
