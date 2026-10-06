@@ -389,28 +389,27 @@ object World2Part2 {
             spawn(29, 4); door(4, 14); bits(26)
         },
 
-        // 27 — DDoS, a trap room (U2 the ceiling falls, on a belt that runs against you): the stairs to the exit are built from packets that
-        // drop from the ceiling: one, two and three tiles high. The first falls on the spot you reach if you keep running; the next one
-        // comes down when you step onto the one before. The belt carries you back while you wait, and the walkway on top is a belt, too.
-        // But the requests do not stop: the top step gets a fourth packet stacked on it a moment after you land (keep going), and on the
-        // walkway one more drops just where a runner would be (let the belt hold you back, then hop it).
+        // 27 — DDoS, a trap room (U2 the ceiling comes down, on a belt that runs against you): the stairs to the exit are built from packets. The
+        // first two drop from the ceiling, one and two tiles high: the first comes down on the spot you reach if you keep running, the second when
+        // you step onto the first. The belt carries you back while you wait. The third request comes the other way: a piece of the floor past the
+        // second packet is a lift, and it rises as you step on it, up past the walkway and on into the ceiling (get off at the walkway). The walkway
+        // is a belt, too, and one more packet comes down just where a runner would be (let the belt hold you back, then hop it).
         Level(
             name = T("DDoS", "DDoS"),
             intro = T("Light traffic today. Just you and the stairs.", "Heute wenig Verkehr. Nur du und die Treppe."),
             start = listOf(Belt('b', -3f), Belt('l', -4f)),
             traps = listOf(
-                trap(PastX(5.9f), Play(Card.COLLAPSE), Fall('c'), say("10,000 packets per second.", "10.000 Pakete pro Sekunde."), delay = 0.1f),
-                trap(Touch('c'), Fall('d'), say("Request 10,001.", "Anfrage 10.001.")),
-                trap(Touch('d'), Fall('e'), say("Request 10,002. The stairs are a rumour.", "Anfrage 10.002. Die Treppe ist ein Gerücht.")),
-                trap(Touch('e'), Fall('g'), say("Request 10,003. Stacked on the last one.", "Anfrage 10.003. Auf die letzte gestapelt."), delay = 0.3f),
-                trap(PastX(19.5f), Fall('f'), say("And one more for the road.", "Und noch eins für unterwegs."), delay = 0.4f),
+                trap(PastX(5.9f), Play(Card.COLLAPSE), Move('c', 0f, 13f, 24f), say("10,000 packets per second.", "10.000 Pakete pro Sekunde."), delay = 0.1f),
+                trap(Touch('c'), Move('d', 0f, 12f, 30f), say("Request 10,001.", "Anfrage 10.001.")),
+                trap(Touch('e'), Move('e', 0f, -14f, 6f), say("Request 10,002. It comes from below, and it does not stop.", "Anfrage 10.002. Die kommt von unten, und sie hält nicht an.")),
+                trap(PastX(19.5f), Move('f', 0f, 8f, 16f), say("And one more for the road.", "Und noch eins für unterwegs."), delay = 0.4f),
             ),
         ) {
             border(); floor()
             fill(3..24, 15..15, 'b')
-            fill(8..10, 1..1, 'c'); fill(11..13, 1..2, 'd'); fill(14..16, 2..4, 'e'); fill(14..16, 1..1, 'g'); put(23, 1, 'f')
-            fill(17..30, 12..12, 'l')
-            spawn(1, 14); door(29, 11); bits(27)
+            fill(8..10, 1..1, 'c'); fill(11..13, 1..2, 'd'); fill(14..16, 15..15, 'e'); put(23, 1, 'f')
+            fill(17..30, 10..10, 'l')
+            spawn(1, 14); door(29, 9); bits(27)
         },
 
         // 28 — a VPN tunnel under the firewall, a trap room (U13 the laser, R3 the portal): the firewall is a wall of light you cannot cross, the

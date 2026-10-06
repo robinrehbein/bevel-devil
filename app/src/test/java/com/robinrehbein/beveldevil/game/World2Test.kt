@@ -380,6 +380,10 @@ class World2Test {
         .rightTo(18.0f).rightJump(0.35f).landRight().rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.left(3f).expect(WorldState.DEAD)
     @Test fun level27() { World2DesignTest.play(27) }
     @Test fun level27RunningStraightOnMeetsTheFirstPacket() = b(27).right(3f).expect(WorldState.DEAD)
+    /** DDoS: the third request comes from below: the lift does not stop at the walkway, it runs on into the ceiling. */
+    @Test fun level27StayingOnTheLiftEndsInTheCeiling() = b(27).rightUntil { it.group('c').mode != GroupMode.IDLE }.waitFor { it.group('c').oy > 12.9f }
+        .rightTo(4.8f).rightJump(0.3f).landRight().waitFor { it.group('d').oy > 11.9f }.rightTo(9.5f).rightJump(0.3f).landRight()
+        .rightTo(14.7f).wait(5f).expect(WorldState.DEAD)
     @Test fun level28() { World2DesignTest.play(28) }
     @Test fun level29() { World2DesignTest.play(29) }
     @Test fun level29StoppingAfterTheFirstPendulumMeetsTheForkFromBelow() =

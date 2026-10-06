@@ -121,11 +121,11 @@ object World2Rooms {
         .rightUntil { wallOnTheRight(it, 'S', 3.8f) }.rightJump(0.4f).landRight().rightTo(18.0f).rightJump(0.35f).landRight()
         .rightUntil { it.player.box.cx > 25.3f }.leftUntil { it.player.grounded && it.player.box.b > 14.5f }.hopL(17.9f).left(2.5f)
 
-    /** 27: stop as the first packet starts to fall (the belt carries you back), hop up onto it, back off the edge, onto the second, onto the third and along the walkway. */
-    fun l27(b: Bot) = b.rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').oy > 12.9f }.rightTo(4.8f).rightJump(0.3f).landRight()
+    /** 27: stop as the first packet starts to fall (the belt carries you back), hop up onto it, back off the edge, onto the second, step down onto the lift, ride it up to the walkway and get off, let the belt hold you back while the last packet drops, hop it. */
+    fun l27(b: Bot) = b.rightUntil { it.group('c').mode != GroupMode.IDLE }.waitFor { it.group('c').oy > 12.9f }.rightTo(4.8f).rightJump(0.3f).landRight()
         .waitFor { it.group('d').oy > 11.9f }.rightTo(9.5f).rightJump(0.3f).landRight()
-        .leftTo(12.2f).waitFor { it.group('e').oy > 9.9f }.rightTo(12.6f).rightJump(0.3f).landRight()
-        .rightUntil { it.group('f').mode == GroupMode.FALL }.waitFor { it.group('f').oy > 9.9f }.hopR(21.1f).right(3f)
+        .rightTo(14.7f).waitFor { it.player.grounded && it.player.box.b > 14.5f }.waitFor { it.group('e').oy < -5.1f }.rightUntil { it.player.box.cx > 18.2f }
+        .rightUntil { it.group('f').oy > 0.1f }.waitFor { it.group('f').oy > 7.9f }.hopR(21.1f).right(3f)
 
     /** 28: into the tunnel, out of it in front of the first gate; wait for each gate to go dark, cross, on into the second tunnel, and back along the walkway to the door. */
     fun l28(b: Bot) = b.rightUntil { it.player.box.cx > 13.3f }.wait(0.05f).waitFor(cond = clear('M')).rightUntil { it.player.box.cx > 17.8f }
