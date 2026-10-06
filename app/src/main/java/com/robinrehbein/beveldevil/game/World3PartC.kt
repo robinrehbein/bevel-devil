@@ -158,7 +158,8 @@ object World3PartC {
         // you sets off as you step onto the stove; stop on the heatsink for a breath (the far plate flares as you do) and it gains on you, so
         // do not stay. At the far end two steps lead up and back onto the shelf, and a fin that was only a bump on the shelf slides at whoever
         // lands there.
-        // Rematch: the heatsink is the trap: it sends the wall at full speed, and the whole stove is on for good. Hop it on the blocks.
+        // Rematch: the heatsink is the trap: it sends the wall at full speed, and the whole stove is on for good. Hop it on the blocks,
+        // and do not stop at the top of the steps: the finish line is hot.
         Level(
             name = T("Relay Race", "Staffellauf"),
             intro = T("Three runners, one baton. Guess who is holding it.", "Drei Läufer, ein Staffelholz. Rate, wer es hält."),
@@ -182,11 +183,13 @@ object World3PartC {
                         trap(Touch('k'), Play(Card.COLLAPSE), Move('S', 11f, 0f, 16f), say("Hand-over zone, full speed.", "Wechselzone, volle Fahrt.")),
                         trap(PastX(19f), Chase('S', 9f, 0f, 20f), say("The runner behind you just found his second wind.", "Der Läufer hinter dir hat seinen zweiten Atem gefunden.")),
                         trap(Zone(10f, 6f, 20.9f, 10.5f), Chase('U', 4.5f, 10f, 9f), say("Last leg. The baton runs towards you.", "Letzte Etappe. Das Staffelholz läuft dir entgegen.")),
+                        trap(Zone(27.6f, 9f, 31f, 11f), HeatSpike('r', 1f), say("Nobody waits at the finish line. It is hot there.", "An der Ziellinie wartet keiner. Da ist es heiß."), delay = 0.35f),
                     ),
                 ) {
                     put(11, 15, 'b')
                     fill(6..9, 14..14, 'q'); fill(11..16, 14..14)
-                    put(4, 14, '.'); spawn(3, 14); put(4, 9, '.'); door(2, 9)
+                    fill(30..30, 11..14); fill(28..30, 11..11, 'r')
+                    put(4, 14, '.'); spawn(3, 14); put(4, 9, '.'); door(3, 9)
                 },
             ),
         ) {
@@ -200,7 +203,8 @@ object World3PartC {
         },
 
         // 22 — a three-storey serpentine: along the top slab (the plates in front of you light up: hop them), down the right shaft, back
-        // along the middle slab (the spiked strip that has been waiting at the far end slides at whoever lands), down the left shaft and along
+        // along the middle slab (the spiked strip that has been waiting at the far end slides at whoever lands, and the slab above sags
+        // into the corridor behind it: do not stop under it), down the left shaft and along
         // the floor to the door: another hot patch right where you land, and a second strip that slides out from behind the door.
         Level(
             name = T("Warm-up", "Warmlaufen"),
@@ -209,13 +213,14 @@ object World3PartC {
             traps = listOf(
                 trap(PastX(7.5f), HeatSpike('p', 1f), say("Warm-up exercise one: do not touch the warm part.", "Aufwärmübung eins: Den warmen Teil nicht anfassen.")),
                 trap(Zone(22f, 8f, 30f, 10f), Play(Card.HEADBUTT), Move('F', 17f, 0f, 5f), say("The strip has been waiting at the far end. It missed you.", "Der Streifen hat am anderen Ende gewartet. Du hast ihm gefehlt.")),
+                trap(Zone(12.2f, 7f, 14.5f, 9.1f), Move('c', 0f, 2.5f, 3f), say("The floor above is warming up too. It expands. Downwards.", "Der Boden darüber wärmt sich auch auf. Er dehnt sich aus. Nach unten.")),
                 trap(Zone(10.3f, 13.9f, 11.6f, 15.2f), HeatSpike('q', 1f), say("Exercise two. The same warm part, one floor down.", "Übung zwei. Der gleiche warme Teil, ein Stockwerk tiefer.")),
                 trap(Zone(15.5f, 13f, 17f, 15.2f), Move('G', -16f, 0f, 5f), say("Cool-down: a strip from the other side of the door.", "Abkühlen: ein Streifen von der anderen Seite der Tür.")),
             ),
             hint = T("Three floors down, and back to the door. Hop the warm plates and whatever slides at you.", "Drei Stockwerke runter, und zurück zur Tür. Spring über die warmen Platten und alles, was auf dich zugleitet."),
         ) {
             border(); floor()
-            fill(1..19, 4..5); fill(11..30, 9..10)
+            fill(1..19, 4..5); fill(9..12, 4..5, 'c'); fill(11..30, 9..10)
             fill(11..14, 4..4, 'p'); fill(12..13, 15..15, 'q')
             fill(11..11, 8..8, 'F'); fill(27..27, 14..14, 'G')
             spawn(2, 3); door(29, 14)
@@ -246,22 +251,23 @@ object World3PartC {
 
         // 24 — mirrored for once: you start on a tower at the right and the door is at the far left, on a ledge two hops up. Two sets of
         // cooling fins (hot plates) lie across the floor; each flares as you come down to it and takes about a second to cool. Wait on the
-        // cold stone in front of it, then cross it quickly: it heats up again under your feet. The last set is not a plate at all: a live
+        // stone in front of it (the one between the two sets is only cold for a while: it warms up under whoever waits too long), then
+        // cross quickly: it heats up again under your feet. The last set is not a plate at all: a live
         // trace that pulses on and off. Cross it while it is dark.
         Level(
             name = T("Cooling Fins", "Kühlrippen"),
             intro = T("Nice view from up there.", "Schöne Aussicht von da oben."),
-            start = listOf(Heat('a', rise = 0.8f, cool = 1.3f), Heat('b', rise = 0.8f, cool = 1.3f), Circuit('Z', on = false)),
+            start = listOf(Heat('a', rise = 0.8f, cool = 1.3f), Heat('b', rise = 0.8f, cool = 1.3f), Heat('w', rise = 1.7f, cool = 1.7f), Circuit('Z', on = false)),
             traps = listOf(
                 trap(Zone(20.5f, 13f, 28f, 15.2f), HeatSpike('a', 1f), say("Fins upgraded: now with extra heat.", "Rippen aufgerüstet: jetzt mit Extrawärme.")),
                 trap(Zone(14.4f, 13f, 16.0f, 15.2f), HeatSpike('b', 1f), say("The second set was just plugged in.", "Der zweite Satz wurde gerade eingesteckt.")),
                 trap(Zone(8f, 13f, 9.9f, 15.2f), Play(Card.SHORT_CIRCUIT), Clock('Z', on = 0.7f, off = 2.0f), say("The last set is wired differently. It blinks. Politely.", "Der letzte Satz ist anders verdrahtet. Er blinkt. Höflich.")),
             ),
-            hint = T("Wait on the stone until the fins have cooled. The last set pulses: cross it while it is dark.", "Warte auf dem Stein, bis die Rippen abgekühlt sind. Der letzte Satz pulsiert: lauf drüber, solange er dunkel ist."),
+            hint = T("Wait until the fins have cooled, but not too long: the stone between them warms up as well. The last set pulses: cross it while it is dark.", "Warte, bis die Rippen abgekühlt sind, aber nicht zu lange: Der Stein dazwischen wird auch warm. Der letzte Satz pulsiert: lauf drüber, solange er dunkel ist."),
         ) {
             border(); floor()
             fill(28..30, 6..14); fill(1..2, 11..14); fill(3..3, 13..14)
-            fill(16..18, 15..15, 'a'); fill(10..12, 15..15, 'b'); fill(4..6, 14..14, 'Z')
+            fill(16..18, 15..15, 'a'); fill(10..12, 15..15, 'b'); fill(13..15, 15..15, 'w'); fill(4..6, 14..14, 'Z')
             spawn(30, 5); door(1, 10)
         },
 
