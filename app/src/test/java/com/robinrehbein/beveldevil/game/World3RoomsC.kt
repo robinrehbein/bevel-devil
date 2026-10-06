@@ -14,5 +14,9 @@ object World3RoomsC {
                 .waitFor { landed(it, 'd', 1f) }.rightJump(0.55f).landRight().rightTo(24.8f).landRight()
                 .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(3.4f).left(1f) },
         ),
+        18 to listOf<Solution>(
+            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
+                .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c').leftTo(3.0f).left(1.5f) },
+        ),
     )
 }

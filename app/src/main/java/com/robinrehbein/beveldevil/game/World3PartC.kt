@@ -47,7 +47,7 @@ object World3PartC {
             intro = T("It's just a stove. A very long one.", "Ist nur ein Herd. Ein sehr langer."),
             start = listOf(Heat('g', rise = 0.8f, cool = 5f), Heatsink('k', cools = "g")),
             traps = listOf(
-                trap(PastX(2.9f), Play(Card.THROTTLE), Heat('g', rise = 0.8f, cool = 5f), HeatSpike('g', 1f), say("Energy saving mode: off.", "Energiesparmodus: aus.")),
+                trap(Zone(2.9f, 3f, 4f, 9f), Play(Card.THROTTLE), Heat('g', rise = 0.8f, cool = 5f), HeatSpike('g', 1f), say("Energy saving mode: off.", "Energiesparmodus: aus.")),
                 trap(Touch('k'), Fall('a'), say("Lid's on. Dinner is ready.", "Deckel drauf. Das Essen ist fertig."), delay = 0.8f),
                 trap(Landed(24.5f, 31f), Fall('b'), say("A second lid. Pots come in pairs.", "Ein zweiter Deckel. Töpfe gibt es nur im Doppelpack."), delay = 0.25f),
                 trap(Zone(12f, 12f, 14f, 15.2f), Fall('p'), say("The last tiles are a rental.", "Die letzten Kacheln sind gemietet."), delay = 0.2f),
@@ -59,7 +59,7 @@ object World3PartC {
                     start = listOf(Heat('g', rise = 0.5f, cool = 2f), Heatsink('k', cools = "g")),
                     hint = T("The sink is the hot one now. Hop it, and hop the plate.", "Jetzt ist der Kühlkörper der heiße. Spring drüber, und über die Platte auch."),
                     traps = listOf(
-                        trap(PastX(2.9f), Play(Card.OVERCLOCKED), Heat('k', rise = 1f, cool = 6f), HeatSpike('k', 1f), say("The sink is on the menu now.", "Der Kühlkörper steht jetzt auf der Karte.")),
+                        trap(Zone(2.9f, 3f, 4f, 9f), Play(Card.OVERCLOCKED), Heat('k', rise = 1f, cool = 6f), HeatSpike('k', 1f), say("The sink is on the menu now.", "Der Kühlkörper steht jetzt auf der Karte.")),
                         trap(PastX(16.4f), Fall('d'), say("Lids are seasonal.", "Deckel haben Saison."), delay = 0.3f),
                         trap(Landed(24.5f, 31f), Fall('b'), say("The lid over the landing. Again.", "Der Deckel über der Landung. Schon wieder."), delay = 0.25f),
                         trap(Zone(23f, 12f, 25f, 15.2f), Fall('c'), say("Third lid. I have a drawer full.", "Dritter Deckel. Ich hab eine Schublade voll."), delay = 0.35f),
@@ -81,25 +81,26 @@ object World3PartC {
             spawn(2, 7); door(3, 14)
         },
 
-        // 18 — a chip under load heats all the time: cool it on the heatsink first, but the sink warms up under you; once you
-        // are down on the chip it runs hotter, so the last tiles are only safe in the air, and the landing after them is hot
+        // 18 — the door is right there, behind a copper wall, and the switch that opens it is on the far side of a chip under load. The chip
+        // heats all the time and is the only way across the pit, so go over at once (a blade comes along the chip, hop it). The switch
+        // opens the wall, turns the load up and sends a blade after you; so the way back is over the same chip, now burning: cool it on
+        // the heatsink on the far side, but not for long.
         Level(
             name = T("Full Load", "Volllast"),
             intro = T("Chips get hot when they think. This one never stops.", "Chips werden heiß, wenn sie denken. Der hier hört nie auf."),
-            start = listOf(Heat('c', rise = 2.2f, load = true), Heatsink('k', cools = "c")),
+            start = listOf(Heat('c', rise = 2.1f, load = true), Heatsink('m', cools = "c"), Circuit('w'), Pad('1', at = 27 to 14, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
-                trap(Landed(4.8f, 7.2f), Play(Card.OVERCLOCKED), HeatSpike('k', 0.55f), say("The heatsink has a fever.", "Der Kühlkörper hat Fieber.")),
-                trap(Landed(7f, 16f), Heat('c', rise = 1.6f, load = true), say("Turbo boost. For the chip, not for you.", "Turbo-Boost. Für den Chip, nicht für dich.")),
-                trap(PastX(24.3f), HeatSpike('f', 1f), say("Bonus round: the landing is lava. Mildly.", "Bonusrunde: Die Landung ist Lava. Mild.")),
+                trap(PastX(9f), Saw(33f, 14.4f, -7f, 0f), say("Fan blade, express. It comes with the chip.", "Lüfterblatt, Express. Gehört zum Chip."), delay = 0.25f),
+                trap(Pressed('1'), Play(Card.DEVIL_SAW), Saw(35.5f, 14.4f, -6f, 0f), Heat('c', rise = 1.6f, load = true), say("Pressed. The lock is open, the load is up, the blade is loose.", "Gedrückt. Das Schloss ist offen, die Last oben, das Messer los."), delay = 0.6f),
             ),
+            hint = T("Cross the chip at once, it only gets hotter. On the way back cool it on the sink first, but the blade is on your heels.", "Geh sofort über den Chip, er wird nur heißer. Zurück erst am Kühlkörper kühlen, aber das Messer ist dir auf den Fersen."),
         ) {
             border(); floor()
-            fill(5..6, 13..14, 'k')
-            bridge(9..22, 'c')
-            fill(26..28, 15..15, 'f')
-            spawn(); door()
+            fill(3..3, 1..14, 'w')
+            fill(22..23, 15..15, 'm')
+            pit(11..20); fill(11..20, 15..15, 'c')
+            spawn(5, 14); door(2, 14)
         },
-
 
         // 19 — melting stones: each one is gone for good if you stand on it too long; the next ones are already warm
         Level(
