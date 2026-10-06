@@ -182,7 +182,7 @@ object World1Part2 {
                 trap(Landed(15f, 19f), Fall('d'), Say(T("Level up. Gravity doubled.", "Level up. Schwerkraft verdoppelt."))),
                 trap(Landed(15f, 19f), Fall('e'), delay = 0.4f),
                 trap(Landed(15f, 19f), Fall('f'), delay = 0.8f),
-                trap(Landed(19f, 23f), Play(Card.BIT_FLIP), Swap(true), Say(T("Player two joins. Player one's keys are now player two's.", "Spieler zwei steigt ein. Die Tasten von Spieler eins gehören jetzt ihm."))),
+                trap(Landed(19f, 23f), Play(Card.TWISTED), Swap(true), Say(T("Player two joins. Player one's keys are now player two's.", "Spieler zwei steigt ein. Die Tasten von Spieler eins gehören jetzt ihm."))),
             ),
         ) {
             border(); floor()

@@ -79,9 +79,9 @@ class World1Test {
     @Test
     fun actOneShowsTheClassicCardsAndTheAnnex() {
         val cards = World1Part1.levels.flatMap { l -> l.rounds.flatMap { r -> actions(r).filterIsInstance<Action.Play>().map { it.card } } }.toSet()
-        // the classic eleven, the stalker, the annex of the finale, and the bit flip of the return trip (the twisted card of 9 may
-        // only come back 8 levels later, docs/LEVEL_DESIGN_V2.md §7)
-        assertEquals(Card.entries.take(11).toSet() + Card.STALKER + Card.ANNEX + Card.BIT_FLIP, cards)
+        // the classic eleven, the stalker and the annex of the finale (the return trip of 12 plays the collapse on the sliding
+        // spike: the twisted card of 9 may only come back 8 levels later, docs/LEVEL_DESIGN_V2.md §7, and the bit flip is World 3's)
+        assertEquals(Card.entries.take(11).toSet() + Card.STALKER + Card.ANNEX, cards)
     }
 
     /** The obvious thing to do, running right and never letting go, must not win any level. */

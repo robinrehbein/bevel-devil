@@ -333,7 +333,7 @@ object World1Part1 {
             hint = T("After the first hop your keys change sides. Think fast, not long: the spike behind you is not done with you.", "Nach dem ersten Sprung wechseln die Tasten die Seite. Denk schnell, nicht lang: Der Stachel hinter dir ist noch nicht fertig mit dir."),
             legend = mapOf('M' to Glyph(spike = true)),
             traps = listOf(
-                trap(Landed(15f, 23.8f), Play(Card.BIT_FLIP), Swap(true), Move('M', -10f, 0f, 4.5f), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
+                trap(Landed(15f, 23.8f), Play(Card.COLLAPSE), Swap(true), Move('M', -10f, 0f, 4.5f), Say(T("Return trip. Your keys didn't get the memo.", "Rückreise. Deine Tasten haben's nicht mitbekommen."))),
                 trap(BeforeX(13.5f), Say(T("That pit is real. Unlike my promises.", "Das Loch ist echt. Anders als meine Versprechen."))),
                 trap(Landed(2.5f, 7.5f), Swap(false), Say(T("Keys back. Old habits die hard.", "Tasten zur\u00fcck. Alte Gewohnheiten sterben langsam."))),
             ),
