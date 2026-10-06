@@ -45,9 +45,9 @@ object World3PartD {
     val levels: List<Level> = listOf(
 
         // 25 — a cooling tower in three floors, run down and back along belts (R10 transport, U12 the belts turn around). You start on the
-        // roof on the right and run off its left end onto the second floor, whose plates are cooler than they look until you land: one flares,
-        // so do not run on it, hop it. Off its left end you drop onto the ground belts, which wait idle at a walking pace and carry you to
-        // the door; the first turns around as you reach its end and pushes you back into the spikes in the corner: hop onto the next belt, which
+        // roof on the right (the exhaust: it roasts whoever leans on its far wall) and run off its left end onto the second floor, whose plates are cooler
+        // than they look until you land: one flares, so do not run on it, hop it. Off its left end you drop onto the ground belts, which wait
+        // idle at a walking pace and carry you to the door; the first wakes up running the wrong way as you drop, and turns around as you reach its end and pushes you back into the spikes in the corner: hop onto the next belt, which
         // turns around too, under a ceiling of spikes you cannot hop high under. Low hops all the way to the door. Belts only push whoever stands on them.
         Level(
             name = T("Cooling Tower", "Kühlturm"),
@@ -55,13 +55,15 @@ object World3PartD {
             start = listOf(Belt('c', 2f), Belt('b', 2f)),
             traps = listOf(
                 trap(Landed(12f, 24f), Play(Card.OVERCLOCKED), HeatSpike('a', 0.8f), say("Floor two runs the heating. Cooling tower, I know.", "Etage zwei heizt. Ist ein Kühlturm, ich weiß.")),
+                trap(Zone(1f, 10.4f, 8.5f, 12.3f), Belt('c', -4f), say("Belt one woke up on the wrong side of the bed.", "Band eins ist mit dem falschen Fuß aufgestanden."), delay = 0.35f),
                 trap(Zone(9f, 9f, 10.4f, 12.3f), Belt('c', -12f), say("Belt one: change of plans. Yours.", "Band eins: Planänderung. Deine.")),
+                trap(Zone(29.8f, 0f, 31f, 2.2f), HeatSpike('r', 1f), say("The roof is the exhaust. Nobody leans on the exhaust.", "Das Dach ist der Abluftschacht. An den lehnt sich keiner."), delay = 0.4f),
                 trap(Zone(17f, 9f, 18.4f, 12.3f), Belt('b', -12f), say("Belt two read the memo.", "Band zwei hat das Memo gelesen.")),
             ),
             hint = T("Belts only push whoever stands on them. In the air you are your own boss, but mind the ceiling.", "Bänder schieben nur, wer auf ihnen steht. In der Luft bist du dein eigener Chef, aber Vorsicht, die Decke."),
         ) {
             border(); floor(12)
-            fill(23..30, 2..3)
+            fill(23..30, 2..3); fill(28..30, 2..2, 'r')
             fill(7..24, 6..7); fill(7..24, 6..6, 'a')
             fill(1..10, 12..12, 'c'); fill(11..30, 12..12, 'b')
             fill(1..1, 11..11, '^'); fill(16..24, 8..9, 'v')
@@ -70,20 +72,20 @@ object World3PartD {
 
         // 26 — two lanes of live copper and one cable that has opinions (U13, a trap room). Lower lane: as you pass the first post a tripwire
         // arms itself ahead of you at ankle height (hop it), and the landing behind it gets a flash a moment after you touch down (keep
-        // going). Up the hot steps at the end (the second one is hotter than it looks) and back along the upper lane towards the door above
-        // the start: a cable hangs over the way, cold until you come up the stairs, then it warms up for a moment (wait before it, not under
-        // it), and a last tripwire is strung in front of the door.
+        // going). Up onto the block at the far end, where a beam sweeps the top a moment after you land (do not admire the view), the hot
+        // step (it is hotter than it looks) and back along the upper lane to the door in its middle: a cable hangs over the way, cold until
+        // you come up, then it warms up for a moment right in front of the door (wait before it, not under it).
         Level(
             name = T("Hot Wire", "Heißer Draht"),
             intro = T("Mind the cable. It minds you.", "Achte auf das Kabel. Es achtet auf dich."),
-            start = listOf(Heat('j', rise = 1.1f), Laser('c', 10 to 1, 10 to 8), Power('c', false)),
+            start = listOf(Heat('j', rise = 1.1f), Laser('c', 13 to 1, 13 to 8), Power('c', false)),
             traps = listOf(
                 trap(PastX(6.5f), Play(Card.SPIKE_SEED), Laser('a', 12 to 14, 13 to 14, on = 99f, delay = 0.55f), say("Tripwire. Self-assembling.", "Stolperdraht. Selbstmontierend.")),
                 trap(Landed(14.2f, 17.5f), Laser('b', 14 to 14, 19 to 14, on = 0.7f, off = 60f, delay = 0.65f), say("Landing light. It is on request. Yours.", "Landebeleuchtung. Auf Anfrage. Deine.")),
-                trap(Landed(20f, 23.5f), HeatSpike('j', 0.75f), say("The second step is a hot seat.", "Die zweite Stufe ist ein heißer Stuhl.")),
-                trap(Zone(14.5f, 7f, 17f, 9.2f), Power('c', true), say("The cable is warming up. Take a seat. Not under it.", "Das Kabel läuft warm. Setz dich. Nicht darunter.")),
-                trap(Zone(14.5f, 7f, 17f, 9.2f), Power('c', false), delay = 1.8f),
-                trap(Zone(10.6f, 7f, 12.1f, 9.2f), Laser('e', 6 to 8, 7 to 8, on = 99f, delay = 0.3f), say("Tripwire, mirrored. I have a drawer full.", "Stolperdraht, gespiegelt. Ich hab eine Schublade voll.")),
+                trap(Landed(24.5f, 31f), Laser('d', 25 to 12, 30 to 12, on = 0.6f, off = 60f, delay = 0.95f), say("Rooftop scan. Please do not pose.", "Dach-Scan. Bitte nicht posieren.")),
+                trap(Landed(20f, 23.5f), HeatSpike('j', 0.75f), say("The step is a hot seat.", "Die Stufe ist ein heißer Stuhl.")),
+                trap(Zone(17.5f, 7f, 20f, 9.2f), Power('c', true), say("The cable is warming up. Take a seat. Not under it.", "Das Kabel läuft warm. Setz dich. Nicht darunter.")),
+                trap(Zone(17.5f, 7f, 20f, 9.2f), Power('c', false), delay = 1.6f),
             ),
             hint = T("The wire only wakes up once you pass it. The cable on the upper lane takes a moment: let it.", "Der Draht wacht erst auf, wenn du vorbei bist. Das Kabel oben braucht einen Moment: gönn es ihm."),
         ) {
@@ -91,23 +93,28 @@ object World3PartD {
             fill(1..19, 9..10)
             fill(25..30, 13..14); fill(20..23, 11..11)
             fill(20..23, 11..11, 'j')
-            spawn(); door(3, 8)
+            spawn(); door(11, 8)
         },
 
-        // 27 ★ — a breather with one gag: the floor is a power strip, and the strip has to boot. As you come up to it, Mephi pulls the plug: the strip
-        // goes dark and powers up again piece by piece, left to right, like a runway lighting up (wait for the first piece, then run with the wave;
-        // each piece goes dark again behind you), and the last plates before the door have been overclocked while you were busy looking down (hop them)
+        // 27 ★ — a breather with one gag: the floor is a power strip, and the strip has to boot. As you come up to it, Mephi pulls the plug: the first
+        // two pieces go dark and boot (wait for the first). The moment you step on, the rest of the strip, lit a second ago, goes dark too and powers
+        // up again piece by piece, left to right, like a runway lighting up (run with the wave; each of those pieces goes dark again behind you),
+        // and the last plates before the door have been overclocked while you were busy looking down (hop them).
         Level(
             name = T("Wall Socket", "Steckdose"),
             intro = T("Surge protector: installed.", "Überspannungsschutz: eingebaut."),
             start = listOf(Heat('f', rise = 0.8f, cool = 6f)),
             traps = listOf(
-                trap(PastX(19.5f), HeatSpike('f', 0.85f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
+                trap(PastX(19.5f), Play(Card.THROTTLE), Heat('f', rise = 0.8f, cool = 6f), HeatSpike('f', 0.85f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
                 trap(
-                    PastX(3.2f), Play(Card.SHORT_CIRCUIT),
-                    Clock('a', on = 1.2f, off = 99f, phase = 99.4f), Clock('b', on = 1.2f, off = 99f, phase = 99.07f), Clock('c', on = 1.2f, off = 99f, phase = 98.74f),
-                    Clock('d', on = 1.2f, off = 99f, phase = 98.41f), Clock('e', on = 1.2f, off = 99f, phase = 98.08f),
-                    say("Power saving: the strip is off. Boot sequence: 1... 2... 3...", "Stromsparmodus: Die Leiste ist aus. Hochfahren: 1... 2... 3..."),
+                    PastX(3.2f),
+                    Clock('a', on = 99f, off = 99f, phase = 197.4f), Clock('b', on = 99f, off = 99f, phase = 197.07f),
+                    say("Power saving: the strip is off. Boot sequence: 1... 2...", "Stromsparmodus: Die Leiste ist aus. Hochfahren: 1... 2..."),
+                ),
+                trap(
+                    Touch('a'),
+                    Clock('c', on = 1.2f, off = 99f, phase = 99.7f), Clock('d', on = 1.2f, off = 99f, phase = 99.37f), Clock('e', on = 1.2f, off = 99f, phase = 99.04f),
+                    say("3... 4... 5... The rest reboots as you step on. Do keep up.", "3... 4... 5... Der Rest startet neu, sobald du drauftrittst. Bleib dran."),
                 ),
             ),
             hint = T("The strip boots from the left, one piece after the other. Start when the first one lights up.", "Die Leiste fährt von links hoch, Stück für Stück. Los, wenn das erste leuchtet."),
@@ -143,7 +150,7 @@ object World3PartD {
                     start = listOf(Heat('h', rise = 1.3f), Heat('g', rise = 1.3f)),
                     traps = listOf(
                         trap(
-                            Landed(6f, 12f), Play(Card.THROTTLE), Heat('h', rise = 0.5f), Heat('g', rise = 0.5f), Saw(18f, 10.9f, -8f, 0f),
+                            Landed(6f, 12f), Play(Card.DEVIL_SAW), Heat('h', rise = 0.5f), Heat('g', rise = 0.5f), Saw(18f, 10.9f, -8f, 0f),
                             PathSaw(3.2f, 13.2f to 14.4f, 15.4f to 14.4f),
                             say("Staff meeting in the break room. Blades only.", "Teambesprechung im Pausenraum. Nur Blätter."),
                         ),

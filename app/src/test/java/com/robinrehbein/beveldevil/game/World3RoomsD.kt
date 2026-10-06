@@ -76,18 +76,19 @@ object World3RoomsD {
                 .rightTo(21.9f).rightJump(0.55f).landRight().right(1.5f) },
         ),
         26 to listOf<Solution>(
+            // hop the tripwire, run through the landing light, off the block before the scan, hop the hot step, wait out the cable
             { rightTo(10.4f).rightJump(0.55f).landRight()
                 .rightTo(23.4f).rightJump(0.5f).landRight()
-                .rightTo(29.0f).leftTo(25.8f).leftJump(0.5f).landLeft()
+                .leftTo(25.8f).leftJump(0.5f).landLeft()
                 .leftJump(0.5f).landLeft()
-                .leftTo(12.8f).waitFor { w -> !w.beams.first { it.laser.id == 'c' }.on }
-                .leftTo(9.6f).leftJump(0.55f).landLeft().leftTo(3.6f).left(0.5f) },
+.leftTo(15.4f).waitFor { w -> w.time > 1f && !w.beams.first { it.laser.id == 'c' }.on }
+                .leftTo(11.8f).left(0.5f) },
         ),
         25 to listOf<Solution>(
             { leftTo(22.5f).landLeft()
                 .leftJump(0.55f).landLeft().leftJump(0.55f).landLeft()
                 .leftUntil { it.player.grounded && it.player.box.b > 11.5f }
-                .rightUntil { (it.group('c').belt ?: 0f) < 0f }.rightJump(0.55f).landRight()
+                .rightUntil { (it.group('c').belt ?: 0f) < -5f }.rightJump(0.55f).landRight()
                 .rightUntil { (it.group('b').belt ?: 0f) < 0f }.rightJump(0.04f).landRight().rightJump(0.04f).landRight().rightJump(0.04f).landRight().rightJump(0.04f).landRight().rightJump(0.04f).landRight().rightJump(0.04f).landRight().rightJump(0.04f).landRight().right(0.5f) },
         ),
     )
