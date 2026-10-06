@@ -12,11 +12,6 @@ package com.robinrehbein.beveldevil.game
 object PendingRounds {
     val ENTRIES: List<String> = listOf(
         // World 1
-        "1-1-1 C",
-        "1-3-1 C",
-        "1-4-1 C",
-        "1-4-2 C",
-        "1-6-2 A",
         "1-7-1 F",
         "1-8-1 F",
         "1-8-1 I",

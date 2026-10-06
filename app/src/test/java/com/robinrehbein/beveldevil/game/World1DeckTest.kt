@@ -19,12 +19,9 @@ class World1DeckTest {
 
     /** Round 1 of every level with a rematch, as scripted in [World1Test]. */
     private val round1: Map<Int, (Bot) -> Bot> = mapOf(
-        4 to { b -> b.rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
-            .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
-            .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
-            .rightJump(0.35f).landRight().right(1f).left(2f) },
-        6 to { b -> b.rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight()
-            .rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f) },
+        // the tutorial: round 1 is the clean run in World1DesignTest.TUTORIAL_SOLUTIONS
+        4 to { b -> b.also(World1DesignTest.TUTORIAL_SOLUTIONS.getValue(4)[0]) },
+        6 to { b -> b.also(World1DesignTest.TUTORIAL_SOLUTIONS.getValue(6)[0]) },
         // levels 7-16 are rebuilt: their round 1 is the registered solution (World1RoomsA)
         8 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(8)[0]) },
         12 to { b -> b.also(World1DesignTest.SOLUTIONS.getValue(12)[0]) },
@@ -147,12 +144,17 @@ class World1DeckTest {
 
     // ---------- Act 1 ----------
 
-    @Test fun level04Rematch() = b(4, 1).rightTo(18.3f).left(0.3f).wait(0.6f).rightTo(18.6f).rightJump(0.35f).landRight().right(3f).expect(WorldState.WON)
-    @Test fun level04RematchPunishesWaitingForTheOldSlab() = b(4, 1).rightTo(13.2f).wait(1f).right(3f).expect(WorldState.DEAD)
+    @Test fun level04Rematch() = b(4, 1).also(World1DesignTest.TUTORIAL_SOLUTIONS.getValue(4)[1]).expect(WorldState.WON)
+    /** Round 1 taught waiting at the first slab: now it only rattles, and the piece above the waiting spot comes down. */
+    @Test fun level04RematchPunishesWaitingForTheOldSlab() = b(4, 1).rightTo(13.2f).wait(1f).expect(WorldState.DEAD)
+    /** The second slab is real, and the one above the spot where you stop to look at it follows. */
+    @Test fun level04RematchAdmiringTheSlabIsFatal() = b(4, 1).rightTo(18.3f).wait(2f).expect(WorldState.DEAD)
 
-    @Test fun level06Rematch() = b(6, 1).rightTo(12.8f).rightJump(0.3f).right(3f).expect(WorldState.WON)
+    @Test fun level06Rematch() = b(6, 1).also(World1DesignTest.TUTORIAL_SOLUTIONS.getValue(6)[1]).expect(WorldState.WON)
+    /** The brother saw comes from the front at once: walking on meets it. */
+    @Test fun level06RematchWalkingOnMeetsTheFrontSaw() = b(6, 1).rightTo(12.8f).rightJump(0.3f).landRight().right(3f).expect(WorldState.DEAD)
     @Test fun level06RematchTheOldJumpLandsOnSpikes() =
-        b(6, 1).rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
+        b(6, 1).rightTo(12.8f).rightJump(0.3f).landRight().rightTo(15.2f).rightJump(0.35f).landRight().right(1f).expect(WorldState.DEAD)
 
     // levels 8, 12 and 15: the rematch plays against the habit round 1 taught (docs/LEVEL_DESIGN_V2.md H9)
     @Test fun level08Rematch() = World1DesignTest.play(8, 2)

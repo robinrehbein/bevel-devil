@@ -84,7 +84,7 @@ class World1DesignTest : DesignTestBase() {
             }),
             4 to listOf(
                 {
-                    rightTo(13.12f).wait(0.7f).leftTo(10.4f).wait(0.4f).rightTo(11.6f).rightJump(0.35f).landRight()
+                    rightTo(13.12f).wait(0.5f).leftTo(10.2f).wait(0.5f).rightTo(11.0f).rightJump(0.35f).landRight()
                         .rightTo(17.3f).waitFor { it.player.grounded }.wait(0.7f)
                         .leftTo(17.6f).rightTo(19f).rightJump(0.35f).landRight().wait(0.5f)
                         .rightJump(0.35f).landRight().right(1f).left(2f)
@@ -97,7 +97,7 @@ class World1DesignTest : DesignTestBase() {
             }),
             6 to listOf(
                 { rightTo(12.8f).rightJump(0.3f).rightTo(18.6f).rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.35f).landRight().right(3f) },
-                { rightTo(12.8f).rightJump(0.3f).right(3f) },
+                { rightTo(12.8f).rightJump(0.3f).landRight().untilSaw(1.4f).jump(0.35f).right(3f) },
             ),
         )
 

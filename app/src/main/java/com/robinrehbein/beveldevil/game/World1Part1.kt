@@ -60,17 +60,19 @@ object World1Part1 {
     }
 
     val levels: List<Level> = listOf(
-        // 1 — the floor in front of you collapses; then the door takes two steps away from you
+        // 1 — the floor in front of you collapses, and the hole grows back toward whoever stops at its edge; then the door takes two
+        // steps away from you
         Level(
             name = T("Warm-up", "Aufwärmen"),
             intro = T("Welcome to the basement. Please wipe your feet.", "Willkommen im Keller. Bitte Füße abtreten."),
             traps = listOf(
                 trap(PastX(17.2f), Play(Card.COLLAPSE), Fall('a'), Say(T("Floor? More of a suggestion.", "Boden? Eher ein Vorschlag."))),
+                trap(PastX(17.2f), Fall('b'), Say(T("It spreads. Like gossip.", "Es breitet sich aus. Wie Tratsch.")), delay = 0.55f),
                 trap(PastX(23.2f), DoorTo(29, 14, speed = 10f), Say(T("Two more steps. Promise.", "Noch zwei Schritte. Versprochen."))),
             ),
         ) {
             border(); floor()
-            fill(19..21, 15..17, 'a')
+            fill(19..21, 15..17, 'a'); fill(17..18, 15..17, 'b')
             put(2, 14, 'P'); put(27, 14, 'D')
         },
 
@@ -93,7 +95,8 @@ object World1Part1 {
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 3 — the door hops up to a ledge as you near it; a step crumbles behind you; the door comes back down as you reach the top
+        // 3 — the door hops up to a ledge as you near it; a step crumbles behind you; the door comes back down as you reach the top,
+        // and the broken lift comes down the shaft onto whoever stays up there
         Level(
             name = T("Stairwell", "Treppenhaus"),
             intro = T("Take the stairs. The elevator is broken. Again.", "Nimm die Treppe. Der Aufzug ist kaputt. Schon wieder."),
@@ -104,36 +107,42 @@ object World1Part1 {
                 // the step floats back after a while: whoever fell with it can climb again instead of being stuck below
                 trap(Touch('b'), Move('b', 0f, -3f, 5f), delay = 3f),
                 trap(Zone(27.2f, 5f, 28.3f, 7f), DoorTo(29, 14, speed = 20f), Say(T("Going down?", "Wieder runter?"))),
+                trap(Zone(27.2f, 5f, 28.3f, 7f), Fall('e'), Say(T("The lift works again. Downward only.", "Der Aufzug geht wieder. Nur abwärts.")), delay = 0.5f),
             ),
         ) {
             border(); floor()
-            fill(24..27, 13..13); fill(18..21, 11..11, 'b'); fill(24..27, 9..9); fill(27..30, 7..7)
+            fill(24..27, 13..13); fill(18..21, 11..11, 'b'); fill(24..27, 9..9); fill(27..30, 7..7); fill(28..30, 1..2, 'e')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
-        // 4 — a slab of the thick ceiling drops when you pass under it; wait for the next and it drops while you are in the air
+        // 4 — a slab of the thick ceiling drops when you pass under it, and the one above the spot where you stopped follows; wait for
+        // the next and it drops while you are in the air
         Level(
             name = T("House Rules", "Hausordnung"),
             intro = T("The floor here is a bit shaky. Watch your feet.", "Der Boden hier ist etwas wackelig. Schau auf deine Füße."),
             traps = listOf(
                 trap(PastX(13.1f), Play(Card.HEADBUTT), Fall('c'), Say(T("Ceiling delivery!", "Deckenlieferung!"))),
+                trap(PastX(13.1f), Fall('b'), Say(T("And one for whoever waits.", "Und eins für alle, die warten.")), delay = 0.9f),
                 trap(Landed(17f, 20.6f), Fall('d'), Say(T("Again? Again.", "Nochmal? Nochmal."))),
                 trap(Airborne(22f, 24f), Fall('e')),
             ),
-            // rematch: the slab you learned to wait for only rattles, the one you run under next falls
+            // rematch: the slab you learned to wait for only rattles, and the one above the spot where you waited falls; the one you
+            // run under next falls for real, and the one above you after it, a moment later
             rematch = listOf(
                 Round(
                     T("Rematch. Same ceiling, new grudge.", "Revanche. Gleiche Decke, frischer Groll."),
                     traps = listOf(
                         trap(PastX(13.1f), Shake(0.5f), Say(T("Flinched. Cute.", "Gezuckt. Niedlich."))),
+                        trap(PastX(13.1f), Fall('b'), delay = 0.45f),
                         trap(PastX(18.2f), Play(Card.HEADBUTT), Fall('d'), Say(T("This one means it.", "Die hier meint es ernst."))),
+                        trap(PastX(18.2f), Fall('g'), Say(T("Don't admire it. Jump it.", "Nicht bewundern. Drüber.")), delay = 1.5f),
                     ),
-                ),
+                ) { fill(18..20, 5..6, 'g') },
             ),
         ) {
             border(); floor()
             fill(1..30, 1..6)
-            fill(14..16, 5..6, 'c'); fill(21..23, 5..6, 'd'); fill(26..28, 5..6, 'e')
+            fill(12..13, 5..6, 'b'); fill(14..16, 5..6, 'c'); fill(21..23, 5..6, 'd'); fill(26..28, 5..6, 'e')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
@@ -167,12 +176,15 @@ object World1Part1 {
                 trap(Touch('a'), Fall('a'), delay = 0.12f),
                 trap(Landed(23.4f, 27f), Saw(33.5f, 14.4f, -4.5f, 0f, 0.62f), Say(T("And its brother wants one too.", "Und ihr Bruder will auch eine."))),
             ),
-            // rematch: the floor holds now, and jumping the spot where it fell lands on spikes
+            // rematch: the floor holds now, but the brother saw comes from the front at once: the saws close in from both sides, so
+            // you wait for the front one and jump it on the spot. Whoever jumps it running lands where spikes grow
             rematch = listOf(
                 Round(
                     T("Rematch. Same saw, new manners.", "Revanche. Gleiche Säge, neue Manieren."),
+                    hint = T("Let the front saw come to you and jump it on the spot. Forward is pointy.", "Lass die vordere Säge zu dir kommen und spring auf der Stelle. Vorne ist es spitz."),
                     traps = listOf(
-                        trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.5f, 0f, 0.62f), Say(T("Back for seconds.", "Nachschlag gefällig?"))),
+                        trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(-1.5f, 14.4f, 6.5f, 0f, 0.62f), Saw(33.5f, 14.4f, -9f, 0f, 0.62f),
+                            Say(T("Back for seconds. Both of them.", "Nachschlag gefällig? Beide."))),
                         trap(Airborne(19.5f, 23f), Show('A'), Say(T("Jumped over nothing. Landed on something.", "Über nichts gesprungen. Auf was gelandet."))),
                     ),
                 ),
