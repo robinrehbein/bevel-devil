@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import com.robinrehbein.beveldevil.game.T
 import com.robinrehbein.beveldevil.game.Card
+import com.robinrehbein.beveldevil.game.CardSlot
 import com.robinrehbein.beveldevil.game.Game
 import com.robinrehbein.beveldevil.game.Hit
 import com.robinrehbein.beveldevil.game.Mood
@@ -333,8 +334,9 @@ class UiPainter(px: Pixels) : Painter(px) {
         val sx = fr.x + fr.w / 2f
         val sy = fr.y + fr.h / 2f
         // settle high and to the side of the player, then fade to a ghost: the trap below must stay readable
-        val tx = l.fx + 128f + game.cardSide * 64f
-        val ty = l.fy + 52f
+        val (side, lift) = game.cardSlot()
+        val tx = l.fx + 128f + side * CardSlot.SIDE * TS
+        val ty = l.fy + 52f + lift * TS
         val k = min(1f, f * 1.4f)
         val cx = (sx + (tx - sx) * k) * sc
         val cy = (sy + (ty - sy) * k - sin(k * PI.toFloat()) * 18f) * sc

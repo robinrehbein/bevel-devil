@@ -921,4 +921,17 @@ class ScreenshotTest {
         Lang.german = true
         shoot("27-settings-de", s, two)
     }
+
+    /** 2-22: the carpet drops out under the flying card, which moves off the hole; the carpet crumbles. */
+    @Test
+    fun cardDodgesTheCarpet() {
+        Lang.german = false
+        Film(Game(MemoryProgress(), silent).apply { startCustom(com.robinrehbein.beveldevil.game.World2.levels[21]) }, sizes[0]).apply {
+            game.input.right = true
+            play(6f) { game.world!!.player.box.cx > 12.6f }
+            game.input.right = false
+            play(0.05f); save("28-bouncer-carpet-trap")
+            play(0.3f); save("28-bouncer-carpet-trap-later")
+        }
+    }
 }
