@@ -94,21 +94,27 @@ object World3PartD {
             spawn(); door(3, 8)
         },
 
-        // 27 — a pad powers the bridge; the floor behind it is overclocked, and a dead cable wakes up as you land
+        // 27 ★ — a breather with one gag: the floor is a power strip, and the strip has to boot. As you come up to it, Mephi pulls the plug: the strip
+        // goes dark and powers up again piece by piece, left to right, like a runway lighting up (wait for the first piece, then run with the wave;
+        // each piece goes dark again behind you), and the last plates before the door have been overclocked while you were busy looking down (hop them)
         Level(
             name = T("Wall Socket", "Steckdose"),
             intro = T("Surge protector: installed.", "Überspannungsschutz: eingebaut."),
-            start = listOf(Circuit('a', on = false), Pad('1', at = 4 to 14, circuits = "a", mode = PadMode.ON), Circuit('Z', on = false)),
+            start = listOf(Heat('f', rise = 0.8f, cool = 6f)),
             traps = listOf(
-                trap(PastX(16.3f), Play(Card.OVERCLOCKED), HeatSpike('f', 0.75f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
-                trap(Landed(17f, 22.5f), Power('Z', true), say("Undervoltage: no refunds.", "Unterspannung: keine Rückerstattung.")),
-                trap(Idle(1.3f), Power('a', false), say("Idle? Power saving kicks in.", "Leerlauf? Der Stromsparmodus greift.")),
+                trap(PastX(19.5f), HeatSpike('f', 0.85f), say("Overvoltage! It was a feature request.", "Überspannung! Das war ein Feature-Wunsch.")),
+                trap(
+                    PastX(3.2f), Play(Card.SHORT_CIRCUIT),
+                    Clock('a', on = 1.2f, off = 99f, phase = 99.4f), Clock('b', on = 1.2f, off = 99f, phase = 99.07f), Clock('c', on = 1.2f, off = 99f, phase = 98.74f),
+                    Clock('d', on = 1.2f, off = 99f, phase = 98.41f), Clock('e', on = 1.2f, off = 99f, phase = 98.08f),
+                    say("Power saving: the strip is off. Boot sequence: 1... 2... 3...", "Stromsparmodus: Die Leiste ist aus. Hochfahren: 1... 2... 3..."),
+                ),
             ),
+            hint = T("The strip boots from the left, one piece after the other. Start when the first one lights up.", "Die Leiste fährt von links hoch, Stück für Stück. Los, wenn das erste leuchtet."),
         ) {
             border(); floor()
-            bridge(8..13, 'a')
-            fill(16..22, 15..15, 'f')
-            fill(25..26, 14..14, 'Z')
+            bridge(6..8, 'a'); bridge(9..11, 'b'); bridge(12..14, 'c'); bridge(15..17, 'd'); bridge(18..20, 'e')
+            fill(23..25, 15..15, 'f')
             spawn(); door()
         },
 

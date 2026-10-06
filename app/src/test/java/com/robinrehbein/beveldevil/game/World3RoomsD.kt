@@ -13,6 +13,10 @@ object World3RoomsD {
     private fun Bot.at(tag: String): Bot { trace?.invoke(tag, this); return this }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        27 to listOf<Solution>(
+            { rightTo(4.5f).at("edge").waitFor { it.circuits['a']?.powered == true }.at("lit")
+                .rightTo(21.9f).at("isle").rightJump(0.55f).landRight().at("land").right(1.5f) },
+        ),
         26 to listOf<Solution>(
             { rightTo(10.4f).rightJump(0.55f).landRight().at("w1")
                 .rightTo(23.4f).at("pre").rightJump(0.5f).landRight().at("s1")
