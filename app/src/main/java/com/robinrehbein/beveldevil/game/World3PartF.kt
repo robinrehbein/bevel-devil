@@ -19,19 +19,21 @@ object World3PartF {
                 Fan('g', at = 21 to 10, dir = Dir.UP, reach = 6, speed = 3.0f, width = 3),
             ),
             traps = listOf(
-                trap(Landed(10f, 12f), Play(Card.SINKING), Fall('b'), say("The bridge is built one plank ahead of you.", "Die Brücke wird eine Planke vor dir gebaut. Oder abgebaut.")),
+                trap(Zone(3f, 8.5f, 6.5f, 9.7f), Fall('k'), say("Top floor. The ceiling comes down to meet you.", "Oberste Etage. Die Decke kommt dir entgegen.")),
+                trap(Landed(10f, 12f), Play(Card.CRUMBLE), Fall('b'), say("The bridge is built one plank ahead of you.", "Die Brücke wird eine Planke vor dir gebaut. Oder abgebaut.")),
                 trap(Landed(14f, 16f), Hide('d'), say("Planning permission: revoked.", "Baugenehmigung: widerrufen.")),
                 trap(Zone(21f, 5.8f, 24f, 8f), FanSet('g', 6f), say("The lift has a turbo. You're welcome.", "Der Aufzug hat einen Turbo. Gern geschehen.")),
                 trap(Touch('e'), Fall('e'), say("The landing strip has a lease. It just ran out.", "Die Landebahn hat einen Mietvertrag. Er ist gerade abgelaufen."), delay = 0.4f),
             ),
-            hint = T("The planks ahead are the ones that go. Hop as soon as you land, and hold on to the wall in the lift.", "Die Planken vor dir gehen weg. Spring gleich nach der Landung und halt dich im Lift an der Wand."),
+            hint = T("Step off the first lift as soon as you are up: its ceiling drops. The planks ahead are the ones that go: hop as soon as you land, and hold on to the wall in the second lift.", "Tritt oben sofort aus dem ersten Lift: Seine Decke fällt. Die Planken vor dir gehen weg: Spring gleich nach der Landung und halt dich im zweiten Lift an der Wand."),
             // rematch: the bridge holds its planks but not its jumpers: any hop in the air drops the plank it would land on (the card is a bluff), and the gap is
             // closed so you can just walk. Keep your feet down, keep moving: every other plank is on loan
             rematch = listOf(
                 Round(
                     T("Same bridge. Mephi read the manual.", "Gleiche Brücke. Mephi hat das Handbuch gelesen."),
                     traps = listOf(
-                        trap(Landed(6f, 9f), Bluff(Card.SINKING), say("Planks ahead: sinking. Or not. Trust me.", "Planken voraus: sinken. Oder nicht. Vertrau mir.")),
+                        trap(Zone(3f, 8.5f, 6.5f, 9.7f), Fall('k'), say("The lift ceiling, again. It missed you.", "Wieder die Liftdecke. Sie hat dich vermisst.")),
+                        trap(Landed(6f, 9f), Bluff(Card.CRUMBLE), say("Planks ahead: crumbling. Or not. Trust me.", "Planken voraus: bröckeln. Oder nicht. Vertrau mir.")),
                         trap(Touch('a'), Fall('a'), say("This one, though. This one is real.", "Aber die hier. Die hier ist echt."), delay = 0.3f),
                         trap(Airborne(10f, 13f), Hide('b')),
                         trap(Airborne(13f, 15f), Hide('c')),
@@ -51,7 +53,7 @@ object World3PartF {
             fill(18..25, 10..14)
             fill(19..20, 2..5)
             fill(24..25, 5..5); fill(26..27, 5..5, 'e'); fill(28..30, 5..5)
-            fill(21..30, 1..2, 'v')
+            fill(21..30, 1..2, 'v'); fill(3..5, 1..3, 'k')
             spawn(1, 14); door(30, 4)
         },
 
@@ -78,7 +80,7 @@ object World3PartF {
                     traps = listOf(
                         trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
                         trap(Idle(0.5f), Move('c', 0f, 12f, 16f), say("Standing still in my vent? That is loitering.", "In meinem Schacht rumstehen? Das ist Herumlungern.")),
-                        trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.2f),
+                        trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.05f),
                         trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
                         trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
                     ),
@@ -107,12 +109,12 @@ object World3PartF {
                 Pad('1', at = 5 to 14), Pad('2', at = 11 to 7),
             ),
             traps = listOf(
-                trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
+                trap(Pressed('1'), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
                 trap(Pressed('1', 2), Clock('a', on = 1.8f, off = 60f), Power('f', true)),
                 trap(Pressed('1', 3), Clock('a', on = 1.8f, off = 60f), Power('f', true)),
                 trap(Touch('p'), Power('p', false), say("The landing is on a different circuit.", "Die Landefläche hängt an einem anderen Stromkreis."), delay = 0.4f),
                 trap(Touch('l'), Clock('l', on = 1.8f, off = 1.2f), say("The ledge is on a timer. Page two.", "Der Sims hat einen Timer. Seite zwei.")),
-                trap(Pressed('2'), BitFlip('w', 'x'), say("Bit flip: the wall and the floor under it share one bit. They swap.", "Bitkipper: Die Wand und der Boden darunter teilen sich ein Bit. Sie tauschen.")),
+                trap(Pressed('2'), Play(Card.BIT_FLIP), BitFlip('w', 'x'), say("Bit flip: the wall and the floor under it share one bit. They swap.", "Bitkipper: Die Wand und der Boden darunter teilen sich ein Bit. Sie tauschen.")),
             ),
             hint = T("Press the first switch, then run: the bridge only has power for a moment. The second switch hides at the far end of the ledge.", "Drück den ersten Schalter und lauf los: Die Brücke hat nur kurz Strom. Der zweite Schalter liegt am anderen Ende des Simses."),
         ) {
@@ -135,13 +137,17 @@ object World3PartF {
             ),
             traps = listOf(
                 trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
+                trap(Zone(14f, 6f, 18f, 8.2f), Gravity(true), say("Nice shelf. Shame about the screen orientation.", "Schönes Regal. Schade um die Bildschirmausrichtung.")),
                 trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
+                trap(Zone(8f, 5.4f, 13f, 7.6f), Gravity(false), say("Auto-rotate is on. You had three seconds.", "Automatisch drehen ist an. Du hattest drei Sekunden."), delay = 3.4f),
             ),
-            hint = T("Stand in the draft and wait for the ride. Up top, keep your head down.", "Stell dich in den Luftstrom und warte auf die Fahrt. Oben: Kopf einziehen."),
+            hint = T("Stay in the draft all the way up, whatever the shelf promises. Up top, the screen rotates back soon: hurry to the door.", "Bleib im Luftstrom bis ganz oben, egal was das Regal verspricht. Oben dreht sich der Bildschirm bald zurück: Beeil dich zur Tür."),
         ) {
             border(); floor()
-            put(19, 1, 'v')
-            spawn(2, 14); door(29, 1)
+            fill(14..17, 8..8)
+            fill(15..15, 1..1, 'v')
+            fill(20..28, 14..14, '^')
+            spawn(2, 14); door(26, 1)
         },
 
         // 45 — Cold Air
