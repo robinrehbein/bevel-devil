@@ -219,11 +219,11 @@ class World1Test {
     /** 12: walking home with swapped keys but without hopping meets the pit. */
     @Test fun level12WalkingIntoThePitDies() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().rightKeyLeftTo(11.5f).wait(1f).expect(WorldState.DEAD)
 
-    /** 12: the keys come back on the landing behind the last spike, so the old swapped habit now walks away from the door. */
+    /** 12: the keys come back on the landing behind the last spike, so the old swapped habit now walks back into the spike. */
     @Test fun level12TheKeysComeBackOnTheLandingBehindTheLastSpike() {
-        val home = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f)
+        val home = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().hopSL(14.4f, 0.5f).hopSL(8.6f, 0.5f).wait(0.1f)
         assertFalse("the keys are straight again", home.world.swapped)
-        home.right(1.2f).also { assertTrue("the old key walks away from the door", it.world.player.box.cx > 4f) }.expect(WorldState.PLAYING)
+        home.right(1.2f).expect(WorldState.DEAD)   // the old key walks back into the spike
     }
 
     /** 13: up on the floor the ceiling drops on whoever stops under it; down on the ground the spikes in the ceiling are a bluff, the plain ceiling is not. */
