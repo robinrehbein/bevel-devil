@@ -269,40 +269,45 @@ object World3PartD {
             spawn(1, 14); door(10, 6)
         },
 
-        // 32 — act finale: cool the chip, cut the live wall (it only flickers), hop the last overclocked tiles
+        // 32 — act finale (R11 cool the chip, R1 a pad; U17 heat, U2 the ceiling, U18 the room goes on, twice). Room one: a live wall of copper stands where the plateau
+        // ends, and the way on is a chip floor. A staircase of three steps leads up to the plateau; the pad on its far edge cuts the wall, and the same press starts the
+        // chip heating (a couple of seconds, then it is lethal): drop off the edge and run across at once. A slab hangs over the middle of the chip and falls on whoever
+        // is still standing there. At the door the end turns out not to be one: the wall breaks open and the door slips into the next room. Room two: warm plates under
+        // a ceiling that is the next to fall (they are the trigger: stop behind them, let the slab land, hop it), and at the door the wall breaks open again. Room three:
+        // plates that are overclocked as you come (hop them), and the door.
         Level(
             name = T("Thermal Runaway", "Thermische Flucht"),
             intro = T("Act two finale. Everything is hot. Including me.", "Finale, Akt zwei. Alles ist heiß. Ich auch."),
+            rooms = 3,
             start = listOf(
-                Heat('c', rise = 2.2f, load = true), Heatsink('k', cools = "c"),
-                Circuit('Z'), Pad('1', at = 23 to 14, circuits = "Z", mode = PadMode.OFF),
+                Circuit('W'), Pad('1', at = 13 to 11, circuits = "W"),
+                Heat('g', rise = 1.3f, cool = 6f), Heat('f', rise = 0.8f, cool = 6f),
             ),
             traps = listOf(
-                trap(PastX(6.5f), Heat('c', rise = 1.9f, load = true), say("Core voltage: raised.", "Kernspannung: erhöht.")),
-                trap(Pressed('1'), Clock('Z', on = 0.7f, off = 2.2f, phase = 0.7f), say("The breaker was a clock all along.", "Die Sicherung war die ganze Zeit ein Taktgeber.")),
-                trap(PastX(25.8f), Play(Card.GRAND_FINALE), HeatSpike('f', 1f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
+                trap(Pressed('1'), Heat('c', rise = 2f, load = true), say("Wall cut. Core on. Everything is fine. Run.", "Wand aus. Kern an. Alles in Ordnung. Lauf.")),
+                trap(Zone(17.2f, 13f, 18.2f, 15.2f), Fall('r'), say("Insulation: on the house. Mind your head.", "Dämmung: aufs Haus. Kopf einziehen."), delay = 0.1f),
+                trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 29) to 14)),
+                trap(Zone(roomX(1, 4.4f), 13f, roomX(1, 5.6f), 15.2f), Fall('q'), say("The plates are warm. The ceiling noticed.", "Die Platten sind warm. Die Decke hat es gemerkt."), delay = 0.75f),
+                trap(AtDoor, Extend(into = 2, door = roomX(2, 29) to 14, line = T("Did you think the reactor was one room?", "Dachtest du, der Reaktor ist ein Raum?"))),
+                trap(PastX(roomX(2, 7f)), HeatSpike('f', 0.85f), say("Core temperature: yes.", "Kerntemperatur: ja.")),
             ),
-            // rematch: the breaker now switches the wall ON; hop the button (or press it twice)
-            rematch = listOf(
-                Round(
-                    T("Thermal reset. Everything is still hot.", "Thermischer Reset. Lüfter weiterhin optional."),
-                    start = listOf(
-                        Heat('c', rise = 2.2f, load = true), Heatsink('k', cools = "c"),
-                        Circuit('Z', on = false), Pad('1', at = 23 to 14, circuits = "Z"),
-                    ),
-                    traps = listOf(
-                        trap(PastX(6.5f), Heat('c', rise = 1.9f, load = true), say("Core voltage: raised. Tradition.", "Kernspannung: erhöht. Tradition.")),
-                        trap(Pressed('1'), Play(Card.SHORT_CIRCUIT), Power('Z', true), say("Breaker firmware 2.0: ON means ON.", "Sicherungs-Firmware 2.0: AN heißt AN.")),
-                    ),
-                ),
-            ),
+            hint = T("The pad on the plateau cuts the wall and starts the chip: run across right after it. Beyond each door there is more room.", "Der Knopf auf dem Plateau schaltet die Wand ab und startet den Chip: lauf gleich danach drüber. Hinter jeder Tür ist noch Platz."),
         ) {
             border(); floor()
-            fill(4..5, 15..15, 'k')
-            bridge(8..20, 'c')
-            wire(26, 'Z')
-            fill(27..28, 15..15, 'f')
-            spawn(); door()
+            room(0) {
+                fill(4..5, 14..14); fill(6..7, 13..14); fill(8..13, 12..14)
+                fill(14..14, 1..14, 'W')
+                fill(15..22, 15..15, 'c')
+                fill(17..19, 1..1, 'r')
+                spawn(1, 14); door(29, 14)
+            }
+            room(1) {
+                fill(5..9, 15..15, 'g'); fill(14..17, 1..1, 'q')
+            }
+            room(2) {
+                fill(10..12, 15..15, 'f')
+            }
         },
+
     )
 }
