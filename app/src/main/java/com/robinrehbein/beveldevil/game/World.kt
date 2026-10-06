@@ -36,6 +36,25 @@ class Box(var x: Float, var y: Float, var w: Float, var h: Float) {
         x < ox + ow - EPS && r > ox + EPS && y < oy + oh - EPS && b > oy + EPS
 }
 
+/** A rectangle in tiles, [x0]..[x1] × [y0]..[y1]. */
+data class Area(val x0: Float, val y0: Float, val x1: Float, val y1: Float) {
+    val w get() = x1 - x0
+    val h get() = y1 - y0
+    /** The smallest area around both. */
+    operator fun plus(o: Area?): Area = if (o == null) this else Area(min(x0, o.x0), min(y0, o.y0), max(x1, o.x1), max(y1, o.y1))
+    fun shift(dx: Float, dy: Float) = Area(x0 + dx, y0 + dy, x1 + dx, y1 + dy)
+    fun grow(dx: Float, dy: Float) = Area(x0 - dx, y0 - dy, x1 + dx, y1 + dy)
+    /** How much of the two overlaps, in square tiles (0 if they only touch). */
+    fun overlap(o: Area): Float = max(0f, min(x1, o.x1) - max(x0, o.x0)) * max(0f, min(y1, o.y1) - max(y0, o.y0))
+
+    companion object {
+        fun of(b: Box) = Area(b.x, b.y, b.r, b.b)
+        fun tile(c: Pair<Int, Int>) = Area(c.first.toFloat(), c.second.toFloat(), c.first + 1f, c.second + 1f)
+        /** Around all of [areas], null if there are none. */
+        fun union(areas: Iterable<Area?>): Area? = areas.fold(null as Area?) { acc, a -> if (a == null) acc else a + acc }
+    }
+}
+
 enum class GroupMode { IDLE, FALL, MOVE, CHASE }
 
 class Group(val id: Char, hidden: Boolean, val bonk: Boolean) {
@@ -138,7 +157,12 @@ sealed interface Event {
     data object Won : Event
     data class Say(val text: T) : Event
     data class Shake(val amount: Float) : Event
-    data class Played(val card: Card, val bluff: Boolean = false) : Event
+    /** Mephi played [card]; [area] is what the trap that played it acts on (global tiles), so the card can keep clear of it. */
+    data class Played(val card: Card, val bluff: Boolean = false, val area: Area? = null) : Event
+    /** A trap without a card went off over [area] (global tiles): a card still flying should not cover it. */
+    data class Target(val area: Area) : Event
+    /** [Action.Hide] took these solid tiles away (their top-left corners, global tiles): they crumble and fall, for the look. */
+    data class Crumble(val tiles: List<Pair<Float, Float>>) : Event
     /** A [Action.FakeWin] started: looks exactly like [Won] but grants nothing. */
     data object FakeWon : Event
     /** The fake win is over: Mephi glitches back in. */
@@ -430,7 +454,7 @@ class World(val level: Level, private val past: Trail? = null) {
                 atDoor.fired = true
                 atDoor.done = true
                 sprung += Sprung(atDoor.trap, time, time)
-                atDoor.trap.actions.forEach(::run)
+                spring(atDoor.trap)
             } else {
                 state = WorldState.WON
                 stateTime = time
@@ -606,8 +630,68 @@ class World(val level: Level, private val past: Trail? = null) {
             if (ts.timer <= 0f) {
                 ts.done = true
                 sprung += Sprung(ts.trap, ts.at, time)
-                ts.trap.actions.forEach(::run)
+                spring(ts.trap)
             }
+        }
+    }
+
+    /** What the trap that is going off acts on, for its card ([Event.Played]); null outside [spring]. */
+    private var springing: Area? = null
+
+    /** Runs the actions of [trap], telling the card (or, without one, a card still in the air) what it acts on. */
+    private fun spring(trap: Trap) {
+        val area = Area.union(trap.actions.map(::footprint))
+        springing = area
+        try { trap.actions.forEach(::run) } finally { springing = null }
+        if (area != null && trap.actions.none { it is Action.Play || it is Action.Bluff }) events += Event.Target(area)
+    }
+
+    /** Where [a] acts (global tiles), as it is about to run: what a card must not cover. Null for what has no place. */
+    fun footprint(a: Action): Area? {
+        fun tiles(id: Char): Area? = groups[id]?.pieces?.let { ps -> Area.union(ps.map { Area.of(it.box) }) }
+        fun fan(id: Char): Area? = Area.union(fans.filter { it.id == id }.map { Area(it.fan.x0, it.fan.y0, it.fan.x1, it.fan.y1) })
+        // things that move are followed for as long as a card flies
+        val reach = CARD_REACH
+        return when (a) {
+            is Action.Fall -> tiles(a.group)?.let { it + it.shift(0f, 2f) }
+            is Action.Show -> tiles(a.group)
+            is Action.Hide -> tiles(a.group)
+            is Action.Blink -> tiles(a.group)
+            is Action.Tilt -> tiles(a.group)?.let { it.grow(max(a.left, a.right), 0f) }
+            is Action.Belt -> tiles(a.group)?.let { it + it.shift(0f, -1f) }
+            is Action.Move -> tiles(a.group)?.let { it + it.shift(a.dx, a.dy) }
+            is Action.Chase -> tiles(a.group)?.let { t ->
+                val far = a.speed * reach
+                Area(t.x0 - min(far, a.left), t.y0, t.x1 + min(far, a.right), t.y1)
+            }
+            is Action.Saw -> {
+                val start = Area(a.x - a.r, a.y - a.r, a.x + a.r, a.y + a.r)
+                start + start.shift(a.vx * reach, a.vy * reach)
+            }
+            is Action.PathSaw -> Area.union(a.points.map { (x, y) -> Area(x - a.r, y - a.r, x + a.r, y + a.r) })
+            is Action.Laser -> Area.tile(a.from) + Area.tile(a.to)
+            is Action.Portal -> Area.tile(a.from) + Area.tile(a.to)
+            is Action.Reroute -> Area.tile(a.to)
+            is Action.DoorTo -> Area(a.col - 0.1f, if (a.hanging) a.row.toFloat() else a.row + 1f - 1.6f, a.col + 1.1f, if (a.hanging) a.row + 1.6f else a.row + 1f) + Area.of(door.box)
+            is Action.Pad -> Area.tile(a.at)
+            is Action.Fan -> Area(a.x0, a.y0, a.x1, a.y1) + Area.tile(a.at)
+            is Action.FanSet -> fan(a.id)
+            is Action.Power -> Area.union(
+                links.filter { it.id == a.id }.flatMap { listOf(Area.tile(it.from), Area.tile(it.to)) } +
+                    beams.filter { it.laser.id == a.id }.map { Area.tile(it.laser.from) + Area.tile(it.laser.to) } +
+                    listOf(fan(a.id), groups[a.id]?.takeIf { it.belt != null || it.circuit != null }?.let { tiles(it.id) }),
+            )
+            is Action.Circuit -> tiles(a.group)
+            is Action.Clock -> tiles(a.group)
+            is Action.Toggle -> Area.union(a.groups.map { tiles(it) })
+            is Action.BitFlip -> Area.union(listOf(tiles(a.a), tiles(a.b)))
+            is Action.Heat -> tiles(a.group)
+            is Action.Heatsink -> Area.union(listOf(tiles(a.group)) + a.cools.map { tiles(it) })
+            is Action.HeatSpike -> tiles(a.group)
+            is Action.FrameCrack -> Area(a.x0.toFloat(), a.y0.toFloat(), a.x1 + 1f, a.y1 + 1f).let { it + it.shift(0f, 2f) }
+            is Action.Extend -> Area(a.x0.toFloat(), a.top.toFloat(), a.x1 + 1f, a.bottom + 1f)
+            is Action.Gravity, is Action.Swap, is Action.Say, is Action.Shake, is Action.Play, is Action.Bluff, is Action.Undo,
+            is Action.Slope, is Action.FakeWin, is Action.PauseTrap, is Action.Flip, is Action.Roll, is Action.Ghost -> null
         }
     }
 
@@ -615,7 +699,11 @@ class World(val level: Level, private val past: Trail? = null) {
         when (a) {
             is Action.Fall -> group(a.group).apply { if (mode != GroupMode.FALL) { mode = GroupMode.FALL; vy = 0f } }
             is Action.Show -> group(a.group).visible = true
-            is Action.Hide -> group(a.group).visible = false
+            is Action.Hide -> group(a.group).apply {
+                // a floor that opens crumbles away (for the look only: the tiles are gone at once)
+                if (visible) pieces.filter { it.solid }.takeIf { it.isNotEmpty() }?.let { ps -> events += Event.Crumble(ps.map { it.box.x to it.box.y }) }
+                visible = false
+            }
             is Action.Move -> group(a.group).apply { tx = ox + a.dx; ty = oy + a.dy; speed = a.speed; mode = GroupMode.MOVE }
             is Action.Chase -> group(a.group).apply { chase = a; mode = GroupMode.CHASE }
             is Action.Undo -> undo(a.seconds)
@@ -640,11 +728,11 @@ class World(val level: Level, private val past: Trail? = null) {
             is Action.Shake -> events += Event.Shake(a.amount)
             is Action.Bluff -> {
                 lastCard = Card.BLUFF
-                events += Event.Played(a.card, bluff = true)
+                events += Event.Played(a.card, bluff = true, area = springing)
             }
             is Action.Play -> {
                 lastCard = a.card
-                events += Event.Played(a.card)
+                events += Event.Played(a.card, area = springing)
             }
             is Action.Blink -> group(a.group).apply { blink = a; blinkT0 = time }
             is Action.PathSaw -> a.at(0f).let { (x, y) -> saws += Saw(x, y, 0f, 0f, a.r, a, time) }
@@ -1077,10 +1165,36 @@ class World(val level: Level, private val past: Trail? = null) {
         if (grip > 0f) p.vy += sign(lift - p.vy) * min(abs(lift - p.vy), Hardware.LIFT * grip * dt)
         if (p.vy * gravity > Physics.MAX_FALL) p.vy = Physics.MAX_FALL * gravity
 
-        val belt = if (p.grounded) p.ground?.group?.beltSpeed ?: 0f else 0f
+        val belt = beltUnderfoot()
         moveX((p.vx + tilt * slope + belt + drift) * dt)
         moveY(p.vy * dt)
         p.squash += (1f - p.squash) * min(1f, dt * 12f)
+    }
+
+    /**
+     * The speed of the belt the player stands on: of all belt tiles under their feet, the one under most of them. Any
+     * part of the feet on a running belt is carried, from either side: [Player.ground] is just the first tile found
+     * (the left one), which let a belt running left drop the player the moment they touched the tile beside it,
+     * short of whatever waits at its end, while a belt running right carried them all the way off.
+     */
+    private fun beltUnderfoot(): Float {
+        val p = player
+        if (!p.grounded) return 0f
+        val b = p.box
+        val feet = if (gravity > 0f) b.b else b.y
+        var speed = 0f
+        var most = EPS
+        for (g in groups.values) {
+            if (g.belt == null) continue
+            for (s in g.pieces) {
+                if (!s.solid) continue
+                val top = if (gravity > 0f) s.box.y else s.box.b
+                if (abs(top - feet) > 0.01f) continue
+                val over = min(b.r, s.box.r) - max(b.x, s.box.x)
+                if (over > most) { most = over; speed = g.beltSpeed }
+            }
+        }
+        return speed
     }
 
     private fun moveX(dx: Float, skip: Group? = null) {
@@ -1171,6 +1285,8 @@ class World(val level: Level, private val past: Trail? = null) {
         /** Groups made for [Action.Extend] breaches, likewise. */
         private const val BREACH_ID = '\uE100'
         private const val GHOST_INSET = 0.12f
+        /** Seconds a moving trap is followed for its [footprint]: about as long as a card flies. */
+        const val CARD_REACH = 2.2f
         /** Seconds of position history kept for [Action.Undo]. */
         private const val HISTORY = 4f
         private val SPIKE_LINE = T("Pause? Ours come with spikes.", "Pause? Gibt's hier nur mit Stacheln.")
