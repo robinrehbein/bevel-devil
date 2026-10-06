@@ -63,11 +63,14 @@ class World3Act3TrapsTest {
         b(38).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(22f).wait(2f).expect(WorldState.PLAYING)
     }
 
-    // 39: the bridge: the slab behind the lift exit comes down on whoever stands under it, the stud wants a hop, the floor closes on whoever waits
+    // 39: the bridge: the slab behind the lift exit comes down on whoever stands under it, the roof drops its ceiling on whoever
+    // walks it (hop it instead), the floor closes on whoever waits
     @Test
     fun theCeilingFallsOnWhoStandsUnderIt() {
-        b(39).rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded && it.player.box.cx > 7.3f }.rightTo(8.3f).rightJump(0.1f).landRight().wait(2f).expect(WorldState.DEAD)
+        b(39).rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.right(1f).expect(WorldState.DEAD)
         b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
+        // hopping the roof, the ceiling stays up
+        b(39).rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.rightJump(0.1f).landRight().wait(2f).expect(WorldState.PLAYING)
     }
 
     // 40: the draft reverses while you float: the keep is the only safe place, and nobody stays on it for long

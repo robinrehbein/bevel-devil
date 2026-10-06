@@ -112,7 +112,7 @@ class World3Test {
         b(27).rightTo(4.5f).rightTo(21.9f).rightJump(0.5f).landRight().right(3f).expect(WorldState.DEAD)
         b(31).rightTo(9.8f).right(4f).expect(WorldState.DEAD)
         // 33: the leap that is obvious on the bridge (a long one) comes down on the plank that gives way; 36: hugging the right wall of the chute is where the second bar comes from;
-        // 39: running on after the lift runs into the stud on the bridge
+        // 39: running on after the lift brings the ceiling down on the roof
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight().wait(2f).expect(WorldState.DEAD)
         b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
         b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)

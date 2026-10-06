@@ -207,16 +207,15 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Ceiling inspection: it passes. You might not.", "Deckenprüfung: Sie besteht. Du vielleicht nicht."), delay = 0.3f),
-                trap(Landed(11f, 12.9f), Fall('h'), say("And the next one, for good measure.", "Und die nächste, zur Sicherheit."), delay = 0.3f),
+                trap(Zone(9.8f, 5.45f, 10.8f, 5.7f), Fall('h'), say("Walking on the roof? The ceiling takes that personally.", "Auf dem Dach spazieren? Das nimmt die Decke persönlich.")),
                 trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
                 trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),
             ),
-            hint = T("Every ceiling falls on whoever stands under it. Land, then keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter steht. Landen, weitergehen, und rechne in der Mitte mit einem Turbo."),
+            hint = T("Every ceiling falls on whoever walks under it. Hop across the roof, keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter läuft. Hüpf übers Dach, bleib in Bewegung, und rechne in der Mitte mit einem Turbo."),
         ) {
             border(); floor()
             fill(7..12, 6..14)
             fill(17..18, 1..9)
-            put(10, 5, '^')
             fill(7..7, 1..2, 'c'); fill(11..12, 1..2, 'h')
             fill(20..23, 1..2, 'e')
             fill(25..28, 12..12, 'v')
@@ -234,12 +233,13 @@ object World3PartE {
             ),
             traps = listOf(
                 trap(PastX(10f), Play(Card.THROTTLE), FanSet('f', -4f), say("Reverse thrust! The keep is your friend.", "Schubumkehr! Der Bergfried ist dein Freund.")),
-                trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.6f),
+                trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.8f),
                 trap(PastX(17f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
                 trap(Landed(23f, 27f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
             ),
             hint = T("The reverse thrust throws you back, but the keep in the middle is a fine place to stand. The welcome mat is not.", "Die Schubumkehr wirft dich zurück, aber der Bergfried in der Mitte ist ein guter Standplatz. Die Fußmatte nicht."),
-            // rematch: the controls are twisted as you float, and the mat has no opinions this time: left is right all the way across
+            // rematch: the controls are twisted as you float, untwisted in mid-flight under the headwind, and twisted once more as you
+            // land on the far side (the mat has no opinions this time: the keys do)
             rematch = listOf(
                 Round(
                     T("Same castle. Fresh perspective.", "Gleiches Schloss. Frische Perspektive."),
@@ -248,7 +248,8 @@ object World3PartE {
                         trap(PastX(10f), FanSet('f', -4f), say("Reverse thrust, as advertised.", "Schubumkehr, wie angekündigt.")),
                         trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Or backward. Who can tell.", "Schub voraus. Oder zurück. Wer weiß das schon."), delay = 0.6f),
                         trap(PastX(17f), Power('g', true), say("Headwind again. Press the other way.", "Wieder Gegenwind. Drück in die andere Richtung.")),
-                        trap(PastX(22.5f), Swap(false), say("Untwisted. Surprise: left is left again.", "Entdreht. Überraschung: Links ist wieder links.")),
+                        trap(PastX(19.5f), Swap(false), say("Untwisted, mid-flight. Surprise: left is left again.", "Entdreht, mitten im Flug. Überraschung: Links ist wieder links.")),
+                        trap(Landed(23f, 27f), Swap(true), say("And twisted again. I could not decide.", "Und wieder verdreht. Ich konnte mich nicht entscheiden.")),
                     ),
                 ) { put(29, 12, '.') },
             ),

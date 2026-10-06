@@ -50,17 +50,18 @@ object World3RoomsE {
                 .rightUntil { it.player.box.cx > 25f }.rightTo(25.6f).rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         39 to listOf<Solution>(
-            { rightUntil { it.player.box.b < 6.3f }.rightTo(8.3f).rightJump(0.1f).landRight()
+            { rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.rightJump(0.1f).landRight()
                 .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.rightUntil { it.player.box.cx > 29.5f } },
         ),
         40 to listOf<Solution>(
             { rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
                 .waitFor { it.fans[0].wind > 4.5f }.rightUntil { it.player.box.cx > 23.2f }
                 .rightUntil { it.player.grounded && it.player.box.cx > 23.4f }.rightTo(27.0f).rightJump(0.1f).landRight().rightUntil { it.player.box.cx > 30.3f } },
-            // rematch: the controls are twisted: press left to float right
+            // rematch: the controls are twisted: press left to float right, right again once they untwist in mid-flight, and left
+            // again on the far side
             { rightTo(8.6f).leftUntil { it.player.grounded && it.player.box.cx > 14.4f }
-                .waitFor { it.fans[0].wind > 4.5f }.leftUntil { it.player.box.cx > 22.8f }
-                .rightUntil { it.player.box.cx > 30.3f } },
+                .waitFor { it.fans[0].wind > 4.5f }.leftUntil { !it.swapped }
+                .rightUntil { it.swapped }.leftUntil { it.player.box.cx > 30.3f } },
         ),
     )
 }
