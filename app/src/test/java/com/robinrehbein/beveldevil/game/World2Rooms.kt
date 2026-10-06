@@ -175,8 +175,8 @@ object World2Rooms {
         .leftUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
         .hopL(15.6f, 0.5f).hopL(8.2f, 0.5f).left(1.5f)
 
-    /** 33, round 2: hop the LEDs where round 1 hopped the hole, hop the hole that opens under the echo, up the steps, along the deck without stopping (the block drops late), hop the spikes. */
-    fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.2f, 0.5f)
+    /** 33, round 2: hop the LEDs where round 1 hopped the hole, hop the hole that opens under the echo, up the steps and off the top one before it drops, along the deck without stopping (the block drops late), hop the spikes. */
+    fun l33r2(b: Bot) = b.hopR(8.8f, 0.5f).hopR(15.5f, 0.5f).rightTo(21.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().hopL(26.6f, 0.5f)
         .hopL(8.2f, 0.5f).left(1.5f)
 
     /** 34: along the lane until the gravity turns over, up onto the ceiling and back left along it, into the link that comes up, off the ledge, hop the LEDs and run to the door. */
@@ -217,8 +217,10 @@ object World2Rooms {
 
     fun l39(b: Bot) = l39ToFirewall(b).pauseResume().leftTo(7.5f).left(1f)
 
-    /** 40: left along the lane until the wall that stalks you is five tiles away, hop it (it turns around after you), run to the door. */
-    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 4.0f) }.leftJump(0.5f).landLeft().left(3f)
+    /** 40: left along the lane until the paddle is four tiles away, hop it (ping), wait at the net until it comes back and hop it (pong), keep away from it until the net is down, hop it once more and run to the door. */
+    fun l40(b: Bot) = b.leftUntil { wallOnTheLeft(it, 'S', 3.2f) }.leftJump(0.5f).landLeft().leftTo(7.0f)
+        .waitFor { wallOnTheRight(it, 'S', 2.8f) }.rightJump(0.5f).landRight().right(0.45f)
+        .waitFor { it.group('N').oy > -0.5f }.leftUntil { wallOnTheLeft(it, 'S', 2.8f) }.leftJump(0.5f).landLeft().left(3f)
 
     val solutions: Map<Int, (Bot) -> Bot> = mapOf(
         17 to ::l17, 18 to ::l18, 19 to ::l19, 20 to ::l20, 21 to ::l21, 22 to ::l22, 23 to ::l23, 24 to ::l24,

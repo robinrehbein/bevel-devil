@@ -10,7 +10,7 @@ object World2RoomsD {
     fun l41(b: Bot) = b.hopR(8.6f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
         .leftJump(0.55f).landLeft().hopL(18.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
 
-    /** 41, round 2: hop the first stone (it drops at once), run over the honest second one, hop off the third, then as before. */
+    /** 41, round 2: hop the first stone (it drops at once), run over the slowly sinking second one, hop off the third, then as before. */
     fun l41r2(b: Bot) = b.hopR(5.2f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
         .leftJump(0.55f).landLeft().hopL(18.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
 

@@ -9,6 +9,7 @@ import com.robinrehbein.beveldevil.game.Action.Ghost
 import com.robinrehbein.beveldevil.game.Action.Gravity
 import com.robinrehbein.beveldevil.game.Action.Pad
 import com.robinrehbein.beveldevil.game.Action.Laser
+import com.robinrehbein.beveldevil.game.Action.Move
 import com.robinrehbein.beveldevil.game.Action.PathSaw
 import com.robinrehbein.beveldevil.game.Action.PauseTrap
 import com.robinrehbein.beveldevil.game.Action.Portal
@@ -39,8 +40,9 @@ object World2Part3C {
     val levels: List<Level> = listOf(
 
         // 33 — sudo !! (a trap room: U14 the repeat is a lie, U1 the floor). Along the lane a hole opens in the floor (command 1), and the same
-        // hole opens again as you land (sudo !!: louder). Up the stairs and back left along the deck, the repeat comes from above: a block drops
-        // out of the ceiling as you pass, and as you hop it the spikes grow where the hop lands
+        // hole opens again as you land (sudo !!: louder). On top of the stairs history repeats from the top (a slab drops onto the step: jump
+        // for the deck at once), and back left along the deck the repeat comes from above again: a block drops out of the ceiling as you pass,
+        // and as you hop it the spikes grow where the hop lands
         Level(
             name = T("sudo !!", "sudo !!"),
             intro = T("The last command is still warm.", "Der letzte Befehl ist noch warm."),
@@ -48,11 +50,13 @@ object World2Part3C {
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.CRUMBLE), Fall('a'), say("Command: make hole. Done.", "Befehl: Loch machen. Erledigt.")),
                 trap(PastX(11.0f), Fall('b'), say("sudo !!  Again. Louder.", "sudo !!  Nochmal. Lauter.")),
+                trap(Landed(22.2f, 27.6f), Fall('e'), say("history | tail -1. From the top.", "history | tail -1. Von oben."), delay = 0.5f),
                 trap(Zone(15.6f, 4f, 16.4f, 9f), Fall('c'), say("sudo !!  As root, this time.", "sudo !!  Diesmal als root.")),
                 trap(Zone(11.5f, 3f, 14.5f, 7.2f), Show('A'), say("sudo sudo !!  Spikes are the new hole.", "sudo sudo !!  Spikes sind das neue Loch.")),
             ),
             // rematch: the first hole is a bluff, and the hop you learned lands in the LEDs. The echo is late now (the hole opens while you are over
-            // the LEDs), and the block that dropped when you stopped now drops late: whoever stops to look is under it, the one who runs is not
+            // the LEDs), the top step is the command this time (it drops into a pit a moment after you land: jump on), the block that dropped
+            // when you stopped now drops late (whoever stops to look is under it), and a plank under the deck drops where you land past the LEDs
             rematch = listOf(
                 Round(
                     T("Same command. Check your privileges.", "Gleicher Befehl. Prüf deine Rechte."),
@@ -61,6 +65,8 @@ object World2Part3C {
                         trap(PastX(4.5f), Bluff(Card.CRUMBLE), say("Command: make hole. (Not this time.)", "Befehl: Loch machen. (Diesmal nicht.)")),
                         trap(PastX(6.5f), Show('E'), say("Spikes grow where your hop lands.", "Spikes wachsen, wo dein Hüpfer landet.")),
                         trap(Landed(12.2f, 15f), Fall('b'), say("sudo !!  The echo is late.", "sudo !!  Das Echo kommt spät.")),
+                        trap(Zone(12.5f, 11f, 15f, 15.5f), Fall('g'), say("And the deck sheds a plank. sudo make me a ceiling.", "Und das Deck verliert ein Brett. sudo mach mir eine Decke."), delay = 0.3f),
+                        trap(Landed(25.2f, 29.8f), Fall('f'), say("rm -rf ./step. Recursively. With you.", "rm -rf ./stufe. Rekursiv. Mit dir."), delay = 0.8f),
                         trap(Zone(22f, 4f, 22.8f, 9f), Fall('c'), say("Do not stop to look. I will not.", "Bleib nicht stehen. Ich tu es auch nicht."), delay = 0.35f),
                     ),
                 ) {
@@ -68,7 +74,8 @@ object World2Part3C {
                     fill(14..15, 15..17, '#'); fill(17..18, 15..17, 'b')
                     fill(12..13, 1..2, '#'); fill(21..22, 1..2, 'c')
                     fill(20..21, 13..14, '.'); fill(22..27, 11..14, '.')
-                    fill(20..22, 9..9); fill(23..24, 13..14); fill(25..29, 11..14)
+                    fill(20..22, 9..9); fill(23..24, 13..14); fill(25..29, 11..14, 'f'); fill(25..29, 15..17, '.')
+                    fill(13..14, 10..10, 'g')
                     put(4, 8, '^'); put(5, 8, '^')
                 },
             ),
@@ -76,7 +83,7 @@ object World2Part3C {
             border(); floor()
             fill(1..19, 9..9)
             fill(8..9, 15..17, 'a'); fill(14..15, 15..17, 'b')
-            fill(12..13, 1..2, 'c')
+            fill(12..13, 1..2, 'c'); fill(23..25, 1..2, 'e')
             fill(20..21, 13..14); fill(22..27, 11..14)
             put(4, 8, 'A'); put(5, 8, 'A')
             spawn(2, 14); door(2, 8)
@@ -241,19 +248,21 @@ object World2Part3C {
         },
 
         // 40 — ping pong (a breather: U16 the lag roll, with a stalker). Short and mean: the door is at the far left, and as you pass the middle of the lane
-        // a wall with spikes wakes up at the left end and starts for you, at the same moment the picture loses its vertical hold and rolls. Hop it as it
-        // comes (ping), and it turns around and follows you to the door (pong)
+        // a paddle with spikes wakes up at the net and starts for you, at the same moment the picture loses its vertical hold and rolls. Hop it as it
+        // comes (ping); a net of spikes shoots up in front of the door as you come and only drops a while later, and the paddle turns around and
+        // comes back for you in the meantime: hop it again (pong), and once more on the way back to the open door
         Level(
             name = T("Ping Pong", "Ping-Pong"),
             intro = T("Your ping is excellent. Truly.", "Dein Ping ist hervorragend. Wirklich."),
-            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT)),
+            legend = mapOf('S' to Glyph(spike = true, dir = Dir.RIGHT), 'N' to Glyph(spike = true, dir = Dir.UP)),
             traps = listOf(
-                trap(BeforeX(24f), Play(Card.STALKER), Chase('S', 3.5f, left = 0f, right = 22f), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
-                trap(BeforeX(7f), say("Pong. Do keep going.", "Pong. Lauf ruhig weiter.")),
+                trap(BeforeX(24f), Play(Card.STALKER), Chase('S', 2.8f, left = 0f, right = 19f), Roll(3.5f, 2), say("Lag spike. Keep your eyes on the level.", "Lag-Spitze. Behalt das Level im Kopf.")),
+                trap(BeforeX(7.7f), Move('N', 0f, -3f, 20f), say("Net's up. Rally first.", "Netz ist oben. Erst den Ballwechsel.")),
+                trap(BeforeX(7.7f), Move('N', 0f, 3f, 6f), delay = 0.4f),
             ),
         ) {
             border(); floor()
-            fill(1..1, 14..14, 'S')
+            fill(5..5, 14..14, 'S'); fill(4..4, 16..17, 'N')
             spawn(29, 14); door(2, 14)
         },
     )

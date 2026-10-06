@@ -46,7 +46,8 @@ object World2Part3D {
         // 41 — security audit (a trap room: U1 the floor, zero trust: every stone is a different lie). Three stones lie over the pit: the first
         // falls a moment after you step on it, the second drops at once (hop it), the third vanishes under whoever crosses it. On the far side the
         // steps lie as well, and the way to the door is back along a deck over the pit: a plank falls out of it ahead of you as you come, and as you
-        // land behind the hole the next one is revoked. Rematch: the stones swap their lies (the first drops at once, the second is honest now)
+        // land behind the hole the next one is revoked. Rematch: every lie is shuffled (the first stone drops at once, the second sinks slowly
+        // under whoever stands on it, step 4 vanishes at once)
         Level(
             name = T("Security Audit", "Sicherheitsaudit"),
             intro = T("Everything looks solid. I personally checked it all.", "Alles sieht solide aus. Ich habe persönlich nachgeprüft."),
@@ -59,14 +60,15 @@ object World2Part3D {
                 trap(Touch('t'), Hide('q'), say("Plank 6: who audits the auditors?", "Planke 6: Wer prüft die Prüfer?"), delay = 0.2f),
             ),
             // rematch: re-audit. The same stones, but the lies are shuffled: the first one drops at once now, so round 1's run over it ends in the
-            // pit, and the second one is honest. Sixth lie: the deck's far end is a step that vanishes under you, so the ascent goes over it
+            // pit, the second one sinks slowly (cross it, don't stop), and step 4 vanishes the moment you land on it (jump on at once)
             rematch = listOf(
                 Round(
                     T("Audit failed. Re-audit. Same stones.", "Audit durchgefallen. Nachprüfung. Gleiche Steine."),
                     traps = listOf(
-                        trap(Touch('a'), Play(Card.SINKING), Move('a', 0f, 12f, 9f), say("Stone 1: revoked in advance.", "Stein 1: vorab widerrufen."), delay = 0.05f),
-                        trap(Touch('c'), Hide('c'), say("Stone 3: still not trusted.", "Stein 3: weiterhin nicht vertrauenswürdig."), delay = 0.3f),
-                        trap(Landed(25f, 28f), Hide('s'), say("Step 4: audit trail missing.", "Stufe 4: Prüfpfad fehlt."), delay = 0.7f),
+                        trap(Touch('a'), Play(Card.CRUMBLE), Fall('a'), say("Stone 1: revoked in advance.", "Stein 1: vorab widerrufen."), delay = 0.05f),
+                        trap(Touch('b'), Move('b', 0f, 12f, 2.5f), say("Stone 2: trusted. Slowly less so.", "Stein 2: vertrauenswürdig. Langsam immer weniger."), delay = 0.4f),
+                        trap(Touch('c'), Hide('c'), say("Stone 3: still not trusted. Just later.", "Stein 3: weiterhin nicht vertrauenswürdig. Nur später."), delay = 0.37f),
+                        trap(Landed(25f, 28f), Hide('s'), say("Step 4: audit trail missing. So is the step.", "Stufe 4: Prüfpfad fehlt. Die Stufe auch."), delay = 0.3f),
                         trap(Zone(20.5f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: re-scoped.", "Planke 5: neu zugeschnitten.")),
                         trap(Touch('t'), Hide('q'), say("Plank 6: the audit was the exploit.", "Planke 6: Das Audit war der Exploit."), delay = 0.2f),
                     ),
