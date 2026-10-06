@@ -28,18 +28,21 @@ object World3PartE {
                 trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.7f),
             ),
             hint = T("Stand in the draft and hold on to the wall. Planks only give way once you are on them.", "Stell dich in den Aufwind und halt dich an der Wand. Planken geben erst nach, wenn du drauf stehst."),
-            // rematch: the planks hold now, and nothing waits for the second landing: but a stud has grown on the far plank, exactly where the
-            // long leap from round one comes down. Hop it low instead
+            // rematch: the planks hold now, and nothing waits for the second landing: but the first draft takes a lunch break while you
+            // walk up (spikes on the floor of the pit: wait at the edge, do not run in), and a stud has grown on the far plank, exactly where
+            // the long leap from round one comes down. Hop it low instead
             rematch = listOf(
                 Round(
                     T("Same ride. A different bridge.", "Gleiche Fahrt. Eine andere Brücke."),
                     traps = listOf(
+                        trap(PastX(5f), FanSet('f', 0f), say("Lunch break. The draft is out. Take a seat.", "Mittagspause. Der Aufwind ist aus. Setz dich.")),
+                        trap(PastX(5f), FanSet('f', 9f), delay = 0.75f),
                         trap(Landed(12.2f, 15.9f), Play(Card.SPIKE_SEED), Show('p'), say("Fresh from the factory: one plank, slightly pointy.", "Frisch ab Werk: eine Planke, leicht spitz.")),
                         trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 0f), say("Another pause. Our regular passengers know it.", "Wieder eine Pause. Stammgäste kennen das.")),
                         trap(Zone(26f, 3f, 28.8f, 6f), FanSet('g', 9f), delay = 1.75f),
                     ),
                     legend = mapOf('p' to Glyph(spike = true, hidden = true)),
-                ) { put(20, 7, 'p'); put(22, 5, '.') },
+                ) { put(20, 7, 'p'); put(22, 5, '.'); fill(8..11, 16..16, '^') },
             ),
         ) {
             border(); floor(); pit(7..11)
@@ -153,7 +156,7 @@ object World3PartE {
                 trap(PastX(5f), Play(Card.SINKING), Move('W', 24f, 0f, 3.2f), say("Break time is over. Everyone out.", "Pause vorbei. Alle raus.")),
                 trap(PastX(9f), FanSet('w', 4.8f), say("Coffee break: the draft takes five.", "Kaffeepause: Der Zug macht fünf Minuten.")),
                 trap(PastX(19f), Power('u', true), say("The lift only runs for passengers.", "Der Aufzug fährt nur für Fahrgäste.")),
-                trap(Landed(19.8f, 21.9f), Move('f', 0f, 3f, 6f), say("Do not linger at the lift. The floor has a schedule too.", "Nicht am Aufzug trödeln. Der Boden hat auch einen Fahrplan."), delay = 0.45f),
+                trap(Landed(19f, 21.9f), Move('f', 0f, 3f, 6f), say("Do not linger at the lift. The floor has a schedule too.", "Nicht am Aufzug trödeln. Der Boden hat auch einen Fahrplan."), delay = 0.45f),
             ),
             hint = T("The headwind rests in rhythm. Sprint while it rests, and do not stop at the lift.", "Der Gegenwind ruht im Takt. Sprinte, solange er ruht, und trödle nicht am Aufzug."),
         ) {

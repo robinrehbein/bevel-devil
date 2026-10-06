@@ -9,8 +9,8 @@ object World3RoomsE {
         33 to listOf<Solution>(
             { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight()
                 .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
-            // rematch: hop the stud on the far plank low instead of the long leap
-            { rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
+            // rematch: wait at the edge until the draft is back, then hop the stud on the far plank low instead of the long leap
+            { rightTo(5.7f).waitFor { it.fans[0].wind > 8.5f }.rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(18.2f).rightJump(0.1f).landRight()
                 .rightTo(24.6f).rightUntil { it.player.box.cx > 29.3f } },
         ),
         34 to listOf<Solution>(
