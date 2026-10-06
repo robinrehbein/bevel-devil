@@ -462,7 +462,8 @@ object World2Part2 {
         // 30 — hop limit, a puzzle room of two rooms (R3 the portal, R5 the floors, U11 the route is manipulated, U18 the room goes on): the tunnel on the
         // lane leads up to the ledge, and the ledge piece in front of the door drops out over a row of LEDs as you come near (TTL expired: hop the
         // hole). At the door the wall breaks open and the door slips into the second room. There you run along the ledge and drop onto a lane
-        // whose pit is crossed by a portal, which is re-pointed as you come near (the exit moves) and out of which you step into spikes that grow
+        // whose pit is crossed by two portals: the obvious one, in front of you, is re-pointed as you walk the ledge (and now sends you home, TTL), and the
+        // other one is behind you, under the ledge, which you have to walk back to; you step out of it into spikes that grow
         Level(
             name = T("Hop Limit", "Hop-Limit"),
             intro = T("TTL: 64. No need to rush.", "TTL: 64. Kein Grund zur Eile."),
@@ -471,12 +472,13 @@ object World2Part2 {
             start = listOf(
                 Portal('a', 9 to 14, 10 to 8, twoWay = false),
                 Portal('b', roomX(1, 15f).toInt() to 14, roomX(1, 19f).toInt() to 14, twoWay = false),
+                Portal('c', roomX(1, 5) to 14, roomX(1, 25) to 14, twoWay = false),
             ),
             traps = listOf(
                 trap(PastX(16f), Fall('f'), say("TTL exceeded in transit. The floor too.", "TTL in der Übertragung überschritten. Der Boden auch."), delay = 0.3f),
                 trap(Trigger.AtDoor, Play(Card.ANNEX), Action.Extend(into = 1, top = 6, bottom = 8, door = roomX(1, 30f).toInt() to 14)),
-                trap(Zone(roomX(1, 9f), 6f, roomX(1, 11.5f), 9f), Reroute('b', roomX(1, 26f).toInt() to 14), say("Hop 2 of 3: the exit has moved on.", "Hop 2 von 3: Der Ausgang ist weitergezogen.")),
-                trap(Landed(roomX(1, 25.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes.", "Hop 3 von 3: Spikes.")),
+                trap(Zone(roomX(1, 6f), 6f, roomX(1, 9.5f), 9f), Reroute('b', 3 to 14), say("Hop 2 of 3: the obvious route was deprecated.", "Hop 2 von 3: Die offensichtliche Route wurde abgekündigt.")),
+                trap(Landed(roomX(1, 24.5f), roomX(1, 27.5f)), Show('A'), say("Hop 3 of 3: spikes.", "Hop 3 von 3: Spikes.")),
             ),
         ) {
             border(); floor()
@@ -487,7 +489,7 @@ object World2Part2 {
                 put(28, 8, 'D')
             }
             room(1) {
-                fill(0..11, 9..9)
+                fill(0..9, 9..9)
                 pit(17..23); fill(17..23, 17..17, '^')
                 put(28, 14, 'A'); put(29, 14, 'A')
             }

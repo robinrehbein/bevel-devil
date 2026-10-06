@@ -378,6 +378,13 @@ class World2Test {
         assertEquals(2, bot.world.level.rooms)
         assertTrue(bot.world.door.tx > 32f)
     }
+    /** Hop Limit: the link in front of you after the drop was re-pointed and sends you home (TTL), while the real one waits behind you, under the ledge. */
+    @Test fun level30TheLinkInFrontGoesHome() {
+        val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
+            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.rightUntil(6f) { it.player.box.cx < 10f }
+        bot.expect(WorldState.PLAYING)
+        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 10f)
+    }
     @Test fun level31() { World2DesignTest.play(31) }
     @Test fun level32() { World2DesignTest.play(32) }
 
