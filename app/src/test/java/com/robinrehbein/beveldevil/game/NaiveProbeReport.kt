@@ -185,7 +185,10 @@ class NaiveProbeReport {
         val label = base.w?.takeIf { base.dead }?.let(::label)
         val sprung = sprungUnits(stage, base, base.time)
         val without: Map<List<Trap>, Res> = if (ablate || base.dead) sprung.associateWith { u -> run(DesignRules.without(stage, u.toSet())) } else emptyMap()
-        val causal = if (!base.dead) emptyList() else sprung.filter { u -> without.getValue(u).outcome != base.outcome }
+        /** Units whose removal changes how the death plays out; a cut that throws (a later trap needs it) cannot be judged and is left out. */
+        val causal = if (!base.dead) emptyList() else sprung.filter { u -> without.getValue(u).let { it.w != null && it.outcome != base.outcome } }
+        /** Ablations that threw, for the report. */
+        val threw get() = without.values.count { it.w == null }
         /** The trap units that killed (empty: none, or static). */
         val killerUnits: List<List<Trap>> = if (!base.dead) emptyList() else causal.filter { drives(it, label ?: "?", base.w?.let(::sawOf)) }.ifEmpty { causal }
         val killers: List<String> = when {
@@ -309,6 +312,7 @@ class NaiveProbeReport {
             append(" | distinctKillers=${trapKillers.size} {${trapKillers.joinToString(",")}} static={${statics.joinToString(",") { it.removePrefix("static:") }}} realTraps=${real.size}/${units(stage).size}")
             append(" threats=${if (realMoments.isEmpty()) "-" else "$threats/${realMoments.size}"}")
             append(" learn=${bestLearn?.let { "${it.second}(${it.first})" } ?: "-"}")
+            (all + p7).sumOf { it.threw }.let { if (it > 0) append(" ablationsThrew=$it") }
             if (helpfulDoor.isNotEmpty()) append(" helpful=${helpfulDoor.joinToString(",")}")
             if (helpfulProgress.isNotEmpty()) append(" helpfulProgress=${helpfulProgress.joinToString(",")}")
             append(" | ").append(flags.joinToString(" ").ifEmpty { "-" })
