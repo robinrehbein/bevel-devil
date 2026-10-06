@@ -34,5 +34,11 @@ object World3RoomsA {
                 .leftTo(30.1f).leftJump(0.55f).landLeft().waitFor { w -> w.group('d').let { it.mode == GroupMode.IDLE && it.oy > 1.5f } }
                 .leftJump(0.55f).landLeft().leftTo(2.4f) },
         ),
+        6 to listOf<Solution>(
+            { leftTo(7.2f).leftJump(0.55f).landLeft().rightUntil(0.3f) { it.pads[0].presses >= 1 || it.player.box.cx > 2.9f }.leftUntil(0.3f) { it.pads[0].presses >= 1 || it.player.box.cx < 2.1f }
+                .rightTo(3.2f).rightJump(0.55f).landRight()
+                .rightTo(9.4f).rightJump(0.55f).landRight().rightTo(16.0f).rightJump(0.55f).landRight()
+                .rightTo(24.0f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
+        ),
     )
 }

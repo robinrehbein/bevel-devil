@@ -153,5 +153,33 @@ object World3PartA {
             fill(12..14, 1..2); fill(12..14, 3..4, 'e')
             spawn(2, 14); door(2, 8)
         },
+
+        // 6 — the door is sealed by a wall of live copper, the button that cuts it sits on a lonely island across a pit (and the
+        // island sinks while you press it), the second button, in the way back to the door, puts the wall back, and the last
+        // bit of floor in front of the door is on loan. Two buttons: press the one you need, hop the other.
+        Level(
+            name = T("Two Buttons", "Zwei Knöpfe"),
+            intro = T("Press whichever you like.", "Drück, welchen du willst."),
+            start = listOf(
+                Circuit('w'),
+                Pad('1', at = 2 to 14, circuits = "w", mode = PadMode.OFF),
+                Pad('2', at = 19 to 14, circuits = "w", mode = PadMode.ON),
+            ),
+            traps = listOf(
+                trap(Touch('p'), Play(Card.SINKING), Fall('p'), say("Button 1 undoes the wall. The island undoes itself.", "Knopf 1 räumt die Wand weg. Die Insel räumt sich selbst weg."), delay = 0.5f),
+                trap(Landed(6f, 10.5f), Fall('m'), say("A hole. Handmade.", "Ein Loch. Handarbeit."), delay = 0.2f),
+                trap(Landed(19.5f, 25f), Fall('q'), say("The tiles behind that button are on loan.", "Die Kacheln hinter dem Knopf sind geliehen."), delay = 0.5f),
+            ),
+            hint = T("Button 2 puts the wall back. Hop it.", "Knopf 2 stellt die Wand wieder hin. Hüpf drüber."),
+        ) {
+            border(); floor()
+            pit(4..5); pit(1..3)
+            fill(1..3, 15..15, 'p')
+            fill(11..12, 15..17, 'm')
+            fill(21..23, 15..17, 'q')
+            wire(25, 'w')
+            fill(26..27, 13..14); fill(28..30, 11..14)
+            spawn(22, 14); door(30, 10)
+        },
     )
 }

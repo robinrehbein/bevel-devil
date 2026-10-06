@@ -77,7 +77,7 @@ class World3DesignTest : DesignTestBase() {
         )
 
         /** Levels that follow the V2 rules; the rollout adds each block here (see [DesignRules]). */
-        val REBUILT: Set<Int> = setOf(1, 2, 3, 4, 5)
+        val REBUILT: Set<Int> = setOf(1, 2, 3, 4, 5, 6)
 
         /** Level number → bot solution per round (round 1 first). */
         val SOLUTIONS: Map<Int, List<Solution>> = World3RoomsA.solutions
