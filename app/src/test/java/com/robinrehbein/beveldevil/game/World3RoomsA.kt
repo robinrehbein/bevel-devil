@@ -53,5 +53,8 @@ object World3RoomsA {
                 .rightTo(17.0f).waitFor { w -> darkStart(w, 'Z') }.rightTo(20.6f).rightTo(24.5f).waitFor { w -> darkStart(w, 'Y') }
                 .rightTo(27.6f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1f) },
         ),
+        8 to listOf<Solution>(
+            { rightTo(16.4f).rightJump(0.55f).landRight().rightJump(0.55f).landRight().rightTo(29.5f).right(1f) },
+        ),
     )
 }

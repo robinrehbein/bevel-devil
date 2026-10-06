@@ -206,5 +206,23 @@ object World3PartA {
             fill(28..29, 13..14); fill(30..30, 11..14)
             spawn(2, 14); door(30, 10)
         },
+
+        // 8 ★ — the bridge is half there: the first half is live, the second dark, and too wide to jump. A cosmic ray swaps the two
+        // the moment something lands on the first half, so you have to be gone (in the air again) when it hits.
+        Level(
+            name = T("Memory", "Arbeitsspeicher"),
+            intro = T("ECC memory. Error-free, allegedly.", "ECC-Speicher. Angeblich fehlerfrei."),
+            start = listOf(Circuit('a'), Circuit('b', on = false)),
+            traps = listOf(
+                trap(Landed(18f, 22f), Play(Card.BIT_FLIP), BitFlip('a', 'b'), say("Bit flip! Purely cosmic. Nothing to do with me.", "Bitkipper! Rein kosmisch. Hat nichts mit mir zu tun."), delay = 0.12f),
+            ),
+            hint = T("The far half only lights up when you land on the near one. Hop on, hop off. And walk the last stretch.", "Die ferne Hälfte leuchtet erst, wenn du auf der nahen landest. Drauf, runter, und das letzte Stück gehen."),
+        ) {
+            border(); floor()
+            pit(18..26)
+            fill(18..21, 15..15, 'a'); fill(22..26, 15..15, 'b')
+            ceilingSpikes(27..29, 13)
+            spawn(2, 14); door(30, 14)
+        },
     )
 }
