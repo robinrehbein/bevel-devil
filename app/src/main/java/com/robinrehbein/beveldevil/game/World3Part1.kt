@@ -30,7 +30,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Zone
 object World3Part1 {
     private val hidden = Glyph(spike = true, hidden = true)
 
-    val levels: List<Level> = listOf(
+    private val old: List<Level> = listOf(
 
         // 1 — teaches the pad: step on it and the dark rail bridge wakes up; but on a timer, so do not dawdle
         Level(
@@ -429,4 +429,7 @@ object World3Part1 {
             spawn(); door()
         },
     )
+
+    /** Levels 1-8 are the rebuilt block ([World3PartA]); the rest of the act is still the old chain. */
+    val levels: List<Level> = World3PartA.levels + old.drop(World3PartA.levels.size)
 }
