@@ -199,29 +199,30 @@ object World3PartE {
             spawn(10, 14); door(30, 5)
         },
 
-        // 39 — Downdraft (R10, U2)
+        // 39 — Downdraft (R10, U2): you start up on the roof of the machine at the left. A loose piece of ceiling over the far end of the roof
+        // drops as you head for it (stop short, let it land, hop it), then you are in the downdraft, which lowers you gently, until it kicks into
+        // turbo halfway down. Down at the bottom the way to the door runs under a low ceiling, and its loose panel drops ahead of you as you come: stop short
+        // of it, let it land, hop it. The bottom of the shaft is spiked: hold on to the wall, and step out under it before the turbo lands you.
         Level(
             name = T("Downdraft", "Fallwind"),
             intro = T("Gravity, but with a motor.", "Schwerkraft, aber mit Motor."),
             start = listOf(
-                Fan('u', at = 3 to 17, dir = Dir.UP, reach = 12, speed = 6f, width = 4),
                 Fan('d', at = 13 to 0, dir = Dir.DOWN, reach = 15, speed = 2.2f, width = 4),
             ),
             traps = listOf(
-                trap(Zone(6.8f, 4.5f, 7.9f, 6.2f), Play(Card.HEADBUTT), Fall('c'), say("Ceiling inspection: it passes. You might not.", "Deckenprüfung: Sie besteht. Du vielleicht nicht."), delay = 0.3f),
-                trap(Zone(9.8f, 5.45f, 10.8f, 5.7f), Fall('h'), say("Walking on the roof? The ceiling takes that personally.", "Auf dem Dach spazieren? Das nimmt die Decke persönlich.")),
-                trap(Zone(13f, 9f, 17f, 11f), FanSet('d', 3.4f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
-                trap(PastX(18f), Fall('e'), say("Second floor. Closing.", "Zweiter Stock. Schließt gleich."), delay = 0.35f),
+                trap(PastX(8.3f), Play(Card.HEADBUTT), Fall('h'), say("Walking on the roof? The ceiling takes that personally.", "Auf dem Dach spazieren? Das nimmt die Decke persönlich."), delay = 0.1f),
+                trap(Zone(13f, 7f, 17f, 9f), FanSet('d', 6f), say("Downdraft, now with a turbo.", "Fallwind, jetzt mit Turbo.")),
+                trap(PastX(18f), Fall('e'), say("Ground floor. The ceiling comes down to say hello. In front of you.", "Erdgeschoss. Die Decke kommt runter und sagt Hallo. Vor dir.")),
             ),
-            hint = T("Every ceiling falls on whoever walks under it. Hop across the roof, keep moving, and expect a turbo halfway across.", "Jede Decke fällt auf den, der darunter läuft. Hüpf übers Dach, bleib in Bewegung, und rechne in der Mitte mit einem Turbo."),
+            hint = T("Ceilings here come down in front of you. Stop short, let them land, then hop them.", "Decken kommen hier vor dir herunter. Bleib davor stehen, lass sie landen, dann spring drüber."),
         ) {
             border(); floor()
-            fill(7..12, 6..14)
+            fill(1..12, 6..14)
             fill(17..18, 1..9)
-            fill(7..7, 1..2, 'c'); fill(11..12, 1..2, 'h')
-            fill(20..23, 1..2, 'e')
-            fill(25..28, 12..12, 'v')
-            spawn(1, 14); door(29, 14)
+            fill(11..12, 1..2, 'h')
+            fill(19..30, 1..8); fill(20..22, 9..10, 'e')
+            fill(27..28, 9..9, 'v'); fill(13..16, 14..14, '^')
+            spawn(3, 5); door(29, 14)
         },
 
         // 40 — Air Castle (trap room, U12): you start at the right and float a draft over a pit of spikes to the keep in the middle and on to

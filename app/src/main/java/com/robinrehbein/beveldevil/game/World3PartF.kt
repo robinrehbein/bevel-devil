@@ -173,7 +173,10 @@ object World3PartF {
             spawn(2, 14); door(30, 14)
         },
 
-        // 46 — POST
+        // 46 — POST (R5, U16): a serpentine up through three floors. The first lift stops for a beep while you are in it and comes back
+        // with a kick, the second one spins up hard under a cracked frame, and on the top shelf Mephi restores your memory from a backup:
+        // once more from a second and a half ago, back up the second lift, and the frame over the spot you are put back to cracks as well
+        // (do not stand there wondering). The door is in the middle of the top shelf.
         Level(
             name = T("POST", "Selbsttest"),
             intro = T("Power-on self-test. Three checks. One beep each.", "Einschalt-Selbsttest. Drei Prüfungen. Je ein Piep."),
@@ -184,9 +187,9 @@ object World3PartF {
             traps = listOf(
                 trap(Zone(12f, 12f, 15f, 15.5f), Play(Card.BIOS), Power('a', false), say("Beep. Fan: 0 RPM. Press F1 to continue.", "Piep. Lüfter: 0 U/min. F1 zum Fortfahren."), delay = 0.2f),
                 trap(Zone(12f, 12f, 15f, 15.5f), Power('a', true), delay = 1.3f),
-                trap(Zone(12f, 10.5f, 15f, 12.5f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
+                trap(Zone(12f, 10f, 15f, 11.8f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
                 trap(Zone(2f, 6f, 6f, 8f), FanSet('b', 7.5f), FrameCrack(5, 0, warn = 1.1f), say("Beep beep. Fan two: full speed. The frame did not pass the test.", "Piep piep. Lüfter zwei: Vollgas. Der Rahmen hat den Test nicht bestanden.")),
-                trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), say("Beep beep beep. Memory: restored from backup.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt.")),
+                trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), FrameCrack(3, 0, 4, 0, warn = 0.5f), say("Beep beep beep. Memory: restored from backup. The frame over the backup: not so much.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt. Der Rahmen über der Sicherung: eher nicht.")),
             ),
             hint = T("The serpentine goes up on the right, back left, up again, and right to the door. Hold on to the wall in the first lift, and do not dawdle at the second: the frame above it is cracked.", "Der Weg geht rechts hoch, links zurück, wieder hoch und rechts zur Tür. Halt dich im ersten Aufzug an der Wand, und trödle nicht am zweiten: Der Rahmen darüber hat einen Riss."),
         ) {
@@ -195,7 +198,7 @@ object World3PartF {
             fill(1..11, 10..10)
             fill(7..21, 5..5)
             put(6, 9, '^'); put(11, 4, '^')
-            spawn(2, 14); door(21, 4)
+            spawn(2, 14); door(20, 4)
         },
 
         // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift, and step off at the shelf: the lift

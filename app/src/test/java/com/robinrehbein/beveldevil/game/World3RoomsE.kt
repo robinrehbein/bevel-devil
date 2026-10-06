@@ -53,8 +53,11 @@ object World3RoomsE {
                 .rightUntil { it.player.box.cx > 25f }.rightTo(25.6f).rightJump(0.55f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         39 to listOf<Solution>(
-            { rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.rightJump(0.1f).landRight()
-                .rightUntil { it.player.grounded && it.player.box.b > 14.5f }.rightUntil { it.player.box.cx > 29.5f } },
+            // stop short of the roof's loose ceiling, let it land, hop it into the downdraft, hold on to the wall on the way down, step
+            // out under it, stop short of the panel, let it land, hop it
+            { rightTo(8.0f).waitFor { it.group('h').oy > 2.5f }.rightJump(0.5f).rightUntil { it.player.box.cx > 14.6f }
+                .rightUntil { it.player.box.b > 10.2f }.rightTo(18.0f).waitFor { it.player.grounded }.waitFor { it.group('e').oy > 3.5f }
+                .rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 29.5f } },
         ),
         40 to listOf<Solution>(
             // (mirrored: the run goes left) float to the keep, sit out the reverse thrust on it, float on and hop the mat
