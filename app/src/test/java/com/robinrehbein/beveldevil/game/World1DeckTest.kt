@@ -183,7 +183,8 @@ class World1DeckTest {
         run.expect(WorldState.WON)
         assertTrue("the door is back on the floor", run.world.door.box.x in 10f..14f && run.world.door.box.y > 12f)
     }
-    @Test fun level15RematchTheOldWalkEndsOnTheUpperFloorsEdge() = b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[0]).expect(WorldState.PLAYING)
+    @Test fun level15RematchTheOldRunDoesNotWin() = assertTrue(b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[0]).world.state != WorldState.WON)
+    @Test fun level15RematchRunningOnUnderTheBlockFallsThroughTheFloor() = b(15, 1).right(3.5f).expect(WorldState.DEAD)
 
     // ---------- Act 2 ----------
 

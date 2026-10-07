@@ -73,7 +73,8 @@ object World1RoomsA {
         15 to listOf<Solution>(
             { rightTo(19.1f).wait(0.75f).leftTo(16.5f).hopR(19.25f, 0.5f).rightTo(24.6f).rightJump(0.5f).landRight()
                 .rightJump(0.5f).landRight().right(0.4f).leftJump(0.5f).landLeft().leftTo(13.5f) },
-            { rightTo(19.1f).wait(0.75f).leftTo(16.5f).hopR(19.25f, 0.5f).rightTo(24.6f).rightJump(0.5f).landRight()
+            // rematch: the lower block stays up and the floor under it drops as you come: jump the hole, under the block
+            { rightTo(19.6f).rightJump(0.5f).landRight().rightTo(24.6f).rightJump(0.5f).landRight()
                 .rightJump(0.5f).landRight().right(0.4f).leftJump(0.5f).landLeft().leftTo(9.6f).landLeft().rightTo(14.5f) },
         ),
         // 16: up the stairs ahead of the first saw to the switch (the door leaves through the breach), down again, hop the second saw

@@ -402,7 +402,8 @@ object World1Part3 {
         },
 
         // 45 — sudo rm -rf /: you wanted root, so the root of the floor goes. A descent: you start on the top floor on the right and run left;
-        // the floor you stand on is deleted behind you, two pieces ahead of your feet (the second one late, when you are almost on it),
+        // the floor you stand on is deleted behind you, two pieces ahead of your feet (the first one is gone the moment you set off, the
+        // second one late, when you are almost on it),
         // and under the top floor lies a shelf of spikes that catches whoever falls through. The top floor ends over a shaft: drop down
         // it to the ground floor and run back to the right, where one more piece of the ground is deleted ahead of you, to the door in the
         // middle of the ground floor
@@ -412,7 +413,7 @@ object World1Part3 {
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
             hint = T("The floor is deleted just ahead of you, top floor first: hop early, before the hole shows, drop down the shaft, and hop again on the ground. The shelf in between is all spikes.", "Der Boden wird direkt vor dir gelöscht, zuerst oben: Spring früh, bevor das Loch da ist, lass dich durch den Schacht fallen und spring unten wieder. Das Regal dazwischen besteht nur aus Stacheln."),
             traps = listOf(
-                trap(BeforeX(25.6f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(BeforeX(25.6f), Play(Card.COLLAPSE), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
                 trap(BeforeX(28.5f), Hide('s'), Say(T("rm: removing '~' ... you were standing on it.", "rm: entferne '~' ... du standest drauf.")), delay = 0.6f),
                 trap(BeforeX(17.6f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
                 trap(BeforeX(10.4f), Hide('c'), Say(T("rm: removing '/etc' ... done. Config is overrated.", "rm: entferne '/etc' ... erledigt. Konfiguration wird überschätzt."))),

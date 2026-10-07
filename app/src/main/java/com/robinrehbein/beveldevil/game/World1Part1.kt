@@ -413,8 +413,9 @@ object World1Part1 {
         // 15 — EASTER EGG: off-by-one error. The door stands in the middle of the floor; as you come close it goes one floor up, the
         // long way for you: over the stairs at the far right and back along the upper floor. A spiked block slams down on the floor in
         // front of whoever runs, and one on the upper floor comes down on whoever stops under it.
-        // Rematch: the loop closes: as you come close upstairs the door drops back to where it began, and the way down is a hole in
-        // the upper floor
+        // Rematch: off by one again: the lower block stays where it hangs, and the floor under it slides away as you come: whoever runs
+        // on, or waits for the block like in round one, finds a hole; jump it, under the block. Upstairs the loop closes: as you
+        // come close the door drops back to where it began, and the way down is a hole in the upper floor
         Level(
             name = T("Loop", "Schleife"),
             intro = T("for (i = 0; i < n; i++)  ... All correct. Guaranteed.", "for (i = 0; i < n; i++)  ... Alles korrekt. Garantiert."),
@@ -429,15 +430,15 @@ object World1Part1 {
             rematch = listOf(
                 Round(
                     T("Rematch. I shifted everything by one.", "Revanche. Alles um eins verschoben."),
-                    hint = T("The door goes up, and comes back down. The way down is the hole upstairs.", "Die Tür geht hoch und kommt wieder runter. Der Weg nach unten ist das Loch oben."),
+                    hint = T("The lower block stays up this time, the floor under it does not: jump the hole. The door goes up, and comes back down. The way down is the hole upstairs.", "Der untere Block bleibt diesmal oben, der Boden darunter nicht: Spring über das Loch. Die Tür geht hoch und kommt wieder runter. Der Weg nach unten ist das Loch oben."),
                     traps = flee(PastX(7f), 14, 14, listOf(Play(Card.SHY_DOOR), Say(T("Off by one. Again.", "Um eins daneben. Schon wieder."))),
                         DoorTo(14, 2, speed = 14f), DoorTo(20, 8, speed = 14f)) + listOf(
-                        trap(Zone(16.8f, 12f, 17.8f, 15f), Move('C', 0f, 4.2f, 6f)),
+                        trap(Zone(17.2f, 12f, 18.2f, 15f), Move('f', 6f, 0f, 16f), Say(T("Off by one: the block stays. The floor under it shifts.", "Um eins verrutscht: Der Block bleibt. Der Boden darunter rutscht weg."))),
                         trap(Landed(26.5f, 31f), DoorTo(13, 8, speed = 12f)),
                         trap(Zone(24f, 5f, 25f, 9.5f), Move('E', 0f, 6.2f, 9f)),
                     ) + flee(Zone(15f, 5f, 19f, 9.5f), 13, 8, listOf(Say(T("Loop closed. The door is back at the start.", "Schleife geschlossen. Die Tür ist wieder am Anfang."))),
                         DoorTo(14, 14, speed = 14f)),
-                ) { fill(9..10, 9..9, '.') },
+                ) { fill(9..10, 9..9, '.'); fill(21..23, 16..17, '.'); fill(21..23, 15..15, 'f') },
             ),
         ) {
             border(); floor()
