@@ -451,8 +451,8 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 |19|Melt Fuse ★|–|U1|★|
 |20|Cold Start|R6|U4|Rätsel|
 |21|Relay Race|R11+R5|U8|Rätsel|
-|22|Warm-up|–|U3|Falle|
-|23|Waiting Room|–|U2|Falle|
+|22|Switchback|–|U3|Falle|
+|23|Now Serving|–|U2|Falle|
 |24|Cooling Fins|–|U17|Falle|
 |25|Cooling Tower|R10|U12|Rätsel|
 |26|Hot Wire|–|U13|Falle|
@@ -468,7 +468,7 @@ Für Welt 3 gilt zusätzlich: Die Zehnerblöcke einer Mechanik werden aufgebroch
 | # | Name | R | U | Raum |
 |---|---|---|---|---|
 |33|Updraft|R10|U1|Rätsel|
-|34|Tailwind ★|–|U12|★|
+|34|Gusts ★|–|U12|★|
 |35|Headwind|R4 (Pad stellt Lüfter)|U7|Rätsel|
 |36|Air Cushion|–|U6|Falle|
 |37|Lull|–|U3|Falle|

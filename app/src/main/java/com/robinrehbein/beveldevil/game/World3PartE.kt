@@ -5,7 +5,7 @@ import com.robinrehbein.beveldevil.game.Trigger.*
 
 
 /**
- * World 3, act 3, block E (levels 33-40: Updraft, Tailwind, Headwind, Air Cushion, Lull, Silence, Downdraft, Air Castle), rebuilt under
+ * World 3, act 3, block E (levels 33-40: Updraft, Gusts, Headwind, Air Cushion, Lull, Silence, Downdraft, Air Castle), rebuilt under
  * the V2 level design (docs/LEVEL_DESIGN_V2.md, section 8). The bot solutions are in the test sources ([World3RoomsE]).
  */
 object World3PartE {
@@ -57,22 +57,23 @@ object World3PartE {
             spawn(1, 14); door(29, 2)
         },
 
-        // 34 — Tailwind (breather, U12 as gusts that come and go)
+        // 34 — Gusts (breather, U12 as gusts that come and go): the gap is too wide for a run-up, so wait at the edge for the gust and jump
+        // into it; it loses breath in mid-air, and the doormat behind the gap is overclocked as you land: hop it, low, under the spikes.
         Level(
-            name = T("Tailwind", "Rückenwind"),
+            name = T("Gusts", "Böen"),
             intro = T("Go with the flow. Jump into it.", "Schwimm mit dem Strom. Spring hinein."),
-            start = listOf(Fan('w', at = 31 to 6, dir = Dir.LEFT, reach = 22, speed = -12f, width = 7)),
+            start = listOf(Fan('w', at = 31 to 6, dir = Dir.LEFT, reach = 22, speed = -12f, width = 7), Heat('h', rise = 0.6f, cool = 2.5f)),
             traps = listOf(
                 trap(PastX(11f), FanSet('w', 0f), say("Lull. The wind is catching its breath.", "Flaute. Der Wind holt kurz Luft.")),
                 trap(Zone(17f, 12f, 19.2f, 15f), FanSet('w', -12f), say("Here it comes again. Jump into it.", "Da kommt er wieder. Spring hinein."), delay = 0.15f),
-                trap(Landed(26f, 29.5f), Play(Card.OVERCLOCKED), HeatSpike('h', 0.55f), say("The landing strip is preheated.", "Die Landebahn ist vorgeheizt.")),
+                trap(Landed(25.5f, 27.4f), Play(Card.OVERCLOCKED), HeatSpike('h', 1f), say("Nice landing. The doormat is overclocked.", "Schöne Landung. Die Fußmatte ist übertaktet.")),
                 trap(Airborne(22f, 25f), FanSet('w', -6f), say("The gust loses breath mid-air.", "Der Böe geht mitten in der Luft die Luft aus.")),
             ),
-            hint = T("The gap is too wide for a run-up. Wait at the edge until the wind is back, then jump into it.", "Die Lücke ist zu breit für einen Anlauf. Warte am Rand, bis der Wind zurück ist, dann spring hinein."),
+            hint = T("The gap is too wide for a run-up. Wait at the edge until the wind is back, then jump into it. Hop the doormat low.", "Die Lücke ist zu breit für einen Anlauf. Warte am Rand, bis der Wind zurück ist, dann spring hinein. Spring flach über die Fußmatte."),
         ) {
             border(); floor(); pit(19..25)
-            fill(26..28, 15..15, 'h')
-            fill(29..30, 12..12, 'v')
+            fill(28..29, 15..15, 'h')
+            fill(28..30, 10..10, 'v')
             spawn(1, 14); door(30, 14)
         },
 
@@ -126,8 +127,9 @@ object World3PartE {
             spawn(30, 14); door(1, 14)
         },
 
-        // 36 — Air Cushion (trap room, U6): sink down the draft past bars that slide out of alternating walls, hop the pin along the floor,
-        // and do not wait for it on the stretch of floor that is only on loan: it sinks under whoever stands on it.
+        // 36 — Air Cushion (trap room, U6): sink down the draft past bars that slide out of alternating walls; at the bottom a pin slides
+        // along the floor at you, and the stretch of floor in front of you was only on loan: it sinks as you come, so the pin has to be
+        // jumped over the hole, in one go.
         Level(
             name = T("Air Cushion", "Luftkissen"),
             intro = T("Soft landing guaranteed.", "Weiche Landung garantiert."),
@@ -137,9 +139,9 @@ object World3PartE {
                 trap(Zone(8f, 7f, 14f, 8.5f), Move('B', -4f, 0f, 5f), say("Other side now. Mind the draft.", "Jetzt die andere Seite. Vorsicht, Zugluft.")),
                 trap(Zone(8f, 11.9f, 14f, 12.6f), Move('E', 2.5f, 0f, 5f), say("And back to the first side. Teeth come in rows.", "Und zurück zur ersten Seite. Zähne kommen in Reihen.")),
                 trap(Landed(8f, 16f), Move('C', -14f, 0f, 4.5f), say("The cushion ends here. The hospitality does not.", "Hier endet das Kissen. Die Gastfreundschaft nicht.")),
-                trap(Touch('k'), Play(Card.COLLAPSE), Move('k', 0f, 6f, 3f), say("This bit of floor is on loan. No waiting for pins on it.", "Dieses Stück Boden ist geliehen. Hier wartet keiner auf Stifte."), delay = 0.2f),
+                trap(PastX(18.3f), Play(Card.COLLAPSE), Move('k', 0f, 6f, 3f), say("That bit of floor was on loan. Jump the pin and the hole together.", "Das Stück Boden war geliehen. Spring über Stift und Loch zugleich.")),
             ),
-            hint = T("The bars come from alternating sides. Keep moving across the shaft as you sink, and hop the last one along the floor.", "Die Balken kommen abwechselnd von beiden Seiten. Wechsle im Schacht die Seite, während du sinkst, und hüpf unten über den letzten."),
+            hint = T("The bars come from alternating sides. Keep moving across the shaft as you sink. At the bottom, wait at the edge of the hole for the pin and jump both at once.", "Die Balken kommen abwechselnd von beiden Seiten. Wechsle im Schacht die Seite, während du sinkst. Unten wartest du am Rand des Lochs auf den Stift und springst über beides zugleich."),
         ) {
             border(); floor()
             fill(0..7, 4..14)
@@ -147,7 +149,7 @@ object World3PartE {
             fill(5..7, 7..7, 'A')
             fill(14..17, 10..10, 'B'); fill(5..7, 13..13, 'E')
             put(30, 14, 'C')
-            pit(20..22); fill(20..22, 15..15, 'k')
+            pit(21..22); fill(21..22, 15..15, 'k')
             spawn(1, 3); door(29, 14)
         },
 
@@ -177,7 +179,9 @@ object World3PartE {
             spawn(3, 14); door(29, 5)
         },
 
-        // 38 — Silence (trap room, U15)
+        // 38 — Silence (trap room, U15): touch the copper at the left to restart the fan, hop the floor cable that goes live as you pass,
+        // time the blinking floor, ride the lift (step off at the top: at full power it pins whoever stays to the spiked ceiling), and the
+        // cable on the shelf wakes up the moment you land there: hop it to the door.
         Level(
             name = T("Silence", "Stille"),
             intro = T("It's so quiet in here.", "Schön leise hier."),
@@ -189,7 +193,7 @@ object World3PartE {
                 trap(Touch('k'), Play(Card.SHORT_CIRCUIT), Power('f', true), say("Fan restarted. Surprised? Me too.", "Lüfter neu gestartet. Überrascht? Ich auch.")),
                 trap(PastX(12.5f), Power('X', true), say("Floor cable live. Silence has a price.", "Bodenkabel unter Strom. Stille hat ihren Preis.")),
                 trap(Zone(20f, 9.6f, 24f, 14.5f), FanSet('f', 7.5f), say("Passenger detected. Full power. All the way up.", "Fahrgast erkannt. Volle Leistung. Ganz nach oben.")),
-                trap(Zone(20f, 3f, 24f, 8.5f), Power('Y', true), say("Welcome to the top. Mind the cables. Both of them. The one you hover under, too.", "Willkommen oben. Vorsicht, Kabel. Beide. Auch das, unter dem du schwebst."), delay = 0.6f),
+                trap(Landed(24.2f, 30f), Power('Y', true), say("Welcome to the top. The cable heard you land.", "Willkommen oben. Das Kabel hat dich landen hören."), delay = 0.2f),
             ),
             hint = T("Touch the copper on the left first: it brings the fan back. Time the blinking floor, and step off the draft at the top before it pins you to the ceiling.", "Berühr zuerst das Kupfer links: Es holt den Lüfter zurück. Pass den blinkenden Boden ab, und tritt oben aus dem Luftstrom, bevor er dich an die Decke drückt."),
         ) {
@@ -198,7 +202,7 @@ object World3PartE {
             fill(19..23, 9..9, 'Z')
             fill(24..30, 6..17)
             fill(27..28, 5..5, 'Y')
-            fill(20..23, 3..3, 'v'); fill(20..23, 4..4, 'Y'); fill(14..14, 14..14, 'X')
+            fill(20..23, 3..3, 'v'); fill(14..14, 14..14, 'X')
             spawn(10, 14); door(30, 5)
         },
 
@@ -230,7 +234,8 @@ object World3PartE {
 
         // 40 — Air Castle (trap room, U12): you start at the right and float a draft over a pit of spikes to the keep in the middle and on to
         // the ledge at the far left, where the door is. The draft reverses as you float (the keep is the one safe place), then spins up again,
-        // and a headwind from the castle wall waits over the second half; the welcome mat in front of the door has opinions.
+        // and a headwind from the castle wall waits over the second half; the welcome mat in front of the door has opinions: it grows its
+        // spikes the moment you walk up to it, so jump it from well back, a long hop straight into the door.
         Level(
             name = T("Air Castle", "Luftschloss"),
             intro = T("Wind is free. Take as much as you like.", "Wind ist kostenlos. Nimm, so viel du willst."),
@@ -242,10 +247,10 @@ object World3PartE {
             traps = listOf(
                 trap(BeforeX(22f), Play(Card.THROTTLE), FanSet('f', -4f), say("Reverse thrust! The keep is your friend.", "Schubumkehr! Der Bergfried ist dein Freund.")),
                 trap(Touch('s'), FanSet('f', 9f), say("Thrust forward. Try to keep up.", "Schub voraus. Halt dich fest."), delay = 0.8f),
-                trap(BeforeX(15f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
-                trap(Landed(5f, 9f), Show('t'), say("The welcome mat has opinions.", "Die Fußmatte hat Meinungen.")),
+                trap(BeforeX(13f), Power('g', true), say("Headwind, courtesy of the castle.", "Gegenwind, mit besten Grüßen vom Schloss.")),
+                trap(BeforeX(4.6f), Show('t'), say("The welcome mat has opinions. Sharp ones.", "Die Fußmatte hat Meinungen. Spitze.")),
             ),
-            hint = T("The reverse thrust throws you back, but the keep in the middle is a fine place to stand. The welcome mat is not.", "Die Schubumkehr wirft dich zurück, aber der Bergfried in der Mitte ist ein guter Standplatz. Die Fußmatte nicht."),
+            hint = T("The reverse thrust throws you back, but the keep in the middle is a fine place to stand. The welcome mat is not: jump it from well back.", "Die Schubumkehr wirft dich zurück, aber der Bergfried in der Mitte ist ein guter Standplatz. Die Fußmatte nicht: Spring aus sicherem Abstand drüber."),
             // rematch: the controls are twisted as you float, untwisted in mid-flight under the headwind, and twisted once more as you
             // land on the far side (the mat has no opinions this time: the keys do)
             rematch = listOf(
@@ -259,7 +264,7 @@ object World3PartE {
                         trap(BeforeX(12.5f), Swap(false), say("Untwisted, mid-flight. Surprise: left is left again.", "Entdreht, mitten im Flug. Überraschung: Links ist wieder links.")),
                         trap(Landed(5f, 9f), Swap(true), say("And twisted again. I could not decide.", "Und wieder verdreht. Ich konnte mich nicht entscheiden.")),
                     ),
-                ) { put(2, 12, '.') },
+                ) { put(3, 12, '.') },
             ),
         ) {
             border(); floor(); pit(9..22)
@@ -267,7 +272,7 @@ object World3PartE {
             fill(14..17, 13..15, 's')
             fill(9..9, 1..9)
             fill(1..8, 13..14)
-            put(2, 12, 't')
+            put(3, 12, 't')
             spawn(30, 14); door(1, 12)
         },
     )

@@ -18,7 +18,7 @@ object World3RoomsE {
                 .waitFor { it.fans[1].wind > 8.5f }.rightUntil { it.player.box.cx > 29.3f } },
         ),
         34 to listOf<Solution>(
-            { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 30.3f } },
+            { rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight().rightTo(27.0f).rightJump(0.25f).landRight().rightUntil { it.player.box.cx > 30.3f } },
         ),
         35 to listOf<Solution>(
             // (mirrored: the run goes left) hop the blade from behind and the one from the front, step on the button, stand at the wall
@@ -40,8 +40,8 @@ object World3RoomsE {
         36 to listOf<Solution>(
             { rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }
                 .leftUntil { it.player.box.cx < 9.2f }.waitFor { it.player.box.b > 11.95f }.rightUntil { it.player.box.cx > 12.2f }.rightUntil { it.player.grounded }
-                .rightUntil { w -> w.player.box.cx > 18.5f }
-                .rightUntil { w -> gx(w, 'C') > w.player.box.cx && gx(w, 'C') - w.player.box.cx < 3.5f }.rightJump(0.5f).landRight()
+                .rightTo(19.6f)
+                .waitFor { w -> gx(w, 'C') > w.player.box.cx && gx(w, 'C') - w.player.box.cx < 4.6f }.rightJump(0.5f).landRight()
                 .rightUntil { it.player.box.cx > 30f } },
         ),
         37 to listOf<Solution>(
@@ -60,10 +60,10 @@ object World3RoomsE {
                 .rightJump(0.5f).landRight().rightUntil { it.player.box.cx > 29.5f } },
         ),
         40 to listOf<Solution>(
-            // (mirrored: the run goes left) float to the keep, sit out the reverse thrust on it, float on and hop the mat
+            // (mirrored: the run goes left) float to the keep, sit out the reverse thrust on it, float on and jump the mat from well back
             { leftTo(23.4f).leftUntil { it.player.grounded && it.player.box.cx < 17.6f }
                 .waitFor { it.fans[0].wind > 4.5f }.leftUntil { it.player.box.cx < 8.8f }
-                .leftUntil { it.player.grounded && it.player.box.cx < 8.6f }.leftTo(5.0f).leftJump(0.1f).landLeft().leftUntil { it.player.box.cx < 1.7f } },
+                .leftUntil { it.player.grounded && it.player.box.cx < 8.6f }.leftTo(5.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.cx < 1.7f } },
             // rematch: the controls are twisted: press right to float left, left again once they untwist in mid-flight, and right
             // again on the far side
             { leftTo(23.4f).rightUntil { it.player.grounded && it.player.box.cx < 17.6f }

@@ -30,7 +30,7 @@ import com.robinrehbein.beveldevil.game.Trigger.Touch
 import com.robinrehbein.beveldevil.game.Trigger.Zone
 
 /**
- * World 3, act 2, block C (levels 17-24: Hot Plate, Full Load, Melt Fuse, Cold Start, Relay Race, Warm-up, Waiting Room, Cooling
+ * World 3, act 2, block C (levels 17-24: Hot Plate, Full Load, Melt Fuse, Cold Start, Relay Race, Switchback, Now Serving, Cooling
  * Fins), rebuilt under the V2 level design (docs/LEVEL_DESIGN_V2.md, section 8). Each level is one idea in one dominant family;
  * the bot solutions are in the test sources ([World3RoomsC]).
  */
@@ -208,7 +208,7 @@ object World3PartC {
         // into the corridor behind it: do not stop under it), down the left shaft and along
         // the floor to the door: another hot patch right where you land, and a second strip that slides out from behind the door.
         Level(
-            name = T("Warm-up", "Warmlaufen"),
+            name = T("Switchback", "Serpentine"),
             intro = T("A warm chip is a happy chip.", "Ein warmer Chip ist ein glücklicher Chip."),
             start = listOf(Heat('p', rise = 0.9f, cool = 1.2f), Heat('q', rise = 0.2f, cool = 0.4f)),
             traps = listOf(
@@ -232,7 +232,7 @@ object World3PartC {
         // on, walk across), the second comes down where you were a moment ago (do not wait for that one: run), and the last one is a staircase
         // (wait again): the door sits on a ledge (a warm plate: do not dawdle) that is a hop too high without it.
         Level(
-            name = T("Waiting Room", "Wartezimmer"),
+            name = T("Now Serving", "Aufruf"),
             intro = T("Please take a seat. You will be called.", "Bitte nehmen Sie Platz. Sie werden aufgerufen."),
             start = listOf(Heat('p', rise = 1.0f)),
             traps = listOf(

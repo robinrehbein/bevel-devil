@@ -23,6 +23,5 @@ object PendingRounds {
         "2-31-1 M",
         "2-39-1 M",
         // World 3
-        "3-40-1 Q",
     )
 }
