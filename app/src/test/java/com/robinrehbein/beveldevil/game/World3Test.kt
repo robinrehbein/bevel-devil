@@ -130,7 +130,8 @@ class World3Test {
         val here = World3.levels.flatMap { l -> actions(l).filterIsInstance<Action.Play>().map { it.card } }.toSet()
         assertTrue(here.containsAll(hardware))
         val elsewhere = (World1.levels + World2.levels).flatMap { l -> (l.start + l.traps.flatMap { it.actions }).filterIsInstance<Action.Play>().map { it.card } }.toSet()
-        assertTrue(elsewhere.none { it in hardware })
+        // the BIOS is previewed once in world 2's data center (2-39, the stuck firewall: turn it off and on again); the others wait for world 3
+        assertTrue(elsewhere.none { it in hardware - Card.BIOS })
         // first use of each: the level where its mechanic first appears (World 3 opens on power: the short circuit is the very
         // first card, the BIOS boots the board in level 2, the overclocked floor waits for the first hot chip)
         fun first(c: Card) = World3.levels.indexOfFirst { l -> actions(l).any { it is Action.Play && it.card == c } } + 1
