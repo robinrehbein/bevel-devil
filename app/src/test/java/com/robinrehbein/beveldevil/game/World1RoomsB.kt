@@ -27,32 +27,31 @@ object World1RoomsB {
     val solutions: Map<Int, List<Solution>> = mapOf(
         17 to listOf<Solution>(
             { hopR(5.8f).rightTo(15.0f).rightJump(0.35f).landRight().rightTo(19.9f).rightJump(0.35f).landRight()
-                .rightJump(0.35f).landRight().rightTo(27.8f).leftTo(26.4f).leftJump(0.35f).landLeft().leftTo(2.0f) },
-            { rightTo(15.0f).rightJump(0.35f).landRight().rightTo(19.9f).rightJump(0.35f).landRight()
-                .rightJump(0.35f).landRight().rightTo(27.8f).leftTo(26.4f).leftJump(0.35f).landLeft().leftTo(2.0f) },
+                .rightJump(0.35f).landRight().rightTo(26.8f).leftTo(26.4f).leftJump(0.35f).landLeft().leftTo(8.6f).leftJump(0.15f).landLeft().left(0.3f) },
+            { rightTo(9.2f).waitFor { it.group('k').oy >= 4.9f }.hopR(9.3f, 0.4f).rightTo(15.0f).rightJump(0.35f).landRight().rightTo(19.9f).rightJump(0.35f).landRight()
+                .rightJump(0.35f).landRight().rightTo(26.8f).leftTo(26.4f).leftJump(0.35f).landLeft().leftTo(8.6f).leftJump(0.15f).landLeft().left(0.3f) },
         ),
         18 to listOf<Solution>(
             { rightUntilSaw(4.5f).rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.35f).landRight().landRight()
                 .leftTo(24.6f).leftJump(0.35f).landLeft()
-                .leftUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.35f).landLeft()
-                .leftTo(9.0f).leftJump(0.35f).landLeft().leftTo(2.5f) },
+                .leftTo(18.6f).waitFor { w -> w.saws.any { s -> s.vy > 0f && s.y > 15.6f } }
+                .leftTo(13.4f).rightTo(13.3f) },
             { rightUntil { w -> w.saws.any { it.y < 9f && it.vx < 0f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 6.0f } }.rightJump(0.35f).landRight()
                 .rightUntil { w -> w.saws.any { it.y < 9f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 3.4f } }.rightJump(0.35f).landRight()
                 .rightUntil { w -> w.swapped && w.saws.any { it.y > 12f && it.vx < -10f && it.x > w.player.box.cx && it.x - w.player.box.cx <= 3.4f } }.rightJump(0.35f).landRight()
-                .rightUntil { w -> w.saws.any { it.y > 12f && it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.rightJump(0.35f).landRight()
-                .rightUntil { !it.swapped }.leftTo(2.5f) },
+                .rightUntil { !it.swapped }.leftTo(13.4f).rightTo(13.3f) },
         ),
         19 to listOf<Solution>(
             { hopR(7.9f).hopR(13.8f).rightTo(17.0f).rightJump(0.35f).landRight().rightTo(20.4f).rightJump(0.35f).landRight()
                 .rightUntil { it.pads[0].down }.jump(0.14f).rightJump(0.3f).landRight()
                 .waitFor { it.group('x').oy >= 9.9f }
-                .leftUntil { it.group('y').oy > 0.5f }.waitFor { it.group('y').oy >= 7.9f }.leftJump(0.35f).landLeft().leftTo(2.5f) },
+                .leftUntil { it.group('y').oy > 0.5f }.waitFor { it.group('y').oy >= 7.9f }.leftJump(0.35f).landLeft().leftTo(12.6f) },
         ),
         20 to listOf<Solution>(
             { hopR(5.8f, 0.3f).hopR(10.8f, 0.3f).hopR(15.8f, 0.3f).hopR(20.8f, 0.3f)
                 .rightJump(0.35f).landRight().rightJump(0.35f).landRight()
                 .leftTo(28.6f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft()
-                .leftTo(14.8f).leftJump(0.35f).landLeft().leftTo(5.5f) },
+                .leftTo(14.8f).leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().leftJump(0.35f).landLeft().left(0.5f) },
         ),
         21 to listOf<Solution>(
             { hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight()
@@ -66,8 +65,9 @@ object World1RoomsB {
                 .leftTo(23.5f).waitFor { it.gateOpen('B') }.leftTo(12.6f) },
         ),
         23 to listOf<Solution>(
-            { rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(15.0f).landRight().landRight()
-                .leftUntil { w -> w.saws.any { it.vx > 0f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.35f).landLeft().leftTo(5.0f).landLeft()
+            { rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(9.0f).rightJump(0.3f).landRight()
+                .rightTo(15.0f).landRight().landRight()
+                .leftUntil { w -> w.saws.any { it.vx > 0f && it.y > 8f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.35f).landLeft().leftTo(5.0f).landLeft()
                 .rightTo(6.0f).waitFor { w -> w.saws.any { it.path != null && it.x in 8.5f..9.5f && it.y < 11.0f } }.rightTo(13.5f)
                 .waitFor { w -> w.saws.any { it.path != null && it.x > 15f && it.y < 11.0f } }.rightTo(26.0f) },
         ),

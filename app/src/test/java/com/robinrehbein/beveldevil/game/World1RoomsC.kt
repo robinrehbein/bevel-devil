@@ -53,7 +53,7 @@ object World1RoomsC {
         ),
         30 to listOf<Solution>(
             { rightTo(8.6f).waitFor { it.group('a').oy >= 11.9f }.rightJump(0.5f).landRight()
-                .waitFor { it.group('c').oy >= 9.9f }.rightJump(0.5f).landRight()
+                .waitFor { it.group('c').oy >= 7.9f }.rightJump(0.5f).landRight()
                 .waitFor { it.group('f').oy >= 7.9f }.rightJump(0.5f).landRight()
                 .leftKeyRightTo(21.7f).leftJump(0.5f).landLeft().leftKeyRightTo(25.6f).leftJump(0.35f).landLeft().left(1.5f) },
         ),
@@ -65,10 +65,10 @@ object World1RoomsC {
                 .leftTo(8.4f).waitFor { w -> w.saws.any { it.path?.points?.firstOrNull()?.first == 6f && it.y > 10.5f } }.left(3f) },
         ),
         32 to listOf<Solution>(
-            { rightTo(12.4f).waitFor { it.solidLeft('b') > 1.0f }.rightTo(20.5f)
+            { rightTo(12.4f).waitFor { it.solidLeft('b') > 0.8f }.rightTo(20.5f)
                 .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
-                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 5.0f)).waitFor { it.solidLeft('d') > 1.0f }
-                .rightTo(roomX(1, 13.6f)).waitFor { it.solidLeft('c') > 1.0f }
+                .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightTo(roomX(1, 5.0f)).waitFor { it.solidLeft('d') > 0.75f }
+                .rightTo(roomX(1, 13.6f)).waitFor { it.solidLeft('c') > 0.8f }
                 .rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(5f) },
         ),
     )

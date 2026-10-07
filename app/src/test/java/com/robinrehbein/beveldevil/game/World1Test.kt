@@ -501,9 +501,9 @@ class World1Test {
         b(22).rightTo(10.6f).right(3f).expect(WorldState.DEAD)
         b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(23.5f)
             .waitFor { w -> w.beams.any { it.laser.id == 'B' && it.lit } }.left(1f).expect(WorldState.DEAD)
-        // 23: the first saw on the top plank, and the knot above the start
+        // 23: the first saw on the top plank, and the knot above the log: whoever hops it and stops is sawn
         b(23).rightTo(5.0f).right(3f).expect(WorldState.DEAD)
-        b(23).rightTo(6.0f).jump(0.5f).wait(2f).expect(WorldState.DEAD)
+        b(23).rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(9.0f).rightJump(0.3f).landRight().wait(2f).expect(WorldState.DEAD)
         // 24: HEAD catches whoever stands still, and the second branch whoever walks into it
         b(24).hopR(6.8f, 0.3f).wait(4f).expect(WorldState.DEAD)
         b(24).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().left(5f).expect(WorldState.DEAD)
