@@ -186,21 +186,23 @@ object World1Part2B {
         },
 
         // 22 — the airlock: along the upper floor through a pulsing beam, past a scanner that flashes on whoever lingers, to the pad,
-        // which cuts the lock on the ground floor; the cycle fails and Mephi rewinds you a moment, then you drop to the ground floor and
-        // the next beam pulses on the way back to the door in the middle of the room
+        // which cuts the lock on the ground floor; the cycle fails and Mephi rewinds you a second, to just before the scanner, and the
+        // scan runs again: whoever runs on at once walks into it (wait for the flash, then the pad is still pressed). Then you drop to the
+        // ground floor and the next beam pulses on the way back to the door in the middle of the room
         // MECHANIC: laser gate (R1 switch + door cage)
         Level(
             name = T("Airlock", "Schleuse"),
             intro = T("Cycle time: a few seconds. Survivors: variable.", "Zykluszeit: wenige Sekunden. Überlebende: variabel."),
-            start = listOf(Circuit('w'), Pad('1', at = 25 to 7, circuits = "w", mode = PadMode.OFF)),
+            start = listOf(Circuit('w'), Pad('1', at = 22 to 7, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
                 trap(PastX(6f), Laser('A', 12 to 1, 12 to 7, on = 0.9f, off = 1.5f, delay = 0.2f), Say(T("Outer door: pulsing. Please wait for the green.", "Außentür: pulsiert. Bitte auf Grün warten."))),
-                trap(Zone(15.1f, 4f, 16.5f, 8.5f), Laser('C', 15 to 1, 15 to 8, on = 0.5f, off = 60f, delay = 0.45f), Say(T("Body scan. Hold still. Or don't.", "Körperscan. Stillhalten. Oder lieber nicht."))),
-                trap(Pressed('1'), Play(Card.UNDO), Undo(1.1f), Say(T("Pressure test failed. Rewinding the last bit.", "Drucktest fehlgeschlagen. Das letzte Stück wird zurückgespult."))),
-                trap(Landed(26f, 31f), Laser('B', 21 to 9, 21 to 14, on = 0.6f, off = 1.5f, delay = 0.6f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend."))),
+                trap(Zone(17.1f, 4f, 18.5f, 8.5f), Laser('C', 17 to 1, 17 to 8, on = 0.35f, off = 60f, delay = 0.45f), Say(T("Body scan. Hold still. Or don't.", "Körperscan. Stillhalten. Oder lieber nicht."))),
+                trap(Pressed('1'), Play(Card.UNDO), Undo(0.9f), Laser('S', 17 to 1, 17 to 8, on = 0.35f, off = 60f, delay = 0.15f),
+                    Say(T("Pressure test failed. Rewinding to the scan. Please be scanned again.", "Drucktest fehlgeschlagen. Zurück zum Scan. Bitte erneut scannen lassen."))),
+                trap(Landed(21.8f, 31f), Laser('B', 20 to 9, 20 to 14, on = 0.6f, off = 1.5f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend.")), delay = 0.25f),
             ),
         ) {
-            border(); floor(); fill(1..26, 8..8)
+            border(); floor(); fill(1..23, 8..8)
             fill(15..16, 9..14, 'w')
             put(2, 7, 'P'); put(12, 14, 'D')
         },

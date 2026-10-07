@@ -113,12 +113,13 @@ object World1Part3 {
         // 35 — breather: the door is far away and buffering. It jumps up onto the high ledge as you start to climb (23%), and when you land
         // up there it is gone again: back down on the ground, in the middle of the room, behind you. The way down is straight down,
         // and at once: the router over the ledge reboots onto whoever waits for the door up there, and a moment later the platform you
-        // climbed by uploads itself into the ceiling: whoever is still on it on the way down goes up with it
+        // climbed by uploads itself into the ceiling: whoever is still on it on the way down goes up with it. And the low road is no
+        // road: whoever runs along the ground under the step after the door finds the floor there rising to meet the step
         // TWIST: DoorTo (the one fleeing door of the act)
         Level(
             name = T("Home Network", "Heimnetz"),
             intro = T("My internet is slow today. Don't mind me.", "Mein Internet ist heute lahm. Lass dich nicht stören."),
-            hint = T("The door buffers: it goes where you are not. Climb up, and come straight back down, before the platform uploads you.", "Die Tür lädt: Sie geht dorthin, wo du nicht bist. Klettere hoch und komm direkt wieder runter, bevor die Plattform dich hochlädt."),
+            hint = T("The door buffers: it goes where you are not. Climb up over the step, not under it, and come straight back down, before the platform uploads you.", "Die Tür lädt: Sie geht dorthin, wo du nicht bist. Klettere über die Stufe, nicht unten durch, und komm direkt wieder runter, bevor die Plattform dich hochlädt."),
             traps = listOf(
                 trap(PastX(8f), Play(Card.SHY_DOOR), DoorTo(30, 8, speed = 14f), Say(T("Buffering... 23%", "Lädt... 23 %"))),
                 trap(Landed(24f, 30.5f), DoorTo(30, 2, speed = 25f), Say(T("Connection lost. Retrying...", "Verbindung verloren. Neuer Versuch..."))),
@@ -127,10 +128,11 @@ object World1Part3 {
                 trap(Landed(24f, 30.5f), Say(T("100%. Was that so hard?", "100 %. War das so schwer?")), delay = 1.4f),
                 trap(Landed(24f, 30.5f), Move('q', 0f, 6f, 14f), Say(T("Router reboot. Mind your head.", "Router-Neustart. Kopf einziehen.")), delay = 0.5f),
                 trap(Landed(24f, 30.5f), Move('u', 0f, -10f, 8f), Say(T("Uploading the platform. And whoever is on it.", "Lade die Plattform hoch. Und alle, die drauf sind.")), delay = 0.9f),
+                trap(PastX(8f), Move('f', 0f, -1f, 10f), Say(T("The low road is closed. Fibre only goes over the top.", "Unten ist gesperrt. Glasfaser geht nur obendrüber.")), delay = 1.15f),
             ),
         ) {
             border(); floor()
-            fill(17..20, 13..13); fill(21..23, 11..11, 'u'); fill(25..30, 9..9); fill(25..30, 1..2, 'q')
+            fill(17..20, 13..13); fill(17..20, 15..17, 'f'); fill(21..23, 11..11, 'u'); fill(25..30, 9..9); fill(25..30, 1..2, 'q')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 

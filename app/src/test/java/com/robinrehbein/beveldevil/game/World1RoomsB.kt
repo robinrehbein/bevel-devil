@@ -61,8 +61,10 @@ object World1RoomsB {
                 .leftTo(18.0f).leftJump(0.35f).landLeft().leftTo(11.6f) },
         ),
         22 to listOf<Solution>(
-            { rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight()
-                .leftTo(23.5f).waitFor { it.gateOpen('B') }.leftTo(12.6f) },
+            // the pad rewinds you to just before the scanner, which flashes again: wait for it, then on (the pad stays pressed)
+            { rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(20.0f).rightUntil { it.player.box.cx < 19.5f }.waitFor { it.gateOpen('S') }
+                .rightTo(24.6f).leftUntil { it.player.grounded }
+                .leftTo(22.8f).waitFor { it.gateOpen('B') }.leftTo(12.6f) },
         ),
         23 to listOf<Solution>(
             { rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(9.0f).rightJump(0.3f).landRight()

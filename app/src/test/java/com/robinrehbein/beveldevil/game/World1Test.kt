@@ -399,8 +399,9 @@ class World1Test {
     @Test fun level34TheButtonOnScreenDodges() = b(34).rightTo(7f).tapPause().also { assertEquals(1, it.world.dodges) }.also { assertTrue(it.world.group('w').visible) }.expect(WorldState.PLAYING)
     @Test fun level34RunningThroughTheOpenedWallFallsIntoThePit() = b(34).rightTo(7f).tapPause().pauseResume().right(2f).expect(WorldState.DEAD)
 
-    /** 35: the door runs from you, to the ledge and back down, so running along the ground never wins. */
-    @Test fun level35TheDoorFlees() = b(35).right(8f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
+    /** 35: the door runs from you, to the ledge and back down, so running along the ground never wins: the low road under the step is unplugged. */
+    @Test fun level35TheDoorFlees() = b(35).rightTo(10f).wait(1.5f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
+    @Test fun level35TheLowRoadIsUnplugged() = b(35).right(4f).expect(WorldState.DEAD)
     @Test fun level35TheDoorComesBackDown() = b(35).also(World1DesignTest.SOLUTIONS.getValue(35)[0]).also { assertTrue(it.world.door.box.y > 12f) }.expect(WorldState.WON)
     /** 35: the platform you climbed by uploads itself into the ceiling a moment after the door comes down: whoever comes down late goes up with it. */
     private fun ledge35() = b(35).rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
@@ -509,10 +510,11 @@ class World1Test {
         // 21: the second hop lands on the strip that is not there, and whoever stays on the stairs goes down with them
         b(21).hopR(7.4f).hopR(13.6f).right(3f).expect(WorldState.DEAD)
         b(21).hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight().wait(4f).expect(WorldState.DEAD)
-        // 22: the first beam stops whoever walks in on it, and so does the second
+        // 22: the first beam stops whoever walks in on it, the rewind to the scanner whoever runs on at once, and the second beam too
         b(22).rightTo(10.6f).right(3f).expect(WorldState.DEAD)
-        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(23.5f)
-            .waitFor { w -> w.beams.any { it.laser.id == 'B' && it.lit } }.left(1f).expect(WorldState.DEAD)
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(21.0f).right(2f).expect(WorldState.DEAD)
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(20.0f).rightUntil { it.player.box.cx < 19.5f }.waitFor { it.gateOpen('S') }
+            .rightTo(24.6f).leftUntil { it.player.grounded }.left(1f).expect(WorldState.DEAD)
         // 23: the first saw on the top plank, and the knot above the log: whoever hops it and stops is sawn
         b(23).rightTo(5.0f).right(3f).expect(WorldState.DEAD)
         b(23).rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(9.0f).rightJump(0.3f).landRight().wait(2f).expect(WorldState.DEAD)
