@@ -28,6 +28,7 @@ import com.robinrehbein.beveldevil.game.Trigger.After
 import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import com.robinrehbein.beveldevil.game.Action.Extend
 import com.robinrehbein.beveldevil.game.Trigger.Airborne
+import com.robinrehbein.beveldevil.game.Trigger.BeforeX
 import com.robinrehbein.beveldevil.game.Trigger.Landed
 import com.robinrehbein.beveldevil.game.Trigger.PastX
 import com.robinrehbein.beveldevil.game.Trigger.Resumed
@@ -122,27 +123,27 @@ object World2Part3D {
             put(3, 9, 'P'); door(13, 14); bits(42)
         },
 
-        // 43 — workshop (a trap room: U16 percussive maintenance, shake the phone). The lane ends in a wall, and the only way on is the cable port at
-        // the foot of it, which comes out above a bed of LEDs. A beam flashes across the lane as you come near (wait until it is dark). Shake the phone and
-        // the loose cable re-seats: the port now comes out on the deck over the start (a test beam flashes there a moment later: move on), and the
-        // deck is a corridor of flashing beams on the way to the door
+        // 43 — workshop (a trap room: U16 percussive maintenance, shake the phone), mirrored: you start at the right and the lane runs left into a
+        // wall, and the only way on is the cable port at the foot of it, which comes out above a bed of LEDs. A beam flashes across the lane as you
+        // come near (wait until it is dark). Shake the phone and the loose cable re-seats: the port now comes out on the deck over the start (a test
+        // beam flashes there a moment later: move on), and the deck is a corridor of flashing beams on the way back to the door at the far left
         Level(
             name = T("Workshop", "Werkstatt"),
             intro = T("I tried talking to it.", "Ich habe es mit Zureden versucht."),
-            start = listOf(Portal('1', 10 to 14, 17 to 13, twoWay = false)),
+            start = listOf(Portal('1', 21 to 14, 14 to 13, twoWay = false)),
             traps = listOf(
-                trap(PastX(4f), Laser('A', 8 to 1, 8 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
-                trap(Shaken, Play(Card.DECOY), Reroute('1', 3 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
-                trap(Zone(6f, 7f, 9f, 10.6f), Laser('B', 14 to 1, 14 to 9, on = 0.9f, off = 60f, delay = 0.5f), say("Now it is screwed on properly. Mostly.", "Jetzt ist es ordentlich festgeschraubt. Größtenteils.")),
-                trap(Zone(6f, 7f, 9f, 10.6f), Laser('D', 6 to 1, 6 to 9, on = 1f, off = 60f, delay = 1.2f), say("And a test beam where the cable came out. Safety first.", "Und ein Prüfstrahl, wo das Kabel rauskam. Sicherheit geht vor.")),
-                trap(Zone(18f, 7f, 22f, 10.6f), Laser('C', 27 to 1, 27 to 14, on = 0.9f, off = 60f, delay = 0.5f), say("One more screw. Stand clear.", "Noch eine Schraube. Bitte zurücktreten.")),
+                trap(BeforeX(28f), Laser('A', 23 to 1, 23 to 14, on = 1f, off = 60f, delay = 0.55f), say("Clause 1: the beam has right of way.", "Paragraf 1: Der Strahl hat Vorfahrt.")),
+                trap(Shaken, Play(Card.DECOY), Reroute('1', 28 to 9), Shake(1.2f), say("Works 90% of the time. Every time.", "Klappt in 90 % der Fälle. Jedes Mal.")),
+                trap(Zone(23f, 7f, 26f, 10.6f), Laser('B', 17 to 1, 17 to 9, on = 0.9f, off = 60f, delay = 0.5f), say("Now it is screwed on properly. Mostly.", "Jetzt ist es ordentlich festgeschraubt. Größtenteils.")),
+                trap(Zone(23f, 7f, 26f, 10.6f), Laser('D', 25 to 1, 25 to 9, on = 1f, off = 60f, delay = 1.2f), say("And a test beam where the cable came out. Safety first.", "Und ein Prüfstrahl, wo das Kabel rauskam. Sicherheit geht vor.")),
+                trap(Zone(10f, 7f, 14f, 10.6f), Laser('C', 4 to 1, 4 to 14, on = 0.9f, off = 60f, delay = 0.5f), say("One more screw. Stand clear.", "Noch eine Schraube. Bitte zurücktreten.")),
             ),
             hint = T("It has a loose cable. Have you tried hitting it?", "Da sitzt ein Kabel locker. Schon mal draufgehauen?"),
         ) {
             border(); floor()
-            fill(12..13, 11..14); fill(1..25, 10..10)
-            leds(16..19)
-            spawn(2, 14); door(29, 14); bits(43)
+            fill(18..19, 11..14); fill(6..30, 10..10)
+            leds(12..15)
+            spawn(29, 14); door(2, 14); bits(43)
         },
 
         // 44 — rebase (a trap room: U16 Ctrl+Z, with falling slabs). A low wall (hop it), then three slabs hang over the lane. The first drops out of the ceiling as you come
@@ -200,25 +201,25 @@ object World2Part3D {
             spawn(4, 14); door(14, 10); bits(45)
         },
 
-        // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around). A staircase of three belts over beds of LEDs: user,
-        // admin, root. User is calm until you step on it, then it runs against you, and admin follows a moment later. Root runs against you harder than you can walk,
-        // and a gate stands on it, except for one short maintenance window a moment after you step onto the pillar between admin and root (the
-        // gate lifts, the belt stops): wait there for the window (the admin session times out from above meanwhile, so not too long), then cross
-        // root before the gate comes down again. The top is a plank bridge over
-        // the LEDs that runs against you too and sinks a while after you land on it. Rematch: demoted. The bridge is gone; the belts have all turned around: they carry you up, to the right, and off their
-        // ends into the LEDs (ride, hop at the end), and from the root belt it is back left onto a carpet that runs the other way (hold left
-        // against it) to the door in the middle of it. Round 1's door on the bridge does not exist
+        // 46 — privilege escalation (a puzzle room: R10 the transport, U12 the belt turns around), mirrored: you start at the right. A staircase of three
+        // belts over beds of LEDs climbs to the left: user, admin, root. User is calm until you step on it, then it runs against you, and admin follows a
+        // moment later. Root runs against you harder than you can walk, and a gate stands on it, except for one short maintenance window a moment after
+        // you step onto the pillar between admin and root (the gate lifts, the belt stops): wait there for the window (the admin session times out
+        // from above meanwhile, so not too long), then cross root before the gate comes down again. The top is a plank bridge over the LEDs at the
+        // far left that runs against you too and sinks a while after you land on it. Rematch: demoted. The bridge is gone; the belts have all turned
+        // around: they carry you up, to the left, and off their ends into the LEDs (ride, hop at the end), and from the root belt it is back right onto
+        // a carpet that runs the other way (hold right against it) to the door in the middle of it. Round 1's door on the bridge does not exist
         Level(
             name = T("Privilege Escalation", "Rechteausweitung"),
             intro = T("I'm promoting you. All the way to the top.", "Ich befördere dich. Ganz nach oben."),
-            start = listOf(Belt('a', 0f), Belt('b', -3f), Belt('c', -14f), Belt('p', 0f)),
+            start = listOf(Belt('a', 0f), Belt('b', 3f), Belt('c', 14f), Belt('p', 0f)),
             traps = listOf(
-                trap(Touch('a'), Belt('a', -5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
-                trap(Touch('a'), Belt('b', -5f), say("admin: sudo required. Starting now.", "admin: sudo nötig. Ab sofort."), delay = 1.5f),
-                trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', 0f), say("root: maintenance window. One second.", "root: Wartungsfenster. Eine Sekunde."), delay = 1.0f),
-                trap(Zone(16.4f, 10f, 18f, 13.2f), Belt('c', -14f), say("root: window closed. You were not invited.", "root: Fenster zu. Du warst nicht eingeladen."), delay = 2.0f),
-                trap(Zone(16.4f, 10f, 18f, 13.2f), Play(Card.HEADBUTT), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
-                trap(Touch('p'), Belt('p', -6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
+                trap(Touch('a'), Belt('a', 5f), say("user: permission denied.", "user: Zugriff verweigert."), delay = 0.1f),
+                trap(Touch('a'), Belt('b', 5f), say("admin: sudo required. Starting now.", "admin: sudo nötig. Ab sofort."), delay = 1.5f),
+                trap(Zone(14f, 10f, 15.6f, 13.2f), Belt('c', 0f), say("root: maintenance window. One second.", "root: Wartungsfenster. Eine Sekunde."), delay = 1.0f),
+                trap(Zone(14f, 10f, 15.6f, 13.2f), Belt('c', 14f), say("root: window closed. You were not invited.", "root: Fenster zu. Du warst nicht eingeladen."), delay = 2.0f),
+                trap(Zone(14f, 10f, 15.6f, 13.2f), Play(Card.HEADBUTT), Move('k', 0f, 8f, 3.2f), say("admin: session timing out. Slowly. From above.", "admin: Sitzung läuft ab. Langsam. Von oben.")),
+                trap(Touch('p'), Belt('p', 6f), say("root: the last step is a belt, too.", "root: Die letzte Stufe ist auch ein Band."), delay = 0.1f),
                 trap(Touch('p'), Move('p', 0f, 4f, 8f), say("sudo: the bridge is not in the sudoers file.", "sudo: Die Brücke steht nicht in der sudoers-Datei."), delay = 0.9f),
             ),
             hint = T("Root never stops. Almost never. Wait on the pillar.", "Root läuft immer. Fast immer. Warte auf der Säule."),
@@ -227,26 +228,26 @@ object World2Part3D {
                     T("Demoted. Climb again, intern.", "Zurückgestuft. Die Leiter läuft jetzt gegen dich."),
                     start = listOf(Belt('a', 0f), Belt('b', 0f), Belt('c', 0f), Belt('q', 0f)),
                     traps = listOf(
-                        trap(Touch('a'), Belt('a', 2.4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
-                        trap(Touch('b'), Belt('b', 2.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
-                        trap(Touch('c'), Belt('c', 6f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
-                        trap(Zone(9f, 8.5f, 13.6f, 9.6f), Play(Card.BACKDRAFT), Belt('q', 5.5f), Saw(1.5f, 9.4f, 6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
+                        trap(Touch('a'), Belt('a', -2.4f), say("intern: please hurry.", "Praktikant: Kaffee holen, aber zackig."), delay = 0.1f),
+                        trap(Touch('b'), Belt('b', -2.8f), say("Fast track. Mind the gap.", "Überholspur. Lücke beachten, bitte."), delay = 0.1f),
+                        trap(Touch('c'), Belt('c', -6f), say("Please hold the handrail. There is none.", "Bitte am Geländer festhalten. Es gibt keins."), delay = 0.1f),
+                        trap(Zone(18.4f, 8.5f, 23f, 9.6f), Play(Card.BACKDRAFT), Belt('q', -5.5f), Saw(30.5f, 9.4f, -6f, 0f), say("Last step: the way out is back down, and the carpet runs the other way. A guest is leaving, too.", "Letzte Stufe: Der Ausgang liegt wieder unten, und der Teppich läuft andersrum. Ein Gast geht auch gerade."), delay = 0.1f),
                     ),
                 ) {
-                    put(29, 10, '.'); fill(27..30, 11..11, '.')
-                    fill(9..14, 10..10, 'q'); fill(2..8, 10..10); fill(17..18, 12..12, 'c')
-                    fill(16..17, 13..13, '.'); put(16, 14, '^'); put(17, 14, '^')
-                    put(11, 9, 'D'); put(2, 14, '.'); put(1, 14, 'P')
+                    put(2, 10, '.'); fill(1..4, 11..11, '.')
+                    fill(17..22, 10..10, 'q'); fill(23..29, 10..10); fill(13..14, 12..12, 'c')
+                    fill(14..15, 13..13, '.'); put(15, 14, '^'); put(14, 14, '^')
+                    put(20, 9, 'D'); put(29, 14, '.'); put(30, 14, 'P')
                 },
             ),
         ) {
             border(); floor()
-            fill(4..8, 14..14, 'a')
-            fill(11..15, 14..14); fill(11..15, 13..13, 'b')
-            fill(19..23, 13..14); fill(19..23, 12..12, 'c'); fill(16..17, 1..2, 'k')
-            fill(27..30, 11..11, 'p')
-            fill(16..17, 13..14); leds(9..10); put(18, 14, '^'); leds(24..30)
-            spawn(); put(29, 10, 'D'); bits(46)
+            fill(23..27, 14..14, 'a')
+            fill(16..20, 14..14); fill(16..20, 13..13, 'b')
+            fill(8..12, 13..14); fill(8..12, 12..12, 'c'); fill(14..15, 1..2, 'k')
+            fill(1..4, 11..11, 'p')
+            fill(14..15, 13..14); leds(21..22); put(13, 14, '^'); leds(1..7)
+            spawn(29, 14); put(2, 10, 'D'); bits(46)
         },
 
         // 47 — math problem (a puzzle room: R5 two floors, U9 the controls swap). 127 + 1 wraps around: a cart rolls out of the foot of the stairs at you, and the
