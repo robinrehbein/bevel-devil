@@ -59,7 +59,7 @@ object World1Part3 {
             rooms = 2,
             traps = listOf(
                 trap(PastX(5.2f), Move('a', -3f, 0f, 9f), Say(T("Roadworks. Unannounced.", "Baustelle. Unangekündigt."))),
-                trap(Landed(12.5f, 17f), Saw(31.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Not a trap. A vehicle.", "Gegenverkehr. Keine Falle. Ein Fahrzeug."))),
+                trap(Landed(12.5f, 17f), Saw(35.5f, 14.4f, -6.5f, 0f, 0.62f), Say(T("Oncoming traffic. Not a trap. A vehicle.", "Gegenverkehr. Keine Falle. Ein Fahrzeug."))),
                 trap(AtDoor, Play(Card.ANNEX), Extend(into = 1, door = roomX(1, 28) to 14, line = T("Clear road, you said. The road disagrees.", "Freie Fahrt, sagtest du. Die Straße sieht das anders."))),
                 trap(PastX(roomX(1, 2.5f)), Saw(roomX(1, 9.5f), 14.4f, -6f, 0f, 0.62f), Say(T("Road continues. So does the traffic.", "Die Straße geht weiter. Der Verkehr auch."))),
                 trap(Landed(roomX(1, 12.5f), roomX(1, 16f)), Move('b', -3.5f, 0f, 6f), Say(T("The ferry leaves now. With or without you.", "Die Fähre legt jetzt ab. Mit oder ohne dich."))),
@@ -72,7 +72,7 @@ object World1Part3 {
                     traps = listOf(
                         trap(After(0.3f), Extend(into = 1, door = roomX(1, 28) to 14, line = T("Prebuilt. Delivered ahead of schedule.", "Vorgefertigt. Vorzeitig geliefert."))),
                         trap(Airborne(8.5f, 14f), Show('A'), Say(T("Old habits. Mine too.", "Alte Gewohnheiten. Meine auch."))),
-                        trap(PastX(7f), Play(Card.DEVIL_SAW), PathSaw(7f, 17f to 14.4f, 17f to 10.6f, delay = 1.1f), Say(T("Jump rope. You skip, the traffic does not.", "Seilspringen. Du hüpfst, der Verkehr nicht."))),
+                        trap(PastX(7f), Play(Card.DEVIL_SAW), PathSaw(7f, 19.5f to 14.4f, 19.5f to 10.6f, delay = 1.4f), Say(T("Jump rope. You skip, the traffic does not.", "Seilspringen. Du hüpfst, der Verkehr nicht."))),
                         trap(PastX(20.5f), Move('d', -3f, 0f, 9f), Say(T("The road is a subscription. Cancelled.", "Die Straße ist ein Abo. Gekündigt."))),
                         trap(PastX(roomX(1, 1.5f)), Move('c', -3f, 0f, 9f), Say(T("Delivered. The road is still on the truck.", "Geliefert. Die Straße liegt noch auf dem Laster."))),
                         trap(Landed(roomX(1, 12.5f), roomX(1, 16f)), Saw(roomX(1, 31.5f), 14.4f, -6.5f, 0f, 0.62f), Say(T("The ferry has a cargo. It rolls.", "Die Fähre hat Ladung. Sie rollt."))),
@@ -86,8 +86,8 @@ object World1Part3 {
         },
 
         // 34 — monday morning: the way is closed for a break right at the start. The HUD pause button dodges your finger; only a real
-        // pause (back button) opens the wall, and the floor behind it takes its break too, and so does the floor you paused on. Then a
-        // second pit opens as you land, the way up leads back along the upper floor, and there a slab from the ceiling takes its break
+        // pause (back button) opens the wall, and the floor behind it takes its break too, and so does the floor you paused on. Then the
+        // floor you land on behind the pit opens under you, the way up leads back along the upper floor, and there a slab from the ceiling takes its break
         // right where you hurry, in front of the door in the middle of the upper floor
         // TWIST: PauseTrap dodge + Resumed
         Level(
@@ -99,25 +99,26 @@ object World1Part3 {
                 trap(Zone(5.6f, 10f, 8f, 15f), Say(T("Closed for a break. Pause the game to open it.", "Wegen Pause geschlossen. Pausier das Spiel, dann geht's auf."))),
                 trap(Resumed(), Play(Card.CRUMBLE), Hide('w'), Hide('a'), Say(T("Refreshed? The floor took a break too.", "Erholt? Der Boden macht jetzt auch Pause."))),
                 trap(Resumed(), Hide('s'), delay = 0.7f),
-                trap(Landed(12.5f, 15.5f), Fall('g'), Say(T("Second pit. Same excuse.", "Zweites Loch. Gleiche Ausrede.")), delay = 0.15f),
-                trap(Zone(23.5f, 7f, 25.9f, 9.5f), FrameCrack(18, 0, 20, 0, warn = 0.3f), Say(T("The ceiling is on a break. In your direction.", "Die Decke macht Pause. In deine Richtung."))),
+                trap(Landed(12.5f, 15.5f), Fall('g'), Say(T("Second pit. Same excuse.", "Zweites Loch. Gleiche Ausrede.")), delay = 0.3f),
+                trap(Zone(23.5f, 7f, 25.9f, 9.5f), FrameCrack(18, 0, 24, 0, warn = 0.3f), Say(T("The ceiling is on a break. In your direction.", "Die Decke macht Pause. In deine Richtung."))),
             ),
         ) {
             border(); floor()
-            fill(8..8, 10..14, 'w'); fill(9..11, 15..17, 'a'); fill(16..18, 15..17, 'g'); fill(5..7, 15..17, 's')
+            fill(8..8, 10..14, 'w'); fill(9..11, 15..17, 'a'); fill(13..15, 15..17, 'g'); fill(5..7, 15..17, 's')
             fill(22..25, 13..14); fill(26..30, 11..14)
             fill(2..25, 9..9)
-            put(3, 14, 'P'); put(12, 8, 'D')
+            put(2, 14, 'P'); put(12, 8, 'D')
         },
 
         // 35 — breather: the door is far away and buffering. It jumps up onto the high ledge as you start to climb (23%), and when you land
         // up there it is gone again: back down on the ground, in the middle of the room, behind you. The way down is straight down,
-        // and at once: the router over the ledge reboots onto whoever waits for the door up there
+        // and at once: the router over the ledge reboots onto whoever waits for the door up there, and a moment later the platform you
+        // climbed by uploads itself into the ceiling: whoever is still on it on the way down goes up with it
         // TWIST: DoorTo (the one fleeing door of the act)
         Level(
             name = T("Home Network", "Heimnetz"),
             intro = T("My internet is slow today. Don't mind me.", "Mein Internet ist heute lahm. Lass dich nicht stören."),
-            hint = T("The door buffers: it goes where you are not. Climb up, and come straight back down.", "Die Tür lädt: Sie geht dorthin, wo du nicht bist. Klettere hoch und komm direkt wieder runter."),
+            hint = T("The door buffers: it goes where you are not. Climb up, and come straight back down, before the platform uploads you.", "Die Tür lädt: Sie geht dorthin, wo du nicht bist. Klettere hoch und komm direkt wieder runter, bevor die Plattform dich hochlädt."),
             traps = listOf(
                 trap(PastX(8f), Play(Card.SHY_DOOR), DoorTo(30, 8, speed = 14f), Say(T("Buffering... 23%", "Lädt... 23 %"))),
                 trap(Landed(24f, 30.5f), DoorTo(30, 2, speed = 25f), Say(T("Connection lost. Retrying...", "Verbindung verloren. Neuer Versuch..."))),
@@ -125,10 +126,11 @@ object World1Part3 {
                 trap(Landed(24f, 30.5f), DoorTo(14, 14, speed = 25f), delay = 1.0f),
                 trap(Landed(24f, 30.5f), Say(T("100%. Was that so hard?", "100 %. War das so schwer?")), delay = 1.4f),
                 trap(Landed(24f, 30.5f), Move('q', 0f, 6f, 14f), Say(T("Router reboot. Mind your head.", "Router-Neustart. Kopf einziehen.")), delay = 0.5f),
+                trap(Landed(24f, 30.5f), Move('u', 0f, -10f, 8f), Say(T("Uploading the platform. And whoever is on it.", "Lade die Plattform hoch. Und alle, die drauf sind.")), delay = 0.9f),
             ),
         ) {
             border(); floor()
-            fill(17..20, 13..13); fill(21..23, 11..11); fill(25..30, 9..9); fill(25..30, 1..2, 'q')
+            fill(17..20, 13..13); fill(21..23, 11..11, 'u'); fill(25..30, 9..9); fill(25..30, 1..2, 'q')
             put(2, 14, 'P'); put(29, 14, 'D')
         },
 
@@ -145,7 +147,7 @@ object World1Part3 {
                 trap(PastX(3f), PathSaw(7f, 7f to 14.4f, 7f to 10.6f, delay = 0.6f), Say(T("Jump rope. The exhibit is interactive.", "Seilspringen. Das Exponat ist interaktiv."))),
                 trap(PastX(8.5f), FrameCrack(14, 0, 16, 0, warn = 0.5f), Say(T("Crack.", "Knack."))),
                 trap(Landed(17f, 23f), FrameCrack(26, 0, 28, 0, warn = 0.55f), Say(T("The ceiling is an exhibit. Do not touch.", "Die Decke ist ein Exponat. Nicht berühren."))),
-                trap(PastX(28.4f), Play(Card.UNDO), Undo(1.0f), FrameCrack(23, 0, 25, 0, warn = 0.7f), Say(T("The curator pressed Ctrl+Z. On you.", "Die Kuratorin hat Strg+Z gedrückt. Bei dir."))),
+                trap(PastX(28.4f), Play(Card.UNDO), Undo(1.0f), FrameCrack(19, 0, 25, 0, warn = 0.7f), Say(T("The curator pressed Ctrl+Z. On you.", "Die Kuratorin hat Strg+Z gedrückt. Bei dir."))),
             ),
         ) {
             border(); floor()
@@ -163,11 +165,11 @@ object World1Part3 {
             intro = T("Mephi already pushed. You just need to pull.", "Mephi hat schon gepusht. Du musst nur noch pullen."),
             hint = T("History is rewritten behind you: do not stop. The first step is deleted once you have left it.", "Die Historie wird hinter dir umgeschrieben: Bleib nicht stehen. Die erste Stufe ist gelöscht, sobald du sie verlassen hast."),
             traps = listOf(
-                trap(PastX(8f), Play(Card.COLLAPSE), Fall('a'), delay = 0.2f),
-                trap(PastX(8f), Say(T("Force-pushed. Your commits are gone.", "Force-gepusht. Deine Commits sind weg."))),
+                trap(PastX(8.8f), Play(Card.COLLAPSE), Fall('a'), delay = 0.2f),
+                trap(PastX(8.8f), Say(T("Force-pushed. Your commits are gone.", "Force-gepusht. Deine Commits sind weg."))),
                 trap(Landed(21f, 24f), Hide('u'), Say(T("The merge base is deleted too.", "Die Merge-Basis ist auch gelöscht.")), delay = 0.7f),
                 trap(Zone(21f, 7f, 23f, 9.5f), Say(T("Rewriting history upstairs, too.", "Oben wird die Historie auch umgeschrieben."))),
-            ) + (1..8).map { k -> trap(PastX(8f), Fall('a' + k), delay = 0.2f + 0.33f * k) } +
+            ) + (1..8).map { k -> trap(PastX(8.8f), Fall('a' + k), delay = 0.2f + 0.33f * k) } +
                 (0..9).map { k -> trap(Zone(21f, 7f, 23f, 9.5f), Hide('j' + k), delay = 0.4f + 0.33f * k) },
             rematch = listOf(
                 Round(
@@ -193,7 +195,7 @@ object World1Part3 {
             fill(21..23, 13..14, 'u'); fill(24..30, 11..14)
             fill(2..23, 9..9)
             for (k in 0..9) fill((22 - 2 * k)..(23 - 2 * k), 9..9, 'j' + k)
-            put(1, 14, 'P'); put(2, 8, 'D')
+            put(1, 14, 'P'); put(12, 8, 'D')
         },
 
         // 38 — clear view: you start on the right and the way home runs left, so the stairs are on the far left. A saw rolls in on the ground
@@ -215,7 +217,7 @@ object World1Part3 {
             border(); floor()
             fill(5..7, 13..14); fill(1..3, 11..14)
             fill(5..29, 9..9)
-            put(29, 14, 'P'); put(23, 8, 'D')
+            put(29, 14, 'P'); put(19, 8, 'D')
         },
 
         // 39 — hardware store: a ceiling tile drops in aisle 6 and is hopped, then the stairs go up three floors (the middle step is
@@ -257,7 +259,7 @@ object World1Part3 {
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.TWISTED), Swap(true), Shake(1.2f), Say(T("KERNEL PANIC - not syncing", "KERNEL PANIC - nicht synchronisiert"))),
                 trap(PastX(8f), Laser('A', 14 to 3, 14 to 8, on = 1.4f, off = 1.6f, delay = 0.2f), Say(T("Memory test. Please do not cross the beam.", "Speichertest. Bitte den Strahl nicht kreuzen."))),
-                trap(PastX(16f), Laser('B', 22 to 3, 22 to 8, on = 0.8f, off = 1.6f, phase = 1.3f), Say(T("Memory test, part two. Same rhythm. Almost.", "Speichertest, Teil zwei. Gleicher Takt. Fast."))),
+                trap(PastX(14.5f), Laser('B', 22 to 3, 22 to 8, on = 0.8f, off = 1.6f, phase = 1.3f), Say(T("Memory test, part two. Same rhythm. Almost.", "Speichertest, Teil zwei. Gleicher Takt. Fast."))),
                 trap(Zone(23f, 7f, 26.5f, 9.5f), Swap(false), Say(T("Controls restored. Probably.", "Steuerung wiederhergestellt. Vermutlich."))),
                 trap(Landed(26f, 31f), Laser('C', 30 to 10, 30 to 14, on = 0.5f, off = 60f, delay = 0.6f), Say(T("Disk check. Sector 30 is bad. Move.", "Datenträgerprüfung. Sektor 30 ist defekt. Weiter."))),
                 trap(Zone(21.5f, 12f, 23.5f, 15.5f), Swap(true), Say(T("Rebooting. Left is right again. Obviously.", "Neustart. Links ist wieder rechts. Offensichtlich."))),
@@ -369,7 +371,7 @@ object World1Part3 {
 
         // 44 — wallflower: the pit is floored with four shy planks that only dance when you step on the one before: the next one is
         // gone for a moment, so you have to wait on the plank you stand on. The wall to the ceiling behind them does not budge, it
-        // only comes down when you shake the phone, and the bit of floor beyond it drops as you pass, in front of the stairs to the door.
+        // only comes down when you shake the phone, and the shaking brings down the bit of floor beyond it too, in front of the stairs.
         // MOTION: Shaken (one of the two phone-motion levels of the act). U16: shake. Blink planks (the one lethal family), a floor piece
         Level(
             name = T("Wallflower", "Mauerblümchen"),
@@ -381,7 +383,7 @@ object World1Part3 {
                 trap(Touch('q'), Blink('r', on = 2.6f, off = 1.15f, phase = 2.6f)),
                 trap(Touch('r'), Blink('s', on = 2.6f, off = 1.15f, phase = 2.6f)),
                 trap(Shaken, Play(Card.CRUMBLE), Hide('a'), Say(T("Hey! Stop that!", "He! Lass das!"))),
-                trap(PastX(24.6f), Fall('f'), Say(T("Flowers wilt. So does floor.", "Blumen welken. Boden auch."))),
+                trap(Shaken, Fall('f'), Say(T("Flowers wilt. So does floor.", "Blumen welken. Boden auch.")), delay = 0.3f),
             ),
         ) {
             border(); floor(); pit(5..24)
@@ -402,15 +404,16 @@ object World1Part3 {
             intro = T("Please log in as root. Password: hunter2.", "Bitte als root anmelden. Passwort: hunter2."),
             hint = T("The floor is deleted just ahead of you, top floor first: hop early, before the hole shows, drop down the shaft, and hop again on the ground. The shelf in between is all spikes.", "Der Boden wird direkt vor dir gelöscht, zuerst oben: Spring früh, bevor das Loch da ist, lass dich durch den Schacht fallen und spring unten wieder. Das Regal dazwischen besteht nur aus Stacheln."),
             traps = listOf(
-                trap(BeforeX(28.5f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
+                trap(BeforeX(25.6f), Play(Card.SINKING), Hide('a'), Say(T("rm: removing '/usr' ... done. You wanted root.", "rm: entferne '/usr' ... erledigt. Du wolltest doch root."))),
                 trap(BeforeX(28.5f), Hide('s'), Say(T("rm: removing '~' ... you were standing on it.", "rm: entferne '~' ... du standest drauf.")), delay = 0.6f),
                 trap(BeforeX(17.6f), Hide('b'), Say(T("rm: removing '/lib' ... done.", "rm: entferne '/lib' ... erledigt."))),
-                trap(Zone(5.8f, 12f, 7.5f, 15.5f), Hide('d'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
+                trap(BeforeX(10.4f), Hide('c'), Say(T("rm: removing '/etc' ... done. Config is overrated.", "rm: entferne '/etc' ... erledigt. Konfiguration wird überschätzt."))),
+                trap(Zone(9.5f, 12f, 10.5f, 15.5f), Hide('d'), Say(T("rm: removing '/bin' ... done. Who needs those.", "rm: entferne '/bin' ... erledigt. Wer braucht die schon."))),
             ),
         ) {
             border(); floor()
             fill(7..21, 5..5); fill(22..24, 5..5, 'a'); fill(25..26, 5..5); fill(27..30, 5..5, 's')
-            fill(14..16, 5..5, 'b')
+            fill(14..16, 5..5, 'b'); fill(8..9, 5..5, 'c')
             fill(7..30, 10..10)
             for (x in 7..30) put(x, 9, '^')
             fill(11..13, 15..17, 'd')

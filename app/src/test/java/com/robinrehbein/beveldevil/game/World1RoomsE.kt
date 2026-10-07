@@ -55,7 +55,7 @@ object World1RoomsE {
         // 45: hop the two pieces that are deleted ahead on the top floor, run off its left end and drop down the shaft, run back along the
         // ground and hop the two pieces that are deleted there
         45 to listOf<Solution>(
-            { hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().rightTo(10.3f).rightJump(0.5f).landRight().rightTo(19f) },
+            { hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).hopL(11.4f, 0.5f).leftTo(5.0f).landLeft().rightTo(10.0f).rightJump(0.5f).landRight().rightTo(19f) },
         ),
         44 to listOf<Solution>(
             { rightTo(8.2f).waitFor { it.solidLeft('q') > 1.0f }

@@ -398,6 +398,10 @@ class World1Test {
     /** 35: the door runs from you, to the ledge and back down, so running along the ground never wins. */
     @Test fun level35TheDoorFlees() = b(35).right(8f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
     @Test fun level35TheDoorComesBackDown() = b(35).also(World1DesignTest.SOLUTIONS.getValue(35)[0]).also { assertTrue(it.world.door.box.y > 12f) }.expect(WorldState.WON)
+    /** 35: the platform you climbed by uploads itself into the ceiling a moment after the door comes down: whoever comes down late goes up with it. */
+    private fun ledge35() = b(35).rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
+    @Test fun level35WaitingUpThereMeetsTheRouter() = ledge35().wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level35ComingDownLateIsUploaded() = ledge35().leftTo(25.6f).left(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
 
     /** 36: the rope stops the runner, and so does the first piece of the frame when you run on under it instead of waiting for it. */
     private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
@@ -463,7 +467,7 @@ class World1Test {
 
     /** 45: the top floor is deleted ahead of you, and the shelf under it is all spikes; on the ground the next pieces go the same way. */
     @Test fun level45RunningStraightOnFallsOntoTheSpikeShelf() = b(45).left(2.5f).expect(WorldState.DEAD)
-    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
+    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).hopL(11.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
     @Test fun level45StartingByRunningRightGoesNowhere() = b(45).right(4f).also { assertTrue(it.world.player.box.cx > 29f) }.expect(WorldState.PLAYING)
     @Test fun level46() = World1DesignTest.play(46)
     @Test fun level47() = World1DesignTest.play(47)
