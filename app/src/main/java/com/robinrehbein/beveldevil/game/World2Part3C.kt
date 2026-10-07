@@ -246,14 +246,15 @@ object World2Part3C {
         Level(
             name = T("Contingency Plan", "Notfallplan"),
             intro = T("The firewall is stuck. It'll open by itself any second now.", "Die Firewall klemmt. Die geht gleich von selbst auf."),
-            start = listOf(Laser('F', 13 to 10, 13 to 14)),
+            start = listOf(Laser('F', 13 to 10, 13 to 14), Power('F', false)),
             traps = listOf(
                 trap(PastX(4.5f), Laser('A', 10 to 1, 10 to 8, on = 1f, off = 60f, delay = 0.55f), say("Rule 1: wait your turn.", "Regel 1: Warte, bis du dran bist.")),
                 trap(PastX(12.5f), Laser('B', 17 to 7, 17 to 8, on = 3f, off = 0f), say("Rule 2: mind your ankles.", "Regel 2: Achte auf deine Knöchel.")),
+                trap(Zone(19.5f, 12f, 20.5f, 15.5f), Play(Card.BIOS), Power('F', true)),
                 trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('C', 17 to 10, 17 to 14, on = 0.8f, off = 60f, delay = 0.4f), say("Rule 3: the same, one floor down.", "Regel 3: Dasselbe, ein Stockwerk tiefer.")),
                 trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('D', 20 to 10, 20 to 14, on = 1.2f, off = 60f, delay = 1.0f), say("Rule 4: no loitering under the deck.", "Regel 4: Kein Herumlungern unter dem Deck.")),
                 trap(Zone(13.5f, 10f, 16.5f, 15.5f), say("The firewall hangs. I would restart it... but you know how that works.", "Die Firewall hängt. Ich würde ja neu starten ... aber das weißt du ja.")),
-                trap(After(0.3f), Play(Card.BIOS), PauseTrap(PauseTrick.DODGE)),
+                trap(After(0.3f), PauseTrap(PauseTrick.DODGE)),
                 trap(Resumed(), Power('F', false), say("Session reset. The firewall forgot you.", "Sitzung zurückgesetzt. Die Firewall hat dich vergessen.")),
             ),
             hint = T("Off and on again: pause the game. The button runs away, the back button does not.", "Aus und wieder an: Pausiere das Spiel. Der Knopf läuft weg, die Zurück-Taste nicht."),
