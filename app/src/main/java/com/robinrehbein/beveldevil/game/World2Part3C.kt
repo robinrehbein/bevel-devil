@@ -218,8 +218,8 @@ object World2Part3C {
             name = T("Bobby Tables", "Klein Bobby Tables"),
             intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
             start = listOf(
-                Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 3 to 14, twoWay = false),
-                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 3 to 7, twoWay = false),
+                Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 4 to 14, twoWay = false),
+                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 4 to 7, twoWay = false),
             ),
             traps = listOf(
                 trap(Touch('i'), Play(Card.SINKING), Fall('i'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?"), delay = 0.5f),
