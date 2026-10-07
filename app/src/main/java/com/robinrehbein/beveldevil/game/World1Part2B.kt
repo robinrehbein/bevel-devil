@@ -14,8 +14,9 @@ object World1Part2B {
 
     val levels: List<Level> = listOf(
         // 17 — budget cuts: a gap opens in the floor ahead of you (and the ceiling over whoever stops to look at it is cut too), the landing is cut under whoever lands on it, the way up is
-        // platforms over the pit, the second one gives way, and so does the first piece of the upper floor on the way back. Rematch:
-        // the floor holds, but whoever hops in the first stretch brings it down; the cuts have moved on to the walkers' road
+        // platforms over the pit, the second one gives way, the far end of the roof you climb onto is cut away under whoever runs on, and so
+        // does the first piece of the upper floor on the way back to the door on management's desk. Rematch: the floor holds, but whoever
+        // hops in the first stretch brings it down; the cuts have moved on to the walkers' road: a slab comes down in front of you
         // MECHANIC: Fall (floor cuts)
         Level(
             name = T("Night Shift", "Nachtschicht"),
@@ -25,29 +26,32 @@ object World1Part2B {
                 trap(Landed(10f, 13f), Fall('b'), Say(T("Landing fee: cancelled.", "Landegebühr: gestrichen.")), delay = 0.5f),
                 trap(Touch('q'), Fall('q'), Say(T("Overtime is not paid. Neither is this step.", "Überstunden werden nicht bezahlt. Diese Stufe auch nicht.")), delay = 0.45f),
                 trap(Touch('w'), Fall('w'), Say(T("Upper management cuts last.", "Die Chefetage kürzt zuletzt.")), delay = 0.4f),
+                trap(Zone(28.6f, 7f, 30f, 9.5f), Move('z', 0f, 12f, 10f), Say(T("Roof terrace: outsourced.", "Dachterrasse: ausgelagert."))),
             ),
             rematch = listOf(
                 Round(
                     T("Rematch. The cuts have been restructured.", "Revanche. Die K\u00fcrzungen wurden umstrukturiert."),
                     traps = listOf(
-                        trap(Airborne(3f, 8.5f), Play(Card.SINKING), Fall('a'), Fall('b'), Say(T("Hopping is a cost centre. Cut.", "H\u00fcpfen ist eine Kostenstelle. Gestrichen."))),
-                        trap(Zone(13f, 12f, 14f, 15.5f), Move('k', 0f, 4.6f, 20f), Say(T("Cuts go where you are going.", "Gek\u00fcrzt wird dort, wo du hinwillst."))),
+                        trap(Airborne(3f, 8.5f), Fall('a'), Fall('b'), Say(T("Hopping is a cost centre. Cut.", "H\u00fcpfen ist eine Kostenstelle. Gestrichen."))),
+                        trap(Zone(9.0f, 12f, 10.0f, 15.5f), Move('k', 0f, 5f, 20f), Say(T("Cuts go where you are going.", "Gek\u00fcrzt wird dort, wo du hinwillst."))),
                         trap(Touch('p'), Move('p', -3f, 0f, 12f), Say(T("This one is on probation.", "Diese hier ist in der Probezeit.")), delay = 0.2f),
-                        trap(Touch('x'), Fall('x'), Say(T("The ladder to management is short.", "Die Karriereleiter ist kurz.")), delay = 0.4f),
+                        trap(Touch('x'), Play(Card.SINKING), Fall('x'), Say(T("The ladder to management is short.", "Die Karriereleiter ist kurz.")), delay = 0.4f),
                         trap(Touch('w'), Fall('w'), Say(T("Upper management cuts last.", "Die Chefetage k\u00fcrzt zuletzt.")), delay = 0.4f),
+                        trap(Zone(28.6f, 7f, 30f, 9.5f), Move('z', 0f, 12f, 10f), Say(T("The roof terrace is still outsourced.", "Die Dachterrasse ist immer noch ausgelagert."))),
                     ),
-                ) { fill(11..13, 8..9, 'k'); fill(16..17, 7..7, 'x') },
+                ) { fill(11..13, 9..9, 'k'); fill(16..17, 7..7, 'x') },
             ),
         ) {
             border(); floor(); pit(16..30)
             fill(7..9, 15..17, 'a'); fill(10..12, 15..17, 'b'); fill(3..5, 8..8, 'c')
-            fill(18..20, 13..13, 'p'); fill(23..24, 11..11, 'q'); fill(25..29, 9..14)
-            fill(21..22, 7..7, 'w'); fill(2..20, 7..7)
-            put(2, 14, 'P'); put(2, 6, 'D')
+            fill(18..20, 13..13, 'p'); fill(23..24, 11..11, 'q'); fill(25..28, 9..14); fill(29..30, 9..9, 'z')
+            fill(21..22, 7..7, 'w'); fill(2..20, 7..7); put(7, 6, '#')
+            put(2, 14, 'P'); put(7, 5, 'D')
         },
 
         // 18 — the hour strikes: two saws roll in along the upper floor, the second one makes you leap off its end, down on the ground
-        // floor the next hour comes at you from the left, and the floor opens up twice on the way home. Rematch: the hours come from behind
+        // floor the floor opens up ahead as you land, and the weight of the clock drops in front of the door in the middle.
+        // Rematch: the hours come from behind, the keys turn, and at midnight they turn back
         // MECHANIC: Saw (chimes)
         Level(
             name = T("On the Hour", "Stundenschlag"),
@@ -55,9 +59,8 @@ object World1Part2B {
             traps = listOf(
                 trap(PastX(5f), Play(Card.DEVIL_SAW), Saw(33f, 7.4f, -7f, 0f, 0.62f), Say(T("Ding. One o'clock.", "Ding. Ein Uhr."))),
                 trap(Airborne(19.9f, 24f), Saw(33f, 7.4f, -8f, 0f, 0.62f), Say(T("Ding. Two o'clock. Punctual people leave early.", "Ding. Zwei Uhr. Pünktliche gehen früher."))),
-                trap(Landed(27.5f, 31f), Saw(-1.5f, 14.4f, 7.5f, 0f, 0.62f), Say(T("Three o'clock. Ground floor.", "Drei Uhr. Erdgeschoss.")), delay = 0.3f),
-                trap(Zone(27.5f, 12f, 30f, 15.5f), Move('g', 0f, 5f, 12f), Say(T("Lunch break. For the floor.", "Mittagspause. Für den Boden."))),
-                trap(Zone(10.5f, 12f, 13f, 15.5f), Move('k', 0f, 5f, 12f), Say(T("Closing time.", "Feierabend."))),
+                trap(Zone(18f, 12f, 20f, 15.5f), Saw(16f, 9.6f, 0f, 9f, 0.62f), Say(T("Three o'clock. The weight drops.", "Drei Uhr. Das Gewicht fällt."))),
+                trap(Landed(27f, 31f), Move('g', 0f, 5f, 12f), Say(T("Lunch break. For the floor.", "Mittagspause. Für den Boden."))),
             ),
             rematch = listOf(
                 Round(
@@ -67,20 +70,20 @@ object World1Part2B {
                         trap(Landed(14f, 25f), Saw(8f, 7.4f, 17f, 0f, 0.62f), Say(T("The cuckoo came out the back.", "Der Kuckuck kam hinten raus."))),
                         trap(Landed(27.5f, 31f), Play(Card.TWISTED), Swap(true), Say(T("Daylight saving: left is right.", "Zeitumstellung: links ist rechts."))),
                         trap(Landed(27.5f, 31f), Saw(33f, 14.4f, -17f, 0f, 0.62f), Say(T("Quarter past. From the other side.", "Viertel nach. Von der anderen Seite.")), delay = 0.5f),
-                        trap(Zone(14.5f, 12f, 17f, 15.5f), Saw(-1.5f, 14.4f, 8f, 0f, 0.62f), Say(T("Half past. The clock is stuck.", "Halb. Die Uhr hängt."))),
-                        trap(Zone(3.6f, 14f, 6.5f, 15.5f), Swap(false), Say(T("Midnight. The clock resets. So do your keys.", "Mitternacht. Die Uhr springt zurück. Deine Tasten auch."))),
+                        trap(Zone(16.5f, 12f, 19f, 15.5f), Swap(false), Say(T("Midnight. The clock resets. So do your keys.", "Mitternacht. Die Uhr springt zurück. Deine Tasten auch."))),
                     ),
                 ),
             ),
         ) {
             border(); floor(); fill(1..26, 8..8)
-            fill(21..23, 15..17, 'g'); fill(6..7, 15..17, 'k')
-            put(2, 7, 'P'); put(3, 14, 'D')
+            fill(21..23, 15..17, 'g')
+            put(2, 7, 'P'); put(13, 14, 'D')
         },
 
         // 19 — a hold pad under a trapdoor: the hatch above the pad is open only while somebody stands on it, so you jump straight up
         // through it (it waits while you are inside); pressing the pad also sends a slab down from the ceiling of the room above, where
-        // you land, and the lowering ceiling at the far end catches whoever stops
+        // you land, a second one comes down in front of whoever hurries on, and over the last stretch to the door in the middle of the
+        // upper floor the ceiling lowers itself onto whoever waits
         // MECHANIC: hold pad (R2)
         Level(
             name = T("Waiting Room", "Wartezimmer"),
@@ -88,23 +91,24 @@ object World1Part2B {
             start = listOf(Circuit('w'), Pad('1', at = 26 to 12, circuits = "w", mode = PadMode.HOLD)),
             traps = listOf(
                 trap(PastX(7.6f), Fall('a'), Say(T("Please mind the gap. I dug it myself.", "Bitte Abstand halten. Ich habe ihn selbst gegraben."))),
-                trap(PastX(12.5f), Fall('b'), Say(T("Another gap. Waiting rooms have a lot of those.", "Noch eine Lücke. Wartezimmer haben viele davon."))),
+                trap(PastX(13.8f), Fall('b'), Say(T("Another gap. Waiting rooms have a lot of those.", "Noch eine Lücke. Wartezimmer haben viele davon."))),
                 trap(Pressed('1'), Play(Card.HEADBUTT), Move('x', 0f, 10f, 18f), Say(T("Next, please! ... Not you.", "Der Nächste, bitte! ... Nicht du.")), delay = 0.35f),
                 trap(Zone(21.6f, 1f, 23.4f, 11f), Move('y', 0f, 8f, 18f), Say(T("Please wait to be called.", "Bitte warten, bis Sie aufgerufen werden."))),
-                trap(Zone(13f, 1f, 16f, 11f), Move('l', 0f, 7.5f, 2.2f), Say(T("The ceiling is fully booked. Come back lower.", "Die Decke ist ausgebucht. Komm tiefer wieder."))),
+                trap(Zone(15f, 1f, 17f, 11f), Move('l', 0f, 7.5f, 4.5f), Say(T("The ceiling is fully booked. Come back lower.", "Die Decke ist ausgebucht. Komm tiefer wieder."))),
             ),
         ) {
             border(); floor()
             fill(1..30, 11..11); fill(23..26, 11..11, 'w')
             fill(9..10, 15..17, 'a'); fill(15..16, 15..17, 'b')
             fill(19..21, 14..14); fill(22..27, 13..14)
-            fill(25..26, 1..2, 'x'); fill(18..19, 1..2, 'y'); fill(3..9, 1..2, 'l')
+            fill(25..26, 1..2, 'x'); fill(18..19, 1..2, 'y'); fill(12..16, 1..2, 'l')
             put(27, 12, '#')
-            put(2, 14, 'P'); put(2, 10, 'D')
+            put(2, 14, 'P'); put(12, 10, 'D')
         },
 
-        // 20 — disco: stones over the pit light up in turns, the way up is a stair, and the way back along the top is three more
-        // stones under a ceiling of spikes that comes down on whoever dances too long
+        // 20 — disco: stones over the pit light up in turns, the way up is a stair (the dance floor behind it collapses as you land on
+        // top), and the way back along the top is three more stones under a ceiling of spikes that comes down on whoever dances too long;
+        // the exit is up on the DJ booth
         // MECHANIC: Blink (running light)
         Level(
             name = T("Disco Night", "Discoabend"),
@@ -116,7 +120,7 @@ object World1Part2B {
                 trap(Landed(9f, 12f), Blink('a', on = 1.8f, off = 0.9f), Say(T("Lights! ... Sometimes.", "Licht! ... Manchmal."))),
                 trap(Landed(14f, 17f), Blink('b', on = 1.8f, off = 0.9f), Say(T("Next song. Same floor. Worse.", "Nächstes Lied. Gleicher Boden. Schlechter."))),
                 trap(Landed(19f, 22f), Blink('c', on = 1.8f, off = 0.9f)),
-                trap(Landed(28f, 31f), Play(Card.COLLAPSE), Move('C', 0f, 6.4f, 1.1f), Say(T("Last dance. The ceiling joins in.", "Letzter Tanz. Die Decke tanzt mit."))),
+                trap(Landed(28f, 31f), Play(Card.COLLAPSE), Move('C', 0f, 6.4f, 1.1f), Move('y', 0f, 4f, 6f), Say(T("Last dance. The ceiling joins in, the dance floor leaves.", "Letzter Tanz. Die Decke tanzt mit, die Tanzfläche geht."))),
                 trap(Zone(22.5f, 5f, 26f, 9.5f), Blink('f', on = 1.8f, off = 0.9f)),
                 trap(Zone(17.5f, 5f, 21f, 9.5f), Blink('g', on = 1.8f, off = 0.9f)),
                 trap(Zone(12.5f, 5f, 16f, 9.5f), Blink('h', on = 1.8f, off = 0.9f)),
@@ -128,9 +132,10 @@ object World1Part2B {
             fill(9..11, 15..17, 'a'); fill(14..16, 15..17, 'b'); fill(19..21, 15..17, 'c')
             fill(26..27, 13..14); fill(28..30, 11..14)
             fill(23..25, 9..9, 'f'); fill(18..20, 9..9, 'g'); fill(13..15, 9..9, 'h')
-            fill(4..8, 9..9); fill(9..10, 9..9, 'z')
-            fill(4..27, 1..1, 'C')
-            put(2, 14, 'P'); put(5, 8, 'D')
+            fill(4..8, 9..9); fill(9..10, 9..9, 'z'); put(8, 8, '#'); put(7, 7, '#'); fill(4..6, 6..6)
+            fill(9..27, 1..1, 'C')
+            fill(24..25, 16..17, '.'); fill(24..25, 15..15, 'y')
+            put(2, 14, 'P'); put(6, 5, 'D')
         },
 
         // 21 — the door is high up at the end of the left platform and there is no way up. A strip of the floor sinks as you come,
@@ -143,7 +148,7 @@ object World1Part2B {
             intro = T("Concrete. Two inches. Fully inspected.", "Beton. Fünf Zentimeter. Alles geprüft."),
             legend = mapOf('A' to Glyph(spike = true, hidden = true), 'B' to Glyph(spike = true, hidden = true)),
             traps = listOf(
-                trap(PastX(5.5f), Move('f', 0f, 4f, 12f), Say(T("Floor strip 9 to 11: collected for recycling.", "Bodenstreifen 9 bis 11: wird recycelt."))),
+                trap(PastX(8.0f), Move('f', 0f, 4f, 12f), Say(T("Floor strip 9 to 11: collected for recycling.", "Bodenstreifen 9 bis 11: wird recycelt."))),
                 trap(Airborne(15f, 18.5f), Play(Card.SPIKE_SEED), Show('A'), Say(T("Rebar. Included in the price.", "Bewehrung. Im Preis inbegriffen."))),
                 trap(Zone(27.2f, 13.2f, 31f, 14.0f), Move('s', 0f, 12f, 22f), Move('t', 0f, 10f, 22f), Move('u', 0f, 8f, 22f),
                     Say(T("Pour the stairs. Mind your head.", "Treppe gießen. Kopf einziehen."))),
@@ -177,32 +182,34 @@ object World1Part2B {
             fill(27..30, 14..14, 'k'); fill(27..30, 1..2, 'x')
             fill(20..26, 1..1, 's'); fill(16..19, 1..1, 't'); fill(12..15, 1..1, 'u')
             fill(1..11, 9..9)
-            put(2, 14, 'P'); put(11, 8, 'D')
+            put(1, 14, 'P'); put(11, 8, 'D')
         },
 
         // 22 — the airlock: along the upper floor through a pulsing beam, past a scanner that flashes on whoever lingers, to the pad,
-        // which cuts the lock on the ground floor; the cycle fails and Mephi rewinds you a moment, then you drop to the ground floor and
-        // the next beam pulses on the way back to the door in the middle of the room
+        // which cuts the lock on the ground floor; the cycle fails and Mephi rewinds you a second, to just before the scanner, and the
+        // scan runs again: whoever runs on at once walks into it (wait for the flash, then the pad is still pressed). Then you drop to the
+        // ground floor and the next beam pulses on the way back to the door in the middle of the room
         // MECHANIC: laser gate (R1 switch + door cage)
         Level(
             name = T("Airlock", "Schleuse"),
             intro = T("Cycle time: a few seconds. Survivors: variable.", "Zykluszeit: wenige Sekunden. Überlebende: variabel."),
-            start = listOf(Circuit('w'), Pad('1', at = 25 to 7, circuits = "w", mode = PadMode.OFF)),
+            start = listOf(Circuit('w'), Pad('1', at = 22 to 7, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
                 trap(PastX(6f), Laser('A', 12 to 1, 12 to 7, on = 0.9f, off = 1.5f, delay = 0.2f), Say(T("Outer door: pulsing. Please wait for the green.", "Außentür: pulsiert. Bitte auf Grün warten."))),
-                trap(Zone(15.1f, 4f, 16.5f, 8.5f), Laser('C', 15 to 1, 15 to 7, on = 0.5f, off = 60f, delay = 0.45f), Say(T("Body scan. Hold still. Or don't.", "Körperscan. Stillhalten. Oder lieber nicht."))),
-                trap(Pressed('1'), Play(Card.UNDO), Undo(1.1f), Say(T("Pressure test failed. Rewinding the last bit.", "Drucktest fehlgeschlagen. Das letzte Stück wird zurückgespult."))),
-                trap(Landed(26f, 31f), Laser('B', 21 to 9, 21 to 14, on = 0.6f, off = 1.5f, delay = 0.6f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend."))),
+                trap(Zone(17.1f, 4f, 18.5f, 8.5f), Laser('C', 17 to 1, 17 to 8, on = 0.35f, off = 60f, delay = 0.45f), Say(T("Body scan. Hold still. Or don't.", "Körperscan. Stillhalten. Oder lieber nicht."))),
+                trap(Pressed('1'), Play(Card.UNDO), Undo(0.9f), Laser('S', 17 to 1, 17 to 8, on = 0.35f, off = 60f, delay = 0.15f),
+                    Say(T("Pressure test failed. Rewinding to the scan. Please be scanned again.", "Drucktest fehlgeschlagen. Zurück zum Scan. Bitte erneut scannen lassen."))),
+                trap(Landed(21.8f, 31f), Laser('B', 20 to 9, 20 to 14, on = 0.6f, off = 1.5f), Say(T("Inner door: also pulsing. It is catching.", "Innentür: pulsiert auch. Das ist ansteckend.")), delay = 0.25f),
             ),
         ) {
-            border(); floor(); fill(1..26, 8..8)
+            border(); floor(); fill(1..23, 8..8)
             fill(15..16, 9..14, 'w')
             put(2, 7, 'P'); put(12, 14, 'D')
         },
 
-        // 23 — a sawmill on three floors: a saw bobs through the top plank, the knot in the plank above the start is a hidden block
-        // that sets a second saw on whoever jumps into it; the drop to the middle floor meets a saw head-on, and the ground floor
-        // has a second bobbing saw and a roller from the far side
+        // 23 — a sawmill on three floors: a saw bobs through the top plank, a log lies across it, and the knot over the log is a hidden
+        // block: whoever hops the log butts it and sets a second saw rolling along the plank behind him; the drop to the middle floor
+        // meets a saw from behind, and the ground floor has two more bobbing saws, the first one coming up through the middle floor
         // MECHANIC: PathSaw + Saw
         Level(
             name = T("Carpentry", "Zimmerei"),
@@ -211,14 +218,14 @@ object World1Part2B {
             traps = listOf(
                 trap(PastX(3.5f), PathSaw(6f, 8f to 4.4f, 8f to 0.7f, delay = 0.5f), Say(T("Measure twice. Cut once. Mind the first cut.", "Zweimal messen. Einmal sägen. Vorsicht beim ersten Schnitt."))),
                 trap(Touch('b'), Play(Card.GHOST_BLOCK), Saw(-1.5f, 4.4f, 9f, 0f, 0.62f), Say(T("A knot! Nobody told you? Mind your head.", "Ein Ast! Hat dir keiner gesagt? Kopf einziehen."))),
-                trap(Landed(14f, 31f), Saw(5.5f, 9.4f, 6f, 0f, 0.62f), Say(T("Sawdust everywhere. Mostly on you.", "Sägemehl überall. Vor allem auf dir.")), delay = 0.1f),
-                trap(Zone(5.2f, 12f, 7f, 15.5f), PathSaw(6f, 9f to 14.4f, 9f to 7.4f, delay = 0.3f), Say(T("The foreman cuts in at the end of the shift.", "Der Vorarbeiter sägt mit, kurz vor Feierabend."))),
+                trap(Landed(14f, 31f), Saw(5.5f, 9.4f, 10f, 0f, 0.62f), Say(T("Sawdust everywhere. Mostly on you.", "Sägemehl überall. Vor allem auf dir.")), delay = 0.1f),
+                trap(Zone(8.0f, 9f, 9.5f, 11f), PathSaw(6f, 9f to 14.4f, 9f to 7.4f, delay = 0.3f), Say(T("The foreman cuts in at the end of the shift.", "Der Vorarbeiter sägt mit, kurz vor Feierabend."))),
                 trap(Zone(12.5f, 12f, 14.5f, 15.5f), PathSaw(6f, 17f to 14.4f, 17f to 7.4f, delay = 0.45f), Say(T("And a piece for the road.", "Und ein Stück für den Heimweg."))),
             ),
         ) {
             border(); floor()
             fill(1..13, 5..5); fill(6..26, 10..10)
-            put(6, 2, 'b')
+            put(11, 4, '#'); fill(10..12, 1..1, 'b')
             put(2, 4, 'P'); put(24, 14, 'D')
         },
 

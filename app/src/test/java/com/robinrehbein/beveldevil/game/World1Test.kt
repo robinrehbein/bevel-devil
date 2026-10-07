@@ -175,20 +175,24 @@ class World1Test {
 
     // ---------- Act 1, levels 7-16: nobody is stranded, and the obvious reflexes meet their trap ----------
 
+    /** 7: the prefab piece comes down in front of whoever runs at it; waiting for it is safe, and then it is hopped. */
+    private fun past07() = b(7).rightTo(9.6f).waitFor { it.group('c').oy >= 4.9f }.hopR(10.6f)
+    @Test fun level07RunningAtThePieceIsFatal() = b(7).right(2f).expect(WorldState.DEAD)
+    @Test fun level07WaitingForThePieceIsSafe() = b(7).rightTo(9.6f).wait(2f).expect(WorldState.PLAYING)
     /** 7: hopping back off the first panel strands nobody on the start floor: it gives way. */
     @Test fun level07RetreatingFromTheSunkPanelDies() {
-        val back = b(7).hopR(16.0f).leftTo(18.3f).leftJump(0.35f).landLeft().left(0.3f).wait(0.3f)
+        val back = past07().hopR(16.0f).leftTo(18.3f).leftJump(0.35f).landLeft().left(0.3f).wait(0.3f)
         back.expect(WorldState.PLAYING)
         assertTrue("back on the start floor at x=${back.world.player.box.cx}", back.world.player.box.cx < 17f && back.world.player.grounded)
         back.wait(3f).expect(WorldState.DEAD)
     }
-    @Test fun level07StandingOnAPanelSinksWithIt() = b(7).hopR(16.0f).wait(2f).expect(WorldState.DEAD)
+    @Test fun level07StandingOnAPanelSinksWithIt() = past07().hopR(16.0f).wait(2f).expect(WorldState.DEAD)
 
     /** 8: running on over the stalactites that just popped up ends in them; the keys have not changed. */
     private fun flipped08() = b(8).rightTo(19.5f).rightJump(0.25f).leftUntil { it.player.grounded }
     @Test fun level08TheStalactitesAreReal() = flipped08().leftTo(10f).expect(WorldState.DEAD)
     @Test fun level08TheDoorIsOnTheCeiling() = flipped08().wait(1f).also {
-        assertTrue("the door hangs over the start", it.world.door.box.y < 3f && it.world.door.box.x < 3f)
+        assertTrue("the door hangs a few steps right of the start", it.world.door.box.y < 3f && it.world.door.box.x in 5f..8f)
         assertTrue("upside down", it.world.gravity < 0f)
     }.expect(WorldState.PLAYING)
     /** The room turns over in mid-hop: whoever keeps flying right lands in the spikes of the ceiling. */
@@ -207,12 +211,17 @@ class World1Test {
     @Test fun level10TheSpikeBedGrowsWhereTheHopLands() = b(10).leftTo(6.6f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().left(0.5f)
         .rightJump(0.5f).landRight().rightTo(8.2f).rightJump(0.5f).landRight().right(3f).expect(WorldState.DEAD)
 
-    /** 11: the pothole in the deck, the delivery on the bank, the stones. */
+    /** 11: the pothole in the deck, the fish in the creek, the stones. */
     @Test fun level11RunningStraightIntoThePotholeDies() = b(11).left(4f).expect(WorldState.DEAD)
-    @Test fun level11TheBankDropsADeliveryOnWhoeverStays() = b(11).leftTo(12.6f).leftJump(0.5f).landLeft().left(1.0f).landLeft().wait(1f).expect(WorldState.DEAD)
+    private fun bank11() = b(11).leftTo(12.6f).leftJump(0.5f).landLeft().left(1.0f).landLeft()
+    @Test fun level11TheFishBitesWhoeverHopsWithoutLooking() = bank11().rightTo(2.3f).wait(0.25f).rightJump(0.3f).landRight().expect(WorldState.DEAD)
+    @Test fun level11TheBankIsSafeToWaitOn() = bank11().rightTo(2.3f).wait(3f).expect(WorldState.PLAYING)
     /** Hopping back to the left bank off the first stone strands nobody: the bank gives way behind it. */
-    @Test fun level11RetreatingFromTheCrumblingStoneDies() = b(11).leftTo(12.6f).leftJump(0.5f).landLeft().left(1.0f).landLeft()
-        .rightJump(0.12f).landRight().rightTo(8.8f).leftTo(3.0f).wait(3f).expect(WorldState.DEAD)
+    @Test fun level11RetreatingFromTheCrumblingStoneDies() {
+        var last = 0f
+        bank11().rightTo(2.3f).waitFor { w -> val y = w.saws.first().y; val down = y > last; last = y; down && y in 15.6f..16.4f }
+            .rightJump(0.3f).landRight().rightTo(8.4f).leftTo(3.0f).wait(3f).expect(WorldState.DEAD)
+    }
 
     /** 12: after the first landing the keys are swapped, and going on with the old reflex runs back over the spike. */
     @Test fun level12KeepingTheOldKeysRunsIntoTheFirstSpike() = b(12).leftTo(26.4f).leftJump(0.5f).landLeft().left(2f).expect(WorldState.DEAD)
@@ -236,7 +245,9 @@ class World1Test {
     @Test fun level13StandingUnderThePlainCeilingIsFatal() = down13().rightTo(12.8f).wait(1f).expect(WorldState.DEAD)
     @Test fun level13RunningUnderThePlainCeilingIsFatal() = down13().right(2f).expect(WorldState.DEAD)
 
-    /** 14: both lifts go too far, and the floor the first one leaves behind goes with it. */
+    /** 14: both lifts go too far, and the floor the first one leaves behind goes with it; the ground floor on the way to the door gives way. */
+    @Test fun level14RunningHomeAlongTheGroundFloorFallsIn() = b(14).right(0.3f).waitFor { it.group('a').oy <= -5.6f }.rightJump(0.35f).landRight()
+        .rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightTo(25.6f).waitFor { it.group('b').oy >= 2.6f }.left(3f).expect(WorldState.DEAD)
     @Test fun level14TheFirstLiftCarriesYouIntoTheSpikes() = b(14).right(0.3f).wait(4f).expect(WorldState.DEAD)
     @Test fun level14SteppingOffTheRisingLiftIsFatal() = b(14).right(0.3f).wait(0.4f).left(1.5f).wait(3f).expect(WorldState.DEAD)
     @Test fun level14TheSecondLiftCrushesYouIntoTheGround() = b(14).right(0.3f).waitFor { it.group('a').oy <= -5.6f }.rightJump(0.35f).landRight()
@@ -377,6 +388,10 @@ class World1Test {
         val run = b(33).also(World1DesignTest.SOLUTIONS.getValue(33)[0]).also { it.expect(WorldState.WON) }
         assertEquals(1, run.world.room)
         assertTrue("the door slipped into the second room", run.world.door.box.cx > 32f)
+        val pressed = b(48).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+            .waitFor { it.ropeUpE(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f)
+        assertEquals(0, pressed.world.room)
+        assertTrue("the door left before it was reached", pressed.world.door.box.cx > 32f)
     }
 
     /** 34: the wall is closed until you pause for real; the button on screen dodges; the floor behind the wall is gone. */
@@ -384,15 +399,20 @@ class World1Test {
     @Test fun level34TheButtonOnScreenDodges() = b(34).rightTo(7f).tapPause().also { assertEquals(1, it.world.dodges) }.also { assertTrue(it.world.group('w').visible) }.expect(WorldState.PLAYING)
     @Test fun level34RunningThroughTheOpenedWallFallsIntoThePit() = b(34).rightTo(7f).tapPause().pauseResume().right(2f).expect(WorldState.DEAD)
 
-    /** 35: the door runs from you, to the ledge and back down, so running along the ground never wins. */
-    @Test fun level35TheDoorFlees() = b(35).right(8f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
+    /** 35: the door runs from you, to the ledge and back down, so running along the ground never wins: the low road under the step is unplugged. */
+    @Test fun level35TheDoorFlees() = b(35).rightTo(10f).wait(1.5f).also { assertTrue("the door left the ground at the far end", it.world.door.box.y < 12f) }.expect(WorldState.PLAYING)
+    @Test fun level35TheLowRoadIsUnplugged() = b(35).right(4f).expect(WorldState.DEAD)
     @Test fun level35TheDoorComesBackDown() = b(35).also(World1DesignTest.SOLUTIONS.getValue(35)[0]).also { assertTrue(it.world.door.box.y > 12f) }.expect(WorldState.WON)
+    /** 35: the platform you climbed by uploads itself into the ceiling a moment after the door comes down: whoever comes down late goes up with it. */
+    private fun ledge35() = b(35).rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
+    @Test fun level35WaitingUpThereMeetsTheRouter() = ledge35().wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level35ComingDownLateIsUploaded() = ledge35().leftTo(25.6f).left(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
 
     /** 36: the rope stops the runner, and so does the first piece of the frame when you run on under it instead of waiting for it. */
-    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUpE(7f, 0f, from = 0.643f, to = 0.843f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
         .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight()
     @Test fun level36RunningStraightOnMeetsTheRope() = b(36).right(3f).expect(WorldState.DEAD)
-    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUpE(7f, 0f, from = 0.643f, to = 0.843f) }.right(3f).expect(WorldState.DEAD)
     @Test fun level36TheFirstPieceIsTheStepUpToTheLedge() {
         val up = climbed36()
         up.expect(WorldState.PLAYING)
@@ -401,13 +421,25 @@ class World1Test {
     @Test fun level36TheSecondPieceCrushesWhoRunsOnTheLedge() = climbed36().right(2f).expect(WorldState.DEAD)
 
     /** 37: standing still on the deleted floor is the end of you, and the step you leave is gone. */
-    @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(9f).wait(4f).expect(WorldState.DEAD)
+    @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(14f).wait(4f).expect(WorldState.DEAD)
     @Test fun level37TheFirstStepIsGoneOnceYouLeaveIt() {
         val run = b(37).rightTo(19.3f).rightJump(0.5f).landRight().wait(1.5f)
         assertFalse(run.world.group('u').visible)
     }
 
-    /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen. */
+    /** 37: you start in the middle of the ground floor, and the door is up at the far left wall. */
+    @Test fun level37TheDoorIsUpAtTheFarWall() {
+        val w = b(37).world
+        assertTrue(w.door.box.cx < 4f && w.door.box.y < 9f && w.player.box.cx > 11f)
+    }
+
+    /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen, and the usher for whoever stays on the step. */
+    @Test fun level38StayingOnTheStepMeetsTheUsher() {
+        val won = b(38).also(World1DesignTest.SOLUTIONS.getValue(38)[0])
+        won.expect(WorldState.WON)
+        val usher = won.world.sprung.first { s -> s.trap.actions.any { a -> a is Action.Saw && a.y < 8f } }
+        DesignRules.patientProbe(World1.levels[37], 0, World1DesignTest.SOLUTIONS.getValue(38)[0], usher.triggered).expect(WorldState.DEAD)
+    }
     @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).left(3f).expect(WorldState.DEAD)
     @Test fun level38TheOldKeyDoesNotGetYouUpTheStairs() {
         val run = b(38).leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().left(3f)
@@ -444,7 +476,7 @@ class World1Test {
 
     /** 43: the wall behind the pad, then the lift: waiting at its foot is being run over, staying on it is riding into the spikes. */
     private fun toTheLift43() = b(43).rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f)
-        .waitFor { it.ropeUpE(18f, 0.2f, 0.3f) }
+        .waitFor { it.ropeUpE(18f, 0.42f, 0.3f, from = 0.643f, to = 0.843f) }
     @Test fun level43WaitingAtTheFootOfTheLiftIsBeingRunOver() = toTheLift43().rightTo(23.5f).wait(3f).expect(WorldState.DEAD)
     @Test fun level43StayingOnTheLiftRidesIntoTheSpikes() = toTheLift43().rightTo(25.5f).wait(4f).expect(WorldState.DEAD)
     @Test fun level44() = World1DesignTest.play(44)
@@ -452,7 +484,7 @@ class World1Test {
 
     /** 45: the top floor is deleted ahead of you, and the shelf under it is all spikes; on the ground the next pieces go the same way. */
     @Test fun level45RunningStraightOnFallsOntoTheSpikeShelf() = b(45).left(2.5f).expect(WorldState.DEAD)
-    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
+    @Test fun level45TheGroundIsDeletedAheadToo() = b(45).hopL(26.4f, 0.5f).hopL(18.4f, 0.5f).hopL(11.4f, 0.5f).leftTo(5.0f).landLeft().right(3f).expect(WorldState.DEAD)
     @Test fun level45StartingByRunningRightGoesNowhere() = b(45).right(4f).also { assertTrue(it.world.player.box.cx > 29f) }.expect(WorldState.PLAYING)
     @Test fun level46() = World1DesignTest.play(46)
     @Test fun level47() = World1DesignTest.play(47)
@@ -460,11 +492,15 @@ class World1Test {
 
     /** 41: the wall in front of the aerial is too high: running on ends at its foot, under the last stalactites. */
     @Test fun level41TheWallStopsTheRunner() = b(41).right(6f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 20.5f) }.expect(WorldState.DEAD)
-    /** 48: the door is not the end: the wall breaks open and the door slips into the second room. */
+    /** 48: the switch is not only the key: it breaks the wall open, and the door slips into the second room before it is reached. */
     @Test fun level48TheDoorWasNeverTheEnd() {
         val run = b(48).also(World1DesignTest.SOLUTIONS.getValue(48)[0]).also { it.expect(WorldState.WON) }
         assertEquals(1, run.world.room)
         assertTrue("the door slipped into the second room", run.world.door.box.cx > 32f)
+        val pressed = b(48).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+            .waitFor { it.ropeUpE(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f)
+        assertEquals(0, pressed.world.room)
+        assertTrue("the door left before it was reached", pressed.world.door.box.cx > 32f)
     }
     // ---------- Acts 2 and 3: chains around the mechanics ----------
 
@@ -486,13 +522,14 @@ class World1Test {
         // 21: the second hop lands on the strip that is not there, and whoever stays on the stairs goes down with them
         b(21).hopR(7.4f).hopR(13.6f).right(3f).expect(WorldState.DEAD)
         b(21).hopR(7.4f).hopR(13.6f).rightTo(20.2f).rightJump(0.35f).landRight().rightTo(25.6f).rightJump(0.3f).landRight().wait(4f).expect(WorldState.DEAD)
-        // 22: the first beam stops whoever walks in on it, and so does the second
+        // 22: the first beam stops whoever walks in on it, the rewind to the scanner whoever runs on at once, and the second beam too
         b(22).rightTo(10.6f).right(3f).expect(WorldState.DEAD)
-        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(25.5f).rightTo(28.0f).landRight().leftTo(23.5f)
-            .waitFor { w -> w.beams.any { it.laser.id == 'B' && it.lit } }.left(1f).expect(WorldState.DEAD)
-        // 23: the first saw on the top plank, and the knot above the start
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(21.0f).right(2f).expect(WorldState.DEAD)
+        b(22).rightTo(10.6f).waitFor { it.gateOpen('A') }.rightTo(20.0f).rightUntil { it.player.box.cx < 19.5f }.waitFor { it.gateOpen('S') }
+            .rightTo(24.6f).leftUntil { it.player.grounded }.left(1f).expect(WorldState.DEAD)
+        // 23: the first saw on the top plank, and the knot above the log: whoever hops it and stops is sawn
         b(23).rightTo(5.0f).right(3f).expect(WorldState.DEAD)
-        b(23).rightTo(6.0f).jump(0.5f).wait(2f).expect(WorldState.DEAD)
+        b(23).rightTo(5.0f).waitFor { w -> w.saws.any { it.path != null && it.x < 9f && it.y < 2.8f } }.rightTo(9.0f).rightJump(0.3f).landRight().wait(2f).expect(WorldState.DEAD)
         // 24: HEAD catches whoever stands still, and the second branch whoever walks into it
         b(24).hopR(6.8f, 0.3f).wait(4f).expect(WorldState.DEAD)
         b(24).hopR(6.8f, 0.3f).hopR(17.4f, 0.3f).rightTo(24.4f).rightJump(0.35f).landRight().rightJump(0.35f).landRight().left(5f).expect(WorldState.DEAD)

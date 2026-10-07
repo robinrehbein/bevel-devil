@@ -89,8 +89,8 @@ class World2DesignTest : DesignTestBase() {
             2 to listOf(
                 { hopR(15.0f, 0.5f).hopR(21.9f).rightJump(0.4f).landRight()
                     .rightUntil { it.player.box.cy < 11.5f }.leftUntil { it.player.box.cx < 20.4f }
-                    .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 10.2f }
-                    .leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().left(1f) },
+                    .waitFor { w -> w.links.first { it.id == 'g' }.on }.leftUntil { it.player.box.cx < 5f }
+                    .rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight().rightJump(0.4f).landRight().right(1f) },
             ),
             3 to listOf(
                 { hopR(7.2f).hopR(12.8f).hopR(17.2f).rightUntil { it.player.box.cy > 12.5f }.leftUntil { World2Rooms.sawAheadLeft(it, 4.4f) }
@@ -133,11 +133,11 @@ class World2DesignTest : DesignTestBase() {
                     .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
             ),
             8 to listOf(
-                { rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
+                { rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.rightUntil { it.player.box.cx > 24.7f }.rightJump(0.4f).landRight().right(1f) },
             ),
             9 to listOf(
                 { waitFor { it.swapped }.leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.35f).landLeft()
-                    .leftUntil { !it.swapped && it.player.grounded }.leftUntil { it.player.box.cx < 12.5f }.waitFor { World2Rooms.sawAheadLeft(it, 4.4f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cx < 2.6f }.left(1f) },
+                    .leftUntil { !it.swapped && it.player.grounded }.waitFor { World2Rooms.sawAheadLeft(it, 3.2f) }.leftJump(0.35f).landLeft().leftUntil { it.player.box.cx < 13.6f }.left(1f) },
             ),
             10 to listOf(
                 { leftTo(27.5f).leftJump(0.35f).landLeft()
@@ -158,9 +158,9 @@ class World2DesignTest : DesignTestBase() {
             12 to listOf(
                 { rightTo(4.8f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight()
                     .rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(0.4f)
-                    .leftTo(26.2f).hopL(26.0f, 0.5f).leftTo(19.3f)
+                    .leftTo(26.2f).hopL(26.0f, 0.5f).leftTo(20.3f)
                     .waitFor { it.group('f').oy > 5f }.waitFor { it.group('f').oy < 0.3f }
-                    .hopL(18.8f, 0.5f).leftJump(0.5f).landLeft().leftJump(0.4f).landLeft().left(1f) },
+                    .hopL(19.9f, 0.5f).leftTo(14.6f).leftJump(0.15f).landLeft().leftTo(3.6f).leftJump(0.4f).landLeft().wait(0.3f).rightJump(0.45f).landRight().right(1f) },
             ),
             14 to listOf(
                 { rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.8f, 0.5f).leftUntil { it.player.box.cx < 1.6f || it.player.box.cx > 20f }
@@ -172,8 +172,7 @@ class World2DesignTest : DesignTestBase() {
                     .leftJump(0.5f).landLeft().left(1.2f) },
             ),
             15 to listOf(
-                { hopL(10.2f, 0.5f).leftTo(4.2f).hopR(6.2f, 0.5f).rightTo(15.4f)
-                    .waitFor { it.group('h').oy > 5f }.waitFor { it.group('h').oy < 0.3f }.rightTo(27.1f)
+                { hopL(10.2f, 0.5f).leftTo(4.2f).hopR(6.2f, 0.5f).hopR(13.6f).rightTo(27.1f)
                     .waitFor { it.group('b').visible }.hopR(27.4f, 0.5f).rightJump(0.5f).landRight().right(1f) },
             ),
             16 to listOf(

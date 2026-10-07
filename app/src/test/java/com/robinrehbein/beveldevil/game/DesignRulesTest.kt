@@ -934,4 +934,116 @@ class DesignRulesTest {
         assertEquals(1, DesignRules.partialBlocks(2, DesignRules.PILOT + 25).size)
         assertEquals(emptyList<String>(), DesignRules.partialBlocks(2, DesignRules.PILOT + (25..32)))
     }
+
+    // ---------- round rules L–Q ----------
+
+    /** A hall with a slab hanging over x 7–9, a floor piece at x 14–16 and a hidden spike at x 20; door far right. */
+    private fun hall(vararg traps: Trap) = Level(T("Demo: Hall", "Demo: Halle"), T("Go.", "Los."), legend = mapOf('S' to Glyph(spike = true, hidden = true)), traps = traps.toList()) {
+        border(); floor()
+        fill(7..9, 1..2, 'c'); fill(14..16, 15..17, 'f'); put(20, 14, 'S')
+        put(2, 14, 'P'); put(29, 14, 'D')
+    }
+
+    @Test
+    fun punchlineSignaturesTellTriggerFamilyAndDirection() {
+        assertEquals("idle", DesignRules.triggerClass(Trigger.Idle(0.5f)))
+        assertEquals("progress", DesignRules.triggerClass(Trigger.Zone(1f, 1f, 2f, 2f)))
+        assertEquals("landing", DesignRules.triggerClass(Trigger.Touch('a')))
+        assertEquals("button", DesignRules.triggerClass(Trigger.Pressed('1')))
+        assertEquals("timer", DesignRules.triggerClass(Trigger.After(1f)))
+        val room = hall()
+        // standing under the slab it comes from above; the floor piece is ahead, under you, or behind once you are past it
+        assertEquals("above", DesignRules.direction(Action.Fall('c'), room, 8f, 15f, 1))
+        assertEquals("ahead", DesignRules.direction(Action.Fall('f'), room, 8f, 15f, 1))
+        assertEquals("under", DesignRules.direction(Action.Fall('f'), room, 15f, 15f, 1))
+        assertEquals("behind", DesignRules.direction(Action.Fall('f'), room, 22f, 15f, 1))
+        // a saw from the left edge is behind whoever runs right and ahead of whoever runs left; one dropping in comes from above
+        assertEquals("behind", DesignRules.direction(Action.Saw(-1.5f, 14.4f, 12f, 0f), room, 10f, 15f, 1))
+        assertEquals("ahead", DesignRules.direction(Action.Saw(-1.5f, 14.4f, 12f, 0f), room, 10f, 15f, -1))
+        assertEquals("above", DesignRules.direction(Action.Saw(10f, -1f, 0f, 9f), room, 10f, 15f, 1))
+        assertEquals("-", DesignRules.direction(Action.DoorTo(5, 14), room, 10f, 15f, 1))
+        assertEquals("progress/ceiling-move/above", DesignRules.Punchline("progress", "ceiling-move", "above").toString())
+    }
+
+    @Test
+    fun aSlabOnWhoeverStopsIsAnIdlePunchlineAFloorUnderHimIsNot() {
+        val sol: Solution = { right(5f) }
+        // the slab drops 0.4 s after you pass under it: the runner is gone, whoever stops there is crushed
+        val slab = hall(trap(Trigger.PastX(8f), Action.Fall('c'), delay = 0.4f), trap(Trigger.PastX(19f), Action.Show('S'), delay = 0.1f))
+        val slabUnits = DesignRules.trapUnits(slab, 0, sol, DesignRules.path(slab, 0, sol, NaiveProbes.measure(9, 20, slab, 0, listOf(sol))))
+        val falling = slabUnits.single { it.key.startsWith("T1") }
+        assertTrue(falling.idle)
+        assertTrue(falling.idlePunchline)
+        assertEquals(setOf(DesignRules.Punchline("idle", "ceiling-move", "above")), falling.signatures)
+        // the floor drops 0.3 s after you step on it: whoever stops falls, the runner is across. Stopping is punished, but
+        // from under you: the crumbling-floor signature, not the idle punchline of (a)
+        val floor = hall(trap(Trigger.PastX(15f), Action.Fall('f'), delay = 0.3f), trap(Trigger.PastX(19f), Action.Show('S'), delay = 0.1f))
+        val floorUnits = DesignRules.trapUnits(floor, 0, sol, DesignRules.path(floor, 0, sol, NaiveProbes.measure(9, 20, floor, 0, listOf(sol))))
+        val pit = floorUnits.single { it.key.startsWith("T1") }
+        assertTrue(pit.idle)
+        assertFalse(pit.idlePunchline)
+        assertEquals(setOf(DesignRules.Punchline("idle", "drop", "under")), pit.signatures)
+    }
+
+    @Test
+    fun theSameConstructionIsTheSameWithinOneTile() {
+        val room = hall()
+        val t = trap(Trigger.Landed(27.5f, 31f), Action.Saw(-1.5f, 14.4f, 12f, 0f))
+        val a = DesignRules.construction(Action.Saw(-1.5f, 14.4f, 12f, 0f), t, room)!!
+        assertTrue(a.same(DesignRules.construction(Action.Saw(-1f, 14.4f, 11.2f, 0f), t, room)!!))
+        assertFalse(a.same(DesignRules.construction(Action.Saw(-1.5f, 14.4f, 9f, 0f), t, room)!!))
+        // a footprint trap is the same only on the same trigger
+        val p1 = trap(Trigger.PastX(13f), Action.Fall('f'))
+        val p2 = trap(Trigger.PastX(10f), Action.Fall('f'))
+        val f = Action.Fall('f')
+        assertTrue(DesignRules.construction(f, p1, room)!!.same(DesignRules.construction(f, trap(Trigger.PastX(13.8f), f), room)!!))
+        assertFalse(DesignRules.construction(f, p1, room)!!.same(DesignRules.construction(f, p2, room)!!))
+        assertEquals(null, DesignRules.construction(Action.Swap(true), p1, room))
+    }
+
+    @Test
+    fun aCardShowsWhatItSays() {
+        val room = hall()
+        fun fits(card: Card, vararg a: Action) = DesignRules.cardEffectFits(card, listOf(trap(Trigger.PastX(5f), Action.Play(card), *a)), room)
+        assertTrue(fits(Card.CRUMBLE, Action.Fall('f')))
+        assertFalse(fits(Card.CRUMBLE, Action.Fall('c')))          // a ceiling packet does not crumble
+        assertTrue(fits(Card.HEADBUTT, Action.Fall('c')))
+        assertFalse(fits(Card.HEADBUTT, Action.Move('f', 0f, 3f, 2f)))   // a sinking floor is no headbutt
+        assertTrue(fits(Card.SINKING, Action.Move('f', 0f, 3f, 2f)))
+        assertFalse(fits(Card.SINKING, Action.Move('c', 0f, 6f, 9f)))     // nor a ceiling slab sinking
+        assertFalse(fits(Card.COLLAPSE, Action.Fall('c')))
+        assertTrue(fits(Card.COLLAPSE, Action.Hide('f')))
+        assertTrue(fits(Card.SPIKE_SEED, Action.Show('S')))
+        assertFalse(fits(Card.SPIKE_SEED, Action.Laser('L', 3 to 1, 3 to 14)))   // a beam is no spike
+        assertTrue(fits(Card.UNDO, Action.Undo(0.2f)))               // M: it is an undo; N asks for 0.5 s
+        assertTrue(fits(Card.DEVIL_SAW, Action.Saw(-1f, 14.4f, 8f, 0f)))
+        // the card's unit is its trigger group: the effect may sit in another trap with the same trigger
+        assertTrue(DesignRules.cardEffectFits(Card.CRUMBLE, listOf(trap(Trigger.PastX(5f), Action.Play(Card.CRUMBLE)), trap(Trigger.PastX(5f), Action.Fall('f'), delay = 0.2f)), room))
+        assertEquals(listOf(Card.CRUMBLE to 2), DesignRules.playedCards(hall(trap(Trigger.PastX(5f), Action.Play(Card.CRUMBLE)), trap(Trigger.PastX(5f), Action.Fall('f')))).map { it.first to it.second.size })
+    }
+
+    @Test
+    fun theDoorEndsAwayFromTheSpawn() {
+        fun path(door: Float, doorY: Float, xs: List<Float> = listOf(2.5f)) =
+            DesignRules.Path(xs, 2.5f, door, 32, 0, false, xs.map { 15f }, xs.map { 0f }, xs.indices.map { it * 0.1f }, 15f, doorY)
+        assertTrue(DesignRules.doorFromSpawn(path(11.6f, 15f)) != null)          // 9 tiles: under a third of the 30
+        assertEquals(null, DesignRules.doorFromSpawn(path(12.6f, 15f)))         // 10 tiles
+        assertTrue(DesignRules.doorFromSpawn(path(11.6f, 9f)) != null)           // 9 to the side, 6 up: neither
+        assertTrue(DesignRules.doorFromSpawn(path(2.6f, 2f)) != null)            // right above the spawn
+        assertEquals(null, DesignRules.doorFromSpawn(path(6.6f, 5f)))           // 10 up and 4 to the side
+        // U18: in the room the door ends in, the player's entry stands in for the spawn
+        val rooms = listOf(2.5f, 20f, 33.5f, 40f)
+        assertEquals(null, DesignRules.doorFromSpawn(path(52.6f, 15f, rooms)))
+        assertTrue(DesignRules.doorFromSpawn(path(34.6f, 15f, rooms)) != null)
+        assertEquals("spawn L-bottom, door R", DesignRules.layoutClass(path(29.6f, 15f)))
+        assertEquals("spawn L-bottom, door M", DesignRules.layoutClass(path(52.6f, 15f, rooms)))
+        assertEquals("spawn L-top, door L", DesignRules.layoutClass(DesignRules.Path(listOf(2.5f), 2.5f, 5.6f, 32, 0, false, spawnY = 6f, doorY = 15f)))
+    }
+
+    @Test
+    fun theNewRoundRulesHaveTheirLetters() {
+        assertEquals("ABCDEFGHIJKLMNOPQ", DesignRules.ROUND_RULES)
+        assertEquals(10f, DesignRules.DOOR_DX)
+        assertEquals(9f, DesignRules.DOOR_DY)
+    }
 }

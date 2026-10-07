@@ -143,21 +143,24 @@ abstract class DesignTestBase {
     @Test fun neighboursPlayDifferently() = check("H20 adjacent rooms")
     @Test fun atMostThreeMovingWallLevelsPerAct() = check("H21 moving walls")
 
-    // ---------- the round rules A–K (§9a) and the shrink-only pending list ----------
+    // ---------- the round rules A–Q (§9a) and the shrink-only pending list ----------
 
     /**
-     * §9a: every round of every level (the W1 tutorial included, with A–C) follows the round rules A–K
+     * §9a: every round of every level (the W1 tutorial included, with A–C) follows the round rules A–Q
      * ([DesignRules.roundRules]), or the failing rule of that round is listed in [PendingRounds], one line per round and
      * rule. Both ways: a failure that is not listed is red, and so is a listed line whose rule the round no longer fails
      * (a fixer deletes the line). The per-round measurement (real traps, P6 timing sensitivity, turns, idle, LOW_THREAT,
-     * ONE_DEATH) is printed and written to `build/reports/round-rules-w{n}.txt`; it never fails.
+     * ONE_DEATH) and the tables of L–Q (punchline signatures per act, cards, layouts, killer distribution) are printed and
+     * written to `build/reports/round-rules-w{n}.txt`; the printout never fails (LOW_THREAT and ONE_DEATH gate through Q).
      */
     @Test
     fun roundRulesHoldOrArePending() {
         val rr = DesignRules.roundRules(DesignRules.WorldRounds(world, levels, design, allSolutions, lead))
         val dist = rr.report.mapNotNull { Regex("""real=(\d+)""").find(it)?.groupValues?.get(1)?.toInt() }.groupingBy { it }.eachCount().toSortedMap()
         val text = "Round rules of world $world (A naive, B helpful, C passive, D real traps, E rematch, F density, G family cap, " +
-            "H turnaround door, I puzzle turns, J card gap, K ghost)\n" + rr.report.joinToString("\n") +
+            "H turnaround door, I puzzle turns, J card gap, K ghost, L punchline signatures, M card fits effect, N card is real, " +
+            "O door away from spawn, P layout variety, Q two killers)\n" + rr.report.joinToString("\n") +
+            "\n" + rr.tables.joinToString("\n") +
             "\nD distribution (real traps by ablation: rounds): $dist\n" +
             rr.failures.toSortedMap().flatMap { (id, m) -> m.map { (k, why) -> "$id $k: $why" } }.joinToString("\n") + "\n"
         println(text)

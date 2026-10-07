@@ -18,25 +18,25 @@ object World1RoomsD {
             { hopR(9.0f, 0.4f).rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightUntil(4f) { it.cracks.isNotEmpty() }
                 .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntilSaw(4.5f).rightJump(0.5f).landRight().rightTo(roomX(1, 9.9f)).rightJump(0.4f).landRight()
                 .rightJump(0.35f).landRight().right(3f) },
-            { rightTo(14.0f).waitFor { it.ropeUp(17f, 1.1f) }.hopR(23.8f, 0.4f).rightUntil(4f) { it.cracks.any { c -> c.fell } }.hopR(roomX(1, 4.6f), 0.4f).rightTo(roomX(1, 10.4f)).rightJump(0.4f).landRight()
+            { rightTo(16.6f).waitFor { it.ropeUp(19.5f, 1.4f) }.hopR(23.8f, 0.4f).rightUntil(4f) { it.cracks.any { c -> c.fell } }.hopR(roomX(1, 4.6f), 0.4f).rightTo(roomX(1, 10.4f)).rightJump(0.4f).landRight()
                 .rightJump(0.35f).landRight().rightUntilSaw(4.5f).rightJump(0.5f).landRight().right(3f) },
         ),
         // 34: at the wall pause for real (the pit opens behind it), hop it and the second pit, up the stairs and back along the upper floor,
         // let the slab land and hop it
         34 to listOf<Solution>(
-            { rightTo(7.0f).tapPause().pauseResume().hopR(8.6f, 0.4f).hopR(15.4f, 0.4f).rightTo(20.4f).rightJump(0.5f).landRight()
-                .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft()
-                .waitFor { it.pieceLanded(0, 8f) }.leftTo(22.4f).leftJump(0.4f).landLeft().left(3f) },
+            { rightTo(7.0f).tapPause().pauseResume().hopR(8.6f, 0.4f).rightJump(0.4f).landRight().rightTo(20.4f).rightJump(0.5f).landRight()
+                .rightTo(25.0f).rightJump(0.5f).landRight().leftTo(26.8f).leftJump(0.5f).landLeft().rightTo(25.5f)
+                .waitFor { it.pieceLanded(0, 8f) }.leftJump(0.35f).landLeft().left(3f) },
         ),
         // 35: up the three platforms (the door jumps up as you start, and is gone again when you land), off the left end and back along the ground
         35 to listOf<Solution>(
             { rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
                 .left(3f) },
         ),
-        // 36: let the rope go up and hop it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
+        // 36: let the rope come down and go up again, run under it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
         // hop it; the curator puts you back a second, so hop it again
         36 to listOf<Solution>(
-            { rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+            { rightTo(4.2f).waitFor { World1RoomsE.run { it.ropeUp(7f, 0f, from = 0.643f, to = 0.843f) } }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
                 .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight().waitFor { it.pieceLanded(1, 11f) }
                 .hopR(24.6f, 0.4f).rightUntil(2f) { it.player.box.cx < 24f }.hopR(24.6f, 0.4f).rightTo(29.6f) },
         ),
@@ -60,13 +60,15 @@ object World1RoomsD {
         38 to listOf<Solution>(
             { leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().waitFor { it.viewTurn() >= 0.5f }
                 .hopSL(9.6f, 0.5f).rightKeyLeftTo(7.0f).rightJump(0.5f).landRight()
-                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(3f) },
+                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.rightTo(19.6f)
+                .waitFor { w -> w.saws.firstOrNull { it.path?.points?.firstOrNull()?.first == 22f }?.let { s -> ((w.time - s.t0) % 1.086f) in 0.85f..1.0f } ?: false }.rightTo(28.4f).rightJump(0.3f).landRight()
+                .leftJump(0.45f).landLeft().leftUntil { it.player.box.cx < 25.6f } },
         ),
         // 37: run ahead of the deleted floor, hop up the first step (it is deleted behind you) onto the second, back along the upper floor;
         // rematch: hop the stones over the pits that were opened ahead, without staying on any
         37 to listOf<Solution>(
             { rightTo(19.3f).rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
-                .leftTo(25.8f).leftJump(0.5f).landLeft().left(4f) },
+                .leftTo(25.8f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cx < 2.4f } },
             { rightTo(4.0f).rightJump(0.4f).landRight().rightTo(9.9f).rightJump(0.4f).landRight().rightTo(14.9f).rightJump(0.4f).landRight()
                 .rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
                 .leftTo(25.8f).leftJump(0.5f).landLeft().left(4f) },

@@ -37,6 +37,11 @@ class WorldSelectTest {
             if (w.state == WorldState.PLAYING && d.x == lastDoor) {
                 w.player.box.x = d.x + d.w / 2 - w.player.box.w / 2
                 w.player.box.y = d.y + d.h - w.player.box.h
+            } else if (w.state == WorldState.PLAYING && w.door.moving && w.cracks.any { it.crumble }) {
+                // the door of a room extension (U18) is travelling into the new room: wait where it will stop (in 2-48 a saw
+                // patrols the spot it left)
+                w.player.box.x = w.door.tx + d.w / 2 - w.player.box.w / 2
+                w.player.box.y = w.door.ty + d.h - w.player.box.h
             }
             lastDoor = d.x
             update(1f / 120f)

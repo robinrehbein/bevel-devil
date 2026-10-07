@@ -27,7 +27,15 @@ class World3Act3TrapsTest {
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.right(1.5f).expect(WorldState.DEAD)
     }
 
-    // 35: the button turns the wall of wind off and the headwind into a tailwind; a blade comes with it
+    // 34: the doormat behind the gap is overclocked as you land: walking on over it burns, a low hop does not
+    @Test
+    fun theDoormatBurnsWhoWalksOverIt() {
+        val landed = b(34).rightTo(18.6f).waitFor { it.fans[0].wind < -11.5f }.rightJump(0.5f).landRight()
+        landed.right(2f).expect(WorldState.DEAD)
+        DesignRules.play(World3.levels[33], 0, World3DesignTest.SOLUTIONS.getValue(34)[0]).expect(WorldState.WON)
+    }
+
+    // 35 (run right to left): the button turns the wall of wind off and the headwind into a tailwind; a blade comes with it
     @Test
     fun theButtonSetsTheFanAndTheWindOver() {
         val won = DesignRules.play(World3.levels[34], 0, World3DesignTest.SOLUTIONS.getValue(35)[0])
@@ -35,7 +43,7 @@ class World3Act3TrapsTest {
         assertTrue(won.world.pads.single().presses >= 1)
         assertTrue("tailwind after the button", won.world.fans[0].target < 0f)
         // in the rematch the button is moved before the wind and bites: stepping on it ends the run
-        Bot(World3.levels[34], 1).rightTo(8.5f).wait(3f).expect(WorldState.DEAD)
+        Bot(World3.levels[34], 1).leftTo(23.5f).wait(3f).expect(WorldState.DEAD)
     }
 
     // 36: bar B comes out of the right wall: hugging it, the usual way, is where it hits
@@ -44,6 +52,15 @@ class World3Act3TrapsTest {
         b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
         // standing in the middle of the shaft the first bar hits instead
         b(36).rightTo(7.4f).right(0.5f).wait(4f).expect(WorldState.DEAD)
+    }
+
+    // 36: the floor in front of the pin sinks as you come: walking on drops you, waiting at the edge and jumping pin and hole works
+    @Test
+    fun theFloorAheadSinksAsYouCome() {
+        val bottom = b(36).rightTo(7.4f).rightUntil { it.player.box.b > 8.2f }.leftUntil { it.player.box.cx < 9.2f }
+            .waitFor { it.player.box.b > 11.95f }.rightUntil { it.player.box.cx > 12.2f }.rightUntil { it.player.grounded }
+        bottom.right(3f).expect(WorldState.DEAD)
+        assertTrue(DesignRules.play(World3.levels[35], 0, World3DesignTest.SOLUTIONS.getValue(36)[0]).world.state == WorldState.WON)
     }
 
     // 37: the wall walks behind you; who waits in the corridor is caught
@@ -63,22 +80,37 @@ class World3Act3TrapsTest {
         b(38).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(22f).wait(2f).expect(WorldState.PLAYING)
     }
 
-    // 39: the bridge: the slab behind the lift exit comes down on whoever stands under it, the roof drops its ceiling on whoever
-    // walks it (hop it instead), the floor closes on whoever waits
+    // 38: the cable on the shelf wakes up as you land there: walking on over it kills, the registered hop does not
+    @Test
+    fun theShelfCableWakesUpAsYouLand() {
+        val top = b(38).leftTo(2.4f).rightTo(12.2f).rightJump(0.45f).landRight().rightTo(18.6f)
+            .waitFor { w -> w.circuits['Z']?.let { !it.powered && w.time - it.flipTime < 0.4f } == true }.rightUntil { it.player.box.cx > 25f }
+        top.right(2f).expect(WorldState.DEAD)
+        DesignRules.play(World3.levels[37], 0, World3DesignTest.SOLUTIONS.getValue(38)[0]).expect(WorldState.WON)
+    }
+
+    // 39: the loose ceiling over the roof comes down in front of whoever heads for it: running on under it is the end, stopping short is not
     @Test
     fun theCeilingFallsOnWhoStandsUnderIt() {
-        b(39).rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.right(1f).expect(WorldState.DEAD)
-        b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
-        // hopping the roof, the ceiling stays up
-        b(39).rightUntil { it.player.box.b < 6.3f }.rightUntil { it.player.grounded }.rightJump(0.1f).landRight().wait(2f).expect(WorldState.PLAYING)
+        b(39).right(1.5f).expect(WorldState.DEAD)
+        b(39).rightTo(8.0f).waitFor { it.group('h').oy > 2.5f }.wait(2f).expect(WorldState.PLAYING)
     }
 
     // 40: the draft reverses while you float: the keep is the only safe place, and nobody stays on it for long
     @Test
     fun theDraftSinksWhoDoesNotStopOnTheKeep() {
-        b(40).rightTo(8.6f).right(5f).expect(WorldState.DEAD)
+        b(40).leftTo(23.4f).left(5f).expect(WorldState.DEAD)
         // standing on the keep for good works as long as you do not leave before the draft is back
-        b(40).rightTo(8.6f).rightUntil { it.player.grounded && it.player.box.cx > 14.4f }.wait(1.4f).expect(WorldState.PLAYING)
+        b(40).leftTo(23.4f).leftUntil { it.player.grounded && it.player.box.cx < 17.6f }.wait(1.4f).expect(WorldState.PLAYING)
+    }
+
+    // 40: the welcome mat grows its spikes as you walk up to it: walking on dies, a long hop from well back lands in the door
+    @Test
+    fun theWelcomeMatGrowsSpikesAsYouWalkUp() {
+        val ledge = b(40).leftTo(23.4f).leftUntil { it.player.grounded && it.player.box.cx < 17.6f }
+            .waitFor { it.fans[0].wind > 4.5f }.leftUntil { it.player.box.cx < 8.8f }.leftUntil { it.player.grounded && it.player.box.cx < 8.6f }
+        ledge.left(2f).expect(WorldState.DEAD)
+        DesignRules.play(World3.levels[39], 0, World3DesignTest.SOLUTIONS.getValue(40)[0]).expect(WorldState.WON)
     }
 
     // 41-48 (block F): the bot solutions are the registered ones; each level kills whoever runs it carelessly

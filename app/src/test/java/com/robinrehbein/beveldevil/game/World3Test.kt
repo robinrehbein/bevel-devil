@@ -94,14 +94,14 @@ class World3Test {
 
     @Test
     fun theTrollLevelsPunishTheNaiveRun() {
-        for (n in listOf(2, 3, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45)) {
+        for (n in listOf(2, 3, 5, 6, 7, 8, 10, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 31, 33, 34, 36, 37, 38, 39, 41)) {
             b(n).right(14f).expect(WorldState.DEAD)
         }
-        // (38: the floor cable goes live as soon as he heads for the lift; 44: the floor past the lift is studded)
+        // (29: the floor under the hatch pad flickers away under him; 38: the floor cable goes live as soon as he heads for the lift)
         // in these the naive runner is only stopped: a slab, a wall, a ledge he cannot reach, a lift that never ran, the right wall
-        // he starts against (12: the door is to the left),
+        // he starts against (9, 12, 14, 35, 40, 42, 45: the door is to the left), the wall of 44 (the way over it is the ceiling),
         // a wall that stays shut (43), a lift he runs through (46, 47), the way up that he never takes (48)
-        for (n in listOf(1, 4, 9, 10, 11, 12, 13, 24, 29, 30, 32, 43, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
+        for (n in listOf(1, 4, 9, 11, 12, 14, 24, 30, 32, 35, 40, 42, 43, 44, 45, 46, 47, 48)) b(n).right(14f).expect(WorldState.PLAYING)
     }
 
     /** The obvious way through, hopping where it looks natural and then running on, meets the second trap of the chain (levels 1-8 are checked by the design guard rails, H2). */
@@ -112,12 +112,12 @@ class World3Test {
         b(27).rightTo(4.5f).rightTo(21.9f).rightJump(0.5f).landRight().right(3f).expect(WorldState.DEAD)
         b(31).rightTo(9.8f).right(4f).expect(WorldState.DEAD)
         // 33: the leap that is obvious on the bridge (a long one) comes down on the plank that gives way; 36: hugging the right wall of the chute is where the second bar comes from;
-        // 39: running on after the lift brings the ceiling down on the roof
+        // 39: running on along the roof brings its ceiling down on you
         b(33).rightTo(6.6f).rightUntil { it.player.grounded && it.player.box.cx > 12.3f }.rightTo(15.3f).rightJump(0.5f).landRight().wait(2f).expect(WorldState.DEAD)
         b(36).rightTo(7.4f).right(8f).expect(WorldState.DEAD)
-        b(39).rightUntil { it.player.box.b < 6.3f }.right(3f).expect(WorldState.DEAD)
-        // 42: the vent carries you up and the hood closes on whoever stays on the shelf
-        b(42).rightTo(15f).waitFor { it.player.box.cy < 6.8f }.rightUntil { it.player.grounded && it.player.box.b < 7.5f }.rightTo(22.5f).wait(3f).expect(WorldState.DEAD)
+        b(39).right(3f).expect(WorldState.DEAD)
+        // 42: the vent carries you up and the hood slams down on the shelf ahead: running on under it is the end
+        b(42).leftTo(17f).waitFor { it.player.box.cy < 6.8f }.leftUntil { it.player.grounded && it.player.box.b < 7.5f }.left(1.5f).expect(WorldState.DEAD)
     }
 
     // ---------- the hardware cards ----------
@@ -178,7 +178,7 @@ class World3Test {
     @Test
     fun aFanThatLooksDeadlyCarriesYou() {
         // 40: the pit is full of spikes, and the draft carries you across it
-        val bot = b(40).rightTo(8.8f).right(0.6f)
+        val bot = b(40).leftTo(23.2f).left(0.6f)
         bot.expect(WorldState.PLAYING)
         assertTrue("over the spikes", bot.world.player.box.b < 14f)
     }
@@ -217,12 +217,13 @@ class World3Test {
     @Test
     fun theBridgeOfTheWiringDiagramComesBackWhenYouPressTheSwitchAgain() {
         // 43: the first switch gives the bridge power for a moment; whoever is late waits at a dead bridge, alive, and steps off and on the switch again
-        val bot = b(43).rightTo(5.6f).rightTo(7f).wait(2.4f)
+        // (the room runs right to left)
+        val bot = b(43).leftTo(26.4f).leftTo(25f).wait(2.4f)
         assertFalse(bot.world.circuits['a']!!.powered)
         bot.expect(WorldState.PLAYING)
-        bot.leftTo(4.3f).rightTo(5.6f).wait(0.2f)
+        bot.rightTo(27.7f).leftTo(26.4f).wait(0.2f)
         assertTrue(bot.world.circuits['a']!!.powered)
-        bot.rightTo(14.8f).rightTo(17.8f).waitFor { it.player.box.cy < 7.4f }.expect(WorldState.PLAYING)
+        bot.leftTo(17.2f).leftTo(14.2f).waitFor { it.player.box.cy < 7.4f }.expect(WorldState.PLAYING)
     }
 
     @Test
@@ -337,8 +338,8 @@ class World3Test {
         assertEquals(listOf(48), grand)
         // the act-two finale (rebuilt) keeps its grand finale for the rematch
         assertTrue(Card.GRAND_FINALE in DesignRules.cards(World3.levels[31]))
-        // the boot order has two doors that run away (one room: the annex belongs to the finale's gag), the finale has two rooms
-        assertEquals(2, World3.levels[46].traps.count { t -> t.actions.any { it is Action.DoorTo } })
+        // the boot order's door runs away twice, in three hops and in two (one room: the annex belongs to the finale's gag), the finale has two rooms
+        assertEquals(5, World3.levels[46].traps.count { t -> t.actions.any { it is Action.DoorTo } })
         assertEquals(1, World3.levels[46].rooms)
         assertEquals(2, World3.levels[47].rooms)
         assertNotNull(World(World3.levels[47]).door)
@@ -436,9 +437,9 @@ class World3Test {
     @Test
     fun theKeepOfReverseThrustSavesTheFloater() {
         // 40: the draft reverses as you float (a weaker wind pushes down), the stone keep is where you wait, and touching it brings the draft back
-        val bot = b(40).rightTo(8.6f)
+        val bot = b(40).leftTo(23.4f)
         assertTrue(bot.world.fans[0].target > 0f)
-        bot.rightUntil { it.player.grounded && it.player.box.cx > 14.4f }
+        bot.leftUntil { it.player.grounded && it.player.box.cx < 17.6f }
         assertTrue(bot.world.fans[0].target < 0f)
         bot.expect(WorldState.PLAYING)
         bot.waitFor { it.fans[0].wind > 4.5f }
@@ -449,11 +450,11 @@ class World3Test {
     @Test
     fun theBaitDoorOfBootOrderRunsUpstairsAndTheRealOneRunsBackDown() {
         // 47: coming near the door on the floor sends it to the shelf ...
-        val run = b(47).rightTo(16.6f).rightTo(19.5f).wait(1.2f)
+        val run = b(47).leftTo(12.2f).wait(1.2f)
         run.expect(WorldState.PLAYING)
-        assertTrue("the door is on the shelf", run.world.door.box.y < 6f && run.world.door.box.x > 27f)
+        assertTrue("the door is on the shelf", run.world.door.box.y < 6f && run.world.door.box.x > 24f)
         // ... and coming near that one sends it back to the floor, while the lift turns to blow down; the boot loop turns it around once more
-        val up = b(47).rightTo(22.5f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }.rightUntil { it.player.box.cx > 27.0f }
+        val up = b(47).leftTo(12.2f).rightTo(19.2f).waitFor { it.player.box.cy < 5.6f }.rightUntil { it.player.grounded && it.player.box.b < 6.5f }.rightUntil { it.player.box.cx > 24.0f }
         up.wait(0.3f)
         assertTrue("the door is on the floor", up.world.door.box.y > 10f)
         assertTrue("the lift blows down", up.world.fans[0].target < 0f)

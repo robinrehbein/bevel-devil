@@ -273,11 +273,11 @@ class World2Test {
         // first attempt: run right until the pendulum gets you; the log keeps the run
         val first = b(36).right(3f).also { it.expect(WorldState.DEAD) }
         // second attempt: stand in front of the saw's wake and wait: the replay of the last attempt starts at the spawn and walks into you
-        val second = first.retry().right(0.28f).wait(2.5f)
+        val second = first.retry().right(0.15f).wait(2.5f)
         second.expect(WorldState.DEAD)
         assertEquals(null, second.world.lastCard) // the replay plays no card: the log does it, not a trap
         // without a previous attempt nothing replays: standing there for as long is fine
-        b(36).right(0.28f).wait(2.5f).expect(WorldState.PLAYING)
+        b(36).right(0.15f).wait(2.5f).expect(WorldState.PLAYING)
     }
 
     @Test
@@ -312,6 +312,8 @@ class World2Test {
     @Test fun level08() { World2DesignTest.play(8) }
     @Test fun level08RunningOnIntoTheUnpluggedBlockIsFatal() = b(8).right(4f).expect(WorldState.DEAD)
     @Test fun level08HoppingOverTheBlockFromAfarLandsOnItWhenItFails() = b(8).hopR(14.6f).right(0.3f).expect(WorldState.DEAD)
+    @Test fun level08TheLeakOpensRightInFrontOfWhoRunsOn() =
+        b(8).rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.right(2.5f).expect(WorldState.DEAD)
     @Test fun level09() { World2DesignTest.play(9) }
     @Test fun level09HoldingRightWalksIntoTheWallAndTheSawFindsYou() = b(9).right(6f).expect(WorldState.DEAD)
     @Test fun level10() { World2DesignTest.play(10) }
@@ -386,8 +388,8 @@ class World2Test {
         .rightTo(14.7f).wait(5f).expect(WorldState.DEAD)
     @Test fun level28() { World2DesignTest.play(28) }
     @Test fun level29() { World2DesignTest.play(29) }
-    @Test fun level29StoppingAfterTheFirstPendulumMeetsTheForkFromBelow() =
-        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(12.0f).wait(1.5f).expect(WorldState.DEAD)
+    @Test fun level29RunningOnAfterTheFirstPendulumMeetsTheForkFromBelow() =
+        b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.right(2f).expect(WorldState.DEAD)
     @Test fun level29WaitingRightInFrontOfTheLastPendulumFreesTheFloor() =
         b(29).rightTo(6.4f).waitFor { World2Rooms.pendulumCalm(it, 9f) }.rightTo(21f).wait(1.5f).expect(WorldState.DEAD)
     @Test fun level30() { World2DesignTest.play(30) }
@@ -398,11 +400,11 @@ class World2Test {
         assertTrue(bot.world.door.tx > 32f)
     }
     /** Hop Limit: the link in front of you after the drop was re-pointed and sends you home (TTL), while the real one waits behind you, under the ledge. */
-    @Test fun level30TheLinkInFrontGoesHome() {
-        val bot = b(30).rightUntil { it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
-            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.rightUntil(6f) { it.player.box.cx < 10f }
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 10f)
+    @Test fun level30TheLinkInFrontGoesToDevNull() {
+        val bot = b(30).rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
+            .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.right(3f)
+        bot.expect(WorldState.DEAD)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 15f)
     }
     @Test fun level31() { World2DesignTest.play(31) }
     @Test fun level32() { World2DesignTest.play(32) }
@@ -461,32 +463,30 @@ class World2Test {
         assertTrue("wall at ${World2Rooms.wallX(bot.world, 'w')}", World2Rooms.wallX(bot.world, 'w') in 19.5f..21.5f)
     }
 
-    // 20: gate 2 flashes, the second check closes gate 3, the stairs and the floor go dark behind you, the queue waits at the exit
+    // 20: gate 2 flashes, the second check closes gate 3, the floor falls away behind you, the first step crumbles, the queue waits at the exit
     @Test fun l20RunningStraightAtTheFirstGateIsFatal() = b(20).right(3f).expect(WorldState.DEAD)
     @Test fun l20RunningOffTheLedgeAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
-    @Test fun l20TheStairsGoDarkBehindYou() {
-        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['w']?.powered == true)
-        assertTrue(World2Rooms.l20ToScanner(b(20)).wait(0.3f).world.circuits['w']?.powered == false)
-    }
-    @Test fun l20TheFloorBehindYouGoesDarkOnTheFirstStep() {
-        assertTrue(b(20).rightTo(3.6f).wait(0.2f).world.circuits['x']?.powered == true)
-        assertTrue(World2Rooms.l20ToScanner(b(20)).world.circuits['x']?.powered == false)
+    @Test fun l20TheFirstStepCrumblesUnderWhoCampsOnIt() =
+        b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(4.1f, 0.24f).wait(2.5f).expect(WorldState.DEAD)
+    @Test fun l20TheFloorBehindYouFallsAwayOnTheFirstStep() {
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.group('x').oy == 0f)
+        assertTrue(World2Rooms.l20ToScanner(b(20)).world.group('x').oy > 2f)
     }
     @Test fun l20TheHopperWhoSkipsTheSecondCheckMeetsGateThree() = b(20).rightJump(0.35f).landRight().right(8f).expect(WorldState.DEAD)
     @Test fun l20TheFirstCheckPowersTheStairs() {
         assertTrue(b(20).world.circuits['w']?.powered == false)
-        assertTrue(b(20).rightTo(6.3f).wait(0.1f).world.circuits['w']?.powered == true)
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.rightTo(4.3f).wait(0.1f).world.circuits['w']?.powered == true)
     }
 
     // 21: the far portal is dead until the closet (the near portal) opens the port, the treadmill drags you toward the LED, the portal next to the door is a captive portal
     @Test fun l21TheNearPortalIsTheControlRoom() {
-        val bot = World2Rooms.l21ToCloset(b(21)).wait(0.5f)
+        val bot = World2Rooms.l21ToCloset(b(21)).leftUntil { it.player.box.cx < 14.9f }.wait(0.3f)
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx in 14f..17f)
         assertTrue("the port opens in the closet", bot.world.links[1].on)
         bot.right(3f).expect(WorldState.PLAYING)
     }
     @Test fun l21TheFarPortalIsDeadAtFirst() {
-        val bot = b(21).hopR(3.6f).rightTo(10.5f).wait(0.5f)
+        val bot = b(21).leftTo(3.4f).wait(0.5f)
         assertTrue("x=${bot.world.player.box.cx} y=${bot.world.player.box.cy}", bot.world.player.box.cy > 13f && !bot.world.links[1].on)
     }
     @Test fun l21TheRouteNeedsBothPortals() {
@@ -558,22 +558,23 @@ class World2Test {
     @Test fun level33RunningOnAlongTheLaneFindsTheHole() = b(33).right(3f).expect(WorldState.DEAD)
     /** sudo !!: stopping where the block falls is right, but running on under it is the end. */
     @Test fun level33RunningOnUnderTheDeckBlockIsFatal() = b(33).hopR(6.9f, 0.5f).hopR(12.8f, 0.5f).rightTo(18.3f).rightJump(0.5f).landRight().rightJump(0.5f).landRight()
-        .hopL(23.2f, 0.5f).left(3f).expect(WorldState.DEAD)
+        .hopL(23.2f, 0.5f).left(1f).expect(WorldState.DEAD)
     @Test fun level34() { World2DesignTest.play(34) }
-    /** Reverse Proxy: the wall of links at the right end of the ceiling is the loopback, it hands you back at the start of the ceiling. */
-    @Test fun level34TheObviousLinksLoopYouBack() {
-        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.rightUntil { it.player.box.cx > 24.5f }.wait(0.3f)
-        bot.expect(WorldState.PLAYING)
-        assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx < 17f)
+    /** Reverse Proxy: the obvious way along the ceiling (right) times out: the gravity comes back and drops you onto the LEDs. */
+    @Test fun level34TheObviousWayAlongTheCeilingDropsYouOntoTheLeds() {
+        val bot = b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.right(3f)
+        bot.expect(WorldState.DEAD)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 13f)
     }
     /** Reverse Proxy: the dark link in the top left is dead until you pass the middle of the ceiling. */
     @Test fun level34TheDarkLinkIsDeadAtFirst() = assertFalse(b(34).rightTo(14f).rightUntil { it.player.box.cy < 3f }.world.links.first { it.id == '3' }.on)
     @Test fun level35() { World2DesignTest.play(35) }
     /** Pipeline: standing still on the belt in the duct is carried out of it, and the floor behind you has opened: you end up on the lane again. */
     @Test fun level35StandingInTheDuctIsCarriedOutAndDropsToTheLane() {
-        val bot = b(35).hopL(24.0f, 0.5f).hopL(18.0f, 0.5f).leftTo(12.7f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
+        val bot = b(35).hopL(18.4f, 0.35f).leftJump(0.5f).landLeft().leftJump(0.5f).landLeft().hopR(7.8f, 0.5f)
             .rightUntil { it.player.box.cx > 15f }.wait(3f)
-        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 12f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("y=${bot.world.player.box.b}", bot.world.player.box.b > 10f)
     }
     /** Pipeline: running straight on along the lane falls into the first hole. */
     @Test fun level35RunningStraightOnAlongTheLaneFindsTheHole() = b(35).left(3f).expect(WorldState.DEAD)

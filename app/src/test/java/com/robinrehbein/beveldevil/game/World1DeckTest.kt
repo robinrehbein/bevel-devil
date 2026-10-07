@@ -183,7 +183,8 @@ class World1DeckTest {
         run.expect(WorldState.WON)
         assertTrue("the door is back on the floor", run.world.door.box.x in 10f..14f && run.world.door.box.y > 12f)
     }
-    @Test fun level15RematchTheOldWalkEndsOnTheUpperFloorsEdge() = b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[0]).expect(WorldState.PLAYING)
+    @Test fun level15RematchTheOldRunDoesNotWin() = assertTrue(b(15, 1).also(World1DesignTest.SOLUTIONS.getValue(15)[0]).world.state != WorldState.WON)
+    @Test fun level15RematchRunningOnUnderTheBlockFallsThroughTheFloor() = b(15, 1).right(3.5f).expect(WorldState.DEAD)
 
     // ---------- Act 2 ----------
 
@@ -249,7 +250,7 @@ class World1DeckTest {
     @Test fun level48EncoreTheOldRunFails() = assertTrue(solved(48, 1, 0).world.state != WorldState.WON)
     @Test fun level48EncoreTheSecondSwitchClosesTheWallAgain() {
         val run = b(48, 1).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
-            .waitFor { World1RoomsE.run { it.ropeUp(14f, 0.9f) } }.rightUntil { it.pads[0].down }.right(0.6f)
+            .waitFor { World1RoomsE.run { it.ropeUp(14f, 0f, from = 0.643f, to = 0.843f) } }.rightUntil { it.pads[0].down }.right(0.6f)
             .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f).right(2f)
         assertTrue("the wall is shut again, x=${run.world.player.box.cx}", run.world.player.box.cx < 26f)
         run.expect(WorldState.PLAYING)
