@@ -82,7 +82,7 @@ object World3PartA {
             fill(4..7, 14..14, 'Y')
             fill(27..30, 13..14)
             fill(18..25, 11..11)
-            spawn(28, 5); door(19, 10)
+            spawn(28, 5); door(18, 10)
         },
 
         // 2 — a pillar in the middle of the room: up the stairs, over the top, down the other side, and every pin in the room moves.
@@ -99,7 +99,7 @@ object World3PartA {
                 trap(Landed(11.6f, 19f), Power('Z', false), delay = 1.3f),
                 trap(Zone(12f, 7.6f, 19f, 9f), Move('S', -10f, 0f, 3f), say("A visiting pin. It followed you home.", "Ein Besucher-Stift. Er ist dir nachgelaufen."), delay = 0.9f),
                 trap(Landed(23.5f, 29f), Move('R', 5f, 0f, 5.5f), say("A pin from the wall. It wants the door too.", "Ein Stift aus der Wand. Er will auch zur Tür."), delay = 0.15f),
-                trap(Landed(23.5f, 29f), Power('Y', true), say("And the doormat has been plugged in.", "Und die Fußmatte wurde eingesteckt."), delay = 0.3f),
+                trap(Airborne(26.4f, 29f), Power('Y', true), say("And the doormat has been plugged in. Mid-air, so you notice.", "Und die Fußmatte wurde eingesteckt. Mitten im Sprung, damit du es merkst.")),
             ),
             hint = T("The wire above the pillar glows only for a moment. The pins never stop.", "Der Draht über dem Pfeiler glüht nur kurz. Die Stifte hören nie auf."),
         ) {
@@ -160,17 +160,17 @@ object World3PartA {
             spawn(29, 8); door(1, 8)
         },
 
-        // 5 — a ceiling that is on its way down: along the floor, up the stairs and back along the copper shelf to the door above
-        // the spawn. Under the shelf the first slab falls where you want to go and turns into a step (wait for it, then
-        // climb); the second only falls on whoever dawdles. The middle stair is copper and goes dark under you (keep climbing).
+        // 5 — a ceiling that is on its way down: along the floor, up the stairs and back along the copper shelf, all the way past
+        // the spawn below to the door in the far corner (a revolving door). Under the shelf the first slab falls where you want
+        // to go and turns into a step (wait for it, then climb); the second only falls on whoever dawdles. The middle stair is copper and goes dark under you (keep climbing).
         // Upstairs the next slab waits for you again (wait, climb), and the last one comes down behind you: keep moving.
         Level(
             name = T("Turnstile", "Drehkreuz"),
             intro = T("Revolving door. Very modern.", "Drehtür. Sehr modern."),
             start = listOf(Circuit('r'), Circuit('q')),
             traps = listOf(
-                trap(PastX(5.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.4f),
-                trap(PastX(14.5f), Fall('g'), say("Second door, second ceiling.", "Zweite Tür, zweite Decke."), delay = 1f),
+                trap(PastX(13.0f), Play(Card.HEADBUTT), Fall('c'), say("Revolving door: now with ceiling.", "Drehtür: jetzt mit Decke."), delay = 0.2f),
+                trap(PastX(21.5f), Fall('g'), say("Second door, second ceiling.", "Zweite Tür, zweite Decke."), delay = 0.7f),
                 trap(Landed(27.1f, 28.9f), Power('q', false), say("The middle step is copper. Was.", "Die mittlere Stufe ist aus Kupfer. War."), delay = 0.55f),
                 trap(Landed(27.1f, 28.9f), Power('q', true), delay = 2.6f),
                 trap(Zone(17f, 6f, 26f, 9.3f), Fall('d'), say("Upstairs the ceiling is already waiting.", "Oben wartet die Decke schon."), delay = 0.3f),
@@ -184,7 +184,7 @@ object World3PartA {
                     T("Same ceiling, different habits.", "Gleiche Decke, andere Gewohnheiten."),
                     hint = T("Wait where you ran last time. Run where you waited.", "Warte, wo du zuletzt gerannt bist. Renn, wo du gewartet hast."),
                     traps = listOf(
-                        trap(PastX(5.0f), Fall('c'), say("This one takes its time. Don't wait for it.", "Die hier lässt sich Zeit. Warte nicht auf sie."), delay = 3f),
+                        trap(PastX(13.0f), Fall('c'), say("This one takes its time. Don't wait for it.", "Die hier lässt sich Zeit. Warte nicht auf sie."), delay = 3f),
                         trap(PastX(17.0f), Play(Card.HEADBUTT), Fall('g'), say("Headbutt, the sequel. Starring this door.", "Kopfnuss, die Fortsetzung. Mit dieser Tür in der Hauptrolle."), delay = 0.3f),
                         trap(Landed(27.1f, 28.9f), Power('q', false), say("The copper step clocked out early today.", "Die Kupferstufe hat heute früher Feierabend."), delay = 0.4f),
                         trap(Landed(27.1f, 28.9f), Power('q', true), delay = 2.4f),
@@ -193,7 +193,8 @@ object World3PartA {
                         trap(Zone(17f, 6f, 18.5f, 9.2f), Fall('e'), say("The last one wants you to look at it.", "Die letzte will, dass du sie ansiehst."), delay = 0.35f),
                     ),
                 ) {
-                    fill(17..20, 10..11, '.'); fill(20..24, 10..11, 'g')
+                    fill(16..19, 10..11, '.'); fill(14..16, 10..11, 'c')
+                    fill(22..24, 10..11, '.'); fill(20..24, 10..11, 'g')
                     fill(29..30, 1..2); fill(29..30, 3..4, 'k')
                     fill(17..21, 3..4, '.'); fill(17..22, 1..2); fill(19..22, 3..4, 'd')
                 },
@@ -202,10 +203,10 @@ object World3PartA {
             border(); floor()
             fill(1..25, 9..9, 'r')
             fill(25..26, 13..14); fill(27..28, 11..14, 'q'); fill(29..30, 9..14)
-            fill(9..12, 10..11, 'c'); fill(17..20, 10..11, 'g')
+            fill(16..19, 10..11, 'c'); fill(22..24, 10..11, 'g')
             fill(17..21, 1..2); fill(17..21, 3..4, 'd')
             fill(12..13, 1..2); fill(12..13, 3..4, 'e')
-            spawn(2, 14); door(2, 8)
+            spawn(12, 14); door(2, 8)
         },
 
         // 6 — the door is sealed by a wall of copper, and the straight way to it is a bait: the floor in front of the wall drops
@@ -238,41 +239,52 @@ object World3PartA {
         },
 
         // 7 — a long hall with a ceiling that comes down in pieces and two walls of copper that flicker. The first slab falls
-        // behind you (keep moving), the second lands in front of you (wait for it, climb it), the third comes down behind
-        // you again, and at each wall you wait for the dark on the side where no slab can reach you. Two steps up to the door.
+        // behind you (keep moving), the second lands in front of you (wait for it, climb it), and from up there you see the floor
+        // beyond it come loose (a loose contact: hop the hole). At each wall you wait for the dark on the side where no slab can
+        // reach you. Two steps up to the door.
         Level(
             name = T("Loose Contact", "Wackelkontakt"),
             intro = T("It's not a bug, it's a flicker.", "Das ist kein Fehler, das ist ein Flimmern."),
-            start = listOf(Clock('Z', on = 1.2f, off = 1.2f, phase = 0.5f), Clock('Y', on = 1.2f, off = 1.2f, phase = 0.9f)),
+            start = listOf(Clock('Z', on = 1.2f, off = 1.2f, phase = 1.35f), Clock('Y', on = 1.2f, off = 1.2f, phase = 0.45f)),
             traps = listOf(
                 trap(PastX(4.0f), Fall('a'), say("Loose ceiling. Mind the first one: it does not wait.", "Lose Decke. Pass auf die erste auf: Sie wartet nicht.")),
-                trap(PastX(5.6f), Play(Card.COLLAPSE), Fall('c'), say("Observed. Collapsed.", "Beobachtet. Kollabiert."), delay = 0.35f),
-                trap(PastX(12.8f), Fall('b'), say("Another one, just behind your heels.", "Noch eine, dicht hinter deinen Fersen."), delay = 0.5f),
+                trap(Zone(5.6f, 9f, 8f, 15.2f), Fall('c'), say("This one waits for you. Politely.", "Die hier wartet auf dich. Höflich."), delay = 0.35f),
+                trap(PastX(11.6f), Play(Card.COLLAPSE), Fall('b'), say("Loose contact. In the floor, this time.", "Wackelkontakt. Diesmal im Boden.")),
                 trap(PastX(20.4f), Fall('d'), say("The wall flickers, the ceiling does not.", "Die Wand flackert, die Decke nicht."), delay = 0.9f),
             ),
-            hint = T("Wait where nothing hangs above you.", "Warte dort, wo nichts über dir hängt."),
+            hint = T("Wait where nothing hangs above you. And look down from the slab before you step off it.", "Warte dort, wo nichts über dir hängt. Und schau von der Platte nach unten, bevor du runtergehst."),
             // rematch: the slabs swap their jobs. The one that used to land in front now drops behind you, the one that used to
-            // drop behind now lands in front, and a beam seeded on the step makes you wait a second time
+            // drop behind now lands in front, the floor holds, spikes seeded on the step make you hop a second time, and at eight
+            // seconds the stairs fold away: whoever waits it all out stays
             rematch = listOf(
                 Round(
                     T("Same hall. The ceiling has been rearranged.", "Gleiche Halle. Die Decke wurde umgeräumt."),
-                    hint = T("The first slab lands in front of you now: wait for it, and climb. The one you waited for later is the one you walk away from, and the beam wants a minute.", "Die erste Platte fällt jetzt vor dich: Warte und klettere. Die, auf die du später gewartet hast, lässt du hinter dir, und der Strahl will eine Minute."),
+                    hint = T("The first slab lands in front of you now: wait for it, and climb. The one you waited for later is the one you walk away from, the step grows teeth, and the hall closes at eight.", "Die erste Platte fällt jetzt vor dich: Warte und klettere. Die, auf die du später gewartet hast, lässt du hinter dir, die Stufe bekommt Zähne, und um acht schließt die Halle."),
                     start = emptyList(),
+                    legend = mapOf('S' to Glyph(spike = true, hidden = true)),
                     traps = listOf(
                         trap(PastX(1.8f), Fall('a'), say("First slab: in front of you this time. Take a seat.", "Erste Platte: diesmal vor dir. Nehmen Sie Platz.")),
                         trap(PastX(8.2f), Fall('b'), say("Reserved seating: wait here, it's coming.", "Reservierter Platz: Warte hier, sie kommt gleich."), delay = 0.5f),
                         trap(PastX(13.5f), Fall('c'), say("This one was always going to be behind you.", "Die hier war schon immer hinter dir."), delay = 0.3f),
-                        trap(Landed(14f, 17.5f), Play(Card.SPIKE_SEED), Laser('A', 18 to 1, 18 to 14, on = 0.95f, off = 60f, delay = 0.1f), say("A beam, grown on the step. Fresh.", "Ein Strahl, frisch auf der Stufe gewachsen.")),
+                        trap(Landed(13.4f, 17.5f), Play(Card.SPIKE_SEED), Show('S'), say("Something grew at the foot of the step. Fresh.", "Am Fuß der Stufe ist was gewachsen. Ganz frisch.")),
                         trap(PastX(20.4f), Fall('d'), say("Mind the last roof. The walls stopped flickering.", "Achtung, letztes Dach. Die Wände flackern nicht mehr."), delay = 0.9f),
-                        trap(Zone(21.8f, 12f, 23f, 15f), Laser('B', 25 to 1, 25 to 14, on = 0.95f, off = 60f, delay = 0.15f), say("Second beam. The first one told you what to do.", "Zweiter Strahl. Der erste hat dir gesagt, was zu tun ist.")),
+                        trap(Zone(22.0f, 12f, 23.6f, 15f), Fall('e'), say("Last slab: a step to the stairs. You're welcome.", "Letzte Platte: eine Stufe zur Treppe. Gern geschehen.")),
+                        trap(After(8f), Hide('h'), say("Closing time. The stairs are folded away at eight.", "Feierabend. Um acht wird die Treppe eingeklappt.")),
                     ),
-                ) { wire(19, '.'); wire(26, '.'); fill(16..16, 1..9); fill(16..16, 10..11, 'b') },
+                ) {
+                    wire(19, '.'); wire(26, '.')
+                    fill(15..16, 15..17); fill(16..16, 1..9); fill(14..16, 10..11, 'b')
+                    fill(17..18, 14..14, 'S')
+                    fill(28..29, 13..14, 'h')
+                    fill(24..25, 1..9); fill(24..25, 10..11, 'e')
+                },
             ),
         ) {
             border(); floor()
             fill(3..4, 1..9); fill(3..4, 10..11, 'a')
             fill(9..12, 1..9); fill(9..12, 10..11, 'c')
-            fill(14..15, 1..9); fill(14..15, 10..11, 'b')
+            fill(14..15, 1..9)
+            bridge(15..16, 'b')
             fill(21..22, 1..9); fill(21..22, 10..11, 'd')
             wire(19, 'Z'); wire(26, 'Y')
             fill(28..29, 13..14); fill(30..30, 11..14)

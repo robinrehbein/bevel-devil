@@ -57,56 +57,59 @@ object World3PartF {
             spawn(1, 14); door(30, 4)
         },
 
-        // 42 — Exhaust
+        // 42 — Exhaust (U8, a trap room, mirrored: you start at the right and the door is at the far left, down the exhaust shaft). A wall of
+        // teeth sets off behind you as you head for the vent; ride it up to the shelf (it carries whoever stands in it). On the shelf the exhaust
+        // hood slams down ahead of you, not on you: stop short of it and hop it. Beyond it the shaft blows you gently down, until the drain breathes
+        // in and sucks everything up into the spikes in its housing: step out of the draft to the right and walk the last stretch to the door.
+        // Rematch: the vent is pressure-sensitive now. Whoever stands still in it (as in round one) is dropped back to the teeth: keep hopping.
         Level(
             name = T("Exhaust", "Abluft"),
             intro = T("It's a bit warm in here.", "Ist ein bisschen warm hier."),
             start = listOf(
-                Fan('f', at = 14 to 15, dir = Dir.UP, reach = 9, speed = 6.5f, width = 3),
-                Fan('D', at = 27 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
+                Fan('f', at = 15 to 15, dir = Dir.UP, reach = 9, speed = 6.5f, width = 3),
+                Fan('D', at = 2 to 0, dir = Dir.DOWN, reach = 14, speed = 3f, width = 3),
             ),
             traps = listOf(
-                trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
-                trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Exhaust hood, closing time.", "Abzugshaube, Feierabend."), delay = 0.2f),
-                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("The drain breathes in. So do the spikes up there.", "Der Abfluss atmet ein. Die Stacheln da oben auch.")),
-                trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
+                trap(BeforeX(21f), Play(Card.STALKER), Chase('W', 3.0f, left = 30f, right = 0f), say("Someone is following you. Rude, but loyal.", "Jemand folgt dir. Unhöflich, aber treu.")),
+                trap(Zone(11.5f, 5f, 13.6f, 7f), Move('h', 0f, 4f, 6.5f), say("Exhaust hood, closing time. It closes in front of you. Out of courtesy.", "Abzugshaube, Feierabend. Sie schließt vor dir. Aus Höflichkeit.")),
+                trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', -7f), say("The drain breathes in. So do the spikes up there.", "Der Abfluss atmet ein. Die Stacheln da oben auch.")),
+                trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', 3f), delay = 2.2f),
             ),
-            hint = T("Stand in the vent and let it carry you. Up top, do not linger under the hood, and do not trust the slow way down: step out of the draft.", "Stell dich in den Schacht und lass dich tragen. Oben nicht unter der Haube trödeln, und trau dem langsamen Weg nach unten nicht: Tritt aus dem Luftstrom."),
-            // rematch: the vent is pressure-sensitive now: whoever stands still in it (as in round one) gets the ceiling slab down the shaft. Keep
-            // hopping, and the drain still breathes in, so step out of it as before
+            hint = T("Stand in the vent and let it carry you. Up top, the hood shuts ahead of you: wait for it, then hop it. Do not trust the slow way down: step out of the draft.", "Stell dich in den Schacht und lass dich tragen. Oben schließt die Haube vor dir: Warte, dann spring drüber. Trau dem langsamen Weg nach unten nicht: Tritt aus dem Luftstrom."),
             rematch = listOf(
                 Round(
                     T("Same vent. It listens now.", "Gleicher Schacht. Er hört jetzt zu."),
+                    hint = T("Do not stand still in the vent: it drops whoever loiters. Keep hopping on the way up.", "Steh im Schacht nicht still: Er lässt fallen, wer herumlungert. Hüpf auf dem Weg nach oben weiter."),
                     traps = listOf(
-                        trap(PastX(11f), Play(Card.STALKER), Chase('W', 3.7f, left = 0f, right = 30f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
-                        trap(Idle(0.5f), Move('c', 0f, 12f, 16f), say("Standing still in my vent? That is loitering.", "In meinem Schacht rumstehen? Das ist Herumlungern.")),
-                        trap(Zone(21f, 5f, 26f, 7f), Move('h', 0f, 3.6f, 4.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs."), delay = 0.05f),
-                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
-                        trap(Zone(27f, 7.3f, 30f, 12.5f), FanSet('D', 3f), delay = 2.2f),
+                        trap(BeforeX(21f), Play(Card.STALKER), Chase('W', 3.0f, left = 30f, right = 0f), say("The follower is back. He brought a friend: your own habits.", "Der Verfolger ist zurück. Er hat deine Gewohnheiten mitgebracht.")),
+                        trap(Idle(0.5f), FanSet('f', -5f), say("Standing still in my vent? That is loitering. Back down you go.", "In meinem Schacht rumstehen? Das ist Herumlungern. Wieder runter mit dir.")),
+                        trap(Zone(11.5f, 5f, 13.6f, 7f), Move('h', 0f, 4f, 6.5f), say("Hood: still closing at six.", "Haube: schließt weiter um sechs.")),
+                        trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', -7f), say("Breathing in again. Some habits are my own.", "Wieder einatmen. Manche Angewohnheiten sind meine.")),
+                        trap(Zone(2f, 7.3f, 5f, 12.5f), FanSet('D', 3f), delay = 2.2f),
                     ),
-                ) {
-                    fill(14..16, 1..2, 'c')
-                },
+                ),
             ),
         ) {
             border(); floor()
-            fill(1..2, 11..14, 'W')
-            fill(17..26, 7..7)
-            fill(19..20, 1..4); fill(19..20, 8..14)
-            fill(21..25, 1..2, 'h')
-            fill(30..30, 7..14)
-            fill(27..29, 1..1, 'v')
-            spawn(3, 14); door(29, 14)
+            fill(30..30, 10..14, 'W'); put(29, 14, '#')
+            fill(5..14, 7..7)
+            fill(11..12, 8..14)
+            fill(6..10, 1..2, 'h')
+            fill(1..1, 3..14)
+            fill(2..4, 1..1, 'v')
+            spawn(27, 14); door(2, 14)
         },
 
-        // 43 — Wiring Diagram
+        // 43 — Wiring Diagram (R1+R10, U17), run from right to left: the first switch powers the lift and, for a moment, the bridge over the
+        // pit (run), the landing past it is on another circuit and drops, the lift takes you up to a ledge on a timer, the second switch at its far
+        // end flips one bit that the wall in front of the door shares with the floor under it.
         Level(
             name = T("Wiring Diagram", "Schaltplan"),
             intro = T("Page one: everything is connected.", "Seite eins: Alles hängt zusammen."),
             start = listOf(
                 Circuit('a'), Circuit('p'), Circuit('l'), Circuit('w'), Circuit('x', on = false),
-                Fan('f', at = 17 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
-                Pad('1', at = 5 to 14), Pad('2', at = 11 to 7),
+                Fan('f', at = 13 to 15, dir = Dir.UP, reach = 8, speed = 5f, width = 2), Power('f', false),
+                Pad('1', at = 26 to 14), Pad('2', at = 20 to 7),
             ),
             traps = listOf(
                 trap(Pressed('1'), Clock('a', on = 1.8f, off = 60f), Power('f', true), say("Switch one powers the lift. And the bridge, for a moment.", "Schalter eins versorgt den Aufzug. Und kurz die Brücke.")),
@@ -119,60 +122,73 @@ object World3PartF {
             hint = T("Press the first switch, then run: the bridge only has power for a moment. The second switch hides at the far end of the ledge.", "Drück den ersten Schalter und lauf los: Die Brücke hat nur kurz Strom. Der zweite Schalter liegt am anderen Ende des Simses."),
         ) {
             border(); floor()
-            pit(8..16); put(8, 15, 'a')
-            fill(8..14, 15..15, 'a'); fill(15..16, 15..15, 'p')
-            fill(19..23, 8..14)
-            fill(9..16, 8..8, 'l')
-            pit(26..27); fill(26..27, 15..15, 'x')
-            fill(26..27, 1..14, 'w')
-            spawn(2, 14); door(29, 14)
+            pit(15..23); put(23, 15, 'a')
+            fill(17..23, 15..15, 'a'); fill(15..16, 15..15, 'p')
+            fill(8..12, 8..14)
+            fill(15..22, 8..8, 'l')
+            pit(4..5); fill(4..5, 15..15, 'x')
+            fill(4..5, 1..14, 'w')
+            spawn(29, 14); door(2, 14)
         },
 
-        // 44 — Display (a breather: one lure, one punchline, and the screen rotates back for whoever dawdles)
+        // 44 — Display (a breather, U10): you start on the shelf in the middle of the room, and the way right is walled off. The lift is far
+        // over at the left: ride it, and at the top the screen is mounted upside down, you fall to the ceiling and walk it over the wall to the
+        // door, which hangs from the ceiling too (hop the stud; past the wall the cooling fan behind the screen blows in your face). Auto-rotate
+        // comes back after a few seconds, and below the door the floor is studded: do not dawdle up there.
         Level(
             name = T("Display", "Anzeige"),
             intro = T("I mounted the monitor myself.", "Den Monitor habe ich selbst montiert."),
             start = listOf(
-                Fan('f', at = 8 to 15, dir = Dir.UP, reach = 9, speed = 3f, width = 5),
+                Fan('f', at = 2 to 15, dir = Dir.UP, reach = 9, speed = 3f, width = 5),
+                Fan('g', at = 30 to 1, dir = Dir.LEFT, reach = 11, speed = 4.5f, width = 2), Power('g', false),
             ),
             traps = listOf(
-                trap(Zone(8f, 11f, 13f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
-                trap(Zone(14f, 6f, 18f, 8.2f), Gravity(true), say("Nice shelf. Shame about the screen orientation.", "Schönes Regal. Schade um die Bildschirmausrichtung.")),
-                trap(Zone(8f, 5.5f, 13f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
-                trap(Zone(8f, 5.4f, 13f, 7.6f), Gravity(false), say("Auto-rotate is on. You had three seconds.", "Automatisch drehen ist an. Du hattest drei Sekunden."), delay = 3.4f),
+                trap(Zone(2f, 11f, 7f, 15.5f), FanSet('f', 7.5f), say("Warming up the lift. Mind the cable.", "Der Aufzug läuft warm. Achtung, Kabel.")),
+                trap(Zone(2f, 5.5f, 7f, 7.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Mounted upside down. Obviously. The door, too.", "Kopfüber montiert. Natürlich. Die Tür auch.")),
+                trap(Zone(2f, 5.4f, 7f, 7.6f), Gravity(false), say("Auto-rotate is on. You had four seconds.", "Automatisch drehen ist an. Du hattest vier Sekunden."), delay = 4.0f),
+                trap(Zone(19f, 1f, 21f, 3f), Power('g', true), say("The cooling fan behind the screen kicks in. Upside down, it blows in your face.", "Der Lüfter hinterm Bildschirm springt an. Kopfüber bläst er dir ins Gesicht.")),
             ),
-            hint = T("Stay in the draft all the way up, whatever the shelf promises. Up top, the screen rotates back soon: hurry to the door.", "Bleib im Luftstrom bis ganz oben, egal was das Regal verspricht. Oben dreht sich der Bildschirm bald zurück: Beeil dich zur Tür."),
+            hint = T("The way over the wall is the ceiling. Ride the lift all the way up, and hurry along the ceiling: the screen rotates back soon.", "Der Weg über die Wand ist die Decke. Fahr mit dem Aufzug ganz nach oben, und beeil dich an der Decke: Der Bildschirm dreht sich bald zurück."),
         ) {
             border(); floor()
             fill(14..17, 8..8)
-            fill(15..15, 1..1, 'v')
+            fill(18..18, 2..14)
+            fill(11..11, 1..1, 'v')
             fill(20..28, 14..14, '^')
-            spawn(2, 14); door(26, 1)
+            spawn(15, 7); door(26, 1)
         },
 
-        // 45 — Cold Air
+        // 45 — Cold Air (U3, a trap room): the cold aisle of a server room, top right to bottom left. You start up on the rack at the right
+        // and step off into the cold-air shaft, which lowers you gently, then pushes hard; a spiked rack slides into the shaft from the right
+        // (hug the left wall), and the raised floor at the bottom of the shaft sinks the moment anyone lands on it: steer left into the gap
+        // under the racks before you touch down. In the aisle a spiked pin slides in from the far end at you: hop it, the door is behind it.
         Level(
             name = T("Cold Air", "Kaltluft"),
             intro = T("Plenty of hot air here. Mostly mine.", "Hier gibt es viel heiße Luft. Meist meine."),
+            legend = mapOf('Q' to Glyph(spike = true, dir = Dir.LEFT), 'L' to Glyph(spike = true, dir = Dir.RIGHT)),
             start = listOf(
-                Fan('f', at = 13 to 15, dir = Dir.UP, reach = 11, speed = 3.6f, width = 3),
+                Fan('d', at = 19 to 0, dir = Dir.DOWN, reach = 14, speed = 4.5f, width = 5),
             ),
             traps = listOf(
-                trap(PastX(8f), Play(Card.COLLAPSE), Move('W', -8f, 0f, 7f), say("Cold aisle, closing. Warm aisle, also closing.", "Kaltgang schließt. Warmgang schließt auch.")),
-                trap(Zone(13f, 7.5f, 16f, 10.5f), Move('q', -2.5f, 0f, 5f), say("The vent has a side entrance.", "Der Schacht hat einen Seiteneingang."), delay = 0.3f),
-                trap(Zone(21f, 3.5f, 25f, 5.5f), Move('p', 0f, -3.5f, 2.2f), say("Racks are hot-swappable. This shelf swaps up.", "Racks sind hot-swap-fähig. Dieses Regal fährt nach oben."), delay = 0.05f),
+                trap(Zone(19f, 4f, 24f, 5.5f), Move('Q', -3f, 0f, 6f), say("Cold aisle, closing. Mind the rack you just stepped off.", "Kaltgang schließt. Vorsicht, das Rack, von dem du kommst.")),
+                trap(Zone(19f, 8.5f, 24f, 10.5f), Play(Card.BACKDRAFT), FanSet('d', 8f), say("Cold air, extra strength. Mind where you touch down.", "Kaltluft, extra stark. Pass auf, wo du aufsetzt.")),
+                trap(Landed(19f, 24f), Move('k', 0f, 6f, 6f), say("Raised floor. Lowered floor. Same floor.", "Doppelboden. Einfachboden. Gleicher Boden.")),
+                trap(BeforeX(15f), Move('L', 10f, 0f, 6f), say("Hot-swap in progress. You are the old part.", "Hot-Swap läuft. Du bist das alte Teil.")),
             ),
-            hint = T("Ride the vent with your back to the left wall. The shelf at the top swaps up: do not stay on it.", "Fahr im Schacht mit dem Rücken zur linken Wand. Das Regal oben fährt hoch: Bleib nicht drauf."),
+            hint = T("Hug the left wall of the shaft on the way down, and do not land in it: slip into the gap under the wall. Hop the pin in the aisle.", "Halt dich im Schacht auf dem Weg nach unten links an der Wand, und lande nicht darin: Schlüpf in die Lücke unter der Wand. Spring im Gang über den Stift."),
         ) {
             border(); floor()
-            fill(29..29, 6..14, 'W')
-            fill(11..12, 2..9)
-            fill(17..18, 8..9, 'q')
-            fill(16..20, 5..5); fill(21..24, 5..5, 'p')
-            spawn(2, 14); door(30, 14)
+            fill(26..30, 4..14); fill(24..25, 4..7); fill(24..25, 10..14); fill(24..25, 8..9, 'Q')
+            fill(16..18, 1..12)
+            pit(19..23); fill(19..23, 15..15, 'k')
+            put(3, 14, 'L')
+            spawn(28, 3); door(2, 14)
         },
 
-        // 46 — POST
+        // 46 — POST (R5, U16): a serpentine up through three floors. The first lift stops for a beep while you are in it and comes back
+        // with a kick, the second one spins up hard under a cracked frame, and on the top shelf Mephi restores your memory from a backup:
+        // once more from a second and a half ago, back up the second lift, and the frame over the spot you are put back to cracks as well
+        // (do not stand there wondering). The door is in the middle of the top shelf.
         Level(
             name = T("POST", "Selbsttest"),
             intro = T("Power-on self-test. Three checks. One beep each.", "Einschalt-Selbsttest. Drei Prüfungen. Je ein Piep."),
@@ -183,9 +199,9 @@ object World3PartF {
             traps = listOf(
                 trap(Zone(12f, 12f, 15f, 15.5f), Play(Card.BIOS), Power('a', false), say("Beep. Fan: 0 RPM. Press F1 to continue.", "Piep. Lüfter: 0 U/min. F1 zum Fortfahren."), delay = 0.2f),
                 trap(Zone(12f, 12f, 15f, 15.5f), Power('a', true), delay = 1.3f),
-                trap(Zone(12f, 10.5f, 15f, 12.5f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
+                trap(Zone(12f, 10f, 15f, 11.8f), FanSet('a', 8f), say("Fan one: overspeed warning. Ignored.", "Lüfter eins: Überdrehzahl-Warnung. Ignoriert.")),
                 trap(Zone(2f, 6f, 6f, 8f), FanSet('b', 7.5f), FrameCrack(5, 0, warn = 1.1f), say("Beep beep. Fan two: full speed. The frame did not pass the test.", "Piep piep. Lüfter zwei: Vollgas. Der Rahmen hat den Test nicht bestanden.")),
-                trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), say("Beep beep beep. Memory: restored from backup.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt.")),
+                trap(Zone(14f, 3f, 18f, 5f), Undo(1.5f), FrameCrack(3, 0, 4, 0, warn = 0.5f), say("Beep beep beep. Memory: restored from backup. The frame over the backup: not so much.", "Piep piep piep. Speicher: aus Sicherung wiederhergestellt. Der Rahmen über der Sicherung: eher nicht.")),
             ),
             hint = T("The serpentine goes up on the right, back left, up again, and right to the door. Hold on to the wall in the first lift, and do not dawdle at the second: the frame above it is cracked.", "Der Weg geht rechts hoch, links zurück, wieder hoch und rechts zur Tür. Halt dich im ersten Aufzug an der Wand, und trödle nicht am zweiten: Der Rahmen darüber hat einen Riss."),
         ) {
@@ -194,33 +210,42 @@ object World3PartF {
             fill(1..11, 10..10)
             fill(7..21, 5..5)
             put(6, 9, '^'); put(11, 4, '^')
-            spawn(2, 14); door(21, 4)
+            spawn(2, 14); door(20, 4)
         },
 
-        // 47 — Boot Order (R7+R6, U14+U4): the door on the floor is a bait and runs up to the shelf (take the lift, and step off at the shelf: the lift
-        // runs all the way up into the spiked ceiling). The door on the shelf is no end either: it runs back to where you started, and the lift now blows
-        // down. Halfway down the boot loop turns the lift around once more, overclocked, and slams whoever is still in it into the ceiling: step out of
-        // the draft. (One room: the annex is the finale's gag, 48.)
+        // 47 — Boot Order (R7+R6, U14+U4): you start in the middle of the room, and the door is right there on the floor to your left: a bait, it
+        // runs up the wall and along the ceiling, and drops onto the shelf at the right as you board the lift (ride it, and step off at the shelf: the lift runs all the way up into the spiked
+        // ceiling). The door on the shelf is no end either: it runs to the far left wall, past where you started, and the lift now blows down. At
+        // the bottom the boot loop turns the lift around once more, overclocked, and slams whoever is still in it into the ceiling: step out of the
+        // draft and walk on, past where you started. (One room: the annex is the finale's gag, 48.)
         Level(
             name = T("Boot Order", "Boot-Reihenfolge"),
             intro = T("Just walk to the door. Really.", "Geh einfach zur Tür. Wirklich."),
             start = listOf(
-                Fan('f', at = 21 to 15, dir = Dir.UP, reach = 13, speed = 6.5f, width = 3),
+                Fan('f', at = 18 to 15, dir = Dir.UP, reach = 13, speed = 9f, width = 4),
             ),
-            traps = listOf(
-                trap(Zone(15.5f, 12.5f, 18f, 15.5f), Play(Card.SHY_DOOR), DoorTo(28, 5), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
-                trap(Zone(25.5f, 3.5f, 28f, 6.5f), FanSet('f', -7f), DoorTo(26, 14), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Right under your nose.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Direkt unter deiner Nase.")),
-                trap(Zone(25.5f, 3.4f, 28f, 6.6f), FanSet('f', 16f), say("Boot loop. Overclocked, this time. Mind the ceiling.", "Bootschleife. Diesmal übertaktet. Vorsicht, Decke."), delay = 1.3f),
+            traps = doorTrail(
+                Zone(9.6f, 12.5f, 13.4f, 15.5f), 9, 14, listOf(DoorTo(9, 1, 24f, hanging = true), DoorTo(25, 1, 24f, hanging = true)),
+                first = listOf(Play(Card.SHY_DOOR), say("Boot device 1: USB. No bootable medium. Try the next one.", "Bootgerät 1: USB. Kein bootfähiges Medium. Probier das nächste.")),
+            ) + listOf(
+                trap(Zone(18f, 10f, 22f, 15.5f), DoorTo(25, 5, 24f), say("It found a shelf. Shelves are comfortable.", "Sie hat ein Regal gefunden. Regale sind bequem.")),
+            ) + doorTrail(
+                Zone(21.8f, 3.5f, 25f, 6.5f), 25, 5, listOf(DoorTo(23, 14), DoorTo(2, 14)),
+                first = listOf(FanSet('f', -7f), say("Boot device 2: disk. Sector 0 unreadable. Boot device 3: the floor. Far left, behind you.", "Bootgerät 2: Festplatte. Sektor 0 unlesbar. Bootgerät 3: der Boden. Ganz links, hinter dir.")),
+            ) + listOf(
+                trap(Zone(21.8f, 3.4f, 25f, 6.6f), FanSet('f', 16f), say("Boot loop. Overclocked, this time. Mind the ceiling.", "Bootschleife. Diesmal übertaktet. Vorsicht, Decke."), delay = 1.3f),
             ),
-            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs back, let the lift take you down. Get off it at the shelf, and if it turns around again, step out of it: it goes all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür zurückläuft, lass dich vom Lift hinunterbringen. Steig am Regal aus, und dreht er wieder um, tritt aus ihm heraus: Er fährt bis an die Decke."),
+            hint = T("The door that runs away is not the way out. Take the lift up, and when the door runs off to the far left, let the lift take you down and step out of it at once: it turns around again, all the way to the ceiling.", "Die Tür, die wegläuft, ist nicht der Ausgang. Fahr mit dem Lift hoch, und wenn die Tür nach ganz links läuft, lass dich vom Lift hinunterbringen und tritt sofort heraus: Er dreht wieder um, bis an die Decke."),
         ) {
             border(); floor()
-            fill(24..28, 6..6); fill(29..30, 6..14)
-            fill(19..23, 1..1, 'v')
-            spawn(2, 14); door(19, 14)
+            fill(23..25, 6..6); fill(26..30, 6..14)
+            fill(17..22, 1..1, 'v')
+            spawn(15, 14); door(9, 14)
         },
 
-        // 48 — BIOS Setup (the finale of the game)
+        // 48 — BIOS Setup (the finale of the game): you start up on the BIOS splash ledge at the top left and drop into the lift, which takes you to
+        // a hot shelf (keep moving) with the switch that turns the second fan from sucking to blowing; up on the top shelf the door is no end: the
+        // screen goes on, the fan in the next room reverses with the picture, and the last chip has to be cooled before the run to the door.
         Level(
             name = T("BIOS Setup", "BIOS-Setup"),
             intro = T("Press DEL to enter setup. Everything else is my job.", "ENTF für das Setup. Alles andere ist mein Job."),
@@ -248,7 +273,8 @@ object World3PartF {
             room(0) {
                 fill(12..13, 7..7, 'n'); fill(14..22, 7..7, 'm')
                 fill(22..30, 3..3)
-                spawn(3, 14); door(29, 2)
+                fill(1..5, 6..6)
+                spawn(2, 5); door(29, 2)
             }
             room(1) {
                 fill(1..3, 3..3)

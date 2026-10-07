@@ -21,7 +21,8 @@ object World3RoomsC {
                 .leftTo(22.8f).waitFor { landed(it, 'c', 1f) }.leftJump(0.55f).landLeft().leftTo(12.4f).left(0.5f) },
         ),
         18 to listOf<Solution>(
-            { rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
+            { rightUntil { it.player.grounded && it.player.box.b > 14.5f }
+                .rightUntil { w -> w.saws.any { it.x > w.player.box.cx && it.x - w.player.box.cx <= 5.5f } }.rightJump(0.55f).landRight()
                 .rightTo(27.6f).leftUntil { w -> w.player.grounded && w.player.ground?.group?.id == 'm' }.waitCooled('c')
                 .leftUntil { w -> w.saws.any { it.y > 12f && it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.8f } }.leftJump(0.55f).landLeft()
                 .leftTo(3.0f).left(1.5f) },
@@ -32,18 +33,17 @@ object World3RoomsC {
         ),
         20 to listOf<Solution>(
             { rightTo(6.7f).rightJump(0.5f).landRight().rightTo(13.2f).rightJump(0.5f).landRight().rightTo(20.7f).rightJump(0.5f).landRight()
-                .rightTo(28.0f).leftJump(0.5f).landLeft().leftTo(21.3f).leftJump(0.5f).landLeft().leftTo(14.3f).leftJump(0.5f).landLeft()
-                .leftTo(7.3f).leftJump(0.5f).landLeft().leftTo(2.6f).left(1f) },
+                .rightTo(28.8f).leftJump(0.5f).landLeft().leftTo(21.3f).leftJump(0.5f).landLeft().leftTo(15.0f).left(0.5f) },
         ),
         21 to listOf<Solution>(
             { rightTo(10.7f).waitCooled('b').rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(25.2f).leftJump(0.55f).landLeft()
-                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(4.6f).left(1f) },
+                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(13.8f).left(0.5f) },
             // rematch: the stove is on for good and the sink sends the wall at once: hop over it on the blocks
             { rightTo(4.6f).rightJump(0.4f).landRight().rightTo(9.4f).rightJump(0.4f).landRight().rightTo(16.2f).rightJump(0.4f).landRight()
                 .rightTo(19.5f).right(0.3f).rightJump(0.55f).landRight().rightJump(0.55f).landRight()
                 .leftTo(25.2f).leftJump(0.55f).landLeft()
-                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(2.4f).left(1f) },
+                .leftUntil { w -> gx(w, 'U') < w.player.box.cx && w.player.box.cx - gx(w, 'U') <= 3.8f }.leftJump(0.55f).landLeft().leftTo(13.8f).left(0.5f) },
         ),
         22 to listOf<Solution>(
             { rightTo(10.4f).rightJump(0.55f).landRight().rightTo(21.5f).landRight()
@@ -57,7 +57,8 @@ object World3RoomsC {
                 .rightTo(24.0f).waitFor { landed(it, 'e', 1f) }.rightJump(0.55f).landRight().rightJump(0.55f).landRight().right(1.5f) },
         ),
         24 to listOf<Solution>(
-            { leftTo(27.0f).landLeft().waitFor { it.player.grounded && cool(it, 'a') }.leftTo(15.4f).waitFor { cool(it, 'b') }
+            { leftTo(27.0f).landLeft().left(0.05f).waitFor { (it.heaters['a']?.heat ?: 0f) > 0.5f }.waitFor { cool(it, 'a') }
+                .leftTo(15.4f).waitFor { (it.heaters['b']?.heat ?: 0f) > 0.5f }.waitFor { cool(it, 'b') }
                 .leftTo(9.4f).waitPowered('Z', true).waitPowered('Z', false).leftTo(5.6f).leftJump(0.55f).landLeft().leftJump(0.55f).landLeft().left(0.5f) },
         ),
     )
