@@ -47,13 +47,11 @@ object World2Part3C {
         Level(
             name = T("sudo !!", "sudo !!"),
             intro = T("The last command is still warm.", "Der letzte Befehl ist noch warm."),
-            legend = mapOf('A' to hidden),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.CRUMBLE), Fall('a'), say("Command: make hole. Done.", "Befehl: Loch machen. Erledigt.")),
                 trap(PastX(11.0f), Fall('b'), say("sudo !!  Again. Louder.", "sudo !!  Nochmal. Lauter.")),
-                trap(Landed(22.2f, 27.6f), Fall('e'), say("history | tail -1. From the top.", "history | tail -1. Von oben."), delay = 0.5f),
-                trap(Zone(15.6f, 4f, 16.4f, 9f), Fall('c'), say("sudo !!  As root, this time.", "sudo !!  Diesmal als root.")),
-                trap(Zone(11.5f, 3f, 14.5f, 7.2f), Show('A'), say("sudo sudo !!  Spikes are the new hole.", "sudo sudo !!  Spikes sind das neue Loch.")),
+                trap(Landed(22.2f, 24.4f), Fall('e'), say("history | tail -1. From the top.", "history | tail -1. Von oben."), delay = 0.4f),
+                trap(Landed(18.2f, 20.2f), Fall('c'), say("sudo !!  As root, this time. Right in front of the door.", "sudo !!  Diesmal als root. Direkt vor der Tür."), delay = 0.2f),
             ),
             // rematch: the first hole is a bluff, and the hop you learned lands in the LEDs. The echo is late now (the hole opens while you are over
             // the LEDs), the top step is the command this time (it drops into a pit a moment after you land: jump on), the block that dropped
@@ -73,65 +71,66 @@ object World2Part3C {
                 ) {
                     put(11, 14, 'E')
                     fill(14..15, 15..17, '#'); fill(17..18, 15..17, 'b')
-                    fill(12..13, 1..2, '#'); fill(21..22, 1..2, 'c')
+                    fill(14..15, 1..2, '#'); fill(21..22, 1..2, 'c')
                     fill(20..21, 13..14, '.'); fill(22..27, 11..14, '.')
                     fill(20..22, 9..9); fill(23..24, 13..14); fill(25..29, 11..14, 'f'); fill(25..29, 15..17, '.')
                     fill(13..14, 10..10, 'g')
-                    put(4, 8, '^'); put(5, 8, '^')
                 },
             ),
         ) {
             border(); floor()
             fill(1..19, 9..9)
             fill(8..9, 15..17, 'a'); fill(14..15, 15..17, 'b')
-            fill(12..13, 1..2, 'c'); fill(23..25, 1..2, 'e')
+            fill(14..15, 1..2, 'c'); fill(23..25, 1..2, 'e')
             fill(20..21, 13..14); fill(22..27, 11..14)
-            put(4, 8, 'A'); put(5, 8, 'A')
-            spawn(2, 14); door(2, 8)
+            spawn(2, 14); door(12, 8)
         },
 
         // 34 — reverse proxy (a puzzle room: R3 the portals, R5 the floors, U10 the world turns over). The lane runs right and the gravity turns over
-        // before the middle of it: you fall up onto the ceiling (keep running, the LEDs hang right above the turn), the only way on, and the obvious way along it is a wall of links at the right end,
-        // which is the loopback and hands you back at the start of the ceiling. The way on is back to the left: a dark link in the top left comes
+        // before the middle of it: you fall up onto the ceiling (keep running, the LEDs hang right above the turn), the only way on, and the obvious way along it, on to the right, ends where the
+        // upstream times out: the gravity is handed back right above the LEDs and drops you onto them. The way on is back to the left: a dark link in the top left comes
         // up as you pass the middle of the ceiling again, and leads to a ledge, where the gravity is yours again, and from there it is the lane
         // to the door
         Level(
             name = T("Reverse Proxy", "Reverse Proxy"),
             intro = T("Everything goes through me here. Everything.", "Hier läuft alles über mich. Alles."),
             start = listOf(
-                Portal('2', 24 to 1, 14 to 1, twoWay = false), Portal('4', 24 to 2, 14 to 1, twoWay = false),
-                Portal('5', 24 to 3, 14 to 1, twoWay = false), Portal('6', 24 to 4, 14 to 1, twoWay = false),
-                Portal('3', 6 to 1, 3 to 10, twoWay = false), Power('3', false),
+                Portal('3', 6 to 1, 3 to 10, twoWay = false), Power('3', false), Portal('q', 15 to 14, 17 to 13, twoWay = false),
             ),
             traps = listOf(
                 trap(Zone(12f, 10f, 13.5f, 15.5f), Play(Card.UPSIDE_DOWN), Gravity(true), say("Proxying your gravity.", "Deine Schwerkraft wird weitergeleitet.")),
                 trap(Zone(10.4f, 0.5f, 11.8f, 4f), Power('3', true), say("Link 3 is up. It always was. Mostly.", "Link 3 ist oben. War er immer. Meistens.")),
                 trap(Zone(2.5f, 9f, 5f, 11f), Gravity(false), say("Reverse, reverse.", "Rückwärts, rückwärts.")),
+                trap(After(3.5f), Power('q', false)),
+                trap(Zone(19.5f, 0f, 21f, 4f), Gravity(false), say("Upstream timed out. Your gravity is returned to sender. Over the LEDs.", "Upstream antwortet nicht. Deine Schwerkraft geht zurück an den Absender. Über den LEDs.")),
             ),
             // rematch: the gravity turns over at the far end of the lane, behind the LEDs, and the ceiling run goes left; the wall of links is gone,
             // and the only link is stale (the loopback again) until its DNS entry is renewed, a moment after you pass it: hold the loop, wait
             rematch = listOf(
                 Round(
                     T("Cache cleared. Please reload.", "Cache geleert. Bitte neu laden."),
-                    start = listOf(Portal('3', 17 to 1, 22 to 1, twoWay = false)),
+                    start = listOf(Portal('3', 17 to 1, 22 to 1, twoWay = false), Portal('q', 25 to 14, 20 to 13, twoWay = false)),
                     traps = listOf(
                         trap(Zone(23f, 10f, 24.4f, 15.5f), Gravity(true), say("Flipped at the other end now. Old habits, cached.", "Jetzt am anderen Ende gekippt. Alte Gewohnheiten, im Cache.")),
                         trap(Zone(19.5f, 0.5f, 20.9f, 4f), Play(Card.DECOY), Reroute('3', 10 to 10), say("Link 3 is renewed. Give it a second.", "Link 3 wird erneuert. Gib ihm eine Sekunde."), delay = 0.7f),
                         trap(Zone(9f, 9f, 11.5f, 11f), Gravity(false), say("Lane again. Same door, same rules.", "Wieder die Bahn. Gleiche Tür, gleiche Regeln.")),
+                        trap(After(3.5f), Power('q', false)),
+                        trap(Zone(19.2f, 13.8f, 19.9f, 15.5f), Gravity(true), say("Whoever does not hop gets proxied early.", "Wer nicht hüpft, wird früher weitergeleitet.")),
                     ),
                 ) {
                     put(17, 14, '.'); put(18, 14, '.'); put(20, 14, '^'); put(21, 14, '^')
-                    put(27, 14, '.'); put(28, 14, 'D'); fill(7..12, 11..11); put(23, 1, 'v'); put(24, 1, 'v')
+                    fill(22..27, 14..14, '.'); put(28, 14, 'D'); fill(7..12, 11..11); put(23, 1, 'v'); put(24, 1, 'v')
                 },
             ),
         ) {
             border(); floor()
             fill(1..6, 11..11)
-            leds(17..18); put(11, 1, 'v'); put(12, 1, 'v')
-            spawn(2, 14); door(21, 14)
+            leds(17..18); leds(23..27); put(11, 1, 'v'); put(12, 1, 'v')
+            spawn(2, 14); door(20, 14)
         },
 
-        // 35 — pipeline (a trap room: U12 the belt turns around, U1 the floor). Along the lane (leftwards this time) the floor opens twice; up the
+        // 35 — pipeline (a trap room: U12 the belt turns around, U1 the floor). Along the lane (leftwards this time; whoever runs right, under the
+        // door, finds a third hole) the floor opens twice; up the
         // steps (the cache flushes onto the top one: don't linger) and onto the deck, where the way to the door is a conveyor in a duct, running your way: as you step on it it turns around, and the
         // floor behind you opens, so there is nothing to do but walk on, against it, with no room to hop. The second belt, in the open, turns
         // around the same way and does not care how you cross it, as long as you are not standing on it
@@ -140,8 +139,9 @@ object World2Part3C {
             intro = T("Line is clear. I checked.", "Leitung frei. Ich habe nachgesehen."),
             start = listOf(Belt('d', 3f), Belt('e', 3f)),
             traps = listOf(
-                trap(BeforeX(27.5f), Play(Card.COLLAPSE), Fall('a'), say("Keep the packets moving.", "Halte die Pakete in Bewegung.")),
-                trap(BeforeX(20f), Fall('b'), say("Packet lost. Resending.", "Paket verloren. Wird neu gesendet.")),
+                trap(BeforeX(19f), Play(Card.COLLAPSE), Fall('a'), say("Keep the packets moving.", "Halte die Pakete in Bewegung.")),
+                trap(BeforeX(14.6f), Fall('b'), say("Packet lost. Resending.", "Paket verloren. Wird neu gesendet.")),
+                trap(Zone(21.5f, 10f, 23f, 15.5f), Fall('h'), say("Wrong way. The door is upstairs. Packet dropped.", "Falsche Richtung. Die Tür ist oben. Paket verworfen.")),
                 trap(Landed(3f, 8.9f), Fall('c'), say("Cache flush. From the top.", "Cache wird geleert. Von oben."), delay = 0.15f),
                 trap(Zone(14.2f, 6f, 15f, 9f), Belt('d', -4.5f), Fall('f'), say("Backpressure: the line pushes back.", "Gegendruck: Die Leitung drückt zurück.")),
                 trap(Zone(24.2f, 5f, 25f, 9f), Belt('e', -7f), Fall('g'), say("Bandwidth throttled. Hop, if you can.", "Bandbreite gedrosselt. Hüpf, wenn du kannst.")),
@@ -152,9 +152,9 @@ object World2Part3C {
             fill(14..21, 9..9, 'd'); fill(24..28, 9..9, 'e')
             fill(11..13, 9..9, 'f'); fill(22..23, 9..9, 'g'); fill(3..5, 1..2, 'c')
             fill(13..22, 7..7)
-            fill(21..22, 15..17, 'a'); fill(15..16, 15..17, 'b')
+            fill(15..16, 15..17, 'a'); fill(11..11, 15..17, 'b'); fill(23..24, 15..17, 'h')
             fill(9..10, 13..14); fill(3..8, 11..14)
-            spawn(28, 14); door(29, 8)
+            spawn(19, 14); door(29, 8)
         },
 
         // 36 — access log (a trap room: U16 the replay, with saws). A staircase from the bottom left to the top right, no way back: a pendulum hangs over the
@@ -170,13 +170,14 @@ object World2Part3C {
                 trap(PastX(2.6f), PathSaw(6f, 7.5f to 9.5f, 7.5f to 14f, 7.5f to 5f, r = 1f), say("Login 1: it hangs, and it swings.", "Login 1: Er hängt, und er pendelt.")),
                 trap(PastX(12f), Play(Card.UNDO), Undo(0.5f), Saw(15.5f, 14.4f, -5.5f, 0f), say("Login 2: it comes to you. And your last half second, replayed: under the pendulum.", "Login 2: Er kommt zu dir. Und deine letzte halbe Sekunde, nochmal abgespielt: unter dem Pendel.")),
                 trap(Landed(14.9f, 16.9f), Saw(16f, -1f, 0f, 9f), say("Login 2b: dropped in from the cloud.", "Login 2b: aus der Cloud reingefallen.")),
-                trap(Landed(21f, 26f), PathSaw(3.5f, 30f to 6.4f, 22.2f to 6.4f), say("Login 3: the door sends its regards.", "Login 3: Die Tür lässt grüßen.")),
+                trap(Landed(21f, 26f), PathSaw(3.5f, 28f to 6.4f, 22.2f to 6.4f), say("Login 3: the door sends its regards.", "Login 3: Die Tür lässt grüßen.")),
                 trap(PastX(2.6f), Ghost(0.4f), say("Replay attack: I sent your last run again.", "Replay-Angriff: Ich habe deinen letzten Versuch nochmal gesendet.")),
             ),
         ) {
             border(); floor()
-            fill(15..16, 13..14); fill(17..18, 11..14); fill(19..20, 9..14); fill(21..30, 7..14)
-            spawn(2, 14); door(30, 6)
+            fill(15..16, 13..14); fill(17..18, 11..14); fill(19..20, 9..14); fill(21..26, 7..14)
+            fill(1..2, 9..9)
+            spawn(1, 8); door(30, 14)
         },
 
         // 37 — two-factor auth (a puzzle room: R1 the switches, U15 the help is the trap). The lane is locked by a copper wall, and the first
@@ -243,11 +244,11 @@ object World2Part3C {
         Level(
             name = T("Contingency Plan", "Notfallplan"),
             intro = T("The firewall is stuck. It'll open by itself any second now.", "Die Firewall klemmt. Die geht gleich von selbst auf."),
-            start = listOf(Laser('F', 11 to 10, 11 to 14)),
+            start = listOf(Laser('F', 13 to 10, 13 to 14)),
             traps = listOf(
                 trap(PastX(4.5f), Play(Card.SPIKE_SEED), Laser('A', 10 to 1, 10 to 8, on = 1f, off = 60f, delay = 0.55f), say("Rule 1: wait your turn.", "Regel 1: Warte, bis du dran bist.")),
                 trap(PastX(12.5f), Laser('B', 17 to 7, 17 to 8, on = 3f, off = 0f), say("Rule 2: mind your ankles.", "Regel 2: Achte auf deine Knöchel.")),
-                trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('C', 15 to 10, 15 to 14, on = 0.8f, off = 60f, delay = 0.4f), say("Rule 3: the same, one floor down.", "Regel 3: Dasselbe, ein Stockwerk tiefer.")),
+                trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('C', 17 to 10, 17 to 14, on = 0.8f, off = 60f, delay = 0.4f), say("Rule 3: the same, one floor down.", "Regel 3: Dasselbe, ein Stockwerk tiefer.")),
                 trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('D', 20 to 10, 20 to 14, on = 1.2f, off = 60f, delay = 1.0f), say("Rule 4: no loitering under the deck.", "Regel 4: Kein Herumlungern unter dem Deck.")),
                 trap(After(0.3f), PauseTrap(PauseTrick.DODGE)),
                 trap(Resumed(), Power('F', false), say("Session reset. The firewall forgot you.", "Sitzung zurückgesetzt. Die Firewall hat dich vergessen.")),
@@ -256,7 +257,7 @@ object World2Part3C {
         ) {
             border(); floor()
             fill(1..20, 9..9)
-            spawn(2, 8); door(7, 14)
+            spawn(2, 8); door(12, 14)
         },
 
         // 40 — ping pong (a breather: U16 the lag roll, with a stalker). Short and mean: the door is at the far left, and as you pass the middle of the lane

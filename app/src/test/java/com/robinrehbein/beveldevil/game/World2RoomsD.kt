@@ -90,7 +90,8 @@ object World2RoomsD {
     /** 47: hop the cart on the lane (the controls swap as you leave the ground, so go on with the other key), stop for the pendulum, slip under it, up the narrow steps with swapped hands; on the first step the controls are back to normal: to the deck and the door. */
     fun l47(b: Bot) = b.rightUntil { World2Rooms.sawAhead(it, 3.3f) }.rightJump(0.08f).leftJump(0.45f).landLeft()
         .leftKeyRightTo(16.0f).waitFor { World2Rooms.pendulumCalm(it, 18.5f, 0.1f, 0.6f, 10.0f) }
-        .leftKeyRightTo(21.0f).leftJump(0.5f).landLeft().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.4f).landRight().right(2f)
+        .leftKeyRightTo(21.0f).leftJump(0.5f).landLeft().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.4f).landRight()
+        .wait(0.4f).leftJump(0.45f).landLeft().leftUntil { World2Rooms.sawAheadLeft(it, 3.2f) }.leftJump(0.5f).landLeft().left(4f)
 
 
 
