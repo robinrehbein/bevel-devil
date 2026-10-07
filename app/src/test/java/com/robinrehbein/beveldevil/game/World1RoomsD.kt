@@ -60,13 +60,15 @@ object World1RoomsD {
         38 to listOf<Solution>(
             { leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().waitFor { it.viewTurn() >= 0.5f }
                 .hopSL(9.6f, 0.5f).rightKeyLeftTo(7.0f).rightJump(0.5f).landRight()
-                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.right(3f) },
+                .waitFor { it.viewTurn() < 0.5f }.rightTo(2.1f).rightJump(0.5f).landRight().waitFor { it.ropeUp(18f, 0.35f) }.rightTo(19.6f)
+                .waitFor { w -> w.saws.firstOrNull { it.path?.points?.firstOrNull()?.first == 22f }?.let { s -> ((w.time - s.t0) % 1.086f) in 0.85f..1.0f } ?: false }.rightTo(28.4f).rightJump(0.3f).landRight()
+                .leftJump(0.45f).landLeft().leftUntil { it.player.box.cx < 25.6f } },
         ),
         // 37: run ahead of the deleted floor, hop up the first step (it is deleted behind you) onto the second, back along the upper floor;
         // rematch: hop the stones over the pits that were opened ahead, without staying on any
         37 to listOf<Solution>(
             { rightTo(19.3f).rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
-                .leftTo(25.8f).leftJump(0.5f).landLeft().left(4f) },
+                .leftTo(25.8f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cx < 2.4f } },
             { rightTo(4.0f).rightJump(0.4f).landRight().rightTo(9.9f).rightJump(0.4f).landRight().rightTo(14.9f).rightJump(0.4f).landRight()
                 .rightJump(0.5f).landRight().right(0.25f).rightJump(0.5f).landRight()
                 .leftTo(25.8f).leftJump(0.5f).landLeft().left(4f) },

@@ -157,21 +157,22 @@ object World1Part3 {
             put(2, 14, 'P'); put(29, 11, 'D')
         },
 
-        // 37 — force push: as you pass the first marks the floor behind you is deleted, tile pair by tile pair, chasing you to the stairs;
-        // the first step is gone as soon as you have left it, and upstairs history is rewritten behind you again, all the way to the door.
-        // Rematch: Mephi pushed first: the floor ahead is already gone, the stones that are left give way under whoever lands on them,
-        // and upstairs the rewrite is faster
+        // 37 — force push: you start in the middle of the ground floor and the door is up at the far left wall, at the end of the upper
+        // floor. As you set off to the right the floor behind you is deleted, tile pair by tile pair, chasing you to the stairs; the first
+        // step is gone as soon as you have left it, and upstairs history is rewritten behind you again, all the way back to the wall.
+        // Rematch: Mephi pushed first: you start at the far left, the floor ahead is already gone, the stones that are left give way under
+        // whoever lands on them, the door is back in the middle of the upper floor, and upstairs the rewrite is faster
         // TWIST: Fall / Hide (the floor is not there)
         Level(
             name = T("git push --force", "git push --force"),
             intro = T("Mephi already pushed. You just need to pull.", "Mephi hat schon gepusht. Du musst nur noch pullen."),
-            hint = T("History is rewritten behind you: do not stop. The first step is deleted once you have left it.", "Die Historie wird hinter dir umgeschrieben: Bleib nicht stehen. Die erste Stufe ist gelöscht, sobald du sie verlassen hast."),
+            hint = T("History is rewritten behind you: do not stop. The first step is deleted once you have left it. The door is up at the far wall.", "Die Historie wird hinter dir umgeschrieben: Bleib nicht stehen. Die erste Stufe ist gelöscht, sobald du sie verlassen hast. Die Tür ist oben an der hinteren Wand."),
             traps = listOf(
-                trap(PastX(8.8f), Play(Card.COLLAPSE), Fall('a'), delay = 0.2f),
-                trap(PastX(8.8f), Say(T("Force-pushed. Your commits are gone.", "Force-gepusht. Deine Commits sind weg."))),
+                trap(PastX(12.5f), Play(Card.COLLAPSE), Fall('a'), delay = 0.45f),
+                trap(PastX(12.5f), Say(T("Force-pushed. Your commits are gone.", "Force-gepusht. Deine Commits sind weg."))),
                 trap(Landed(21f, 24f), Hide('u'), Say(T("The merge base is deleted too.", "Die Merge-Basis ist auch gelöscht.")), delay = 0.7f),
-                trap(Zone(21f, 7f, 23f, 9.5f), Say(T("Rewriting history upstairs, too.", "Oben wird die Historie auch umgeschrieben."))),
-            ) + (1..8).map { k -> trap(PastX(8.8f), Fall('a' + k), delay = 0.2f + 0.33f * k) } +
+                trap(Zone(21f, 7f, 23f, 9.5f), Say(T("Rewriting history upstairs, too. All the way back to the first commit.", "Oben wird die Historie auch umgeschrieben. Bis zum ersten Commit."))),
+            ) + (1..3).map { k -> trap(PastX(12.5f), Fall('a' + k), delay = 0.45f + 0.33f * k) } +
                 (0..9).map { k -> trap(Zone(21f, 7f, 23f, 9.5f), Hide('j' + k), delay = 0.4f + 0.33f * k) },
             rematch = listOf(
                 Round(
@@ -189,21 +190,24 @@ object World1Part3 {
                     fill(3..20, 15..17, '#')
                     fill(3..5, 15..17, 'a'); fill(6..7, 15..17, 'b'); fill(8..10, 15..17, 'c'); fill(11..12, 15..17, 'd')
                     fill(13..15, 15..17, 'e'); fill(16..17, 15..17, 'f'); fill(18..20, 15..17, 'g')
+                    put(12, 14, '.'); put(1, 14, 'P'); put(2, 8, '.'); put(12, 8, 'D')
                 },
             ),
         ) {
             border(); floor()
-            for (k in 0..8) fill((3 + 2 * k)..(4 + 2 * k), 15..17, 'a' + k)
+            for (k in 0..3) fill((13 + 2 * k)..(14 + 2 * k), 15..17, 'a' + k)
             fill(21..23, 13..14, 'u'); fill(24..30, 11..14)
             fill(2..23, 9..9)
             for (k in 0..9) fill((22 - 2 * k)..(23 - 2 * k), 9..9, 'j' + k)
-            put(1, 14, 'P'); put(12, 8, 'D')
+            put(12, 14, 'P'); put(2, 8, 'D')
         },
 
         // 38 — clear view: you start on the right and the way home runs left, so the stairs are on the far left. A saw rolls in on the ground
         // from the left and must be hopped; as you land by the stairs the picture turns upside down and a second saw rolls in from behind:
         // left and right follow the screen now, so you flee to the left with the right key and climb the stairs mirrored. Upstairs the
-        // picture is back, and a rope saw swings across the way to the door on the right
+        // picture is back, two rope saws swing across the long way back to the right, and the door waits up in the box seat above it all:
+        // a step at the far wall, and from there at once back up onto the little ledge with the door: the usher comes rolling along at
+        // shoulder height for whoever stays on the step
         // TWIST: Flip
         Level(
             name = T("Clear View", "Durchblick"),
@@ -214,12 +218,14 @@ object World1Part3 {
                 trap(Landed(8.4f, 20f), Play(Card.UPSIDE_DOWN), Flip(1.2f), Say(T("Better view from here.", "Von hier hat man die bessere Aussicht."))),
                 trap(Landed(8.4f, 20f), Saw(33.5f, 14.4f, -6f, 0f, 0.62f), Say(T("The saw prefers the original orientation.", "Die S\u00e4ge mag lieber die Originalausrichtung."))),
                 trap(Zone(6f, 7f, 7.5f, 9.5f), PathSaw(7f, 18f to 8.4f, 18f to 4.6f, delay = 0.35f), Say(T("Skipping rope for adults.", "Seilspringen f\u00fcr Erwachsene."))),
+                trap(Landed(28.5f, 31f), Saw(20.0f, 7.4f, 10f, 0f, 0.62f), Say(T("The usher is coming through. At shoulder height.", "Der Platzanweiser kommt durch. In Schulterhöhe."))),
+                trap(Zone(17.0f, 7f, 17.6f, 9.5f), PathSaw(7f, 22f to 4.6f, 22f to 8.4f), Say(T("And a second rope, for the advanced class.", "Und ein zweites Seil, f\u00fcr Fortgeschrittene."))),
             ),
         ) {
             border(); floor()
             fill(5..7, 13..14); fill(1..3, 11..14)
-            fill(5..29, 9..9)
-            put(29, 14, 'P'); put(19, 8, 'D')
+            fill(5..30, 9..9); fill(29..30, 8..8); fill(24..27, 6..6)
+            put(29, 14, 'P'); put(25, 5, 'D')
         },
 
         // 39 — hardware store: a ceiling tile drops in aisle 6 and is hopped, then the stairs go up three floors (the middle step is

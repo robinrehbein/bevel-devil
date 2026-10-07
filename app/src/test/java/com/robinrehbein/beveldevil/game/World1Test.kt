@@ -421,13 +421,25 @@ class World1Test {
     @Test fun level36TheSecondPieceCrushesWhoRunsOnTheLedge() = climbed36().right(2f).expect(WorldState.DEAD)
 
     /** 37: standing still on the deleted floor is the end of you, and the step you leave is gone. */
-    @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(9f).wait(4f).expect(WorldState.DEAD)
+    @Test fun level37StandingStillOnTheDeletedFloorDies() = b(37).rightTo(14f).wait(4f).expect(WorldState.DEAD)
     @Test fun level37TheFirstStepIsGoneOnceYouLeaveIt() {
         val run = b(37).rightTo(19.3f).rightJump(0.5f).landRight().wait(1.5f)
         assertFalse(run.world.group('u').visible)
     }
 
-    /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen. */
+    /** 37: you start in the middle of the ground floor, and the door is up at the far left wall. */
+    @Test fun level37TheDoorIsUpAtTheFarWall() {
+        val w = b(37).world
+        assertTrue(w.door.box.cx < 4f && w.door.box.y < 9f && w.player.box.cx > 11f)
+    }
+
+    /** 38: the first saw is for the runner, the mirrored keys for whoever does not read the screen, and the usher for whoever stays on the step. */
+    @Test fun level38StayingOnTheStepMeetsTheUsher() {
+        val won = b(38).also(World1DesignTest.SOLUTIONS.getValue(38)[0])
+        won.expect(WorldState.WON)
+        val usher = won.world.sprung.first { s -> s.trap.actions.any { a -> a is Action.Saw && a.y < 8f } }
+        DesignRules.patientProbe(World1.levels[37], 0, World1DesignTest.SOLUTIONS.getValue(38)[0], usher.triggered).expect(WorldState.DEAD)
+    }
     @Test fun level38RunningStraightOnMeetsTheSaw() = b(38).left(3f).expect(WorldState.DEAD)
     @Test fun level38TheOldKeyDoesNotGetYouUpTheStairs() {
         val run = b(38).leftUntil { w -> w.saws.any { it.x < w.player.box.cx && w.player.box.cx - it.x <= 4.5f } }.leftJump(0.5f).landLeft().left(3f)
