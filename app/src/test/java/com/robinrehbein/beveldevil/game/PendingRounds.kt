@@ -15,7 +15,6 @@ object PendingRounds {
     val ENTRIES: List<String> = listOf(
         // World 1
         // World 2
-        "2-20-1 M",
         "2-24-1 L", "2-24-1 Q",
         "2-25-1 M",
         "2-27-1 M",

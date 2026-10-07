@@ -146,25 +146,24 @@ object World2Part2 {
         // powers the stairs up to the ledge, but running straight on gets you nowhere: the first step is yours to hop, and landing on it
         // starts gate 2 on a rhythm over the next gap (wait for it); a twin gate over the gap after the third step. The ID scanner (a pad)
         // is where the stairs end, up on the ledge: it reopens gate 3 for a moment's notice, and the queue at the exit has other plans:
-        // wait up there until it has passed. The floor behind you and the stairs go dark as you climb (the ledge is the only way on), and the
-        // first step times out too if you camp on it
+        // wait up there until it has passed. The floor behind you falls away as you set foot on the first step (there is no way back down),
+        // and the first step crumbles too if you camp on it: wait for gate 2, but not for long
         Level(
             name = T("Stateful Inspection", "Zustandsprüfung"),
             intro = T("Please have your ID ready.", "Bitte Ausweis bereithalten."),
             start = listOf(
                 Laser('K', 25 to 1, 25 to 14),
-                Circuit('x'), Circuit('w', on = false), Circuit('s'),
+                Circuit('w', on = false),
                 Pad('2', at = 1 to 14, circuits = "w"),
                 Pad('1', at = 21 to 2),
             ),
             traps = listOf(
                 trap(Pressed('2'), say("Second check started. The stairs are powered.", "Zweite Kontrolle gestartet. Die Treppe steht unter Strom.")),
-                trap(Landed(6f, 7.9f), Play(Card.SPIKE_SEED), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
+                trap(Landed(6f, 7.9f), Laser('M', 8 to 1, 8 to 14, on = 1.3f, off = 1.4f, phase = 0.4f),
                     say("Gate 2 now runs on a rhythm.", "Tor 2 läuft jetzt im Takt.")),
-                trap(Landed(6f, 7.9f), Circuit('x', on = false), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
-                trap(Touch('s'), Circuit('s', on = false), say("This step times out, too. Do not camp.", "Diese Stufe läuft auch ab. Nicht campen."), delay = 1.7f),
+                trap(Landed(6f, 7.9f), Fall('x'), say("Second check expired. Nobody is covering the floor behind you.", "Zweite Kontrolle abgelaufen. Den Boden hinter dir deckt niemand mehr.")),
+                trap(Touch('s'), Play(Card.CRUMBLE), Fall('s'), say("This step crumbles, too. Wait for the gate, but do not camp.", "Diese Stufe bröckelt auch. Warte aufs Tor, aber campe nicht."), delay = 1.7f),
                 trap(Landed(12f, 13.9f), Laser('N', 14 to 1, 14 to 14, on = 1.3f, off = 1.4f, phase = 0.4f), say("Gate 2 has a twin. Same rhythm, other hole.", "Tor 2 hat einen Zwilling. Gleicher Takt, anderes Loch.")),
-                trap(Landed(21.2f, 24.6f), Circuit('w', on = false), say("Stairs closed. The ledge is one-way.", "Treppe gesperrt. Der Sims ist eine Einbahnstraße.")),
                 trap(Pressed('1'), Power('K', false), Laser('K', 25 to 1, 25 to 12, on = 0.5f, off = 40f, delay = 0.1f),
                     say("ID scanned. Gate 3 open. The queue at the exit has other plans.", "Ausweis gescannt. Tor 3 offen. Die Schlange am Ausgang hat andere Pläne.")),
             ),

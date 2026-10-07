@@ -312,6 +312,8 @@ class World2Test {
     @Test fun level08() { World2DesignTest.play(8) }
     @Test fun level08RunningOnIntoTheUnpluggedBlockIsFatal() = b(8).right(4f).expect(WorldState.DEAD)
     @Test fun level08HoppingOverTheBlockFromAfarLandsOnItWhenItFails() = b(8).hopR(14.6f).right(0.3f).expect(WorldState.DEAD)
+    @Test fun level08TheLeakOpensRightInFrontOfWhoRunsOn() =
+        b(8).rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.right(2.5f).expect(WorldState.DEAD)
     @Test fun level09() { World2DesignTest.play(9) }
     @Test fun level09HoldingRightWalksIntoTheWallAndTheSawFindsYou() = b(9).right(6f).expect(WorldState.DEAD)
     @Test fun level10() { World2DesignTest.play(10) }
@@ -461,16 +463,14 @@ class World2Test {
         assertTrue("wall at ${World2Rooms.wallX(bot.world, 'w')}", World2Rooms.wallX(bot.world, 'w') in 19.5f..21.5f)
     }
 
-    // 20: gate 2 flashes, the second check closes gate 3, the stairs and the floor go dark behind you, the queue waits at the exit
+    // 20: gate 2 flashes, the second check closes gate 3, the floor falls away behind you, the first step crumbles, the queue waits at the exit
     @Test fun l20RunningStraightAtTheFirstGateIsFatal() = b(20).right(3f).expect(WorldState.DEAD)
     @Test fun l20RunningOffTheLedgeAfterTheScanIsFatal() = World2Rooms.l20ToScanner(b(20)).right(3f).expect(WorldState.DEAD)
-    @Test fun l20TheStairsGoDarkBehindYou() {
-        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.circuits['w']?.powered == true)
-        assertTrue(World2Rooms.l20ToScanner(b(20)).wait(0.3f).world.circuits['w']?.powered == false)
-    }
-    @Test fun l20TheFloorBehindYouGoesDarkOnTheFirstStep() {
-        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.circuits['x']?.powered == true)
-        assertTrue(World2Rooms.l20ToScanner(b(20)).world.circuits['x']?.powered == false)
+    @Test fun l20TheFirstStepCrumblesUnderWhoCampsOnIt() =
+        b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.hopR(4.1f, 0.24f).wait(2.5f).expect(WorldState.DEAD)
+    @Test fun l20TheFloorBehindYouFallsAwayOnTheFirstStep() {
+        assertTrue(b(20).leftUntil { it.player.grounded && it.player.box.b > 14.5f }.wait(0.2f).world.group('x').oy == 0f)
+        assertTrue(World2Rooms.l20ToScanner(b(20)).world.group('x').oy > 2f)
     }
     @Test fun l20TheHopperWhoSkipsTheSecondCheckMeetsGateThree() = b(20).rightJump(0.35f).landRight().right(8f).expect(WorldState.DEAD)
     @Test fun l20TheFirstCheckPowersTheStairs() {

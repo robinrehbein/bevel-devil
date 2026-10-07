@@ -133,7 +133,7 @@ class World2DesignTest : DesignTestBase() {
                     .waitFor { !it.group('d').visible }.leftUntil { it.player.box.cx < 2.6f }.left(1f) },
             ),
             8 to listOf(
-                { rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.rightUntil { it.player.box.cx > 25.6f }.rightJump(0.35f).landRight().right(1f) },
+                { rightTo(16.6f).rightJump(0.4f).landRight().waitFor { it.circuits['a']?.powered == true }.rightUntil { it.player.box.cx > 24.7f }.rightJump(0.4f).landRight().right(1f) },
             ),
             9 to listOf(
                 { waitFor { it.swapped }.leftUntil { World2Rooms.sawAhead(it, 4.4f) }.leftJump(0.35f).landLeft()

@@ -250,7 +250,8 @@ object World2Part1 {
         // 8 — EASTER EGG: RAM memory test (POST counts up, 640K). A breather with one punchline: the floor is memory, and the block you step
         // on fails the test: it goes dark under your feet and is plugged in again a moment later as if nothing had happened (hop the moment
         // you set foot on it). A few steps on, a parity error replays your last half second: whoever ran straight on is put back in the air over
-        // the dead block (wait on the far side until it is plugged in again). The last address leaks, too
+        // the dead block (wait on the far side until it is plugged in again). The last address leaks, too: the two blocks before the door
+        // go dark just as you run up to them, so whoever made it past the parity error runs into the leak (hop it from the edge)
         Level(
             name = T("Memory Test", "Speichertest"),
             intro = T("POST: 640K ought to be enough for anybody.", "POST: 640K sollten für jeden reichen."),
@@ -258,12 +259,12 @@ object World2Part1 {
             traps = listOf(
                 trap(PastX(16.4f), Power('a', false), say("RAM check: 3 of 4 blocks OK. Yours is number 4.", "RAM-Check: 3 von 4 Blöcken OK. Deiner ist Nummer 4."), delay = 0.12f),
                 trap(PastX(16.4f), Power('a', true), say("Block 4 reseated. Memory test passed.", "Block 4 neu gesteckt. Speichertest bestanden."), delay = 1.6f),
-                trap(PastX(24f), Power('b', false), say("Memory leak detected at the last address.", "Speicherleck an der letzten Adresse."), delay = 0.1f),
+                trap(PastX(24.6f), Power('b', false), say("Memory leak detected at the last address. Right in front of you.", "Speicherleck an der letzten Adresse. Direkt vor dir.")),
                 trap(PastX(23.3f), Play(Card.UNDO), Undo(0.6f), say("Parity error. Replaying the last half second. Where were you, again?", "Paritätsfehler. Die letzte halbe Sekunde nochmal. Wo warst du gleich?")),
             ),
         ) {
             border()
-            fill(0..15, 15..17); fill(21..26, 15..17); fill(28..31, 15..17); fill(16..20, 15..17, 'a'); fill(27..27, 15..17, 'b')
+            fill(0..15, 15..17); fill(21..25, 15..17); fill(28..31, 15..17); fill(16..20, 15..17, 'a'); fill(26..27, 15..17, 'b')
             spawn(); door(30); bits(8)
         },
 
