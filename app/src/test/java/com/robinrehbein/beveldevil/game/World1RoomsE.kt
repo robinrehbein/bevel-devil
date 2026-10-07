@@ -25,16 +25,19 @@ object World1RoomsE {
     }
 
     val solutions: Map<Int, List<Solution>> = mapOf(
+        // 48: hop the steps, let the stalactite fall, let the rope come down and go up again, run under it to the switch (the door leaves
+        // through the breach), let the spike fall, through the wall into the second room, let a spike fall, the rope, the fence, the last spike, the door;
+        // encore: the same, but hop the second switch, and the door waits behind a second fence
         48 to listOf<Solution>(
             { hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
-                .waitFor { it.ropeUp(14f, 0.9f) }.rightUntil { it.pads[0].down }.right(0.6f)
-                .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f).right(1.5f)
-                .rightTo(37.5f).waitFor { it.ropeUp(41f, 0.9f) }.rightTo(45.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(51.5f)
-                .waitFor { it.group('W').oy >= 11.5f }.rightTo(61.0f).right(2f) },
+                .waitFor { it.ropeUp(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f)
+                .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f)
+                .rightTo(roomX(1, 3.2f)).waitFor { it.group('U').oy >= 11.5f }.rightTo(38.5f).waitFor { it.ropeUp(41f, 0f, from = 0.643f, to = 0.843f) }.rightTo(45.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(48.6f)
+                .waitFor { it.group('W').oy >= 11.5f }.rightTo(51.0f).waitFor { !it.door.moving }.rightTo(53.0f).right(2f) },
             { hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
-                .waitFor { it.ropeUp(14f, 0.9f) }.rightUntil { it.pads[0].down }.right(0.6f)
-                .waitFor { it.group('V').oy >= 11.5f }.rightTo(22.2f).rightJump(0.45f).landRight().rightTo(28.6f).right(1.5f)
-                .rightTo(37.5f).waitFor { it.ropeUp(40f, 0.9f) }.rightTo(44.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(49.2f)
+                .waitFor { it.ropeUp(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f)
+                .waitFor { it.group('V').oy >= 11.5f }.rightTo(22.2f).rightJump(0.45f).landRight().rightTo(28.6f)
+                .rightTo(roomX(1, 3.2f)).waitFor { it.group('U').oy >= 11.5f }.rightTo(37.5f).waitFor { it.ropeUp(40f, 0f, from = 0.643f, to = 0.843f) }.rightTo(44.0f).waitFor { it.darkFor('B') > 1.1f }.rightTo(49.2f)
                 .waitFor { it.group('W').oy >= 11.5f }.rightTo(55.0f).waitFor { it.darkFor('C') > 1.1f }.rightTo(61.0f).right(2f) },
         ),
         47 to listOf<Solution>(
@@ -46,9 +49,8 @@ object World1RoomsE {
                 .rightTo(23.2f).waitFor { it.group('h').oy <= -1.2f }.rightTo(25.0f).right(2f) },
         ),
         46 to listOf<Solution>(
-            { rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.darkFor('A') > 1.1f }
-                .leftUntil { w -> w.saws.any { it.path == null && it.x < w.player.box.cx && w.player.box.cx - it.x in 0f..5.7f } }
-                .leftJump(0.5f).landLeft().leftTo(14.5f).waitFor { it.ropeUp(11f, 0.9f, from = 0.0f, to = 0.2f) }.leftTo(7.0f).waitFor { it.darkFor('B') > 1.1f }.left(5f) },
+            { rightUntil { it.pads[0].down }.leftTo(29.6f).waitFor { it.darkFor('A') > 1.1f }
+                .hopL(29.5f, 0.5f).leftTo(14.5f).waitFor { it.darkFor('C') > 1.1f }.leftTo(7.0f).waitFor { it.darkFor('B') > 1.1f }.left(5f) },
             { rightTo(22.2f).rightJump(0.45f).landRight().rightJump(0.45f).landRight().rightUntil { it.pads[0].down }.right(0.5f)
                 .waitFor { it.darkFor('A') > 1.1f }.leftTo(14.5f).waitFor { it.darkFor('C') > 1.1f }.leftTo(7.0f).waitFor { it.darkFor('B') > 1.1f }.left(5f) },
         ),
@@ -63,7 +65,7 @@ object World1RoomsE {
                 .rightTo(25.2f).rightJump(0.5f).landRight().rightJump(0.45f).landRight().rightJump(0.45f).landRight().right(2f) },
         ),
         43 to listOf<Solution>(
-            { rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f).waitFor { it.ropeUp(18f, 0.2f, 0.3f) }
+            { rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f).waitFor { it.ropeUp(18f, 0.42f, 0.3f, from = 0.643f, to = 0.843f) }
                 .rightTo(25.5f).rightUntil(4f) { it.player.box.b < 9.5f }.right(3f) },
         ),
         41 to listOf<Solution>(

@@ -388,6 +388,10 @@ class World1Test {
         val run = b(33).also(World1DesignTest.SOLUTIONS.getValue(33)[0]).also { it.expect(WorldState.WON) }
         assertEquals(1, run.world.room)
         assertTrue("the door slipped into the second room", run.world.door.box.cx > 32f)
+        val pressed = b(48).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+            .waitFor { it.ropeUpE(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f)
+        assertEquals(0, pressed.world.room)
+        assertTrue("the door left before it was reached", pressed.world.door.box.cx > 32f)
     }
 
     /** 34: the wall is closed until you pause for real; the button on screen dodges; the floor behind the wall is gone. */
@@ -404,10 +408,10 @@ class World1Test {
     @Test fun level35ComingDownLateIsUploaded() = ledge35().leftTo(25.6f).left(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
 
     /** 36: the rope stops the runner, and so does the first piece of the frame when you run on under it instead of waiting for it. */
-    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+    private fun climbed36() = b(36).rightTo(4.2f).waitFor { it.ropeUpE(7f, 0f, from = 0.643f, to = 0.843f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
         .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight()
     @Test fun level36RunningStraightOnMeetsTheRope() = b(36).right(3f).expect(WorldState.DEAD)
-    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.right(3f).expect(WorldState.DEAD)
+    @Test fun level36RunningOnUnderTheFirstPieceIsFatal() = b(36).rightTo(4.2f).waitFor { it.ropeUpE(7f, 0f, from = 0.643f, to = 0.843f) }.right(3f).expect(WorldState.DEAD)
     @Test fun level36TheFirstPieceIsTheStepUpToTheLedge() {
         val up = climbed36()
         up.expect(WorldState.PLAYING)
@@ -459,7 +463,7 @@ class World1Test {
 
     /** 43: the wall behind the pad, then the lift: waiting at its foot is being run over, staying on it is riding into the spikes. */
     private fun toTheLift43() = b(43).rightTo(4.4f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(9.5f).rightUntil { it.pads[0].down }.rightTo(13.5f)
-        .waitFor { it.ropeUpE(18f, 0.2f, 0.3f) }
+        .waitFor { it.ropeUpE(18f, 0.42f, 0.3f, from = 0.643f, to = 0.843f) }
     @Test fun level43WaitingAtTheFootOfTheLiftIsBeingRunOver() = toTheLift43().rightTo(23.5f).wait(3f).expect(WorldState.DEAD)
     @Test fun level43StayingOnTheLiftRidesIntoTheSpikes() = toTheLift43().rightTo(25.5f).wait(4f).expect(WorldState.DEAD)
     @Test fun level44() = World1DesignTest.play(44)
@@ -475,11 +479,15 @@ class World1Test {
 
     /** 41: the wall in front of the aerial is too high: running on ends at its foot, under the last stalactites. */
     @Test fun level41TheWallStopsTheRunner() = b(41).right(6f).also { assertTrue("x=${it.world.player.box.cx}", it.world.player.box.cx < 20.5f) }.expect(WorldState.DEAD)
-    /** 48: the door is not the end: the wall breaks open and the door slips into the second room. */
+    /** 48: the switch is not only the key: it breaks the wall open, and the door slips into the second room before it is reached. */
     @Test fun level48TheDoorWasNeverTheEnd() {
         val run = b(48).also(World1DesignTest.SOLUTIONS.getValue(48)[0]).also { it.expect(WorldState.WON) }
         assertEquals(1, run.world.room)
         assertTrue("the door slipped into the second room", run.world.door.box.cx > 32f)
+        val pressed = b(48).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
+            .waitFor { it.ropeUpE(14f, 0f, from = 0.643f, to = 0.843f) }.rightUntil { it.pads[0].down }.right(0.6f).waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f)
+        assertEquals(0, pressed.world.room)
+        assertTrue("the door left before it was reached", pressed.world.door.box.cx > 32f)
     }
     // ---------- Acts 2 and 3: chains around the mechanics ----------
 

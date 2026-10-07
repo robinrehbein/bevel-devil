@@ -249,7 +249,7 @@ class World1DeckTest {
     @Test fun level48EncoreTheOldRunFails() = assertTrue(solved(48, 1, 0).world.state != WorldState.WON)
     @Test fun level48EncoreTheSecondSwitchClosesTheWallAgain() {
         val run = b(48, 1).hopR(2.5f, 0.5f).hopR(4.7f, 0.5f).rightTo(8.4f).waitFor { it.group('S').oy >= 7.5f }.rightTo(11.8f)
-            .waitFor { World1RoomsE.run { it.ropeUp(14f, 0.9f) } }.rightUntil { it.pads[0].down }.right(0.6f)
+            .waitFor { World1RoomsE.run { it.ropeUp(14f, 0f, from = 0.643f, to = 0.843f) } }.rightUntil { it.pads[0].down }.right(0.6f)
             .waitFor { it.group('V').oy >= 11.5f }.rightTo(28.6f).right(2f)
         assertTrue("the wall is shut again, x=${run.world.player.box.cx}", run.world.player.box.cx < 26f)
         run.expect(WorldState.PLAYING)

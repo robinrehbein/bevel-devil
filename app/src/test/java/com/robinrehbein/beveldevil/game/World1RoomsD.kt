@@ -33,10 +33,10 @@ object World1RoomsD {
             { rightTo(15.6f).rightJump(0.5f).landRight().rightTo(19.9f).rightJump(0.5f).landRight().rightTo(23.2f).rightJump(0.5f).landRight()
                 .left(3f) },
         ),
-        // 36: let the rope go up and hop it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
+        // 36: let the rope come down and go up again, run under it, wait for the first piece to land and climb on it and up to the ledge, let the second piece land,
         // hop it; the curator puts you back a second, so hop it again
         36 to listOf<Solution>(
-            { rightTo(4.2f).waitFor { it.ropeUp(7f, 0.6f) }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
+            { rightTo(4.2f).waitFor { World1RoomsE.run { it.ropeUp(7f, 0f, from = 0.643f, to = 0.843f) } }.rightTo(11.5f).waitFor { it.pieceLanded(0, 14f) }
                 .hopR(12.2f, 0.4f).rightTo(15.4f).rightJump(0.5f).landRight().waitFor { it.pieceLanded(1, 11f) }
                 .hopR(24.6f, 0.4f).rightUntil(2f) { it.player.box.cx < 24f }.hopR(24.6f, 0.4f).rightTo(29.6f) },
         ),

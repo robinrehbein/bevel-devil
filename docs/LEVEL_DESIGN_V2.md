@@ -293,14 +293,14 @@ Korrekturen für Rezept v2:
 |4|House Rules|–|U2|Tutorial|Tutorial|
 |5|Obstacle Course|R12|U15|Tutorial|bleibt, Hinweis-Tipp schon da|
 |6|Cozy|–|U7|Tutorial|Tutorial|
-|7|Prefab|–|U1|Falle|Fertigteil-Plattformen sacken unter dir weg, eine nach der anderen|
-|8|Down to Earth|R5|U10|Rätsel|Decke als zweite Ebene, Rückweg über Kopf; der Raum kippt mitten im Sprung (zurücklenken, die Decke dahinter ist gespickt); Revanche: kopfüber ab dem Start, halbwegs kippt er zurück|
+|7|Prefab|–|U1|Falle|Fertigteil-Plattformen sacken unter dir weg, eine nach der anderen; ein Fertigteil kommt vor dem Läufer herunter (kein Warte-Pointe), sein Loch wartet vor der Tür mitten im Obergeschoss|
+|8|Down to Earth|R5|U10|Rätsel|Decke als zweite Ebene, Rückweg über Kopf; der Raum kippt mitten im Sprung (zurücklenken, die Decke dahinter ist gespickt); Revanche: kopfüber ab dem Start, halbwegs kippt er zurück; die Tür hängt ein paar Schritte rechts vom Start an der Decke|
 |9|Potholes|R1|U9|Rätsel|Tür unten rechts hinter einer Kupferwand bis zur Decke, Schalter unter dem Deck links; Schlagloch im Deck (eine Platte aus der Decke trifft, wer davor stehen bleibt), die Tasten tauschen nach der Landung dahinter, unten mit vertauschten Händen zurück nach links zum Schalter, der sie zurücktauscht, dann derselbe Weg mit den alten Händen zur Tür (rechts, links, rechts)|
-|10|Homeward|–|U3|Falle|Betonwand im Nacken (Chase), Treppe, Stachelbett oben; die Deko-Tür entfällt (die Karte kennt nur eine Tür)|
-|11|The Creek|–|U1|Falle|Steine sinken weg, sobald du drauf landest|
-|12|Return Trip ★|–|U9|★|gespiegelt, eine starke Pointe|
+|10|Homeward|–|U3|Falle|Betonwand im Nacken (Chase), Treppe, Stachelbett oben; die Deko-Tür entfällt (die Karte kennt nur eine Tür); Tür mitten im Obergeschoss|
+|11|The Creek|–|U1|Falle|Steine sinken weg, sobald du drauf landest; ein Fisch (PathSaw) springt aus dem Bach, wo du hüpfst, die Tür steht am anderen Ufer|
+|12|Return Trip ★|–|U9|★|gespiegelt, eine starke Pointe; COLLAPSE lässt die Kante der Grube sacken, wenn du kommst; Revanche: der letzte Stachel rutscht dir entgegen|
 |13|Wednesday|R7|U14|Rätsel|der Bluff sind die Stacheln in der Decke (Wackeln), die glatten Deckenteile sind echt; kein `Bluff`/`FakeWin` (Budget 0, Akt 1 ohne Meta)|
-|14|Performance Review|–|U12|Falle|Lift fährt erst richtig, dann falsch|
+|14|Performance Review|–|U12|Falle|Lift fährt erst richtig, dann falsch; der Boden vor der Tür gibt nach (zweiter Killer für den, der die Säge überlebt)|
 |15|Loop|R6|U6|Rätsel|der eine `DoorTo` des Akts: Tür wandert ein Stockwerk hoch (der lange Weg), Stachelblöcke aus der Decke; Revanche: die Tür kommt zurück, der Weg nach unten ist ein Loch|
 |16|Number 16 (Finale)|R1+R5|U7+U18|Finale|Schalter oben, Säge, der Schalter bricht die Wand hinter der Tür auf und die Tür zieht vorab in den zweiten Raum (U18 statt Tür-Flucht), dort Treppe hoch und zurück zur Tür|
 
@@ -345,6 +345,8 @@ Korrekturen für Rezept v2:
 |46|Home Stretch|R1|U15|Rätsel|
 |47|sudo make me a sandwich|R12|U3|Rätsel|
 |48|Exit (Finale)|R1+R5+R7|U14+U18|Finale|
+
+Hinweis Akt 2 und 3 (nach den Rundenregeln L–Q): Die Zeilen bleiben, die Umsetzung hat sich verschoben. Die Türen stehen nicht mehr neben dem Spawn (O), jede Karte zeigt, was sie sagt (M: COLLAPSE in 20/29 nimmt den Boden, HEADBUTT in 47 sitzt auf dem Käse aus der Decke, SPIKE_SEED in 46 lässt vor dem Schalter Stacheln wachsen, ein Laser scannt den Schalter), und jedes Level hat einen zweiten Killer (Q). Gleiche Pointen-Signaturen sind pro Akt gedeckelt (L): die Springseile in 36 und 48 kommen von oben, 43 hat ein eigenes Seil von oben und eine schnellere Säge von vorn, die Scanner in 40 und 46 reichen bis zum Boden. Die Finale enden nicht mehr nach Schema „Tür erreicht, Wand bricht auf“: in **32** flickt sich der Build, während du zur Tür hochkommst, in **48** bricht schon der Schalter die Wand auf, und die Tür läuft dir langsam in den zweiten Raum voraus (Tür in der Raummitte, ein Deckenstachel mehr am Eingang); die Zugabe bleibt beim Schalter-Prinzip mit dem zweiten, falsch verdrahteten Schalter.
 
 Hinweis Block D (33–40, nach dem Umbau): Die Zeilen bleiben, wie sie sind. Ein `FakeWin` mit Klartext-Bildschirm dauert 3,4 s und lässt sich mit der Dichteregel H3 (höchstens 3 s ohne echte Falle, der Bildschirm löst keine Falle aus) nicht vereinbaren; **33** setzt U14 deshalb als „das Ende war eine Lüge“ um (Tür erreicht, die Wand bricht auf: U18, kein `FakeWin`). 38 dreht nur das Bild (`Flip`), 40 tauscht die Steuerung (`Swap`), `Gravity` bleibt unbenutzt. Stachel-Popups gibt es in 33 (Revanche) und 36, ein Laser-Tor in 40, `DoorTo` nur in 35, Blink gar nicht.
 
