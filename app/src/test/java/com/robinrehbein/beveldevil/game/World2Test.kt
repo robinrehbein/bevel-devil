@@ -597,6 +597,8 @@ class World2Test {
     @Test fun level38() { World2DesignTest.play(38) }
     /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
     @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
+    /** On the roof, running on is the mistake: the second stretch drops under you and takes the wormholes with it. */
+    @Test fun level38RunningOnTheRoofFallsIntoTheTrench() = b(38).hopR(12.8f, 0.5f).rightUntil { it.player.box.cy < 9f }.right(3f).expect(WorldState.DEAD)
     @Test fun level39() { World2DesignTest.play(39) }
     @Test fun level40() { World2DesignTest.play(40) }
     /** Ping Pong: the wall that wakes up as you pass the middle comes for whoever stands still. */

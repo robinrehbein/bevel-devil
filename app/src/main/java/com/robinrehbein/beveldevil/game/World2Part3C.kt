@@ -210,18 +210,20 @@ object World2Part3C {
 
         // 38 — Bobby Tables (a puzzle room: R3 the portals, U1 the floor). DROP TABLE floor: the lane has two holes with a wormhole at the bottom of
         // each. The first leads back to the start, the second up to the roof, at the far left end above the start, which is the way on: the door sits at
-        // the other end of the roof, up two steps. The ground between the holes sinks as you cross it, and so do two stretches of the roof (the
-        // second drops the ceiling behind it, too): keep moving. Whoever jumps the second hole meets the users table at the wall
+        // the other end of the roof, up two steps. The ground between the holes sinks as you cross it, and so does the first stretch of the
+        // roof (it drops the ceiling behind it, too): keep moving. The second stretch is the reversal: it drops while you are still on it and
+        // takes the wormholes with it, so whoever runs on falls into the trench for good. Jump it. Whoever jumps the second hole meets the
+        // users table at the wall
         Level(
             name = T("Bobby Tables", "Klein Bobby Tables"),
             intro = T("Welcome, Robert. Good to have you.", "Willkommen, Robert. Schön, dass du da bist."),
             start = listOf(
-                Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 3 to 14, twoWay = false),
-                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 3 to 7, twoWay = false),
+                Portal('1', 14 to 17, 3 to 14, twoWay = false), Portal('2', 15 to 17, 4 to 14, twoWay = false),
+                Portal('3', 21 to 17, 3 to 7, twoWay = false), Portal('4', 22 to 17, 4 to 7, twoWay = false),
             ),
             traps = listOf(
                 trap(Touch('i'), Play(Card.SINKING), Fall('i'), say("DROP TABLE floor; Did you sanitize your inputs?", "DROP TABLE floor; Hast du deine Eingaben bereinigt?"), delay = 0.5f),
-                trap(Touch('j'), Fall('j'), say("DROP TABLE roof;", "DROP TABLE dach;"), delay = 0.45f),
+                trap(Touch('j'), Fall('j'), Power('3', false), Power('4', false), say("DROP TABLE roof; DROP TABLE wormholes;", "DROP TABLE dach; DROP TABLE wurmloecher;"), delay = 0.3f),
                 trap(Touch('k'), Fall('k'), say("DROP TABLE students;", "DROP TABLE schueler;"), delay = 0.45f),
                 trap(Touch('k'), Fall('c'), delay = 0.6f),
                 trap(Zone(23.0f, 12.5f, 24f, 14.6f), Fall('d'), say("DROP TABLE users; You were in it.", "DROP TABLE users; Du warst drin."), delay = 0.3f),
