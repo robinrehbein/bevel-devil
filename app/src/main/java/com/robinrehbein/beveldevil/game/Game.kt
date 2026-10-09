@@ -234,6 +234,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private var lastQuip: String? = null
     /** The bubble shows a level's own [Event.Say] line, which a quip must not cover. */
     private var bubbleIsTrap = false
+    /** A rare or legendary card just found for the first time: Mephi shows it off once the bubble is free. */
+    private var rareFind: Card? = null
     val totalDeaths get() = progress.totalDeaths
 
     val soundOn get() = progress.sound
@@ -393,6 +395,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (rematchAge < REMATCH_FREEZE) return
         w.step(dt, input)
         handleEvents(w)
+        if (w.state == WorldState.PLAYING && !(bubbleIsTrap && bubble != null)) rareFind?.let { showOff(it) }
         // the picture starts to roll under a card in the air: it gets out of the middle, the roll stays
         if (card != null && w.rolling && !cardEdge && w.state == WorldState.PLAYING) settleCard(w, glide = true)
         if (survivalCheck >= 0f) {
@@ -450,7 +453,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 settleCard(w, glide = false)
                 heat = 1f
                 glitch = GLITCH_TIME
-                if (!e.bluff) progress.findCard(e.card)
+                if (!e.bluff) find(e.card)
                 audio.play(Sound.CARD)
                 setMood(Mood.LAUGH, 1.2f)
                 survivalCheck = 2.2f
@@ -469,8 +472,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 audio.play(Sound.DIE)
                 audio.play(Sound.LAUGH)
                 setMood(Mood.LAUGH, 1.6f)
-                val quip = if (bubbleIsTrap && bubble != null) null else quip()
-                if (quip != null) say(quip, QUIP_LIFE) else say(taunt(), 1.8f)
+                val rare = rareFind
+                val quip = if (rare != null || (bubbleIsTrap && bubble != null)) null else quip()
+                // a card just found for the album is worth more than any taunt
+                if (rare != null) showOff(rare) else if (quip != null) say(quip, QUIP_LIFE) else say(taunt(), 1.8f)
                 hapticPulse = true
                 deadTimer = 0f
             }
@@ -583,6 +588,21 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         return TAUNTS[i].toString().replace("%d", deaths.toString())
     }
 
+    /** Puts [c] into the album; the first rare or legendary one is a moment Mephi won't let pass ([showOff]). */
+    private fun find(c: Card) {
+        if (c.rarity != Rarity.COMMON && !progress.cardFound(c)) rareFind = c
+        progress.findCard(c)
+    }
+
+    /** Mephi brags about the rare card [c] just found: a line of its own and a longer laugh. Once per card, ever. */
+    private fun showOff(c: Card) {
+        rareFind = null
+        val lines = if (c.rarity == Rarity.LEGENDARY) LEGENDARY_LINES else RARE_LINES
+        say(lines[rng.nextInt(lines.size)].toString().replace("%s", c.title.toString()), 2f)
+        setMood(Mood.LAUGH, 2.2f)
+        audio.play(Sound.LAUGH)
+    }
+
     private fun countDeath() {
         deaths++
         roundDeaths++
@@ -622,6 +642,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         deaths = if (round > 0) cpDeaths else 0
         rematchAge = if (round > 0) 0f else 99f
         hinted = false
+        rareFind = null
         // deaths of a round reached before (checkpoint) count for the level, not toward this session's hint
         roundDeaths = 0
         world = World(stage)
@@ -646,6 +667,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     private fun restartAttempt() {
         world = World(stage, world?.trail)
+        rareFind = null
         deadTimer = 0f
         card = null
         survivalCheck = -1f
@@ -687,6 +709,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         round++
         if (sandbox == null) progress.saveCheckpoint(levelIndex, round, deaths)
         hinted = false
+        rareFind = null
         roundDeaths = 0
         releaseInput()
         world = World(stage)
@@ -956,6 +979,16 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             T("Undo? Not in this system.", "Rückgängig? Gibt's hier nicht."),
             T("Permission denied.", "Zugriff verweigert."),
             T("Did you save? Oh. Right.", "Hast du gespeichert? Ach nein."),
+        )
+        /** Mephi when a rare card goes into the album for the first time; %s is the card. */
+        val RARE_LINES = listOf(
+            T("%s! Rare. Frame it.", "%s! Selten. Rahm sie ein."),
+            T("Rare card: %s. Lucky you. Not.", "Seltene Karte: %s. Glückwunsch. Nicht."),
+        )
+        /** The same for a legendary card. [Card.BLUFF] has its own moment ([BLUFF_LINES]) and none of these. */
+        val LEGENDARY_LINES = listOf(
+            T("%s. Legendary. Feel honored.", "%s. Legendär. Fühl dich geehrt."),
+            T("Legendary pull: %s. Mint, unlike you.", "Legendär: %s. Druckfrisch, anders als du."),
         )
         val WIN_LINES = listOf(
             T("Access granted. Ugh.", "Zugriff gewährt. Widerwillig."),
