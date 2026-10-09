@@ -452,7 +452,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 // fell for it: the bluff shows at once, Mephi's laugh says the rest
                 if (card != null && cardBluff && cardAge < BLUFF_FLIP) { cardAge = BLUFF_FLIP; progress.findCard(Card.BLUFF) }
                 countDeath()
-                // the card Mephi played last, not the hazard that hit: the album says "dead after it", not "killed by"
+                // the card Mephi played last, not the hazard that hit: the album says "died after", not "killed by"
                 w.lastCard?.let { progress.addCardDeath(it) }
                 survivalCheck = -1f
                 // a fall out of the room still shatters where it can be seen: on the edge it left through

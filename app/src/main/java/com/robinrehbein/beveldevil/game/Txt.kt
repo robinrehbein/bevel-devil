@@ -25,7 +25,7 @@ object Txt {
     val bluff = T("BLUFF", "BLUFF")
     val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
     /** A card's death count: deaths after Mephi played it, not proof the card did it (a bluff does nothing and still collects). */
-    val caught = T("%d× dead after it", "%d× danach tot")
+    val caught = T("%d× died after", "%d× danach tot")
     val soulsSacrificed = T("SOULS SACRIFICED", "SEELEN GEOPFERT")
     val tapCard = T("Tap a card to inspect it.", "Tippe eine Karte an.")
     val endTitle = T("PROCESS KILLED.", "PROZESS BEENDET.")
