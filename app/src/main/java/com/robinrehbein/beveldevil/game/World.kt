@@ -724,7 +724,7 @@ class World(val level: Level, private val past: Trail? = null) {
             }
             is Action.Swap -> swapped = a.on
             is Action.Saw -> saws += Saw(a.x, a.y, a.vx, a.vy, a.r)
-            is Action.Say -> events += Event.Say(a.text)
+            is Action.Say -> events += Event.Say(a.otherwise?.takeIf { a.unless?.let(::triggered) == true } ?: a.text)
             is Action.Shake -> events += Event.Shake(a.amount)
             is Action.Bluff -> {
                 lastCard = Card.BLUFF

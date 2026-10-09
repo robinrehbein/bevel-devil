@@ -205,6 +205,29 @@ class World1Test {
         pushed.expect(WorldState.PLAYING)
         assertTrue(pushed.world.swapped && pushed.world.player.box.cx < 16f)
     }
+    private fun World.said() = events.filterIsInstance<Event.Say>().map { it.text.en }
+    /** Whoever drops through the pothole to the switch first still gets the swap behind the pit, and Mephi owns up to it. */
+    @Test fun level09TheSwapAfterTheShortcutIsARepairThatExpired() {
+        val bot = b(9).rightTo(11.5f).rightUntil { !it.player.grounded }.leftUntil { it.player.grounded }
+            .leftUntil { it.pads[0].presses >= 1 }
+        assertFalse("keys fixed before the landing", bot.world.swapped)
+        bot.hopR(10.4f, 0.5f).wait(0.2f).expect(WorldState.PLAYING)
+        assertTrue("the swap still comes", bot.world.swapped)
+        val said = bot.world.said()
+        assertTrue(said.toString(), "Repair expired. Warranty void." in said && "Left is the new right." !in said)
+    }
+    /** The say lint (H19, locked kit) reads [Action.Say.text] only: the line for the late swap is checked against act 1 here. */
+    @Test fun level09TheExpiredRepairIsSaidNowhereElseInTheAct() {
+        val late = World1.levels[8].traps.flatMap { it.actions }.filterIsInstance<Action.Say>().mapNotNull { it.otherwise }.single()
+        val elsewhere = (World1.levels.take(16) - World1.levels[8]).flatMap { DesignRules.lines(it) }.map { it.text }
+        assertTrue(late.en, elsewhere.none { DesignRules.sayKey(it.en) == DesignRules.sayKey(late.en) })
+        assertTrue(late.de, elsewhere.none { DesignRules.sayKey(it.de) == DesignRules.sayKey(late.de) })
+    }
+    /** The intended route lands behind the pothole before the switch: the plain swap, no excuses. */
+    @Test fun level09TheIntendedRouteHearsNoExpiredRepair() {
+        val said = b(9).hopR(11.2f, 0.5f).right(1f).world.said()
+        assertTrue(said.toString(), "Left is the new right." in said && "Repair expired. Warranty void." !in said)
+    }
 
     /** 10: the wall is slower than you, but it catches whoever stops at the stairs; the spike bed is where the hop lands. */
     @Test fun level10StoppingAtTheStairsIsBeingCaught() = b(10).leftTo(6.6f).wait(6f).expect(WorldState.DEAD)
