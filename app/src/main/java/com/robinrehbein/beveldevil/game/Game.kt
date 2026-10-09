@@ -183,6 +183,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private var cardMoveAge = CARD_GLIDE
     /** What the card keeps clear of, in tiles of the room in view. */
     private val cardAreas = ArrayList<Area>()
+    /** The card keeps to a high side slot while the picture rolls ([World.rolling]), see [CardSlot.choose]. */
+    private var cardEdge = false
 
     /** Side (-1..1) and lift (tiles) of the card right now: its slot, or on the way there. */
     fun cardSlot(): Pair<Float, Float> {
@@ -194,7 +196,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     /** Picks the card's slot; with [glide] it slides there from where it is now, else it flies straight to it. */
     private fun settleCard(w: World, glide: Boolean) {
-        val s = CardSlot.choose(Area.of(w.player.box).shift(-w.camX, 0f), cardAreas)
+        cardEdge = w.rolling
+        val vx = w.player.vx
+        val heading = if (vx > 0.5f) 1 else if (vx < -0.5f) -1 else 0
+        val s = CardSlot.choose(Area.of(w.player.box).shift(-w.camX, 0f), cardAreas, cardEdge, heading)
         cardFrom = if (glide) cardSlot() else s.side.toFloat() to s.lift
         cardMoveAge = if (glide) 0f else CARD_GLIDE
         cardSide = s.side
@@ -388,6 +393,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (rematchAge < REMATCH_FREEZE) return
         w.step(dt, input)
         handleEvents(w)
+        // the picture starts to roll under a card in the air: it gets out of the middle, the roll stays
+        if (card != null && w.rolling && !cardEdge && w.state == WorldState.PLAYING) settleCard(w, glide = true)
         if (survivalCheck >= 0f) {
             survivalCheck -= dt
             if (survivalCheck < 0f && w.state == WorldState.PLAYING) setMood(Mood.SULK, 1.6f)

@@ -46,9 +46,17 @@ object CardSlot {
      * the old rule: the center, unless the player stands under it, then the side away from them. With traps it is the
      * first slot that covers neither (center, away from the player, toward the player; then the same higher up, then
      * lower down), or else the one that covers least.
+     *
+     * With [edge] (the picture is rolling, so the player can show up at any height) the card keeps to a high side
+     * slot: behind a player running in direction [heading] (-1 left, 1 right, 0 standing), else away from them.
      */
-    fun choose(player: Area, traps: List<Area> = emptyList()): Slot {
+    fun choose(player: Area, traps: List<Area> = emptyList(), edge: Boolean = false, heading: Int = 0): Slot {
         val away = if ((player.x0 + player.x1) / 2 > CX) -1 else 1
+        if (edge) {
+            val first = if (heading != 0) -heading else away
+            val slots = listOf(Slot(first, HIGH), Slot(-first, HIGH))
+            return slots.firstOrNull { cost(it, player, traps) == 0f } ?: slots.minBy { cost(it, player, traps) }
+        }
         if (traps.isEmpty()) return Slot(if (hits(player, Slot(0, 0f))) away else 0, 0f)
         val slots = listOf(0f, HIGH, LOW).flatMap { lift -> listOf(0, away, -away).map { Slot(it, lift) } }
         return slots.firstOrNull { cost(it, player, traps) == 0f } ?: slots.minBy { cost(it, player, traps) }

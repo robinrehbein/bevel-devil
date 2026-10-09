@@ -533,10 +533,25 @@ class World(val level: Level, private val past: Trail? = null) {
         return min(on, off)
     }
 
-    /** How far the rolling picture is shifted up, as a fraction 0..1 of its height. */
+    /** The picture is rolling ([Action.Roll]) right now. */
+    val rolling get() = time >= rollFrom && time < rollUntil
+
+    /**
+     * How far the rolling picture is shifted up, as a fraction 0..1 of its height. A death catches the hold: the
+     * picture settles on the nearest frame within [Twists.ROLL_SETTLE], so the player sees where they died.
+     */
     fun viewRoll(): Float {
-        if (time < rollFrom || time >= rollUntil) return 0f
-        val f = (time - rollFrom) / (rollUntil - rollFrom)
+        if (state != WorldState.DEAD) return rollAt(time)
+        val v = rollAt(stateTime)
+        val k = ((time - stateTime) / Twists.ROLL_SETTLE).coerceIn(0f, 1f)
+        if (k >= 1f) return 0f
+        val r = v + (if (v < 0.5f) -v else 1f - v) * k * k * (3f - 2f * k)
+        return r - floor(r)
+    }
+
+    private fun rollAt(t: Float): Float {
+        if (t < rollFrom || t >= rollUntil) return 0f
+        val f = (t - rollFrom) / (rollUntil - rollFrom)
         val e = f * f * (3f - 2f * f) * rollLaps
         return e - floor(e)
     }
