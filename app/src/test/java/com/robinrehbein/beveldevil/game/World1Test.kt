@@ -215,6 +215,8 @@ class World1Test {
         assertTrue("the swap still comes", bot.world.swapped)
         val said = bot.world.said()
         assertTrue(said.toString(), "Repair expired. Warranty void." in said && "Left is the new right." !in said)
+        // the door stays unlocked: the way there is the pothole on the ground with swapped hands
+        bot.hopS(17.2f, 0.5f).leftKeyRightTo(30f).expect(WorldState.WON)
     }
     /** The say lint (H19, locked kit) reads [Action.Say.text] only: the line for the late swap is checked against act 1 here. */
     @Test fun level09TheExpiredRepairIsSaidNowhereElseInTheAct() {
