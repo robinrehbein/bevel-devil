@@ -98,7 +98,15 @@ sealed interface Action {
     data class Gravity(val flipped: Boolean) : Action
     data class Swap(val on: Boolean) : Action
     data class Saw(val x: Float, val y: Float, val vx: Float, val vy: Float, val r: Float = 0.6f) : Action
-    data class Say(val text: T) : Action
+    /**
+     * Mephi says [text]; if [unless] already holds when the trap's actions run (after its delay, not when it triggers),
+     * he says [otherwise] instead. For a trap the player can reach in another order than intended: the trap stays the
+     * same, only the line owns up to it.
+     *
+     *     trap(Landed(14.5f, 18.5f), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."),
+     *         unless = Pressed('1'), otherwise = T("Repair expired. Warranty void.", "Reparatur abgelaufen. Garantie erloschen.")))
+     */
+    data class Say(val text: T, val unless: Trigger? = null, val otherwise: T? = null) : Action
     data class Shake(val amount: Float) : Action
     /** Mephi plays a trap card: it flies into view, and dying before the attempt ends collects it. */
     data class Play(val card: Card) : Action
