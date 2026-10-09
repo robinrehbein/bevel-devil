@@ -634,7 +634,7 @@ class World(val level: Level, private val past: Trail? = null) {
             is Trigger.Airborne -> ticks > 1 && !player.grounded && b.cx in t.x0..t.x1
             is Trigger.Landed -> ticks - landTick <= 1 && landX in t.x0..t.x1
             is Trigger.After -> time >= t.seconds
-            is Trigger.Idle -> idle >= t.seconds
+            is Trigger.Idle -> idle >= t.seconds && b.cx > t.x0 && b.cx < t.x1
             Trigger.Shaken -> shaken
             is Trigger.Resumed -> (t.live?.let { liveResumes[it] ?: 0 } ?: resumes) >= t.times
             Trigger.AtDoor -> false
