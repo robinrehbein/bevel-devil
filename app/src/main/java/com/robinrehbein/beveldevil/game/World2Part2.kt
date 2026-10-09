@@ -515,7 +515,7 @@ object World2Part2 {
 
         // 31 — detention, a puzzle room (R8 the timing plus the way, U3 the wall closes in): you start up on the top deck and the class wall, set with
         // spikes, slides in behind you from the left, so you cannot wait where you like. Over a trench of spikes three stones blink one after the
-        // other like a wave; you hop from stone to stone as each one comes up, at the class wall's own pace. At the end of the deck you drop down
+        // other like a wave; you hop from stone to stone as each one comes up, while the class wall keeps its one steady pace. At the end of the deck you drop down
         // onto the lane, where the second wall stands against the right wall, and run back left to the door with it behind you; halfway along the
         // lane the second wall speeds up (detention is over, go home)
         Level(
