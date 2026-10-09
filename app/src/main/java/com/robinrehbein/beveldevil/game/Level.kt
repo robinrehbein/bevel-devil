@@ -52,8 +52,14 @@ sealed interface Trigger {
     data class Landed(val x0: Float, val x1: Float) : Trigger
     /** Seconds since the attempt started. */
     data class After(val seconds: Float) : Trigger
-    /** No left/right/jump input for [seconds] in a row. */
-    data class Idle(val seconds: Float) : Trigger
+    /**
+     * No left/right/jump input for [seconds] in a row, with the player center between [x0] and [x1] (anywhere by default).
+     * The range arms it only where an earlier trap has set the stage:
+     *
+     *     trap(BeforeX(19.6f), Chase('a', speed = 6f))
+     *     trap(Idle(0.6f, x1 = 19.6f), Fall('a'))   // drops only once it stalks you, never on the stairs before
+     */
+    data class Idle(val seconds: Float, val x0: Float = Float.NEGATIVE_INFINITY, val x1: Float = Float.POSITIVE_INFINITY) : Trigger
     /** The player shook the phone (or pressed the shake button). */
     data object Shaken : Trigger
     /** The player reaches the door. Fires instead of the win (its delay is ignored); pair it with [Action.FakeWin]. */

@@ -126,6 +126,23 @@ class World2DeckTest {
     @Test fun l07r2() { World2DesignTest.play(7, round = 2) }
     /** Sky Blue, round 2: the ceiling stalks you over the plateau; waiting under it, where round 1 waited, is the end. */
     @Test fun l07r2TheStalkerCeilingDropsOnThePlateau() = b(7, 2).leftTo(29.0f).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().wait(1.5f).expect(WorldState.DEAD)
+    /** Waiting on the stairs before it stalks you leaves the ceiling up: it never lands on the summit out of your reach. */
+    @Test fun l07r2WaitingBeforeTheStalkerLeavesTheCeilingUp() {
+        val bot = b(7, 2).wait(2.2f).leftJump(0.4f).landLeft().wait(1.5f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("the ceiling is still up", bot.world.group('a').oy < 0.1f)
+    }
+    /** Backing off the summit while it stalks you is no softlock: the ceiling waits up there, and the way back up is open. */
+    @Test fun l07r2RetreatingOffTheSummitIsNoSoftlock() {
+        val bot = b(7, 2).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+            .rightUntil { it.player.box.cx > 20.6f && it.player.grounded }.wait(2f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("the ceiling is still up", bot.world.group('a').oy < 0.1f)
+        bot.leftJump(0.4f).landLeft()
+        assertTrue("back on the summit", bot.world.player.box.b < 5.1f)
+        bot.leftUntil { it.player.box.cx < 13f && it.player.grounded }.expect(WorldState.PLAYING)
+        assertTrue("over the summit and down the far side", bot.world.player.box.b > 8.9f)
+    }
     // ---------- Act 2: Traffic ----------
 
     /** Firewall, round 2: the beam over the stairs stays on, the pad is the rack's call button, the way is over the top. */
