@@ -12,7 +12,7 @@ The game
 • Nerd humor from segfault to sudo that works even without a computer science degree
 
 Devil cards
-Every trap is a card that flies out of Mephi's golden frame. Fall for it and the card goes into your album, along with a counter of how often it has caught you. From Collapse and Spike Seed to Shy Door and the Grand Finale: collect them all.
+Every trap is a card that flies out of Mephi's golden frame. Fall for it and the card goes into your album, along with a counter of how often you died right after it. From Collapse and Spike Seed to Shy Door and the Grand Finale: collect them all.
 
 Three worlds, one way down
 • Hell's Cellar: gold masonry, embers and the classics among traps
