@@ -14,6 +14,10 @@ object Txt {
     val restart = T("RESTART", "NEU STARTEN")
     val levels = T("LEVELS", "LEVELS")
     val cleared = T("CLEARED!", "GESCHAFFT!")
+    /** The clear screen after a skip; [skippedMark] marks such a level in the select. */
+    val skippedTitle = T("SKIPPED.", "ÜBERSPRUNGEN.")
+    val skippedMark = T("skip", "übspr.")
+    val skippedQuip = T("Giving up suits you.", "Aufgeben steht dir.")
     val next = T("NEXT", "WEITER")
     /** Banner when Mephi deals another round in the same room. */
     val rematch = T("REMATCH!", "REVANCHE!")
