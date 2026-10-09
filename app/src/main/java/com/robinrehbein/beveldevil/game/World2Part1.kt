@@ -212,7 +212,9 @@ object World2Part1 {
         // climbing); over the hill the next one lands on the plateau and becomes a step, and the last (in the low tunnel to the door) is a ghost
         // made of paper: it appears where you come down, falls, and is gone again a moment later. Dashing under the plateau piece or the paper is
         // the end, so wait for them. Round 2: the first piece stalks you and drops on whoever stops under it (only once it stalks: waiting on
-        // the stairs before, or after a retreat off the summit, leaves it in the ceiling, so it never lands on the plateau out of your reach)
+        // the stairs before, or after a retreat off the summit, leaves it in the ceiling, so it never lands on the plateau out of your reach).
+        // It stalks no further right than half a tile short of the summit's last column: whoever bolts off the edge as it drops can climb back up
+        // (it still covers every spot on the summit where it may drop)
         Level(
             name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
@@ -229,7 +231,7 @@ object World2Part1 {
                     T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
                     hint = T("The ceiling follows you now. Do not wait where you waited. Two paper pieces at the end.", "Die Decke folgt dir jetzt. Warte nicht, wo du gewartet hast. Zwei Papierstücke am Ende."),
                     traps = listOf(
-                        trap(BeforeX(19.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 4f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(BeforeX(19.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 2.5f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
                         trap(Idle(0.6f, x1 = 19.6f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.1f),
                         trap(Landed(24f, 26f), Fall('s'), say("Same glitch. Still do not stop.", "Gleicher Fehler. Immer noch nicht anhalten."), delay = 0.6f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Paper again. Two sheets this time.", "Wieder Papier. Diesmal zwei Blatt."), delay = 0.25f),

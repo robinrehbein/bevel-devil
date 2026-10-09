@@ -143,6 +143,20 @@ class World2DeckTest {
         bot.leftUntil { it.player.box.cx < 13f && it.player.grounded }.expect(WorldState.PLAYING)
         assertTrue("over the summit and down the far side", bot.world.player.box.b > 8.9f)
     }
+    /** Bolting off the summit as the stalking ceiling drops is no softlock either: it lands short of the last column, the way back up is open. */
+    @Test fun l07r2BoltingAsTheCeilingDropsIsNoSoftlock() {
+        val bot = b(7, 2).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+            .wait(0.6f).rightUntil(3f) { it.player.box.cx > 20.6f && it.player.grounded }.wait(1.5f)
+        bot.expect(WorldState.PLAYING)
+        assertTrue("the ceiling came down", bot.world.group('a').oy > 1.9f)
+        bot.leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+            .leftUntil(3f) { it.player.box.cx < 13f && it.player.grounded }.expect(WorldState.PLAYING)
+        assertTrue("over the summit and down the far side", bot.world.player.box.b > 8.9f)
+    }
+    /** Dashing back onto the summit and stopping there is the end: the ceiling catches up before it drops. */
+    @Test fun l07r2StoppingAfterADashBackIsTheEnd() = b(7, 2).leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft().leftJump(0.4f).landLeft()
+        .rightUntil(3f) { it.player.box.cx > 20.6f && it.player.grounded }.wait(1f).leftJump(0.4f).landLeft()
+        .leftUntil(2f) { it.player.box.cx < 19.5f }.wait(1.5f).expect(WorldState.DEAD)
     // ---------- Act 2: Traffic ----------
 
     /** Firewall, round 2: the beam over the stairs stays on, the pad is the rack's call button, the way is over the top. */
