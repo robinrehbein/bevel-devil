@@ -38,7 +38,7 @@ class RollCardTest {
     private fun game(l: Level) = Game(Prog(), object : Audio { override fun play(sound: Sound) {} }).apply { sandbox = l; startLevel(0) }
 
     @Test
-    fun aCardPlayedWithARollKeepsToAHighSideBehindThePlayer() {
+    fun aCardPlayedWithARollKeepsToACornerBehindThePlayer() {
         val g = game(room(trap(PastX(4f), Play(Card.STALKER), Roll(3f, 2))))
         g.input.right = true
         while (g.card == null) g.update(Bot.DT)
@@ -55,8 +55,28 @@ class RollCardTest {
         assertEquals("no roll yet: the center", Slot(0, 0f), Slot(g.cardSide, g.cardLift))
         while (!g.world!!.rolling) g.update(Bot.DT)
         g.update(Bot.DT)
-        assertTrue("the card left the center: ${g.cardSide}", g.cardSide != 0)
-        assertEquals(CardSlot.HIGH, g.cardLift)
+        assertTrue("the card went to a corner: ${g.cardSide}, ${g.cardLift}", Slot(g.cardSide, g.cardLift) in corners)
+    }
+
+    /** The two corners a card keeps to during a roll. */
+    private val corners = setOf(Slot(-1, CardSlot.HIGH), Slot(1, CardSlot.LOW))
+
+    /** Mephi's speech bubble in the overlay HUD (right edge 208, up to 118 wide, two lines from y 18), in tiles. */
+    private val bubble = Area(90f / 8, 18f / 8, 208f / 8, 38f / 8)
+
+    @Test
+    fun duringARollTheCardNeverCoversMephisLine() {
+        for (heading in -1..1) for (x in 2..30) {
+            for (bottom in listOf(15f, 9f, 4f)) {
+                val p = Area(x - Physics.PLAYER_W / 2, bottom - Physics.PLAYER_H, x + Physics.PLAYER_W / 2, bottom)
+                val s = CardSlot.choose(p, edge = true, heading = heading)
+                assertTrue("$s", s in corners)
+                assertEquals("$s at x $x", 0f, CardSlot.area(s).overlap(bubble))
+            }
+        }
+        // running left on the floor: the corner behind them, low on the right
+        val runner = Area(8f - Physics.PLAYER_W / 2, 15f - Physics.PLAYER_H, 8f + Physics.PLAYER_W / 2, 15f)
+        assertEquals(Slot(1, CardSlot.LOW), CardSlot.choose(runner, edge = true, heading = -1))
     }
 
     @Test

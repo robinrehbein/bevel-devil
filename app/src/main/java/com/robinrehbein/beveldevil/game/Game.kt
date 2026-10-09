@@ -183,7 +183,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private var cardMoveAge = CARD_GLIDE
     /** What the card keeps clear of, in tiles of the room in view. */
     private val cardAreas = ArrayList<Area>()
-    /** The card keeps to a high side slot while the picture rolls ([World.rolling]), see [CardSlot.choose]. */
+    /** The card keeps to a corner while the picture rolls ([World.rolling]), see [CardSlot.choose]. */
     private var cardEdge = false
 
     /** Side (-1..1) and lift (tiles) of the card right now: its slot, or on the way there. */

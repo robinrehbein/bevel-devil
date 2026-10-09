@@ -47,14 +47,16 @@ object CardSlot {
      * first slot that covers neither (center, away from the player, toward the player; then the same higher up, then
      * lower down), or else the one that covers least.
      *
-     * With [edge] (the picture is rolling, so the player can show up at any height) the card keeps to a high side
-     * slot: behind a player running in direction [heading] (-1 left, 1 right, 0 standing), else away from them.
+     * With [edge] (the picture is rolling, so the player can show up at any height) the card keeps to a corner: high
+     * on the left, low on the right (high up there is Mephi's speech bubble, with the line that tells the trap). The
+     * corner behind a player running in direction [heading] (-1 left, 1 right, 0 standing) comes first, else the one
+     * away from them, unless it covers them or the trap.
      */
     fun choose(player: Area, traps: List<Area> = emptyList(), edge: Boolean = false, heading: Int = 0): Slot {
         val away = if ((player.x0 + player.x1) / 2 > CX) -1 else 1
         if (edge) {
             val first = if (heading != 0) -heading else away
-            val slots = listOf(Slot(first, HIGH), Slot(-first, HIGH))
+            val slots = listOf(first, -first).map { Slot(it, if (it < 0) HIGH else LOW) }
             return slots.firstOrNull { cost(it, player, traps) == 0f } ?: slots.minBy { cost(it, player, traps) }
         }
         if (traps.isEmpty()) return Slot(if (hits(player, Slot(0, 0f))) away else 0, 0f)
