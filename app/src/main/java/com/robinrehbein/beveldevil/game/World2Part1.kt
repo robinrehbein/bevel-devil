@@ -122,7 +122,8 @@ object World2Part1 {
 
         // 4 — EASTER EGG: off-by-one. The door is in plain sight behind a wall; the way is a stair up, the upper lane under the string of lights
         // (ceiling bulbs that drop when you come near and go back up on their own), a drop at its end and the lower lane back, where an LED strip
-        // slides at you. Round 2 counts again: each bulb drops twice, so "wait until it is up, then run" from round 1 runs into the second drop
+        // slides at you. Round 2 counts again: the two bulbs over the upper lane drop just as in round 1, but a third bulb now hangs under the lane,
+        // over the lower lane back, and it drops twice, so "wait until it is up, then run" from round 1 runs into its second drop
         Level(
             name = T("String Lights", "Lichterkette"),
             intro = T("Nice lighting. I laid the cables myself.", "Schönes Licht hier. Ich habe die Kabel selbst verlegt."),

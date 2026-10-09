@@ -155,7 +155,7 @@ object World2Rooms {
     fun l29r2(b: Bot) = b.rightTo(6.4f).waitFor { pendulumCalm(it, 9f) }.rightTo(10.9f).wait(0.45f).rightTo(15.4f)
         .waitFor { pendulumCalm(it, 23.5f, 0.85f, 1.35f, 10.8f) }.rightTo(22.6f).rightJump(0.5f).landRight().rightJump(0.5f).landRight().rightJump(0.5f).landRight().right(2f)
 
-    /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes home), hop the spikes. */
+    /** 30: through the tunnel up to the ledge, hop the hole, to the door and through the breach, along the ledge and down onto the lane, back left under the ledge into the other link (the one in front goes into the pit, and this one follows it 2.5 s after the ledge), hop the spikes. */
     fun l30(b: Bot) = b.rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(16.9f).rightUntil(4f) { it.cracks.isNotEmpty() }
         .rightUntil(3f) { it.cracks.any { c -> c.fell } }.rightUntil { it.player.box.cx > roomX(1, 10.4f) }.leftUntil { it.player.box.cx > roomX(1, 20f) }.waitFor { it.player.grounded }.rightJump(0.35f).landRight().right(2f)
 
