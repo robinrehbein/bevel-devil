@@ -252,7 +252,7 @@ class DesignRulesTest {
         val v = DesignRules.densityViolations(needle, 0, patient, 0f)
         assertTrue(v.joinToString("\n"), v.any { "no real trap for" in it && "last trap to door" in it })
         assertTrue(v.joinToString("\n"), v.any { "stands still" in it && "% of the run" in it })
-        assertTrue(v.joinToString("\n"), v.any { "stands still 3." in it && "in one go" in it })
+        assertTrue(v.joinToString("\n"), v.any { Regex("stands still 3[.,]") in it && "in one go" in it })
         // the hidden spikes going again (Hide) is no trap: only the Show counts
         val bot = DesignRules.cleanRun(needle, 0, patient)
         assertEquals(listOf(2f), bot.moments.filter { it.real }.map { Math.round(it.time * 10) / 10f })
