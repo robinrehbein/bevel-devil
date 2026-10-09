@@ -47,7 +47,9 @@ object World2Part3D {
         // 41 — security audit (a trap room: U1 the floor, zero trust: every stone is a different lie). Three stones lie over the pit: the first
         // falls a moment after you step on it, the second drops at once (hop it), the third vanishes under whoever crosses it. On the far side the
         // steps lie as well, and the way to the door is back along a deck over the pit, to the middle of it: a plank falls out of it ahead of you
-        // as you come, and as you land behind the hole the next one is revoked. Rematch: every lie is shuffled (the first stone drops at once, the second sinks slowly
+        // as you come, and as you land behind the hole the next one is revoked. Whoever misses the climb and stands where step 4 was is re-certified: the
+        // floor there rises under you as a new step, and trusting it a second time is the next lie: a moment later the floor fails the audit and
+        // drops out, the new step with it (up onto the block before it does). Nobody is left alive below the block. Rematch: every lie is shuffled (the first stone drops at once, the second sinks slowly
         // under whoever stands on it, step 4 vanishes at once)
         Level(
             name = T("Security Audit", "Sicherheitsaudit"),
@@ -59,6 +61,9 @@ object World2Part3D {
                 trap(Landed(25f, 28f), Hide('s'), say("Step 4: not on the list.", "Stufe 4: nicht auf der Liste."), delay = 0.7f),
                 trap(Zone(22.8f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: out of scope.", "Planke 5: außerhalb des Prüfbereichs.")),
                 trap(Touch('t'), Hide('q'), say("Plank 6: who audits the auditors?", "Planke 6: Wer prüft die Prüfer?"), delay = 0.2f),
+                // only reachable once step 4 is gone: standing on the floor where it was
+                trap(Zone(25f, 14.2f, 28f, 15.2f), Move('r', 0f, -1f, 4f), say("Step 4: certificate renewed. Trust it again.", "Stufe 4: Zertifikat erneuert. Vertrau ihr ruhig nochmal."), delay = 0.3f),
+                trap(Zone(25f, 14.2f, 28f, 15.2f), Fall('f'), Fall('r'), say("Step 4 was certified. The floor under it failed.", "Stufe 4 war zertifiziert. Der Boden darunter ist durchgefallen."), delay = 1.6f),
             ),
             // rematch: re-audit. The same stones, but the lies are shuffled: the first one drops at once now, so round 1's run over it ends in the
             // pit, the second one sinks slowly (cross it, don't stop), and step 4 vanishes the moment you land on it (jump on at once)
@@ -72,6 +77,8 @@ object World2Part3D {
                         trap(Landed(25f, 28f), Hide('s'), say("Step 4: audit trail missing. So is the step.", "Stufe 4: Prüfpfad fehlt. Die Stufe auch."), delay = 0.3f),
                         trap(Zone(22.8f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: re-scoped.", "Planke 5: neu zugeschnitten.")),
                         trap(Touch('t'), Hide('q'), say("Plank 6: the audit was the exploit.", "Planke 6: Das Audit war der Exploit."), delay = 0.2f),
+                        trap(Zone(25f, 14.2f, 28f, 15.2f), Move('r', 0f, -1f, 4f), say("Step 4: re-issued. Same step, new serial number.", "Stufe 4: neu ausgestellt. Gleiche Stufe, neue Seriennummer."), delay = 0.3f),
+                        trap(Zone(25f, 14.2f, 28f, 15.2f), Fall('f'), Fall('r'), say("Floor: certificate revoked. Everything on it, too.", "Boden: Zertifikat widerrufen. Alles darauf auch."), delay = 1.6f),
                     ),
                 ),
             ),
@@ -80,7 +87,7 @@ object World2Part3D {
             fill(0..5, 15..17); fill(17..30, 15..17)
             fill(6..8, 15..15, 'a'); fill(9..11, 15..15, 'b'); fill(12..14, 15..15, 'c')
             fill(1..27, 10..10); fill(19..21, 10..10, 'p'); fill(14..16, 10..10, 'q'); fill(17..18, 10..10, 't')
-            fill(25..27, 14..14, 's'); fill(28..30, 12..14)
+            fill(25..27, 14..14, 's'); fill(17..24, 15..17, 'f'); fill(25..27, 15..15, 'r'); fill(25..27, 16..17, 'f'); fill(28..30, 12..14)
             spawn(2, 14); door(12, 9); bits(41)
         },
 
