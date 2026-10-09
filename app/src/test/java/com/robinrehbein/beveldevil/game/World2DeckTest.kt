@@ -219,6 +219,14 @@ class World2DeckTest {
         assertTrue("x=${bot.world.player.box.cx}", bot.world.player.box.cx > 20f)
     }
     @Test fun l41r2() { World2DesignTest.play(41, round = 2) }
+    /** Security Audit, round 2: step 4 is revoked sooner, but a missed climb still ends on a renewed step, not alive below the block; it goes down with the floor a moment later. */
+    @Test fun l41r2AMissedClimbIsReCertified() {
+        val lifted = World2RoomsD.l41Renewed(World2RoomsD.l41MissTheClimb(b(41, 2), r = 2))
+        assertEquals(14f, lifted.world.player.box.b, 0.05f)
+        World2RoomsD.l41FromTheStep(lifted).expect(WorldState.WON)
+    }
+    @Test fun l41r2TheRenewedStepGoesDownWithTheFloor() =
+        World2RoomsD.l41Renewed(World2RoomsD.l41MissTheClimb(b(41, 2), r = 2)).wait(2f).expect(WorldState.DEAD)
     @Test fun l42r2() { World2DesignTest.play(42, round = 2) }
     /** Rebase, round 2: Ctrl+Z comes right before the door; the second climb is the real one. */
     @Test fun l44r2() { World2DesignTest.play(44, round = 2) }
