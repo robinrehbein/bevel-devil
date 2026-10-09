@@ -360,11 +360,35 @@ class UiPainter(px: Pixels) : Painter(px) {
         val sc = l.sc.toFloat()
         fill.color = 0xB0000000.toInt()
         canvas.drawRect(0f, 0f, l.lw * sc, l.lh * sc, fill)
+        // the card moves left; the panel on its right says plainly what the trap does
         canvas.save()
-        canvas.translate((l.sx + 128f) * sc, (l.sy + 72f) * sc)
+        canvas.translate((l.sx + 80f) * sc, (l.sy + 72f) * sc)
         canvas.scale(1.9f, 1.9f)
         drawCardFace(canvas, sc, card, true, 255, game.cardDeaths(card), compact = false)
         canvas.restore()
+        howPanel(canvas, sc, card, l.sx + 132f, l.sy + 72f)
+    }
+
+    /** [Card.how] wrapped to the album panel, in the current language. */
+    internal fun howLines(card: Card): List<String> = wrapFine(card.how.toString(), HOW_SIZE, HOW_W - 12f)
+
+    /** Dark plate, [HOW_W] wide and centered on [cy], with the card's [Card.how] line in big type. */
+    private fun howPanel(canvas: Canvas, sc: Float, card: Card, x: Float, cy: Float) {
+        val lines = howLines(card)
+        val lh = HOW_SIZE * 1.35f
+        val h = 18f + lines.size * lh
+        val y = (cy - h / 2).roundToInt().toFloat()
+        fill.color = INK
+        canvas.drawRoundRect((x - 1) * sc, (y - 1) * sc, (x + HOW_W + 1) * sc, (y + h + 1) * sc, 3 * sc, 3 * sc, fill)
+        fill.color = PLUM
+        canvas.drawRoundRect(x * sc, y * sc, (x + HOW_W) * sc, (y + h) * sc, 2 * sc, 2 * sc, fill)
+        fill.color = GOLD_LO2
+        canvas.drawRect((x + 6) * sc, (y + 11) * sc, (x + HOW_W - 6) * sc, (y + 12) * sc, fill)
+        text.textAlign = Paint.Align.CENTER
+        text.color = GOLD_HI; text.textSize = 4.5f * sc
+        canvas.drawText(Txt.cardHow.toString(), (x + HOW_W / 2) * sc, (y + 7.6f) * sc, text)
+        text.color = CREAM; text.textSize = HOW_SIZE * sc
+        lines.forEachIndexed { i, s -> canvas.drawText(s, (x + HOW_W / 2) * sc, (y + 15f + lh * 0.7f + i * lh) * sc, text) }
     }
 
     /** Card centered at the origin, 44×60 logical pixels. */
@@ -787,6 +811,9 @@ class UiPainter(px: Pixels) : Painter(px) {
         const val CARD_FADE = 0.4f
         /** Seconds a bluff card takes to turn over. */
         const val FLIP_TIME = 0.22f
+        /** The album's "what it does" panel: width and text size, in logical pixels. */
+        const val HOW_W = 112f
+        const val HOW_SIZE = 6f
         const val SWEAT = 0xFF8FD8FF.toInt()
         const val SWEAT_HI = 0xFFE6F8FF.toInt()
         const val SWEAT_LO = 0xFF4A9BD0.toInt()
