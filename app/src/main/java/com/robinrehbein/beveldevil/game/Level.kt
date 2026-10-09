@@ -58,8 +58,13 @@ sealed interface Trigger {
     data object Shaken : Trigger
     /** The player reaches the door. Fires instead of the win (its delay is ignored); pair it with [Action.FakeWin]. */
     data object AtDoor : Trigger
-    /** The player paused and resumed [times] times in this attempt. */
-    data class Resumed(val times: Int = 1) : Trigger
+    /**
+     * The player paused and resumed [times] times in this attempt. With [live], only the resumes while portal, laser,
+     * belt, circuit or fan [live] was switched on count: a pause before it is up does not use the trick up.
+     *
+     *     trap(Resumed(live = 'F'), Power('F', false))   // off and on again, once the firewall is up
+     */
+    data class Resumed(val times: Int = 1, val live: Char? = null) : Trigger
 
     /**
      * Pressure pad [pad] ([Action.Pad]) was stepped on [times] times in this attempt.

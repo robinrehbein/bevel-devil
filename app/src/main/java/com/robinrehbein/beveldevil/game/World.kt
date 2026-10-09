@@ -521,10 +521,22 @@ class World(val level: Level, private val past: Trail? = null) {
         }
     }
 
+    /** Resumes per [Trigger.Resumed.live] id, counted only while that one was switched on. */
+    private val liveResumes = mutableMapOf<Char, Int>()
+
     /** The player came back from the pause screen. */
     fun resumed() {
         resumes++
+        for (id in traps.mapNotNullTo(mutableSetOf()) { (it.trap.trigger as? Trigger.Resumed)?.live }) {
+            if (switchedOn(id)) liveResumes[id] = (liveResumes[id] ?: 0) + 1
+        }
     }
+
+    /** Whether portal, laser, belt, circuit or fan [id] is switched on (what [Action.Power] switches). */
+    private fun switchedOn(id: Char): Boolean =
+        links.any { it.id == id && it.on } || beams.any { it.laser.id == id && it.on } ||
+            groups[id]?.takeIf { it.belt != null }?.beltOn == true || circuits[id]?.wants(time) == true ||
+            fans.any { it.id == id && it.on }
 
     /** 0 = upright, 1 = upside down; turns over [Twists.TURN] seconds each way. */
     fun viewTurn(): Float {
@@ -609,7 +621,7 @@ class World(val level: Level, private val past: Trail? = null) {
             is Trigger.After -> time >= t.seconds
             is Trigger.Idle -> idle >= t.seconds
             Trigger.Shaken -> shaken
-            is Trigger.Resumed -> resumes >= t.times
+            is Trigger.Resumed -> (t.live?.let { liveResumes[it] ?: 0 } ?: resumes) >= t.times
             Trigger.AtDoor -> false
             is Trigger.Touch -> groups[t.group]?.let(::touches) ?: false
             is Trigger.Pressed -> pads.any { it.pad.id == t.pad && it.presses >= t.times }
