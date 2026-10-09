@@ -39,6 +39,9 @@ interface Progress {
         set(_) {}
     fun bestDeaths(level: Int): Int?
     fun saveBest(level: Int, deaths: Int)
+    /** [level] was skipped through the pause menu: unlocked onwards, but without a best score. */
+    fun skipped(level: Int): Boolean = false
+    fun saveSkipped(level: Int) {}
     /** The rematch round reached in [level] (0 = none) and the deaths it took to get there. */
     fun checkpoint(level: Int): Pair<Int, Int> = 0 to 0
     fun saveCheckpoint(level: Int, round: Int, deaths: Int) {}
@@ -149,6 +152,9 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     internal var sandbox: Level? = null
     var deaths = 0
         private set
+    /** The clear screen shows a skip, not a win: no best score, no "cleared". */
+    var skippedLevel = false
+        private set
     var time = 0f
         private set
 
@@ -241,6 +247,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     /** A fake clear screen or credits roll is showing instead of the HUD. */
     val fakeShown get() = screen == Screen.PLAY && world?.fakeShown == true
     fun bestDeaths(i: Int) = progress.bestDeaths(i)
+    fun skipped(i: Int) = progress.skipped(i)
     fun cardFound(c: Card) = progress.cardFound(c)
     fun cardDeaths(c: Card) = progress.cardDeaths(c)
     val albumSelection get() = selectedAlbum
@@ -701,6 +708,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (sandbox == null) progress.saveCheckpoint(levelIndex, 0, 0)
         val best = progress.bestDeaths(levelIndex)
         if (best == null || deaths < best) progress.saveBest(levelIndex, deaths)
+        skippedLevel = false
         clearsSinceAd++
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
         if (levelIndex == Levels.all.lastIndex) endAge = 0f
@@ -729,8 +737,10 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     private fun skipLevel() {
         if (screen != Screen.PAUSE) return
         if (progress.unlocked < levelIndex + 2) progress.unlocked = minOf(Levels.all.size, levelIndex + 2)
+        progress.saveSkipped(levelIndex)
         if (sandbox == null) progress.saveCheckpoint(levelIndex, 0, 0)
         clearsSinceAd = 0
+        skippedLevel = true
         lastAdAt = time
         go(Screen.CLEAR)
     }

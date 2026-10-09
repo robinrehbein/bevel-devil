@@ -15,8 +15,12 @@ class MonetizationTest {
         override var leftHanded = false
         override var introSeen = true
         override var tiltSensor = true
-        override fun bestDeaths(level: Int): Int? = null
-        override fun saveBest(level: Int, deaths: Int) {}
+        val best = mutableMapOf<Int, Int>()
+        val skips = mutableSetOf<Int>()
+        override fun bestDeaths(level: Int): Int? = best[level]
+        override fun saveBest(level: Int, deaths: Int) { best[level] = deaths }
+        override fun skipped(level: Int) = level in skips
+        override fun saveSkipped(level: Int) { skips += level }
         override fun cardFound(card: Card) = false
         override fun findCard(card: Card) {}
         override fun cardDeaths(card: Card) = 0
@@ -163,6 +167,27 @@ class MonetizationTest {
         ads.closeRewarded(true); g.update(dt)
         assertEquals(Screen.CLEAR, g.screen)
         assertEquals(4, p.unlocked)
+    }
+
+    @Test
+    fun aSkipIsNoWinAndSetsNoBest() {
+        val ads = FakeAds().apply { adsRemoved = true }
+        val p = Prog()
+        val g = game(ads, p)
+        g.sandbox = Demo.idle
+        g.startLevel(2)
+        repeat(AdRules.SKIP_AFTER_DEATHS) { g.openPause(); g.pauseRestart() }
+        g.openPause()
+        g.pauseSkip()
+        assertEquals(Screen.CLEAR, g.screen)
+        assertTrue("the clear screen says skipped", g.skippedLevel)
+        assertEquals("no best score from a skip", null, p.bestDeaths(2))
+        assertTrue("the select marks the level as skipped", g.skipped(2))
+        assertEquals(4, p.unlocked)
+        // a real win afterwards is a win again, with its best
+        g.clear(2)
+        assertFalse(g.skippedLevel)
+        assertEquals(0, p.bestDeaths(2))
     }
 
     @Test
