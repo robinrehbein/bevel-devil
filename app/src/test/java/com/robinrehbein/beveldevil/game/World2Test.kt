@@ -594,6 +594,18 @@ class World2Test {
     @Test fun level37WaitingOnTheSecondSwitchIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
         .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f).wait(2f).expect(WorldState.DEAD)
+    /** Two-Factor Auth: whoever steps back off the step as the backup code drops is not stranded below it: the code expires, goes back up, and the way on is open again. */
+    @Test fun level37TheBackupCodeExpiresAfterARetreat() {
+        val bot = b(37).leftTo(2.5f).rightTo(5.5f)
+            .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+            .hopR(17.2f, 0.5f).rightJump(0.3f).landRight().left(0.4f).landLeft()
+            .waitFor { it.group('f').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        bot.expect(WorldState.PLAYING)
+        bot.waitFor { it.group('f').let { g -> g.mode == GroupMode.IDLE && g.oy < 0.01f } }
+        assertEquals(0f, bot.world.group('f').oy, 0.01f)
+        bot.leftTo(16.5f).hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
+            .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f).expect(WorldState.WON)
+    }
     @Test fun level38() { World2DesignTest.play(38) }
     /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
     @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
