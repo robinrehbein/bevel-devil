@@ -199,7 +199,9 @@ object World2Part3C {
                 trap(Pressed('1'), Play(Card.HEADBUTT), Fall('e'), say("Factor 1 accepted. Do not get comfortable.", "Faktor 1 akzeptiert. Mach es dir nicht bequem."), delay = 0.5f),
                 trap(PastX(16f), Fall('c'), say("Your code has arrived. It weighs a lot.", "Dein Code ist angekommen. Er wiegt einiges.")),
                 trap(Landed(20.8f, 23.9f), Fall('f'), say("Backup code. Also by post.", "Backup-Code. Auch per Post."), delay = 0.15f),
-                trap(Landed(20.8f, 23.9f), Move('f', 0f, -8f, 4f), say("Code expired. Feel free to request a new one.", "Code abgelaufen. Fordere gern einen neuen an."), delay = 2.2f),
+                // Move is relative to where the code is: it has landed (8 rows down) long before the delay ends, so it goes back up exactly 8.
+                // On the way on it fires too, as you head back along the roof: late enough that the factor 2 line has been read
+                trap(Landed(20.8f, 23.9f), Move('f', 0f, -8f, 4f), say("Code expired.", "Code abgelaufen."), delay = 3f),
                 trap(Pressed('2'), Fall('d'), say("Factor 2 accepted. Please wait here for the result.", "Faktor 2 akzeptiert. Bitte warte hier auf das Ergebnis."), delay = 0.4f),
             ),
         ) {
