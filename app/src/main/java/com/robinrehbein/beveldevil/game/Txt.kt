@@ -14,6 +14,10 @@ object Txt {
     val restart = T("RESTART", "NEU STARTEN")
     val levels = T("LEVELS", "LEVELS")
     val cleared = T("CLEARED!", "GESCHAFFT!")
+    /** The clear screen after a skip; [skippedMark] marks such a level in the select. */
+    val skippedTitle = T("SKIPPED.", "ÜBERSPRUNGEN.")
+    val skippedMark = T("skip", "übspr.")
+    val skippedQuip = T("Giving up suits you.", "Aufgeben steht dir.")
     val next = T("NEXT", "WEITER")
     /** Banner when Mephi deals another round in the same room. */
     val rematch = T("REMATCH!", "REVANCHE!")
@@ -24,7 +28,9 @@ object Txt {
     val trap = T("TRAP", "FALLE")
     val bluff = T("BLUFF", "BLUFF")
     val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
-    val caught = T("crashed you %d×", "%d× abgestürzt")
+    /** A card's death count: deaths after Mephi played it, not proof the card did it (a bluff does nothing and still collects). */
+    val caught = T("%d× died after", "%d× danach tot")
+    val cardHow = T("WHAT IT DOES", "WAS SIE TUT")
     val soulsSacrificed = T("SOULS SACRIFICED", "SEELEN GEOPFERT")
     val tapCard = T("Tap a card to inspect it.", "Tippe eine Karte an.")
     val endTitle = T("PROCESS KILLED.", "PROZESS BEENDET.")

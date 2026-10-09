@@ -5,6 +5,8 @@ import android.graphics.Canvas
 import org.robolectric.RuntimeEnvironment
 import com.robinrehbein.beveldevil.game.Audio
 import com.robinrehbein.beveldevil.game.Action
+import com.robinrehbein.beveldevil.game.AdRules
+import com.robinrehbein.beveldevil.game.Monetization
 import com.robinrehbein.beveldevil.game.Card
 import com.robinrehbein.beveldevil.game.Demo
 import com.robinrehbein.beveldevil.game.Bot
@@ -214,6 +216,12 @@ class ScreenshotTest {
         g.tap(4f, 4f); run(g, 0.3f)
         Ui.albumCard(Card.entries.indexOf(Card.BLUFF)).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
         shoot("68-v2-card-bluff", g, sizes.take(1))
+        // the longest "what it does" line, on every aspect, to catch the panel overflowing
+        g.tap(4f, 4f); run(g, 0.3f)
+        g.tap(Ui.pagePrev.x + 2f, Ui.pagePrev.y + 2f); run(g, 0.4f)
+        val longest = Card.entries.indices.filter { it < Ui.ALBUM_PAGE }.maxBy { Card.entries[it].how.de.length }
+        Ui.albumCard(longest).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("69-v2-card-longest-how", g)
     }
 
     private fun run(game: Game, seconds: Float, right: Boolean = false, jumpAt: Float = -1f) {
@@ -260,6 +268,27 @@ class ScreenshotTest {
         Lang.german = true
         val g = Game(MemoryProgress(), silent); g.startLevel(1); run(g, 0.5f); g.pause()
         shoot("15-pause-de", g)
+    }
+
+    /** A skip after the deaths: SKIPPED instead of CLEARED, no BEST from a skip, and the tile says so in the select. */
+    @Test
+    fun skippedClear() {
+        val noAds = object : Monetization { override val adsRemoved = true }
+        for (de in listOf(true, false)) {
+            Lang.german = de
+            val skips = mutableSetOf<Int>()
+            val prog = object : Progress by MemoryProgress() {
+                override fun skipped(level: Int) = level in skips
+                override fun saveSkipped(level: Int) { skips += level }
+            }
+            val g = Game(prog, silent, noAds)
+            g.startLevel(6); run(g, 0.5f)
+            repeat(AdRules.SKIP_AFTER_DEATHS) { g.pause(); g.tap(Ui.pauseRestart.x + 1f, Ui.pauseRestart.y + 1f); run(g, 0.1f) }
+            g.pause(); g.tap(Ui.pauseSkip.x + 1f, Ui.pauseSkip.y + 1f); run(g, 0.6f)
+            shoot(if (de) "16-clear-skipped-de" else "16-clear-skipped-en", g, sizes.take(1))
+            if (de) { g.back(); run(g, 0.6f); shoot("16b-select-skipped-de", g, sizes.take(1)) }
+        }
+        Lang.german = true
     }
 
     @Test

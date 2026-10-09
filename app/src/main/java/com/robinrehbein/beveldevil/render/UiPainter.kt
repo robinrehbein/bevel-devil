@@ -360,11 +360,35 @@ class UiPainter(px: Pixels) : Painter(px) {
         val sc = l.sc.toFloat()
         fill.color = 0xB0000000.toInt()
         canvas.drawRect(0f, 0f, l.lw * sc, l.lh * sc, fill)
+        // the card moves left; the panel on its right says plainly what the trap does
         canvas.save()
-        canvas.translate((l.sx + 128f) * sc, (l.sy + 72f) * sc)
+        canvas.translate((l.sx + 80f) * sc, (l.sy + 72f) * sc)
         canvas.scale(1.9f, 1.9f)
         drawCardFace(canvas, sc, card, true, 255, game.cardDeaths(card), compact = false)
         canvas.restore()
+        howPanel(canvas, sc, card, l.sx + 132f, l.sy + 72f)
+    }
+
+    /** [Card.how] wrapped to the album panel, in the current language. */
+    internal fun howLines(card: Card): List<String> = wrapFine(card.how.toString(), HOW_SIZE, HOW_W - 12f)
+
+    /** Dark plate, [HOW_W] wide and centered on [cy], with the card's [Card.how] line in big type. */
+    private fun howPanel(canvas: Canvas, sc: Float, card: Card, x: Float, cy: Float) {
+        val lines = howLines(card)
+        val lh = HOW_SIZE * 1.35f
+        val h = 18f + lines.size * lh
+        val y = (cy - h / 2).roundToInt().toFloat()
+        fill.color = INK
+        canvas.drawRoundRect((x - 1) * sc, (y - 1) * sc, (x + HOW_W + 1) * sc, (y + h + 1) * sc, 3 * sc, 3 * sc, fill)
+        fill.color = PLUM
+        canvas.drawRoundRect(x * sc, y * sc, (x + HOW_W) * sc, (y + h) * sc, 2 * sc, 2 * sc, fill)
+        fill.color = GOLD_LO2
+        canvas.drawRect((x + 6) * sc, (y + 11) * sc, (x + HOW_W - 6) * sc, (y + 12) * sc, fill)
+        text.textAlign = Paint.Align.CENTER
+        text.color = GOLD_HI; text.textSize = 4.5f * sc
+        canvas.drawText(Txt.cardHow.toString(), (x + HOW_W / 2) * sc, (y + 7.6f) * sc, text)
+        text.color = CREAM; text.textSize = HOW_SIZE * sc
+        lines.forEachIndexed { i, s -> canvas.drawText(s, (x + HOW_W / 2) * sc, (y + 15f + lh * 0.7f + i * lh) * sc, text) }
     }
 
     /** Card centered at the origin, 44×60 logical pixels. */
@@ -591,7 +615,7 @@ class UiPainter(px: Pixels) : Painter(px) {
             rect(x + 3, y + 18, w - 6, 1f, GOLD_MID); rect(x + w - 4, y + 4, 1f, 15f, GOLD_MID)
             say(num, x + w / 2f, y + 12f, ns, INK_TEXT, Paint.Align.CENTER, GOLD_HI)
             val best = game.bestDeaths(i)
-            if (best == null) say(Txt.new.toString(), x + w / 2f, y + 25f, 4f, INK_TEXT, Paint.Align.CENTER, 0)
+            if (best == null) say((if (game.skipped(i)) Txt.skippedMark else Txt.new).toString(), x + w / 2f, y + 25f, 4f, INK_TEXT, Paint.Align.CENTER, 0)
             else {
                 lc.drawBitmap(Icons.skull, x + 3f, y + 23f, null)
                 say(best.toString(), x + 16f, y + 25.5f, 4.5f, INK_TEXT, Paint.Align.CENTER, 0)
@@ -751,10 +775,13 @@ class UiPainter(px: Pixels) : Painter(px) {
     fun clear(game: Game, l: Layout) {
         dim(l)
         stage(l, Screen.CLEAR) {
-            say(Txt.cleared.toString(), 128f, 22f, 16f, MINT, Paint.Align.CENTER, MINT_LO)
-            val best = game.bestDeaths(game.levelIndex)
-            say("${game.levelLabel}   ${Txt.deaths} ${game.deaths}   ${Txt.best} ${best ?: game.deaths}", 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
-            devilFrame(70f, 52f, 44f, Mood.SHOCK, game.time)
+            if (game.skippedLevel) say(Txt.skippedTitle.toString(), 128f, 22f, 12f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
+            else say(Txt.cleared.toString(), 128f, 22f, 16f, MINT, Paint.Align.CENTER, MINT_LO)
+            // a skip sets no record, so only a real best from an earlier win is shown
+            val best = game.clearBest
+            say("${game.levelLabel}   ${Txt.deaths} ${game.deaths}" + (best?.let { "   ${Txt.best} $it" } ?: ""), 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
+            // a win shocks Mephi; a skip is his win
+            devilFrame(70f, 52f, 44f, if (game.skippedLevel) Mood.GRIN else Mood.SHOCK, game.time)
             game.bubble?.let { bubble(it, game.bubbleAge + 10f, 114f, 64f, 110f, tailLeft = true) }
             button(Ui.clearNext, Txt.next.toString(), true)
         }
@@ -784,6 +811,9 @@ class UiPainter(px: Pixels) : Painter(px) {
         const val CARD_FADE = 0.4f
         /** Seconds a bluff card takes to turn over. */
         const val FLIP_TIME = 0.22f
+        /** The album's "what it does" panel: width and text size, in logical pixels. */
+        const val HOW_W = 112f
+        const val HOW_SIZE = 6f
         const val SWEAT = 0xFF8FD8FF.toInt()
         const val SWEAT_HI = 0xFFE6F8FF.toInt()
         const val SWEAT_LO = 0xFF4A9BD0.toInt()

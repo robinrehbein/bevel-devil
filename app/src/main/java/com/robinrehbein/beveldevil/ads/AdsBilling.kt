@@ -60,7 +60,10 @@ class AdsBilling(private val activity: Activity, private val progress: Progress)
         get() = !removed && consent.privacyOptionsRequirementStatus == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
     override fun rewardedReady() = rewarded != null
 
-    /** Call from `onCreate`. */
+    /**
+     * Call from `onCreate`, after `setContentView`: with consent remembered from an earlier run this starts MobileAds
+     * right away on a background thread, and its WebView load must not overlap the window inflating its content view.
+     */
     fun start() {
         connectBilling()
         if (!removed) askConsent()

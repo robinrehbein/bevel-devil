@@ -973,7 +973,9 @@ object DesignRules {
     /** Every line a level says: all [Action.Say]s of every round, the intro of every round and the hint. */
     fun lines(level: Level): List<Line> = level.rounds.flatMapIndexed { r, round ->
         listOf(Line("intro (round ${r + 1})", round.intro)) +
-            actions(round).filterIsInstance<Action.Say>().map { Line("Say (round ${r + 1})", it.text) }
+            actions(round).filterIsInstance<Action.Say>().flatMap { s ->
+                listOfNotNull(Line("Say (round ${r + 1})", s.text), s.otherwise?.let { Line("Say otherwise (round ${r + 1})", it) })
+            }
     } + listOfNotNull(level.hint?.let { Line("hint", it) })
 
     private fun norm(s: String) = s.trim().lowercase().replace(Regex("\\s+"), " ")
