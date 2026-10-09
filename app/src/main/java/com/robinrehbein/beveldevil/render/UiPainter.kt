@@ -369,9 +369,12 @@ class UiPainter(px: Pixels) : Painter(px) {
         howPanel(canvas, sc, card, l.sx + 132f, l.sy + 72f)
     }
 
+    /** [Card.how] wrapped to the album panel, in the current language. */
+    internal fun howLines(card: Card): List<String> = wrapFine(card.how.toString(), HOW_SIZE, HOW_W - 12f)
+
     /** Dark plate, [HOW_W] wide and centered on [cy], with the card's [Card.how] line in big type. */
     private fun howPanel(canvas: Canvas, sc: Float, card: Card, x: Float, cy: Float) {
-        val lines = wrapFine(card.how.toString(), HOW_SIZE, HOW_W - 12f)
+        val lines = howLines(card)
         val lh = HOW_SIZE * 1.35f
         val h = 18f + lines.size * lh
         val y = (cy - h / 2).roundToInt().toFloat()
@@ -808,7 +811,7 @@ class UiPainter(px: Pixels) : Painter(px) {
         /** The album's "what it does" panel: width and text size, in logical pixels. */
         const val HOW_W = 112f
         const val HOW_SIZE = 6f
-        const val SWEAT= 0xFF8FD8FF.toInt()
+        const val SWEAT = 0xFF8FD8FF.toInt()
         const val SWEAT_HI = 0xFFE6F8FF.toInt()
         const val SWEAT_LO = 0xFF4A9BD0.toInt()
     }
