@@ -248,6 +248,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
     val fakeShown get() = screen == Screen.PLAY && world?.fakeShown == true
     fun bestDeaths(i: Int) = progress.bestDeaths(i)
     fun skipped(i: Int) = progress.skipped(i)
+    /** The clear screen's BEST: a real best score, or this win's deaths; a skip sets no record and shows none. */
+    val clearBest get() = progress.bestDeaths(levelIndex) ?: deaths.takeUnless { skippedLevel }
     fun cardFound(c: Card) = progress.cardFound(c)
     fun cardDeaths(c: Card) = progress.cardDeaths(c)
     val albumSelection get() = selectedAlbum
@@ -615,6 +617,7 @@ class Game(private val progress: Progress, private val audio: Audio, private val
 
     fun startLevel(i: Int) {
         levelIndex = i
+        skippedLevel = false
         particles.clear()
         // a rematch round reached before (app closed, back to the level select) is where the level picks up again
         val (cpRound, cpDeaths) = if (sandbox == null) progress.checkpoint(i) else 0 to 0
@@ -743,6 +746,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         skippedLevel = true
         lastAdAt = time
         go(Screen.CLEAR)
+        setMood(Mood.GRIN, 0f)
+        say(Txt.skippedQuip.toString(), 2.8f)
     }
 
     /** From the clear screen: the next level, or first the transition screen when it opens a new world. */

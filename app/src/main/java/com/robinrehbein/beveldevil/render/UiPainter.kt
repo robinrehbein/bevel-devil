@@ -754,9 +754,10 @@ class UiPainter(px: Pixels) : Painter(px) {
             if (game.skippedLevel) say(Txt.skippedTitle.toString(), 128f, 22f, 12f, GOLD_HI, Paint.Align.CENTER, GOLD_LO)
             else say(Txt.cleared.toString(), 128f, 22f, 16f, MINT, Paint.Align.CENTER, MINT_LO)
             // a skip sets no record, so only a real best from an earlier win is shown
-            val best = game.bestDeaths(game.levelIndex) ?: game.deaths.takeUnless { game.skippedLevel }
+            val best = game.clearBest
             say("${game.levelLabel}   ${Txt.deaths} ${game.deaths}" + (best?.let { "   ${Txt.best} $it" } ?: ""), 128f, 40f, 5.5f, CREAM, Paint.Align.CENTER)
-            devilFrame(70f, 52f, 44f, Mood.SHOCK, game.time)
+            // a win shocks Mephi; a skip is his win
+            devilFrame(70f, 52f, 44f, if (game.skippedLevel) Mood.GRIN else Mood.SHOCK, game.time)
             game.bubble?.let { bubble(it, game.bubbleAge + 10f, 114f, 64f, 110f, tailLeft = true) }
             button(Ui.clearNext, Txt.next.toString(), true)
         }
