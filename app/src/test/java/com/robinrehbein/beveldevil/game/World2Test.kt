@@ -202,15 +202,17 @@ class World2Test {
         // 3: the hops over the blocks on the upper floor land clear of them
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
         // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes, or over a bottomless
-        // pit: that ends you, it doesn't strand you), never into a closed room
-        World2.levels.forEachIndexed { i, l ->
-            val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
-                when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
-            }
-            for ((x, y) in exits) {
-                val below = l.map.grid[y + 1][x]
-                val pit = (y + 1 until l.map.grid.size).all { l.map.grid[it][x] == '.' }
-                assertTrue("level ${i + 1}: exit ($x,$y) floats over nothing", below != '.' || pit)
+        // pit: that ends you, it doesn't strand you), never into a closed room; in every round, on that round's own map
+        World2.levels.forEachIndexed { i, level ->
+            level.rounds.forEachIndexed { n, l ->
+                val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
+                    when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
+                }
+                for ((x, y) in exits) {
+                    val below = l.map.grid[y + 1][x]
+                    val pit = (y + 1 until l.map.grid.size).all { l.map.grid[it][x] == '.' }
+                    assertTrue("level ${i + 1} round ${n + 1}: exit ($x,$y) floats over nothing", below != '.' || pit)
+                }
             }
         }
         // a trap-made portal never sits where the player could be locked into a dead end: its tiles are free in the plain map
