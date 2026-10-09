@@ -61,7 +61,8 @@ object World2Part3D {
                 trap(Landed(25f, 28f), Hide('s'), say("Step 4: not on the list.", "Stufe 4: nicht auf der Liste."), delay = 0.7f),
                 trap(Zone(22.8f, 8f, 26.5f, 10.6f), Fall('p'), say("Plank 5: out of scope.", "Planke 5: außerhalb des Prüfbereichs.")),
                 trap(Touch('t'), Hide('q'), say("Plank 6: who audits the auditors?", "Planke 6: Wer prüft die Prüfer?"), delay = 0.2f),
-                // only reachable once step 4 is gone: standing on the floor where it was
+                // only reachable once step 4 is gone: standing on the floor where it was. H14: the tell of the floor drop is the step rising
+                // under you and Mephi's "trust it again" 1.3 s before it; no glyph at step 4, which would give its first lie away from the start
                 trap(Zone(25f, 14.2f, 28f, 15.2f), Move('r', 0f, -1f, 4f), say("Step 4: certificate renewed. Trust it again.", "Stufe 4: Zertifikat erneuert. Vertrau ihr ruhig nochmal."), delay = 0.3f),
                 trap(Zone(25f, 14.2f, 28f, 15.2f), Fall('f'), Fall('r'), say("Step 4 was certified. The floor under it failed.", "Stufe 4 war zertifiziert. Der Boden darunter ist durchgefallen."), delay = 1.6f),
             ),

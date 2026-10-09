@@ -615,6 +615,16 @@ class World2Test {
         assertEquals(14f, lifted.world.player.box.b, 0.05f)
         World2RoomsD.l41FromTheStep(lifted).expect(WorldState.WON)
     }
+    /** Security Audit: whoever drops through the plank-5 hole after the climb lands below the deck (on the floor, or on the plank that fell onto it), and walking under the old step re-certifies them, too. */
+    @Test fun level41ADropThroughTheDeckIsReCertified() {
+        val below = b(41).hopR(8.6f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
+            .leftJump(0.55f).landLeft().wait(1f).leftTo(20.5f).wait(0.6f)
+        below.expect(WorldState.PLAYING)
+        assertTrue("y=${below.world.player.box.b}", below.world.player.box.b > 13.5f)
+        val lifted = World2RoomsD.l41Renewed(below.rightTo(26f))
+        assertEquals(14f, lifted.world.player.box.b, 0.05f)
+        World2RoomsD.l41FromTheStep(lifted).expect(WorldState.WON)
+    }
     /** Security Audit: trusting the renewed step a second time is the next lie: it goes down with the floor, and so does whoever stays below the block. */
     @Test fun level41TheRenewedStepGoesDownWithTheFloor() {
         World2RoomsD.l41Renewed(World2RoomsD.l41MissTheClimb(b(41))).wait(2f).expect(WorldState.DEAD)
