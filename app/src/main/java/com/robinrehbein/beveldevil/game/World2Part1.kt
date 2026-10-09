@@ -427,7 +427,8 @@ object World2Part1 {
         // is the loopback (it sends you home, where a shelf comes down on you); the way on is the one hanging in mid-air above
         // it. Every hop drops something on whoever lingers where it lands you: the router upstairs, the next link flaps (down
         // for a moment just as you arrive), in the top right the ceiling comes down on whoever runs under it, the last subnet
-        // gets heavy mail on arrival, and its pit has one stone: step on it and the packet hanging above drops onto it
+        // gets heavy mail on arrival, and its pit has one stone: step on it and the packet hanging above drops onto it. Hop 4
+        // has a TTL: 6 seconds after you reach the top right it forwards into the pit (no dead end upstairs, a dead packet)
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
@@ -440,7 +441,7 @@ object World2Part1 {
                 trap(Zone(10.5f, 1f, 15f, 8f), Fall('m'), say("Hop 2: router reached. Router dropped. On you.", "Hop 2: Router erreicht. Router fällt. Auf dich."), delay = 0.5f),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', false), say("Link down. Hop 3 is flapping.", "Link down. Hop 3 flattert.")),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.2f),
-                trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                trap(Zone(27f, 3f, 31f, 8f), Reroute('4', 25 to 16), say("Hop 4: TTL expired. Whoever's still up there gets forwarded to the pit.", "Hop 4: TTL abgelaufen. Wer noch oben ist, wird in die Grube weitergeleitet."), delay = 6f),
                 trap(Zone(23.4f, 1f, 26.5f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
                 trap(Zone(26.5f, 9f, 31f, 15f), Fall('i'), say("Hop 5: you've got mail. Heavy mail.", "Hop 5: Sie haben Post. Schwere Post.")),
                 trap(Touch('k'), Fall('j'), say("Hop 6: packet dropped. From the floor above.", "Hop 6: Paket verworfen. Vom Stockwerk drüber."), delay = 0.4f),
@@ -448,7 +449,8 @@ object World2Part1 {
             hint = T("The obvious link goes home. Try the one in the air.", "Der offensichtliche Link führt heim. Nimm den in der Luft."),
             // rematch: the two links at home swap (the one in the air is the loopback now), the router upstairs is a press, the
             // DNS entry of the way on is poisoned for a moment after you arrive (it drops you into the pit; stay out of the link
-            // until it heals), the rack in the top right comes down too, and a firewall follows your packet into the last subnet
+            // until it heals), the rack in the top right comes down too, and a firewall follows your packet into the last subnet.
+            // Hop 4 keeps its TTL into the pit
             rematch = listOf(
                 Round(
                     T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
@@ -462,7 +464,7 @@ object World2Part1 {
                         trap(Zone(10.5f, 1f, 15f, 8f), Move('m', 0f, 5f, 30f), say("Hop 2 pings back. With the router.", "Hop 2 pingt zurück. Mit dem Router."), delay = 0.5f),
                         trap(Zone(1f, 1f, 6f, 8f), Play(Card.DECOY), Reroute('3', 25 to 16), say("DNS poisoned: hop 3 now exits over the pit.", "DNS vergiftet: Hop 3 endet jetzt über der Grube.")),
                         trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 30 to 7), say("TTL expired. DNS healed.", "TTL abgelaufen. DNS geheilt."), delay = 1.2f),
-                        trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                        trap(Zone(27f, 3f, 31f, 8f), Reroute('4', 25 to 16), say("Hop 4: TTL expired. Whoever's still up there gets forwarded to the pit.", "Hop 4: TTL abgelaufen. Wer noch oben ist, wird in die Grube weitergeleitet."), delay = 6f),
                         trap(Zone(27f, 1f, 31f, 8f), Move('g', 0f, 5f, 30f), say("Hop 3 lands. So does its rack.", "Hop 3 landet. Sein Rack auch."), delay = 0.3f),
                         trap(Zone(23.4f, 1f, 26.5f, 8f), Move('h', 0f, 5f, 30f), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
                         trap(Zone(26.5f, 9f, 31f, 15f), Move('i', 0f, 5f, 30f), say("Hop 5: registered mail. Signature required.", "Hop 5: Einschreiben. Unterschrift erforderlich."), delay = 0.15f),

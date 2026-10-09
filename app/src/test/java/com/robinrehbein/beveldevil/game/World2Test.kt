@@ -201,14 +201,18 @@ class World2Test {
     fun noChainStrandsYouAliveAwayFromTheDoor() {
         // 3: the hops over the blocks on the upper floor land clear of them
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
-        // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes), never into a closed room
-        World2.levels.forEachIndexed { i, l ->
-            val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
-                when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
-            }
-            for ((x, y) in exits) {
-                val below = l.map.grid[y + 1][x]
-                assertTrue("level ${i + 1}: exit ($x,$y) floats over nothing", below != '.')
+        // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes, or over a bottomless
+        // pit: that ends you, it doesn't strand you), never into a closed room; in every round, on that round's own map
+        World2.levels.forEachIndexed { i, level ->
+            level.rounds.forEachIndexed { n, l ->
+                val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
+                    when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
+                }
+                for ((x, y) in exits) {
+                    val below = l.map.grid[y + 1][x]
+                    val pit = (y + 1 until l.map.grid.size).all { l.map.grid[it][x] == '.' }
+                    assertTrue("level ${i + 1} round ${n + 1}: exit ($x,$y) floats over nothing", below != '.' || pit)
+                }
             }
         }
         // a trap-made portal never sits where the player could be locked into a dead end: its tiles are free in the plain map
@@ -249,6 +253,23 @@ class World2Test {
         val loop = b(14).rightTo(12.9f).right(0.2f)
         assertTrue("x=${loop.world.player.box.cx}", loop.world.links[0].hopTime > 0f && loop.world.player.box.cx < 6f)
         loop.wait(1f).expect(WorldState.DEAD)
+    }
+
+    @Test
+    fun theLastHopOutlivesItsTtlIntoThePit() {
+        // 14: whoever dawdles in the top right for 6 seconds isn't stranded alive at a dead link: hop 4 still forwards, into the pit
+        val r1 = b(14).rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.8f, 0.5f).leftUntil { it.player.box.cx < 1.6f || it.player.box.cx > 20f }
+            .waitFor { it.links[2].on }.left(0.3f).wait(6.5f)
+        r1.expect(WorldState.PLAYING)
+        assertEquals(25 to 16, r1.world.links.first { it.id == '4' }.to)
+        assertTrue(r1.world.links.first { it.id == '4' }.on)
+        r1.leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cy > 10f }.wait(1.5f).expect(WorldState.DEAD)
+        // round 2: the same, out from under the rack first
+        val r2 = Bot(World2.levels[13], round = 1).rightUntil { it.player.box.cy < 9f }.hopL(9.8f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f)
+            .leftTo(27.2f).wait(6.5f)
+        r2.expect(WorldState.PLAYING)
+        assertEquals(25 to 16, r2.world.links.first { it.id == '4' }.to)
+        r2.leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cy > 10f }.wait(1.5f).expect(WorldState.DEAD)
     }
 
     @Test
