@@ -214,6 +214,12 @@ class ScreenshotTest {
         g.tap(4f, 4f); run(g, 0.3f)
         Ui.albumCard(Card.entries.indexOf(Card.BLUFF)).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
         shoot("68-v2-card-bluff", g, sizes.take(1))
+        // the longest "what it does" line, on every aspect, to catch the panel overflowing
+        g.tap(4f, 4f); run(g, 0.3f)
+        g.tap(Ui.pagePrev.x + 2f, Ui.pagePrev.y + 2f); run(g, 0.4f)
+        val longest = Card.entries.indices.filter { it < Ui.ALBUM_PAGE }.maxBy { Card.entries[it].how.de.length }
+        Ui.albumCard(longest).let { g.tap(it.x + 2f, it.y + 2f) }; run(g, 0.4f)
+        shoot("69-v2-card-longest-how", g)
     }
 
     private fun run(game: Game, seconds: Float, right: Boolean = false, jumpAt: Float = -1f) {

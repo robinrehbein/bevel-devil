@@ -25,6 +25,7 @@ object Txt {
     val bluff = T("BLUFF", "BLUFF")
     val albumTitle = T("DEVIL CARDS", "TEUFELSKARTEN")
     val caught = T("crashed you %d×", "%d× abgestürzt")
+    val cardHow = T("WHAT IT DOES", "WAS SIE TUT")
     val soulsSacrificed = T("SOULS SACRIFICED", "SEELEN GEOPFERT")
     val tapCard = T("Tap a card to inspect it.", "Tippe eine Karte an.")
     val endTitle = T("PROCESS KILLED.", "PROZESS BEENDET.")

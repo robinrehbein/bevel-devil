@@ -95,6 +95,18 @@ class AlbumTest {
     }
 
     @Test
+    fun everyCardSaysWhatItDoes() {
+        // one short line in each language, and no two cards share one: look-alike families must read apart
+        for (c in Card.entries) for (s in listOf(c.how.en, c.how.de)) {
+            assertTrue("${c.name}: blank", s.isNotBlank())
+            assertTrue("${c.name}: '$s' is too long for the album panel", s.length <= 55)
+            assertTrue("${c.name}: '$s' repeats the flavor", s != c.flavor.en && s != c.flavor.de)
+        }
+        assertEquals(Card.entries.size, Card.entries.map { it.how.en }.toSet().size)
+        assertEquals(Card.entries.size, Card.entries.map { it.how.de }.toSet().size)
+    }
+
+    @Test
     fun opensOnTheFirstPageEachTime() {
         val g = album(Prog().apply { found += Card.entries })
         g.tapOn(Ui.pageNext)
