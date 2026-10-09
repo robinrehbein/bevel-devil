@@ -264,6 +264,14 @@ class World2Test {
     }
 
     @Test
+    fun aPauseBeforeTheFirewallBootsDoesNotUseUpTheRestart() {
+        // pausing on the deck, before the BIOS boots the firewall, changes nothing: it boots anyway, and the restart still works on the lane
+        val early = World2Rooms.l39ToFirewall(b(39).wait(0.5f).pauseResume())
+        assertTrue(early.world.beams.first { it.laser.id == 'F' }.lit)
+        World2Rooms.l39(b(39).wait(0.5f).pauseResume()).expect(WorldState.WON)
+    }
+
+    @Test
     fun theQueueCatchesWhoStandsStillOnTheMiddleDeck() {
         b(26).leftTo(23.6f).leftJump(0.35f).landLeft().leftUntil { it.player.box.b > 8f }.wait(6f).expect(WorldState.DEAD)
     }

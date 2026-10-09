@@ -242,7 +242,8 @@ object World2Part3C {
         // 39 — contingency plan (a trap room: U16 the pause, with lasers). Along the deck a rule is installed in front of you: a firewall flashes once
         // (wait until it is dark), and a trip wire at ankle height (hop it). Off the end of the deck, on the lane, another flash ahead (and one where
         // you landed, so move on), and then the firewall
-        // that is stuck: it is lit all the time and "opens by itself any second now". It does not. Turn it off and on again: pause, and resume
+        // that is stuck: it boots (BIOS) as you land on the lane and "opens by itself any second now". It does not. Turn it off and on again: pause,
+        // and resume while it is up (a pause before it boots does not count)
         Level(
             name = T("Contingency Plan", "Notfallplan"),
             intro = T("The firewall is stuck. It'll open by itself any second now.", "Die Firewall klemmt. Die geht gleich von selbst auf."),
@@ -255,7 +256,7 @@ object World2Part3C {
                 trap(Zone(19.5f, 12f, 20.5f, 15.5f), Laser('D', 20 to 10, 20 to 14, on = 1.2f, off = 60f, delay = 1.0f), say("Rule 4: no loitering under the deck.", "Regel 4: Kein Herumlungern unter dem Deck.")),
                 trap(Zone(13.5f, 10f, 16.5f, 15.5f), say("The firewall hangs. I would restart it... but you know how that works.", "Die Firewall hängt. Ich würde ja neu starten ... aber das weißt du ja.")),
                 trap(After(0.3f), PauseTrap(PauseTrick.DODGE)),
-                trap(Resumed(), Power('F', false), say("Session reset. The firewall forgot you.", "Sitzung zurückgesetzt. Die Firewall hat dich vergessen.")),
+                trap(Resumed(live = 'F'), Power('F', false), say("Session reset. The firewall forgot you.", "Sitzung zurückgesetzt. Die Firewall hat dich vergessen.")),
             ),
             hint = T("Off and on again: pause the game. The button runs away, the back button does not.", "Aus und wieder an: Pausiere das Spiel. Der Knopf läuft weg, die Zurück-Taste nicht."),
         ) {
