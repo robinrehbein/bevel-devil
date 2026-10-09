@@ -2,6 +2,7 @@ package com.robinrehbein.beveldevil.game
 
 import com.robinrehbein.beveldevil.game.Action.Play
 import com.robinrehbein.beveldevil.game.Trigger.PastX
+import com.robinrehbein.beveldevil.game.Trigger.AtDoor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -28,6 +29,12 @@ class RareFindTest {
     }
 
     private val silent = object : Audio { override fun play(sound: Sound) {} }
+
+    /** Counts the laughs played since [laughs] was last reset. */
+    private class Ears : Audio {
+        var laughs = 0
+        override fun play(sound: Sound) { if (sound == Sound.LAUGH) laughs++ }
+    }
     private val trapLine = T("Trap line.", "Fallenzeile.")
 
     /** [card] plays at x 4 (with the level's own line when [line]); spikes on the floor at x 9 to die on. */
@@ -103,5 +110,55 @@ class RareFindTest {
         while (g.world!!.state != WorldState.PLAYING) g.update(Bot.DT)
         while (g.world!!.state == WorldState.PLAYING) g.update(Bot.DT)
         assertFalse(g.bubble in bragsOf(Card.SHY_DOOR))
+    }
+
+    @Test
+    fun theBragOnDeathRidesOnTheDeathLaugh() {
+        val ears = Ears()
+        val g = Game(Prog(), ears).apply { sandbox = room(Card.SHY_DOOR, line = true); startLevel(0) }
+        g.input.right = true
+        while (g.world!!.state == WorldState.PLAYING) { ears.laughs = 0; g.update(Bot.DT) }
+        assertTrue(g.bubble in bragsOf(Card.SHY_DOOR))
+        assertEquals("one laugh, not two stacked", 1, ears.laughs)
+    }
+
+    @Test
+    fun winningWhileTheLevelsLineStillShowsKeepsTheBrag() {
+        val p = Prog()
+        val l = Level(T("Find", "Fund"), T("", ""), traps = listOf(trap(PastX(4f), Play(Card.DECOY), Action.Say(trapLine)))) {
+            border(); floor()
+            put(2, 14, 'P'); put(7, 14, 'D')
+        }
+        val g = Game(p, silent).apply { sandbox = l; startLevel(0) }
+        g.input.right = true
+        var t = 0f
+        while (g.world!!.state == WorldState.PLAYING && t < 6f) { g.update(Bot.DT); t += Bot.DT }
+        assertEquals(WorldState.WON, g.world!!.state)
+        // the level's line was still up at the door: the brag takes the win line's place, Mephi stays shocked
+        assertTrue(g.bubble in bragsOf(Card.DECOY))
+        assertEquals(Mood.SHOCK, g.mood)
+    }
+
+    @Test
+    fun aFakeWinIsNotGivenAwayByTheBrag() {
+        val l = Level(T("Find", "Fund"), T("", ""), traps = listOf(
+            trap(PastX(4f), Play(Card.DECOY), Action.Say(trapLine)),
+            trap(AtDoor, Action.FakeWin()),
+        )) {
+            border(); floor()
+            put(2, 14, 'P'); put(7, 14, 'D')
+        }
+        val g = Game(Prog(), silent).apply { sandbox = l; startLevel(0) }
+        g.input.right = true
+        while (g.world!!.fake == null) g.update(Bot.DT)
+        g.input.right = false
+        while (g.world!!.fake != null) {
+            assertFalse(g.bubble in bragsOf(Card.DECOY))
+            g.update(Bot.DT)
+        }
+        // spat out again: after Mephi's "nope" the brag still comes
+        var t = 0f
+        while (g.bubble !in bragsOf(Card.DECOY) && t < 8f) { g.update(Bot.DT); t += Bot.DT }
+        assertTrue(g.bubble in bragsOf(Card.DECOY))
     }
 }

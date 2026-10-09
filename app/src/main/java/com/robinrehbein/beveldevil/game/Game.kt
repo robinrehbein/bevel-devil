@@ -395,7 +395,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         if (rematchAge < REMATCH_FREEZE) return
         w.step(dt, input)
         handleEvents(w)
-        if (w.state == WorldState.PLAYING && !(bubbleIsTrap && bubble != null)) rareFind?.let { showOff(it) }
+        // once Mephi has nothing else to say, and never into a fake win (that would give it away)
+        if (w.state == WorldState.PLAYING && w.fake == null && bubble == null) rareFind?.let { showOff(it) }
         // the picture starts to roll under a card in the air: it gets out of the middle, the roll stays
         if (card != null && w.rolling && !cardEdge && w.state == WorldState.PLAYING) settleCard(w, glide = true)
         if (survivalCheck >= 0f) {
@@ -474,8 +475,8 @@ class Game(private val progress: Progress, private val audio: Audio, private val
                 setMood(Mood.LAUGH, 1.6f)
                 val rare = rareFind
                 val quip = if (rare != null || (bubbleIsTrap && bubble != null)) null else quip()
-                // a card just found for the album is worth more than any taunt
-                if (rare != null) showOff(rare) else if (quip != null) say(quip, QUIP_LIFE) else say(taunt(), 1.8f)
+                // a card just found for the album is worth more than any taunt (the death laugh is already playing)
+                if (rare != null) showOff(rare, laugh = false) else if (quip != null) say(quip, QUIP_LIFE) else say(taunt(), 1.8f)
                 hapticPulse = true
                 deadTimer = 0f
             }
@@ -496,7 +497,9 @@ class Game(private val progress: Progress, private val audio: Audio, private val
             Event.Won -> {
                 audio.play(Sound.WIN)
                 setMood(Mood.SHOCK, 99f)
-                say(WIN_LINES[rng.nextInt(WIN_LINES.size)].toString(), 3f)
+                // through the door with a card not yet bragged about: Mephi, shocked, still has to point it out
+                val rare = rareFind
+                if (rare != null) brag(rare, 3f) else say(WIN_LINES[rng.nextInt(WIN_LINES.size)].toString(), 3f)
                 deadTimer = 0f
             }
         }
@@ -594,13 +597,18 @@ class Game(private val progress: Progress, private val audio: Audio, private val
         progress.findCard(c)
     }
 
-    /** Mephi brags about the rare card [c] just found: a line of its own and a longer laugh. Once per card, ever. */
-    private fun showOff(c: Card) {
+    /** Mephi brags about the rare card [c] just found: a line of its own and a longer laugh ([laugh]: heard too). Once per card, ever. */
+    private fun showOff(c: Card, laugh: Boolean = true) {
+        brag(c, 2f)
+        setMood(Mood.LAUGH, 2.2f)
+        if (laugh) audio.play(Sound.LAUGH)
+    }
+
+    /** Just the line of [showOff], for [life] seconds. */
+    private fun brag(c: Card, life: Float) {
         rareFind = null
         val lines = if (c.rarity == Rarity.LEGENDARY) LEGENDARY_LINES else RARE_LINES
-        say(lines[rng.nextInt(lines.size)].toString().replace("%s", c.title.toString()), 2f)
-        setMood(Mood.LAUGH, 2.2f)
-        audio.play(Sound.LAUGH)
+        say(lines[rng.nextInt(lines.size)].toString().replace("%s", c.title.toString()), life)
     }
 
     private fun countDeath() {
