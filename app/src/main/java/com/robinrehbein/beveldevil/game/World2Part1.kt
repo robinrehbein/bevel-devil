@@ -122,7 +122,8 @@ object World2Part1 {
 
         // 4 — EASTER EGG: off-by-one. The door is in plain sight behind a wall; the way is a stair up, the upper lane under the string of lights
         // (ceiling bulbs that drop when you come near and go back up on their own), a drop at its end and the lower lane back, where an LED strip
-        // slides at you. Round 2 counts again: each bulb drops twice, so "wait until it is up, then run" from round 1 runs into the second drop
+        // slides at you. Round 2 counts again: the two bulbs over the upper lane drop just as in round 1, but a third bulb now hangs under the lane,
+        // over the lower lane back, and it drops twice, so "wait until it is up, then run" from round 1 runs into its second drop
         Level(
             name = T("String Lights", "Lichterkette"),
             intro = T("Nice lighting. I laid the cables myself.", "Schönes Licht hier. Ich habe die Kabel selbst verlegt."),
@@ -211,7 +212,10 @@ object World2Part1 {
         // the far left, behind the hill. On the way up the hill a piece of ceiling crashes onto the step where you would catch your breath (keep
         // climbing); over the hill the next one lands on the plateau and becomes a step, and the last (in the low tunnel to the door) is a ghost
         // made of paper: it appears where you come down, falls, and is gone again a moment later. Dashing under the plateau piece or the paper is
-        // the end, so wait for them. Round 2: the first piece stalks you and drops on whoever stops under it
+        // the end, so wait for them. Round 2: the first piece stalks you and drops on whoever stops under it (only once it stalks: waiting on
+        // the stairs before, or after a retreat off the summit, leaves it in the ceiling, so it never lands on the plateau out of your reach).
+        // It stalks no further right than half a tile short of the summit's last column: whoever bolts off the edge as it drops can climb back up
+        // (it still covers every spot on the summit where it may drop)
         Level(
             name = T("Sky Blue", "Himmelblau"),
             intro = T("Nice ceiling. Very stable.", "Schöne Decke. Sehr stabil."),
@@ -228,8 +232,8 @@ object World2Part1 {
                     T("Reboot complete. Your ceiling logged in again.", "Neustart fertig. Die Decke hängt jetzt an dir."),
                     hint = T("The ceiling follows you now. Do not wait where you waited. Two paper pieces at the end.", "Die Decke folgt dir jetzt. Warte nicht, wo du gewartet hast. Zwei Papierstücke am Ende."),
                     traps = listOf(
-                        trap(BeforeX(19.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 4f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
-                        trap(Idle(0.6f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.1f),
+                        trap(BeforeX(19.6f), Play(Card.STALKER), Chase('a', speed = 6f, left = 2f, right = 2.5f), say("Roaming profile: your ceiling travels with you.", "Roaming-Profil: Die Decke zieht mit dir um.")),
+                        trap(Idle(0.6f, x1 = 19.6f), Fall('a'), say("Ceiling synced to your position. Eventually.", "Decke mit deiner Position synchronisiert. Irgendwann."), delay = 0.1f),
                         trap(Landed(24f, 26f), Fall('s'), say("Same glitch. Still do not stop.", "Gleicher Fehler. Immer noch nicht anhalten."), delay = 0.6f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('d'), say("Paper again. Two sheets this time.", "Wieder Papier. Diesmal zwei Blatt."), delay = 0.25f),
                         trap(Zone(6.5f, 13.5f, 9.8f, 15.5f), Fall('e'), delay = 0.15f),
@@ -423,7 +427,8 @@ object World2Part1 {
         // is the loopback (it sends you home, where a shelf comes down on you); the way on is the one hanging in mid-air above
         // it. Every hop drops something on whoever lingers where it lands you: the router upstairs, the next link flaps (down
         // for a moment just as you arrive), in the top right the ceiling comes down on whoever runs under it, the last subnet
-        // gets heavy mail on arrival, and its pit has one stone: step on it and the packet hanging above drops onto it
+        // gets heavy mail on arrival, and its pit has one stone: step on it and the packet hanging above drops onto it. Hop 4
+        // has a TTL: 6 seconds after you reach the top right it forwards into the pit (no dead end upstairs, a dead packet)
         Level(
             name = T("127.0.0.1", "127.0.0.1"),
             intro = T("Please take off your shoes. Somebody lives here.", "Bitte Schuhe ausziehen. Hier wohnt jemand."),
@@ -436,7 +441,7 @@ object World2Part1 {
                 trap(Zone(10.5f, 1f, 15f, 8f), Fall('m'), say("Hop 2: router reached. Router dropped. On you.", "Hop 2: Router erreicht. Router fällt. Auf dich."), delay = 0.5f),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', false), say("Link down. Hop 3 is flapping.", "Link down. Hop 3 flattert.")),
                 trap(Zone(1f, 1f, 4.5f, 8f), Power('3', true), delay = 1.2f),
-                trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                trap(Zone(27f, 3f, 31f, 8f), Reroute('4', 25 to 16), say("Hop 4: TTL expired. Whoever's still up there gets forwarded to the pit.", "Hop 4: TTL abgelaufen. Wer noch oben ist, wird in die Grube weitergeleitet."), delay = 6f),
                 trap(Zone(23.4f, 1f, 26.5f, 8f), Play(Card.HEADBUTT), Fall('h'), say("Hop 4: * * * Request timed out. The ceiling didn't.", "Hop 4: * * * Zeitüberschreitung. Die Decke nicht.")),
                 trap(Zone(26.5f, 9f, 31f, 15f), Fall('i'), say("Hop 5: you've got mail. Heavy mail.", "Hop 5: Sie haben Post. Schwere Post.")),
                 trap(Touch('k'), Fall('j'), say("Hop 6: packet dropped. From the floor above.", "Hop 6: Paket verworfen. Vom Stockwerk drüber."), delay = 0.4f),
@@ -444,7 +449,8 @@ object World2Part1 {
             hint = T("The obvious link goes home. Try the one in the air.", "Der offensichtliche Link führt heim. Nimm den in der Luft."),
             // rematch: the two links at home swap (the one in the air is the loopback now), the router upstairs is a press, the
             // DNS entry of the way on is poisoned for a moment after you arrive (it drops you into the pit; stay out of the link
-            // until it heals), the rack in the top right comes down too, and a firewall follows your packet into the last subnet
+            // until it heals), the rack in the top right comes down too, and a firewall follows your packet into the last subnet.
+            // Hop 4 keeps its TTL into the pit
             rematch = listOf(
                 Round(
                     T("Connection reset by peer. The peer is me.", "Verbindung zurückgesetzt. Von mir, natürlich."),
@@ -458,7 +464,7 @@ object World2Part1 {
                         trap(Zone(10.5f, 1f, 15f, 8f), Move('m', 0f, 5f, 30f), say("Hop 2 pings back. With the router.", "Hop 2 pingt zurück. Mit dem Router."), delay = 0.5f),
                         trap(Zone(1f, 1f, 6f, 8f), Play(Card.DECOY), Reroute('3', 25 to 16), say("DNS poisoned: hop 3 now exits over the pit.", "DNS vergiftet: Hop 3 endet jetzt über der Grube.")),
                         trap(Zone(1f, 1f, 6f, 8f), Reroute('3', 30 to 7), say("TTL expired. DNS healed.", "TTL abgelaufen. DNS geheilt."), delay = 1.2f),
-                        trap(Zone(27f, 3f, 31f, 8f), Power('4', false), say("Hop 4 is up for 6 seconds. TTL, you know.", "Hop 4 lebt 6 Sekunden. TTL, du weißt schon."), delay = 6f),
+                        trap(Zone(27f, 3f, 31f, 8f), Reroute('4', 25 to 16), say("Hop 4: TTL expired. Whoever's still up there gets forwarded to the pit.", "Hop 4: TTL abgelaufen. Wer noch oben ist, wird in die Grube weitergeleitet."), delay = 6f),
                         trap(Zone(27f, 1f, 31f, 8f), Move('g', 0f, 5f, 30f), say("Hop 3 lands. So does its rack.", "Hop 3 landet. Sein Rack auch."), delay = 0.3f),
                         trap(Zone(23.4f, 1f, 26.5f, 8f), Move('h', 0f, 5f, 30f), say("Hop 4: still timing out.", "Hop 4: immer noch Zeitüberschreitung.")),
                         trap(Zone(26.5f, 9f, 31f, 15f), Move('i', 0f, 5f, 30f), say("Hop 5: registered mail. Signature required.", "Hop 5: Einschreiben. Unterschrift erforderlich."), delay = 0.15f),

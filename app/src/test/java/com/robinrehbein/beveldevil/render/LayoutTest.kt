@@ -1,6 +1,7 @@
 package com.robinrehbein.beveldevil.render
 
 import com.robinrehbein.beveldevil.game.Action
+import com.robinrehbein.beveldevil.game.CardSlot
 import com.robinrehbein.beveldevil.game.Levels
 import com.robinrehbein.beveldevil.game.ROOM_COLS
 import com.robinrehbein.beveldevil.game.RoomDemos
@@ -64,5 +65,30 @@ class LayoutTest {
             } }
         }
         assertTrue("under the controls (${offenders.size}):\n" + offenders.joinToString("\n"), offenders.isEmpty())
+    }
+
+    /** The corners a card keeps to while the picture rolls (2-40) are never under a touch button, at any button size, on phone and tablet shapes. */
+    @Test fun theRollCornersAreNeverUnderTheControls() {
+        val corners = listOf(CardSlot.Slot(-1, CardSlot.HIGH), CardSlot.Slot(1, CardSlot.LOW))
+        val offenders = ArrayList<String>()
+        for ((w, h, dp) in listOf(Triple(1920, 1080, 2.75f), Triple(2400, 1080, 2.75f), Triple(2340, 1080, 2.75f), Triple(2560, 1080, 2.75f), Triple(2560, 1600, 2f), Triple(1280, 720, 2f), Triple(1280, 720, 1.5f), Triple(1600, 900, 2f))) {
+            for (mirror in listOf(false, true)) for (size in listOf(0.8f, 1f, 1.25f)) {
+                val l = Layout()
+                l.controls.mirror = mirror
+                l.controls.sizeScale = size
+                l.update(w, h, dp)
+                val c = l.controls
+                val pad = 3f * l.sc
+                for (s in corners) {
+                    // the card's area in tiles of the playfield, in screen px
+                    val a = CardSlot.area(s)
+                    val x0 = (l.fx + a.x0 * TS) * l.sc; val x1 = (l.fx + a.x1 * TS) * l.sc
+                    val y0 = (l.fy + a.y0 * TS) * l.sc; val y1 = (l.fy + a.y1 * TS) * l.sc
+                    val hit = listOf(c.leftX, c.rightX, c.jumpX).any { x0 < it + c.r + pad && x1 > it - c.r - pad && y0 < c.y + c.r + pad && y1 > c.y - c.r - pad }
+                    if (hit) offenders += "$s at ${w}x$h dp=$dp mirror=$mirror size=$size"
+                }
+            }
+        }
+        assertTrue("under the controls:\n" + offenders.joinToString("\n"), offenders.isEmpty())
     }
 }

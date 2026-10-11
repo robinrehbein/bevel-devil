@@ -201,14 +201,18 @@ class World2Test {
     fun noChainStrandsYouAliveAwayFromTheDoor() {
         // 3: the hops over the blocks on the upper floor land clear of them
         b(3).hopR(7.2f).hopR(12.8f).hopR(17.2f).expect(WorldState.PLAYING)
-        // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes), never into a closed room
-        World2.levels.forEachIndexed { i, l ->
-            val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
-                when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
-            }
-            for ((x, y) in exits) {
-                val below = l.map.grid[y + 1][x]
-                assertTrue("level ${i + 1}: exit ($x,$y) floats over nothing", below != '.')
+        // every portal and every re-pointed exit that a trap creates opens onto the ground (or into spikes, or over a bottomless
+        // pit: that ends you, it doesn't strand you), never into a closed room; in every round, on that round's own map
+        World2.levels.forEachIndexed { i, level ->
+            level.rounds.forEachIndexed { n, l ->
+                val exits = l.traps.flatMap { it.actions }.mapNotNull { a ->
+                    when (a) { is Action.Portal -> a.to; is Action.Reroute -> a.to; else -> null }
+                }
+                for ((x, y) in exits) {
+                    val below = l.map.grid[y + 1][x]
+                    val pit = (y + 1 until l.map.grid.size).all { l.map.grid[it][x] == '.' }
+                    assertTrue("level ${i + 1} round ${n + 1}: exit ($x,$y) floats over nothing", below != '.' || pit)
+                }
             }
         }
         // a trap-made portal never sits where the player could be locked into a dead end: its tiles are free in the plain map
@@ -252,6 +256,23 @@ class World2Test {
     }
 
     @Test
+    fun theLastHopOutlivesItsTtlIntoThePit() {
+        // 14: whoever dawdles in the top right for 6 seconds isn't stranded alive at a dead link: hop 4 still forwards, into the pit
+        val r1 = b(14).rightTo(10.3f).rightJump(0.5f).landRight().hopL(9.8f, 0.5f).leftUntil { it.player.box.cx < 1.6f || it.player.box.cx > 20f }
+            .waitFor { it.links[2].on }.left(0.3f).wait(6.5f)
+        r1.expect(WorldState.PLAYING)
+        assertEquals(25 to 16, r1.world.links.first { it.id == '4' }.to)
+        assertTrue(r1.world.links.first { it.id == '4' }.on)
+        r1.leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cy > 10f }.wait(1.5f).expect(WorldState.DEAD)
+        // round 2: the same, out from under the rack first
+        val r2 = Bot(World2.levels[13], round = 1).rightUntil { it.player.box.cy < 9f }.hopL(9.8f, 0.5f).waitFor { it.links[2].to.first == 30 }.left(0.65f)
+            .leftTo(27.2f).wait(6.5f)
+        r2.expect(WorldState.PLAYING)
+        assertEquals(25 to 16, r2.world.links.first { it.id == '4' }.to)
+        r2.leftTo(24.6f).wait(0.45f).leftJump(0.5f).landLeft().leftUntil { it.player.box.cy > 10f }.wait(1.5f).expect(WorldState.DEAD)
+    }
+
+    @Test
     fun theFirewallOnlyGoesDownWhenYouPauseAndResume() {
         // the HUD button dodges the first tap; the back button pauses for real
         val bot = b(39).wait(0.5f).tapPause()
@@ -261,6 +282,14 @@ class World2Test {
         toTheFirewall().leftTo(7.5f).left(1f).expect(WorldState.DEAD)
         assertTrue(toTheFirewall().world.beams.first { it.laser.id == 'F' }.lit)
         assertFalse(toTheFirewall().pauseResume().wait(0.05f).world.beams.first { it.laser.id == 'F' }.lit)
+    }
+
+    @Test
+    fun aPauseBeforeTheFirewallBootsDoesNotUseUpTheRestart() {
+        // pausing on the deck, before the BIOS boots the firewall, changes nothing: it boots anyway, and the restart still works on the lane
+        val early = World2Rooms.l39ToFirewall(b(39).wait(0.5f).pauseResume())
+        assertTrue(early.world.beams.first { it.laser.id == 'F' }.lit)
+        World2Rooms.l39(b(39).wait(0.5f).pauseResume()).expect(WorldState.WON)
     }
 
     @Test
@@ -399,7 +428,7 @@ class World2Test {
         assertEquals(2, bot.world.level.rooms)
         assertTrue(bot.world.door.tx > 32f)
     }
-    /** Hop Limit: the link in front of you after the drop was re-pointed and sends you home (TTL), while the real one waits behind you, under the ledge. */
+    /** Hop Limit: the link in front of you after the drop was re-pointed into the spike pit (/dev/null), while the real one waits behind you, under the ledge, for 2.5 s. */
     @Test fun level30TheLinkInFrontGoesToDevNull() {
         val bot = b(30).rightUntil { it.player.box.cx > 10f && it.player.box.b < 9.5f }.hopR(17.4f).rightUntil(4f) { it.cracks.isNotEmpty() }.rightUntil(3f) { it.cracks.any { c -> c.fell } }
             .rightUntil { it.player.box.cx > roomX(1, 10.4f) }.right(3f)
@@ -594,6 +623,27 @@ class World2Test {
     @Test fun level37WaitingOnTheSecondSwitchIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
         .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
         .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f).wait(2f).expect(WorldState.DEAD)
+    /** Two-Factor Auth: whoever steps back off the step as the backup code drops is not stranded below it: the code expires, goes back up, and the way on is open again. */
+    @Test fun level37TheBackupCodeExpiresAfterARetreat() {
+        val bot = b(37).leftTo(2.5f).rightTo(5.5f)
+            .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+            .hopR(17.2f, 0.5f).rightJump(0.3f).landRight().left(0.4f).landLeft()
+            .waitFor { it.group('f').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        bot.expect(WorldState.PLAYING)
+        // the code has fully landed before it expires (the lift is relative to where it lies)
+        assertEquals(8f, bot.world.group('f').oy, 0.01f)
+        bot.waitFor { it.group('f').let { g -> g.mode == GroupMode.IDLE && g.oy < 0.01f } }
+        assertEquals(0f, bot.world.group('f').oy, 0.01f)
+        bot.leftTo(16.5f).hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(29.4f)
+            .leftUntil { it.player.box.cx < 25.9f }.rightUntil { it.player.box.cx > 31f }.right(4f).expect(WorldState.WON)
+    }
+    /** Two-Factor Auth: whoever jumps from the roof back onto the landed code and stays there rides it up into the ceiling (no alive softlock). */
+    @Test fun level37RidingTheExpiringCodeIsFatal() = b(37).leftTo(2.5f).rightTo(5.5f)
+        .rightUntil { it.group('c').mode == GroupMode.FALL }.waitFor { it.group('c').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .hopR(17.2f, 0.5f).rightJump(0.5f).landRight().hopR(22.6f, 0.5f).rightTo(27f)
+        .waitFor { it.group('f').let { g -> g.mode == GroupMode.IDLE && g.oy > 1f } }
+        .leftTo(26.4f).leftJump(0.5f).landLeft()
+        .also { assertTrue(it.world.player.box.cx < 24f && it.world.player.box.cy < 9f) }.wait(5f).expect(WorldState.DEAD)
     @Test fun level38() { World2DesignTest.play(38) }
     /** Bobby Tables: the ground between the holes sinks, standing on it is the end. */
     @Test fun level38TheGroundBetweenTheHolesSinks() = b(38).hopR(12.8f, 0.5f).wait(1.5f).expect(WorldState.DEAD)
@@ -606,6 +656,30 @@ class World2Test {
     /** Ping Pong: and running straight into it is the end, too. */
     @Test fun level40RunningStraightIntoTheWallIsFatal() = b(40).left(5f).expect(WorldState.DEAD)
     @Test fun level41() { World2DesignTest.play(41) }
+    /** Security Audit: whoever misses the climb is not left alive below the block: the floor where step 4 was rises as a new step, and the climb goes on from it. */
+    @Test fun level41AMissedClimbIsReCertified() {
+        val below = World2RoomsD.l41MissTheClimb(b(41))
+        below.expect(WorldState.PLAYING)
+        assertTrue("y=${below.world.player.box.b}", below.world.player.box.b > 14.5f)
+        val lifted = World2RoomsD.l41Renewed(below)
+        assertEquals(14f, lifted.world.player.box.b, 0.05f)
+        World2RoomsD.l41FromTheStep(lifted).expect(WorldState.WON)
+    }
+    /** Security Audit: whoever drops through the plank-5 hole after the climb lands below the deck (on the floor, or on the plank that fell onto it), and walking under the old step re-certifies them, too. */
+    @Test fun level41ADropThroughTheDeckIsReCertified() {
+        val below = b(41).hopR(8.6f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
+            .leftJump(0.55f).landLeft().wait(1f).leftTo(20.5f).wait(0.6f)
+        below.expect(WorldState.PLAYING)
+        assertTrue("y=${below.world.player.box.b}", below.world.player.box.b > 13.5f)
+        val lifted = World2RoomsD.l41Renewed(below.rightTo(26f))
+        assertEquals(14f, lifted.world.player.box.b, 0.05f)
+        World2RoomsD.l41FromTheStep(lifted).expect(WorldState.WON)
+    }
+    /** Security Audit: trusting the renewed step a second time is the next lie: it goes down with the floor, and so does whoever stays below the block. */
+    @Test fun level41TheRenewedStepGoesDownWithTheFloor() {
+        World2RoomsD.l41Renewed(World2RoomsD.l41MissTheClimb(b(41))).wait(2f).expect(WorldState.DEAD)
+        World2RoomsD.l41Renewed(World2RoomsD.l41MissTheClimb(b(41))).left(0.4f).wait(2f).expect(WorldState.DEAD)
+    }
     @Test fun level42() { World2DesignTest.play(42) }
     @Test fun level43() { World2DesignTest.play(43) }
     @Test fun level44() { World2DesignTest.play(44) }

@@ -14,6 +14,15 @@ object World2RoomsD {
     fun l41r2(b: Bot) = b.hopR(5.2f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().right(0.05f).rightJump(0.55f).landRight()
         .leftJump(0.55f).landLeft().hopL(22.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
 
+    /** 41 (round [r], 1-based): over the stones as in the clean run and onto step 4, then stay on it: it is revoked under you and you are on the floor below the block. */
+    fun l41MissTheClimb(b: Bot, r: Int = 1) = b.hopR(if (r == 1) 8.6f else 5.2f, 0.5f).hopR(14.4f, 0.5f).rightTo(24.3f).rightJump(0.45f).landRight().wait(1f)
+
+    /** 41: below the block after a missed climb, wait until the renewed step has lifted you to where step 4 was. */
+    fun l41Renewed(b: Bot) = b.waitFor(3f) { it.group('r').oy <= -1f }.also { it.expect(WorldState.PLAYING) }
+
+    /** 41: from step 4 (or the renewed one) up onto the block and on to the door, as in the clean run. */
+    fun l41FromTheStep(b: Bot) = b.right(0.05f).rightJump(0.55f).landRight().leftJump(0.55f).landLeft().hopL(22.4f, 0.4f).leftJump(0.5f).landLeft().left(3f)
+
     /** The cart (a saw on the lane level) is past the player: it is to the right of them by [d] tiles. */
     private fun cartPast(w: World, d: Float) = w.saws.none { it.y > 13.5f && it.vx > 0f && it.x < w.player.box.cx + d }
 

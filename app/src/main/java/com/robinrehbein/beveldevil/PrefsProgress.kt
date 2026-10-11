@@ -67,6 +67,8 @@ class PrefsProgress(context: Context) : Progress {
 
     override fun bestDeaths(level: Int): Int? = prefs.getInt("best_$level", -1).takeIf { it >= 0 }
     override fun saveBest(level: Int, deaths: Int) = prefs.edit().putInt("best_$level", deaths).apply()
+    override fun skipped(level: Int) = prefs.getBoolean("skipped_$level", false)
+    override fun saveSkipped(level: Int) = prefs.edit().putBoolean("skipped_$level", true).apply()
     override fun cardFound(card: Card) = prefs.getBoolean("card_${card.name}", false)
     override fun findCard(card: Card) = prefs.edit().putBoolean("card_${card.name}", true).apply()
     override fun cardDeaths(card: Card) = prefs.getInt("card_deaths_${card.name}", 0)

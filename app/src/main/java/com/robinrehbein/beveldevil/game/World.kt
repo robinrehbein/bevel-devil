@@ -521,10 +521,22 @@ class World(val level: Level, private val past: Trail? = null) {
         }
     }
 
+    /** Resumes per [Trigger.Resumed.live] id, counted only while that one was switched on. */
+    private val liveResumes = mutableMapOf<Char, Int>()
+
     /** The player came back from the pause screen. */
     fun resumed() {
         resumes++
+        for (id in traps.mapNotNullTo(mutableSetOf()) { (it.trap.trigger as? Trigger.Resumed)?.live }) {
+            if (switchedOn(id)) liveResumes[id] = (liveResumes[id] ?: 0) + 1
+        }
     }
+
+    /** Whether portal, laser, belt, circuit or fan [id] is switched on (what [Action.Power] switches). */
+    private fun switchedOn(id: Char): Boolean =
+        links.any { it.id == id && it.on } || beams.any { it.laser.id == id && it.on } ||
+            groups[id]?.takeIf { it.belt != null }?.beltOn == true || circuits[id]?.wants(time) == true ||
+            fans.any { it.id == id && it.on }
 
     /** 0 = upright, 1 = upside down; turns over [Twists.TURN] seconds each way. */
     fun viewTurn(): Float {
@@ -533,10 +545,25 @@ class World(val level: Level, private val past: Trail? = null) {
         return min(on, off)
     }
 
-    /** How far the rolling picture is shifted up, as a fraction 0..1 of its height. */
+    /** The picture is rolling ([Action.Roll]) right now. */
+    val rolling get() = time >= rollFrom && time < rollUntil
+
+    /**
+     * How far the rolling picture is shifted up, as a fraction 0..1 of its height. A death catches the hold: the
+     * picture settles on the nearest frame within [Twists.ROLL_SETTLE], so the player sees where they died.
+     */
     fun viewRoll(): Float {
-        if (time < rollFrom || time >= rollUntil) return 0f
-        val f = (time - rollFrom) / (rollUntil - rollFrom)
+        if (state != WorldState.DEAD) return rollAt(time)
+        val v = rollAt(stateTime)
+        val k = ((time - stateTime) / Twists.ROLL_SETTLE).coerceIn(0f, 1f)
+        if (k >= 1f) return 0f
+        val r = v + (if (v < 0.5f) -v else 1f - v) * k * k * (3f - 2f * k)
+        return r - floor(r)
+    }
+
+    private fun rollAt(t: Float): Float {
+        if (t < rollFrom || t >= rollUntil) return 0f
+        val f = (t - rollFrom) / (rollUntil - rollFrom)
         val e = f * f * (3f - 2f * f) * rollLaps
         return e - floor(e)
     }
@@ -607,9 +634,9 @@ class World(val level: Level, private val past: Trail? = null) {
             is Trigger.Airborne -> ticks > 1 && !player.grounded && b.cx in t.x0..t.x1
             is Trigger.Landed -> ticks - landTick <= 1 && landX in t.x0..t.x1
             is Trigger.After -> time >= t.seconds
-            is Trigger.Idle -> idle >= t.seconds
+            is Trigger.Idle -> idle >= t.seconds && b.cx > t.x0 && b.cx < t.x1
             Trigger.Shaken -> shaken
-            is Trigger.Resumed -> resumes >= t.times
+            is Trigger.Resumed -> (t.live?.let { liveResumes[it] ?: 0 } ?: resumes) >= t.times
             Trigger.AtDoor -> false
             is Trigger.Touch -> groups[t.group]?.let(::touches) ?: false
             is Trigger.Pressed -> pads.any { it.pad.id == t.pad && it.presses >= t.times }
@@ -724,7 +751,7 @@ class World(val level: Level, private val past: Trail? = null) {
             }
             is Action.Swap -> swapped = a.on
             is Action.Saw -> saws += Saw(a.x, a.y, a.vx, a.vy, a.r)
-            is Action.Say -> events += Event.Say(a.text)
+            is Action.Say -> events += Event.Say(a.otherwise?.takeIf { a.unless?.let(::triggered) == true } ?: a.text)
             is Action.Shake -> events += Event.Shake(a.amount)
             is Action.Bluff -> {
                 lastCard = Card.BLUFF

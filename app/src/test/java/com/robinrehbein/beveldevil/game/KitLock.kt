@@ -18,7 +18,7 @@ object KitLock {
      * is deliberately not here: it may only shrink (docs/LEVEL_DESIGN_V2.md §9a), and deleting a line needs no new hash.
      */
     val HASHES = mapOf(
-        "DesignRules.kt" to "d5eb018d16855166a24ea648c0dc66cee81c9dae042f6e9c0ed16fa696d70f5e",
+        "DesignRules.kt" to "827117f98050586250084dab5812e44d6da199b7257e34933e4190951a5dbd11",
         "DesignTestBase.kt" to "de858b4a146faaceef6114263b756d46df8635ae9f5dab823c950392544d849c",
         "NaiveProbes.kt" to "915788d33fe652b16fd4be4023576997e4c171fddc8051c851456c6d6c929dc6",
     )

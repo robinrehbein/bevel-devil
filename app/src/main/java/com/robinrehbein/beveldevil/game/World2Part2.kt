@@ -478,8 +478,9 @@ object World2Part2 {
         // 30 — hop limit, a puzzle room of two rooms (R3 the portal, R5 the floors, U11 the route is manipulated, U18 the room goes on): the tunnel on the
         // lane leads up to the ledge, and the ledge piece in front of the door drops out over a row of LEDs as you come near (TTL expired: hop the
         // hole). At the door the wall breaks open and the door slips into the second room. There you run along the ledge and drop onto a lane
-        // whose pit is crossed by two portals: the obvious one, in front of you, is re-pointed as you walk the ledge (and now sends you home, TTL), and the
-        // other one is behind you, under the ledge, which you have to walk back to; you step out of it into spikes that grow
+        // whose pit is crossed by two portals: the obvious one, in front of you, is re-pointed as you walk the ledge (and now drops you into the spike pit,
+        // /dev/null), and the other one is behind you, under the ledge, which you have to walk back to in time: 2.5 s after you walk the ledge it is
+        // re-pointed into the pit as well (TTL 0). You step out of it into spikes that grow
         Level(
             name = T("Hop Limit", "Hop-Limit"),
             intro = T("TTL: 64. No need to rush.", "TTL: 64. Kein Grund zur Eile."),
@@ -514,9 +515,9 @@ object World2Part2 {
 
         // 31 — detention, a puzzle room (R8 the timing plus the way, U3 the wall closes in): you start up on the top deck and the class wall, set with
         // spikes, slides in behind you from the left, so you cannot wait where you like. Over a trench of spikes three stones blink one after the
-        // other like a wave; you hop from stone to stone as each one comes up, and when you reach the middle one the wall speeds up (detention is
-        // over, go home). At the end of the deck you drop down onto the lane, where the second wall stands against the right wall, and run back
-        // left to the door with it behind you
+        // other like a wave; you hop from stone to stone as each one comes up, while the class wall keeps its one steady pace. At the end of the deck you drop down
+        // onto the lane, where the second wall stands against the right wall, and run back left to the door with it behind you; halfway along the
+        // lane the second wall speeds up (detention is over, go home)
         Level(
             name = T("Detention", "Nachsitzen"),
             intro = T("No rush. I've got all day.", "Keine Hektik. Ich habe den ganzen Tag Zeit."),

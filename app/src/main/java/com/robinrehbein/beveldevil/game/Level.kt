@@ -52,14 +52,25 @@ sealed interface Trigger {
     data class Landed(val x0: Float, val x1: Float) : Trigger
     /** Seconds since the attempt started. */
     data class After(val seconds: Float) : Trigger
-    /** No left/right/jump input for [seconds] in a row. */
-    data class Idle(val seconds: Float) : Trigger
+    /**
+     * No left/right/jump input for [seconds] in a row, with the player center between [x0] and [x1] (anywhere by default).
+     * The range arms it only where an earlier trap has set the stage:
+     *
+     *     trap(BeforeX(19.6f), Chase('a', speed = 6f))
+     *     trap(Idle(0.6f, x1 = 19.6f), Fall('a'))   // drops only once it stalks you, never on the stairs before
+     */
+    data class Idle(val seconds: Float, val x0: Float = Float.NEGATIVE_INFINITY, val x1: Float = Float.POSITIVE_INFINITY) : Trigger
     /** The player shook the phone (or pressed the shake button). */
     data object Shaken : Trigger
     /** The player reaches the door. Fires instead of the win (its delay is ignored); pair it with [Action.FakeWin]. */
     data object AtDoor : Trigger
-    /** The player paused and resumed [times] times in this attempt. */
-    data class Resumed(val times: Int = 1) : Trigger
+    /**
+     * The player paused and resumed [times] times in this attempt. With [live], only the resumes while portal, laser,
+     * belt, circuit or fan [live] was switched on count: a pause before it is up does not use the trick up.
+     *
+     *     trap(Resumed(live = 'F'), Power('F', false))   // off and on again, once the firewall is up
+     */
+    data class Resumed(val times: Int = 1, val live: Char? = null) : Trigger
 
     /**
      * Pressure pad [pad] ([Action.Pad]) was stepped on [times] times in this attempt.
@@ -98,7 +109,15 @@ sealed interface Action {
     data class Gravity(val flipped: Boolean) : Action
     data class Swap(val on: Boolean) : Action
     data class Saw(val x: Float, val y: Float, val vx: Float, val vy: Float, val r: Float = 0.6f) : Action
-    data class Say(val text: T) : Action
+    /**
+     * Mephi says [text]; if [unless] already holds when the trap's actions run (after its delay, not when it triggers),
+     * he says [otherwise] instead. For a trap the player can reach in another order than intended: the trap stays the
+     * same, only the line owns up to it.
+     *
+     *     trap(Landed(14.5f, 18.5f), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."),
+     *         unless = Pressed('1'), otherwise = T("Repair expired. Warranty void.", "Reparatur abgelaufen. Garantie erloschen.")))
+     */
+    data class Say(val text: T, val unless: Trigger? = null, val otherwise: T? = null) : Action
     data class Shake(val amount: Float) : Action
     /** Mephi plays a trap card: it flies into view, and dying before the attempt ends collects it. */
     data class Play(val card: Card) : Action

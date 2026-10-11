@@ -264,7 +264,7 @@ object World1Part1 {
         // under the deck. A pothole opens in the deck ahead of you (the pit under it is real) and the ceiling over the spot drops a slab
         // on whoever stops to look; the keys swap as you land behind it. Down on the ground the way to the switch runs back left with
         // swapped hands over a pothole of its own and the pit; the switch swaps them back, and the way to the door is the same road with
-        // the old hands
+        // the old hands. Whoever drops through the pothole to the switch first gets the swap behind the pit all the same: the repair expired
         Level(
             name = T("Potholes", "Schlaglöcher"),
             intro = T("Mind the potholes. The council is me.", "Vorsicht, Schlaglöcher. Die Stadtverwaltung bin ich."),
@@ -272,7 +272,8 @@ object World1Part1 {
             start = listOf(Circuit('w'), Pad('1', at = 9 to 14, circuits = "w", mode = PadMode.OFF)),
             traps = listOf(
                 trap(PastX(7f), Fall('a'), Fall('h'), Say(T("Pothole. Fresh from the pothole factory.", "Schlagloch. Frisch aus der Schlaglochfabrik."))),
-                trap(Landed(14.5f, 18.5f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."))),
+                trap(Landed(14.5f, 18.5f), Play(Card.TWISTED), Swap(true), Say(T("Left is the new right.", "Links ist das neue Rechts."),
+                    unless = Pressed('1'), otherwise = T("Repair expired. Warranty void.", "Reparatur abgelaufen. Garantie erloschen."))),
                 trap(Zone(18f, 12f, 24f, 15f), Fall('f'), Say(T("Another pothole. This one is a bonus.", "Noch ein Schlagloch. Das hier ist Bonus."))),
                 trap(Pressed('1'), Swap(false), Say(T("Keys fixed. Door unlocked. You're welcome.", "Tasten repariert. Tür offen. Gern geschehen."))),
             ),

@@ -89,4 +89,12 @@ class BluffTest {
         assertEquals(0, p.cardDeaths(Card.COLLAPSE))
         assertFalse(g.bluffTell)
     }
+
+    @Test
+    fun theCardStatSaysAfterNotBy() {
+        // the count goes to the card played last (a bluff that did nothing included), so it must not claim the card did it
+        assertTrue(Txt.caught.en.contains("%d") && Txt.caught.de.contains("%d"))
+        assertTrue(Txt.caught.en.contains("after") && Txt.caught.de.contains("danach"))
+        assertFalse(Txt.caught.en.contains("crashed you"))
+    }
 }

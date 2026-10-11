@@ -49,6 +49,8 @@ object Twists {
     /** After the fake: the door can't be entered for a moment, while Bevel is spat out. */
     const val DOOR_LOCK = 0.6f
     const val TURN = 0.35f
+    /** Seconds a rolling picture takes to settle after a death, well inside the respawn delay. */
+    const val ROLL_SETTLE = 0.25f
     const val CREDIT_SPEED = 6f
     const val CREDIT_GAP = 0.55f
     const val CREDIT_HOLD = 0.7f

@@ -27,10 +27,15 @@ class MainActivity : Activity() {
         val audio = object : Audio by sfx {
             override fun music(tune: Tune?, duck: Boolean) = music.set(tune, duck)
         }
-        ads = AdsBilling(this, progress).also { it.start() }
+        ads = AdsBilling(this, progress)
         view = GameView(this, Game(progress, audio, ads))
         setContentView(view)
         view.requestFocus()
+        // only now: with remembered consent, start() boots MobileAds (and the WebView) on a background thread,
+        // which must not race the window inflating its decor in setContentView. That race is the inferred cause of
+        // the rare "couldn't find content container view" launch crash (not reproduced); the decor is inflated
+        // synchronously in setContentView, so starting here leaves that inflation nothing to overlap with
+        ads.start()
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
                 if (!view.back()) finish()
